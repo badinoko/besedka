@@ -29,10 +29,11 @@ INSTALLED_APPS = [
     'django_extensions',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
+    'allauth.socialaccount',  # Необходимо для работы allauth, но скрыто из админки
 
     # Local apps
     'magicbeans.users.apps.UsersConfig',
+    "magicbeans.store",
 ]
 
 AUTH_USER_MODEL = 'users.User'  # Use the correct app_label.ModelName
@@ -53,7 +54,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'magicbeans', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -94,7 +95,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/ 
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'ru'
 
@@ -105,7 +106,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/ 
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
