@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h1>{{ title }}</h1>
+
+        <div class="card-container" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+            <!-- Импорт товаров -->
+            <div class="card" style="flex: 1; min-width: 300px; border: 1px solid #ccc; border-radius: 4px; padding: 20px;">
+                <h2>{% trans "Импорт товаров" %}</h2>
+                <p>{% trans "Загрузите CSV-файл с данными о товарах для массового импорта." %}</p>
+                <p>{% trans "Формат файла:" %}</p>
+                <pre>Сидбанк,Сорт,Количество семян,Цена,Количество на складе,Видимость
+FastBuds,Auto Amnesia,1,750,10,Да
+FastBuds,Auto Amnesia,3,1850,5,Да</pre>
+                <a href="{% url 'admin:stock_import_csv' %}" class="button">{% trans "Импорт из CSV" %}</a>
+            </div>
+
+            <!-- Экспорт товаров -->
+            <div class="card" style="flex: 1; min-width: 300px; border: 1px solid #ccc; border-radius: 4px; padding: 20px;">
+                <h2>{% trans "Экспорт товаров" %}</h2>
+                <p>{% trans "Экспортируйте данные о товарах в CSV-файл." %}</p>
+                <p>{% trans "Выберите нужные товары в списке фасовок и используйте действие 'Экспорт выбранных фасовок в CSV'." %}</p>
+                <a href="{% url 'admin:store_stockitem_changelist' %}" class="button">{% trans "Перейти к списку фасовок" %}</a>
+            </div>
+        </div>
+
+        <div class="card-container" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+            <!-- Управление товарами -->
+            <div class="card" style="flex: 1; min-width: 300px; border: 1px solid #ccc; border-radius: 4px; padding: 20px;">
+                <h2>{% trans "Управление складом" %}</h2>
+                <p>{% trans "Быстрый доступ к основным разделам управления складом:" %}</p>
+                <ul>
+                    <li><a href="{% url 'admin:store_seedbank_changelist' %}">{% trans "Сидбанки" %}</a></li>
+                    <li><a href="{% url 'admin:store_strain_changelist' %}">{% trans "Сорта" %}</a></li>
+                    <li><a href="{% url 'admin:store_stockitem_changelist' %}">{% trans "Фасовки" %}</a></li>
+                    <li><a href="{% url 'admin:store_stockmovement_changelist' %}">{% trans "Движения товара" %}</a></li>
+                </ul>
+            </div>
+
+            <!-- Заказы -->
+            <div class="card" style="flex: 1; min-width: 300px; border: 1px solid #ccc; border-radius: 4px; padding: 20px;">
+                <h2>{% trans "Заказы" %}</h2>
+                <p>{% trans "Управление заказами и их статусами:" %}</p>
+                <ul>
+                    <li><a href="{% url 'admin:store_order_changelist' %}">{% trans "Все заказы" %}</a></li>
+                    <li><a href="{% url 'admin:store_order_changelist' %}?status=new">{% trans "Новые заказы" %}</a></li>
+                    <li><a href="{% url 'admin:store_order_changelist' %}?status=processing">{% trans "Заказы в обработке" %}</a></li>
+                    <li><a href="{% url 'admin:store_order_changelist' %}?status=shipped">{% trans "Отправленные заказы" %}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
