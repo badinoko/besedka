@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0 # Используем официальный образ MySQL 8.0
+    environment:
+      MYSQL_DATABASE: 'your_database_name' # <--- ЗАМЕНИТЕ НА ИМЯ ВАШЕЙ БАЗЫ ДАННЫХ
+      MYSQL_USER: 'your_db_user'         # <--- ЗАМЕНИТЕ НА ИМЯ ПОЛЬЗОВАТЕЛЯ БД
+      MYSQL_PASSWORD: 'your_db_password' # <--- ЗАМЕНИТЕ НА ПАРОЛЬ ПОЛЬЗОВАТЕЛЯ БД
+      MYSQL_ROOT_PASSWORD: 'your_root_password' # <--- ЗАМЕНИТЕ НА ROOT-ПАРОЛЬ БД
+    ports:
+      - "3306:3306" # Порт MySQL для доступа снаружи (не обязательно, но удобно для проверки)
+    volumes:
+      - db_data:/var/lib/mysql # Сохранение данных базы данных
+
+  web:
+    build:
+      context: .
+      dockerfile: compose/local/django/Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000 # Команда для запуска Django-сервера
+    # volumes:
+    #   - .:/app # Монтируем текущую папку проекта в контейнер
+    ports:
+      - "8000:8000" # Пробрасываем порт Django-сервера
+    depends_on:
+      - db # Указывает, что web-сервис зависит от db-сервиса (db запустится раньше)
+    environment:
+      # Переменные окружения для подключения Django к MySQL
+      MYSQL_HOST: db # Имя хоста базы данных (совпадает с именем сервиса db)
+      MYSQL_DATABASE: 'your_database_name' # <--- ТЕ ЖЕ ЗНАЧЕНИЯ, ЧТО ВЫ ВВЕЛИ ВЫШЕ
+      MYSQL_USER: 'your_db_user'
+      MYSQL_PASSWORD: 'your_db_password'
+      DJANGO_SETTINGS_MODULE: magic_beans_work.settings # Убедитесь, что это ваш основной файл настроек
+    env_file:
+      - .env # Опционально: если вы храните чувствительные данные в .env файле
+volumes:
+  db_data: # Определение тома для сохранения данных базы данных

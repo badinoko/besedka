@@ -1,0 +1,28 @@
+{
+  "name": "Django App",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "batisteo.vscode-django"
+      ]
+    }
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "pip install -r requirements.txt",
+  "portsAttributes": {
+    "8000": {
+      "label": "Django App",
+      "onAutoForward": "notify"
+    }
+  },
+  "forwardPorts": [8000],
+  "containerEnv": {
+    "DJANGO_SETTINGS_MODULE": "magic_beans_work.settings",
+    "PYTHONPATH": "/workspaces/magic_beans_work"
+  }
+}
