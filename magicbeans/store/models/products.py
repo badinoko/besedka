@@ -9,6 +9,7 @@ class SeedBank(models.Model):
         _("Логотип"), upload_to="seedbanks/", blank=True, null=True,
     )
     description = models.TextField(_("Описание"), blank=True)
+    website = models.URLField(_("Веб-сайт"), blank=True)
     is_visible = models.BooleanField(_("Отображается"), default=True)
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
@@ -49,6 +50,25 @@ class Strain(models.Model):
         verbose_name=_("Сидбанк"),
     )
     is_visible = models.BooleanField(_("Отображается"), default=True)
+    thc_content = models.DecimalField(
+        _("Содержание THC"),
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    cbd_content = models.DecimalField(
+        _("Содержание CBD"),
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    flowering_time = models.PositiveIntegerField(
+        _("Время цветения (недель)"),
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
 

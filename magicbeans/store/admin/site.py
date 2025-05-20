@@ -5,6 +5,12 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group, User
 
 from .admin_views import statistics_view
+from .administrators import AdministratorAdmin
+from .stock_admin import StockItemAdmin, StockMovementAdmin
+from magicbeans.store.models import (
+    Administrator, SeedBank, Strain, StrainImage, 
+    StockItem, StockMovement, Order, OrderItem, ActionLog
+)
 
 
 class StoreAdminSite(admin.AdminSite):
@@ -71,5 +77,19 @@ class StoreAdminSite(admin.AdminSite):
         }
         return TemplateResponse(request, "admin/store/import_export.html", context)
 
+
 # Инициализация административного сайта
 store_admin_site = StoreAdminSite(name="store_admin")
+
+# Регистрация специализированных административных моделей
+store_admin_site.register(Administrator, AdministratorAdmin)
+store_admin_site.register(StockItem, StockItemAdmin)
+store_admin_site.register(StockMovement, StockMovementAdmin)
+
+# Регистрация остальных моделей с базовым административным интерфейсом
+store_admin_site.register(SeedBank)
+store_admin_site.register(Strain)
+store_admin_site.register(StrainImage)
+store_admin_site.register(Order)
+store_admin_site.register(OrderItem)
+store_admin_site.register(ActionLog)

@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .administrators import Administrator
 from .stock import StockItem
+from .products import Strain
 
 
 class Order(models.Model):
@@ -61,11 +62,11 @@ class OrderItem(models.Model):
         related_name="items",
         verbose_name=_("Заказ"),
     )
-    strain_name = models.CharField(_("Название сорта"), max_length=255)
-    seeds_count = models.CharField(_("Фасовка"), max_length=20)
-    quantity = models.PositiveIntegerField(_("Количество"))
-    price = models.DecimalField(
-        _("Цена за единицу"), max_digits=10, decimal_places=2,
+    strain = models.ForeignKey(
+        Strain,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("Сорт"),
     )
     stock_item = models.ForeignKey(
         StockItem,
@@ -75,6 +76,13 @@ class OrderItem(models.Model):
         related_name="order_items",
         verbose_name=_("Товар"),
     )
+    strain_name = models.CharField(_("Название сорта"), max_length=255)
+    seed_bank_name = models.CharField(_("Название сидбанка"), max_length=255)
+    seeds_count = models.CharField(_("Фасовка"), max_length=20)
+    quantity = models.PositiveIntegerField(_("Количество"))
+    price = models.DecimalField(
+        _("Цена за единицу"), max_digits=10, decimal_places=2,
+    )
 
     class Meta:
         verbose_name = _("Позиция заказа")
@@ -82,3 +90,8 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.strain_name} ({self.seeds_count}) x{self.quantity}"
+
+    @property
+    def subtotal(self):
+        """Сумма по позиции."""
+        return self.price * self.quantity

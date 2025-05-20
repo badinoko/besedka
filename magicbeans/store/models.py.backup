@@ -1,0 +1,340 @@
+# filepath: c:\Users\Buddy\magic_beans_new\magicbeans\store\models.py
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class Administrator(models.Model):
+    """Модель для администраторов магазина."""
+    name = models.CharField(_("Имя"), max_length=255)
+    telegram_id = models.CharField(
+        _("Telegram ID"), max_length=100, unique=True,
+    )
+    is_active = models.BooleanField(_("Активный"), default=True)
+    created_at = models.DateTimeField(
+        _("Дата создания"), auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        _("Дата обновления"), auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = _("Администратор")
+        verbose_name_plural = _("Администраторы")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.telegram_id})"
+
+
+class ActionLog(models.Model):
+    """Журнал действий пользователей."""
+    ACTION_ADD = "add"
+    ACTION_EDIT = "edit"
+    ACTION_DELETE = "delete"
+    ACTION_VIEW = "view"
+    ACTION_LOGIN = "login"
+    ACTION_LOGOUT = "logout"
+
+    ACTION_CHOICES = [
+        (ACTION_ADD, _("Добавление")),
+        (ACTION_EDIT, _("Редактирование")),
+        (ACTION_DELETE, _("Удаление")),
+        (ACTION_VIEW, _("Просмотр")),
+        (ACTION_LOGIN, _("Вход")),
+        (ACTION_LOGOUT, _("Выход")),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("Пользователь"),
+        related_name="action_logs",
+    )
+    action_type = models.CharField(
+        _("Тип действия"),
+        max_length=20,
+        choices=ACTION_CHOICES,
+    )
+    timestamp = models.DateTimeField(
+        _("Время действия"),
+        auto_now_add=True,
+    )
+    model_name = models.CharField(
+        _("Название модели"),
+        max_length=100,
+    )
+    object_id = models.PositiveIntegerField(
+        _("ID объекта"),
+        null=True,
+        blank=True,
+    )
+    object_repr = models.CharField(
+        _("Представление объекта"),
+        max_length=255,
+    )
+    details = models.TextField(
+        _("Детали"),
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Запись журнала")
+        verbose_name_plural = _("Журнал действий")
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.get_action_type_display()} - {self.object_repr} ({self.timestamp})"
+
+
+class SeedBank(models.Model):
+    """Модель сидбанка (производителя семян)."""
+    name = models.CharField(_("Название"), max_length=255)
+    logo = models.ImageField(
+        _("Логотип"), upload_to="seedbanks/", blank=True, null=True,
+    )
+    description = models.TextField(_("Описание"), blank=True)
+    is_visible = models.BooleanField(_("Отображается"), default=True)
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("Сидбанк")
+        verbose_name_plural = _("Сидбанки")
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Strain(models.Model):
+    """Модель сорта семян."""
+    TYPE_AUTO = "auto"
+    TYPE_PHOTO = "photo"
+    TYPE_REGULAR = "regular"
+
+    TYPE_CHOICES = [
+        (TYPE_AUTO, _("Автоцветущий")),
+        (TYPE_PHOTO, _("Фотопериодный")),
+        (TYPE_REGULAR, _("Регулярный")),
+    ]
+
+    name = models.CharField(_("Название"), max_length=255)
+    description = models.TextField(_("Описание"), blank=True)
+    strain_type = models.CharField(
+        _("Тип сорта"),
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default=TYPE_PHOTO,
+    )
+    seed_bank = models.ForeignKey(
+        SeedBank,
+        on_delete=models.CASCADE,
+        related_name="strains",
+        verbose_name=_("Сидбанк"),
+    )
+    is_visible = models.BooleanField(_("Отображается"), default=True)
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("Сорт")
+        verbose_name_plural = _("Сорта")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.seed_bank.name})"
+
+
+class StrainImage(models.Model):
+    """Изображение сорта."""
+    image = models.ImageField(_("Изображение"), upload_to="strains/")
+    strain = models.ForeignKey(
+        Strain,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name=_("Сорт"),
+    )
+    order = models.PositiveSmallIntegerField(_("Порядок"), default=0)
+
+    class Meta:
+        verbose_name = _("Изображение сорта")
+        verbose_name_plural = _("Изображения сортов")
+        ordering = ["order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["strain", "order"],
+                name="unique_strain_image_order",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.strain.name} - {self.order}"
+
+
+class StockItem(models.Model):
+    """Фасовка сорта и её остаток на складе."""
+    strain = models.ForeignKey(
+        Strain,
+        on_delete=models.CASCADE,
+        related_name="stock_items",
+        verbose_name=_("Сорт"),
+    )
+    seeds_count = models.CharField(
+        _("Количество семян"),
+        max_length=20,
+        help_text=_("Например: 1, 3, 5, 10, 3+1, 5+2"),
+    )
+    price = models.DecimalField(
+        _("Цена за пачку"),
+        max_digits=10,
+        decimal_places=2,
+    )
+    quantity = models.PositiveIntegerField(_("Количество на складе"), default=0)
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("Фасовка")
+        verbose_name_plural = _("Фасовки")
+        ordering = ["strain", "seeds_count"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["strain", "seeds_count"],
+                name="unique_strain_seeds_count",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.strain.name} - {self.seeds_count}"
+
+
+class StockMovement(models.Model):
+    """Движение товара на складе (поступление/списание)."""
+    MOVEMENT_IN = "in"
+    MOVEMENT_OUT = "out"
+
+    MOVEMENT_TYPES = [
+        (MOVEMENT_IN, _("Поступление")),
+        (MOVEMENT_OUT, _("Списание")),
+    ]
+
+    stock_item = models.ForeignKey(
+        StockItem,
+        on_delete=models.CASCADE,
+        related_name="movements",
+        verbose_name=_("Фасовка"),
+    )
+    movement_type = models.CharField(
+        _("Тип движения"),
+        max_length=10,
+        choices=MOVEMENT_TYPES,
+    )
+    quantity = models.PositiveIntegerField(_("Количество"))
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="stock_movements",
+        verbose_name=_("Пользователь"),
+    )
+    comment = models.TextField(_("Комментарий"), blank=True)
+    timestamp = models.DateTimeField(_("Время"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Движение товара")
+        verbose_name_plural = _("Движения товара")
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        movement = "Поступление" if self.movement_type == self.MOVEMENT_IN else "Списание"
+        return f"{movement} {self.stock_item} ({self.quantity} шт.)"
+
+
+class Order(models.Model):
+    """Заказ клиента."""
+    STATUS_NEW = "new"
+    STATUS_PROCESSING = "processing"
+    STATUS_COMPLETED = "completed"
+    STATUS_CANCELLED = "cancelled"
+
+    STATUS_CHOICES = [
+        (STATUS_NEW, _("Новый")),
+        (STATUS_PROCESSING, _("В обработке")),
+        (STATUS_COMPLETED, _("Выполнен")),
+        (STATUS_CANCELLED, _("Отменен")),
+    ]
+
+    status = models.CharField(
+        _("Статус"),
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_NEW,
+    )
+    customer_telegram_id = models.CharField(
+        _("ID клиента в Telegram"),
+        max_length=100,
+    )
+    admin_telegram_id = models.CharField(
+        _("ID администратора в Telegram"),
+        max_length=100,
+        blank=True,
+    )
+    total_amount = models.DecimalField(
+        _("Общая сумма"),
+        max_digits=10,
+        decimal_places=2,
+    )
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
+    notes = models.TextField(_("Примечания"), blank=True)
+
+    class Meta:
+        verbose_name = _("Заказ")
+        verbose_name_plural = _("Заказы")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Заказ #{self.id} от {self.created_at.strftime('%d.%m.%Y %H:%M')}"
+
+
+class OrderItem(models.Model):
+    """Позиция заказа."""
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="items",
+        verbose_name=_("Заказ"),
+    )
+    strain = models.ForeignKey(
+        Strain,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("Сорт"),
+    )
+    stock_item = models.ForeignKey(
+        StockItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("Фасовка"),
+    )
+    strain_name = models.CharField(_("Название сорта"), max_length=255)
+    seed_bank_name = models.CharField(_("Название сидбанка"), max_length=255)
+    seeds_count = models.CharField(_("Количество семян"), max_length=20)
+    quantity = models.PositiveIntegerField(_("Количество упаковок"))
+    price = models.DecimalField(_("Цена за упаковку"), max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name = _("Позиция заказа")
+        verbose_name_plural = _("Позиции заказа")
+
+    def __str__(self):
+        return f"{self.strain_name} ({self.seeds_count}) x {self.quantity}"
+
+    @property
+    def subtotal(self):
+        """Сумма по позиции."""
+        return self.price * self.quantity
