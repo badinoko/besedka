@@ -53,6 +53,26 @@
     .period-select {
         margin: 20px 0;
     }
+    .dashboard-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .stat-item {
+        background: #f8f8f8;
+        border-radius: 5px;
+        padding: 15px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        min-width: 150px;
+        flex: 1;
+    }
+    .chart-container {
+        background: #fff;
+        padding: 15px;
+        border-radius: 5px;
+        min-height: 300px;
+    }
 </style>
 {% endblock %}
 
@@ -146,6 +166,59 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<div id="content-main">
+    <h1>{% trans 'Статистика продаж' %}</h1>
+    
+    <div class="module">
+        <h2>{% trans 'Общая информация' %}</h2>
+        <div class="dashboard-stats">
+            <div class="stat-item">
+                <h3>{% trans 'Всего товаров' %}</h3>
+                <div class="stat-value">{{ total_products|default:"0" }}</div>
+            </div>
+            <div class="stat-item">
+                <h3>{% trans 'Всего заказов' %}</h3>
+                <div class="stat-value">{{ total_orders|default:"0" }}</div>
+            </div>
+            <div class="stat-item">
+                <h3>{% trans 'Сумма продаж' %}</h3>
+                <div class="stat-value">{{ total_sales|default:"0" }} ₽</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="module">
+        <h2>{% trans 'Продажи по месяцам' %}</h2>
+        <div class="chart-container">
+            <p>{% trans 'График продаж будет отображаться здесь' %}</p>
+            <!-- Здесь можно добавить график с использованием Chart.js или другой библиотеки -->
+        </div>
+    </div>
+    
+    <div class="module">
+        <h2>{% trans 'Топ-5 популярных сортов' %}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans 'Сорт' %}</th>
+                    <th>{% trans 'Сидбанк' %}</th>
+                    <th>{% trans 'Кол-во продаж' %}</th>
+                    <th>{% trans 'Сумма продаж' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Пример данных -->
+                <tr>
+                    <td>{% trans 'Данные будут заполнены при интеграции с реальной БД' %}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
