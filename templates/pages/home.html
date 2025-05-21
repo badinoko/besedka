@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Беседка - Главная{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 text-center mb-5">
+            <h1>Добро пожаловать в Беседку</h1>
+            <p class="lead">Ваше пространство для общения и обмена опытом</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Магазин Magic Beans</h5>
+                    <p class="card-text">Широкий выбор семян от проверенных производителей.</p>
+                    <a href="{% url 'store:catalog' %}" class="btn btn-primary">Перейти в магазин</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Гроу-логи</h5>
+                    <p class="card-text">Делитесь своим опытом и учитесь у других.</p>
+                    <a href="{% url 'growlogs:list' %}" class="btn btn-primary">Смотреть логи</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Галерея</h5>
+                    <p class="card-text">Фотографии и достижения нашего сообщества.</p>
+                    <a href="{% url 'gallery:list' %}" class="btn btn-primary">Открыть галерею</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Общий чат</h5>
+                    <p class="card-text">Присоединяйтесь к обсуждению с другими участниками.</p>
+                    <a href="{% url 'chat:room' %}" class="btn btn-success">Войти в чат</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

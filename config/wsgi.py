@@ -1,5 +1,5 @@
 """
-WSGI config for MagicBeans project.
+WSGI config for besedka project.
 
 This module contains the WSGI application used by Django's development server
 and any production WSGI deployments. It should expose a module-level variable
@@ -15,16 +15,10 @@ framework.
 """
 
 import os
-import sys
-from pathlib import Path
 
 from django.core.wsgi import get_wsgi_application
 
-# This allows easy placement of apps within the interior
-# magicbeans directory.
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
-sys.path.append(str(BASE_DIR / "magicbeans"))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION

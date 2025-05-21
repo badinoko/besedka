@@ -1,37 +1,33 @@
 version: '3.8'
 
 services:
-  db:
-    image: mysql:8.0 # Используем официальный образ MySQL 8.0
+  postgres:
+    image: postgres:13
     environment:
-      MYSQL_DATABASE: 'your_database_name' # <--- ЗАМЕНИТЕ НА ИМЯ ВАШЕЙ БАЗЫ ДАННЫХ
-      MYSQL_USER: 'your_db_user'         # <--- ЗАМЕНИТЕ НА ИМЯ ПОЛЬЗОВАТЕЛЯ БД
-      MYSQL_PASSWORD: 'your_db_password' # <--- ЗАМЕНИТЕ НА ПАРОЛЬ ПОЛЬЗОВАТЕЛЯ БД
-      MYSQL_ROOT_PASSWORD: 'your_root_password' # <--- ЗАМЕНИТЕ НА ROOT-ПАРОЛЬ БД
+      POSTGRES_DB: magic_beans_db
+      POSTGRES_USER: magic_beans_user
+      POSTGRES_PASSWORD: magic_beans_password
     ports:
-      - "3306:3306" # Порт MySQL для доступа снаружи (не обязательно, но удобно для проверки)
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql # Сохранение данных базы данных
+      - postgres_data:/var/lib/postgresql/data
 
   web:
     build:
       context: .
       dockerfile: compose/local/django/Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000 # Команда для запуска Django-сервера
-    # volumes:
-    #   - .:/app # Монтируем текущую папку проекта в контейнер
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
     ports:
-      - "8000:8000" # Пробрасываем порт Django-сервера
+      - "8000:8000"
     depends_on:
-      - db # Указывает, что web-сервис зависит от db-сервиса (db запустится раньше)
+      - postgres
     environment:
-      # Переменные окружения для подключения Django к MySQL
-      MYSQL_HOST: db # Имя хоста базы данных (совпадает с именем сервиса db)
-      MYSQL_DATABASE: 'your_database_name' # <--- ТЕ ЖЕ ЗНАЧЕНИЯ, ЧТО ВЫ ВВЕЛИ ВЫШЕ
-      MYSQL_USER: 'your_db_user'
-      MYSQL_PASSWORD: 'your_db_password'
-      DJANGO_SETTINGS_MODULE: magic_beans_work.settings # Убедитесь, что это ваш основной файл настроек
+      DATABASE_URL: postgres://magic_beans_user:magic_beans_password@postgres:5432/magic_beans_db
+      DJANGO_SETTINGS_MODULE: config.settings.local
     env_file:
-      - .env # Опционально: если вы храните чувствительные данные в .env файле
+      - .env
+
 volumes:
-  db_data: # Определение тома для сохранения данных базы данных
+  postgres_data:

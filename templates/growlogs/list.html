@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Гроу-логи{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Гроу-логи</h1>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="col text-end">
+            <a href="{% url 'growlogs:create' %}" class="btn btn-primary">Создать гроу-лог</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for growlog in growlogs %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title">{{ growlog.title }}</h5>
+                        {% if not growlog.is_public %}
+                        <span class="badge bg-warning">Приватный</span>
+                        {% endif %}
+                    </div>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        {{ growlog.grower.username }} • {{ growlog.start_date|date:"d.m.Y" }}
+                    </h6>
+                    {% if growlog.strain %}
+                    <p class="card-text">Сорт: {{ growlog.strain.name }}</p>
+                    {% endif %}
+                    <p class="card-text">{{ growlog.setup_description|truncatewords:30 }}</p>
+                    <a href="{% url 'growlogs:detail' growlog.pk %}" class="btn btn-primary">Читать</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col">
+            <p class="text-center">Пока нет ни одного гроу-лога.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

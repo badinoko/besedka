@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
 
 
 class ActionLog(models.Model):
@@ -22,7 +21,7 @@ class ActionLog(models.Model):
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "auth.User",  # Используем строку чтобы избежать циклического импорта
         on_delete=models.SET_NULL,
         null=True,
         verbose_name=_("Пользователь"),

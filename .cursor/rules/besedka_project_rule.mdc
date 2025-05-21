@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+name: besedka-project-rule
+type: project
+language: english
+content: |
+  Applies to: All requests
+  - The project is called Besedka. It contains an embedded seed store called "Magic Beans"
+  - The platform uses Django, PostgreSQL, Docker, and Telegram Login
+  - Authorization is via Telegram only (no email/password)
+  - Users are grouped into five roles: owner, admin, store_owner, user, guest
+  - Grow logs must support public/private visibility
+  - Built-in site chat is text-only, shared for all logged-in users
+  - Store admin can manage only store-related data
+  - Guests can view the catalog, public grow logs, gallery — but not chat or comments
+  - ⚠️ Telegram bot is already implemented externally. Do NOT generate or code the bot inside this project.

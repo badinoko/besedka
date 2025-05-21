@@ -1,28 +1,35 @@
+version: '3'
+
 services:
   db:
-    image: postgres
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: magicbeans
+    image: postgres:13
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=besedka
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
   web:
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
+    image: besedka_local_web
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/code
+      - .:/app
     ports:
       - "8000:8000"
     env_file:
-      - .env.local
+      - ./.env
     depends_on:
       - db
+      - redis
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:

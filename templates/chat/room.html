@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Чат{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Общий чат</h5>
+                </div>
+                <div class="card-body" style="height: 500px; overflow-y: auto;" id="chat-messages">
+                    {% for message in messages %}
+                    <div class="message mb-3 {% if message.author == user %}text-end{% endif %}">
+                        <div class="message-content {% if message.author == user %}bg-primary text-white{% else %}bg-light{% endif %} p-2 d-inline-block rounded">
+                            {% if message.is_system %}
+                            <div class="system-message text-muted">
+                                {{ message.text }}
+                            </div>
+                            {% else %}
+                            <div class="message-header small text-muted mb-1">
+                                {{ message.author.username }} • {{ message.created_at|date:"H:i" }}
+                            </div>
+                            <div class="message-text">
+                                {{ message.text }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <form id="chat-form" class="d-flex">
+                        <input type="text" class="form-control me-2" id="message-input" placeholder="Введите сообщение...">
+                        <button type="submit" class="btn btn-primary">Отправить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Placeholder for WebSocket chat implementation
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        if (message) {
+            // Here will be WebSocket message sending
+            input.value = '';
+        }
+    });
+
+    // Auto-scroll to bottom
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+</script>
+{% endblock %} 

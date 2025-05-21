@@ -1,24 +1,32 @@
 """
 Модуль инициализации административных интерфейсов.
-Импортирует административные классы и модели для использования в StoreAdminSite.
+Регистрирует все административные классы для моделей магазина.
 """
 from django.contrib import admin
+import sys
+import os
 
-# Импортируем модели через правильный путь
-from magicbeans.store.models import (
-    Administrator, SeedBank, Strain, StrainImage, 
-    StockItem, StockMovement, Order, OrderItem, ActionLog
-)
+# Используем абсолютный импорт из файла models.py
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from models import Administrator, SeedBank, Strain, StrainImage, StockItem, StockMovement, Order, OrderItem, ActionLog
 
-# Импортируем административные классы для их обнаружения Django
+# Импортируем административные классы
 from magicbeans.store.admin.administrators import AdministratorAdmin
 from magicbeans.store.admin.stock_admin import StockItemAdmin, StockMovementAdmin
 
-# Административные классы будут автоматически зарегистрированы через StoreAdminSite в apps.py
+# Регистрируем все административные классы
+admin.site.register(Administrator, AdministratorAdmin)
+admin.site.register(StockItem, StockItemAdmin)
+admin.site.register(StockMovement, StockMovementAdmin)
+
+# Для моделей, у которых нет специализированных административных классов
+# можно использовать стандартную регистрацию:
+admin.site.register(SeedBank)
+admin.site.register(Strain)
+admin.site.register(StrainImage)
+admin.site.register(Order)
+admin.site.register(OrderItem)
+admin.site.register(ActionLog)
 
 # Определяем список экспортируемых имен
-__all__ = [
-    'Administrator', 'SeedBank', 'Strain', 'StrainImage',
-    'StockItem', 'StockMovement', 'Order', 'OrderItem', 'ActionLog',
-    'AdministratorAdmin', 'StockItemAdmin', 'StockMovementAdmin'
-]
+__all__ = []
