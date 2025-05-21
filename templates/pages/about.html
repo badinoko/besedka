@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}О проекте{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>О проекте "Беседка"</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Что такое "Беседка"?</h5>
+            <p class="card-text">
+                "Беседка" - это онлайн-платформа для энтузиастов, которая предоставляет возможность:
+            </p>
+            <ul>
+                <li>Изучать коллекцию семян в магазине "Magic Beans"</li>
+                <li>Вести и просматривать гроу-логи</li>
+                <li>Делиться фотографиями в галерее</li>
+                <li>Общаться с единомышленниками в чате</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Как это работает?</h5>
+            <p class="card-text">
+                Для полного доступа к функциям платформы необходимо авторизоваться через Telegram. 
+                После авторизации вы получите возможность просматривать приватные гроу-логи, 
+                участвовать в обсуждениях и делиться своим опытом.
+            </p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Техническая информация</h5>
+            <p class="card-text">
+                Платформа разработана с использованием Django, PostgreSQL и Docker.
+                Для авторизации используется Telegram Login.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,1 +1,42 @@
- 
+{% extends "base.html" %}
+
+{% block title %}Каталог - Magic Beans{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Каталог семян</h1>
+    
+    <div class="row">
+        {% for strain in strains %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if strain.breeder.logo %}
+                <div class="card-header">
+                    <img src="{{ strain.breeder.logo.url }}" alt="{{ strain.breeder.name }}" class="img-fluid" style="max-height: 40px;">
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ strain.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ strain.breeder.name }}</h6>
+                    <p class="card-text">{{ strain.description|truncatewords:20 }}</p>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">Генетика: {{ strain.genetics }}</li>
+                        <li class="list-group-item">Цветение: {{ strain.flowering_time }} недель</li>
+                        {% if strain.thc_content %}
+                        <li class="list-group-item">THC: {{ strain.thc_content }}</li>
+                        {% endif %}
+                    </ul>
+                    <a href="{% url 'store:strain_detail' strain.pk %}" class="btn btn-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                В каталоге пока нет доступных сортов.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
