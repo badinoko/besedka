@@ -1,0 +1,29 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block content_title %}
+    <h1>{% trans 'Отчет по складу' %}</h1>
+{% endblock %}
+
+{% block result_list %}
+    <div class="results">
+        <div class="module">
+            <h2>{% trans 'Общая статистика' %}</h2>
+            <table>
+                <tr>
+                    <th>{% trans 'Всего товаров' %}</th>
+                    <td>{{ total_items }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'Товары с низким остатком' %}</th>
+                    <td>{{ low_stock_items }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'Товары без остатка' %}</th>
+                    <td>{{ out_of_stock_items }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {{ block.super }}
+{% endblock %}

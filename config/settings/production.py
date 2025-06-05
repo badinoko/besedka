@@ -61,6 +61,10 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF",
     default=True,
 )
+# https://docs.djangoproject.com/en/dev/ref/middleware/#x-xss-protection
+SECURE_BROWSER_XSS_FILTER = env.bool("DJANGO_SECURE_BROWSER_XSS_FILTER", default=True)
+# https://docs.djangoproject.com/en/dev/ref/clickjacking/
+X_FRAME_OPTIONS = env("DJANGO_X_FRAME_OPTIONS", default="DENY")
 
 # STATIC & MEDIA
 # ------------------------
@@ -102,7 +106,7 @@ INSTALLED_APPS += ["anymail"]
 # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
 # https://anymail.readthedocs.io/en/stable/esps
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-ANYMAIL = {}
+ANYMAIL: dict = {}
 
 
 # LOGGING
@@ -119,36 +123,93 @@ LOGGING = {
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "formatters": {
         "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
         },
     },
     "handlers": {
-        "mail_admins": {
-            "level": "ERROR",
-            "filters": ["require_debug_false"],
-            "class": "django.utils.log.AdminEmailHandler",
+        "platform_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "/var/log/besedka/platform.log", # Убедитесь, что директория существует и доступна для записи
+            "maxBytes": 1024 * 1024 * 50,  # 50 MB
+            "backupCount": 5,
+            "formatter": "verbose",
         },
-        "console": {
+        "store_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "/var/log/besedka/store.log", # Убедитесь, что директория существует и доступна для записи
+            "maxBytes": 1024 * 1024 * 50,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+        "security_file": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "/var/log/besedka/security.log", # Убедитесь, что директория существует и доступна для записи
+            "maxBytes": 1024 * 1024 * 50,
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
+        "console": { # Оставляем консольный вывод для удобства, можно убрать в чистом проде
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
+         "mail_admins": { # Оставляем отправку ошибок на почту администраторам
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "filters": ["require_debug_false"],
+        },
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
     "loggers": {
+        "django": {
+            "handlers": ["console"], # Общие логи Django идут в консоль
+            "level": "INFO",
+        },
         "django.request": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "security_file"], # Ошибки запросов также в security.log
             "level": "ERROR",
-            "propagate": True,
+            "propagate": False, # Не передавать дальше, чтобы не дублировать в других логгерах
         },
-        "django.security.DisallowedHost": {
-            "level": "ERROR",
-            "handlers": ["console", "mail_admins"],
-            "propagate": True,
+        "django.security": { # Логи безопасности Django идут в security.log
+            "handlers": ["security_file", "mail_admins"],
+            "level": "WARNING",
+            "propagate": False,
         },
+        "platform": { # Логгер для основной логики платформы
+            "handlers": ["platform_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "store": { # Логгер для логики магазина
+            "handlers": ["store_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "security": { # Общий логгер для событий безопасности
+            "handlers": ["security_file", "console", "mail_admins"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "celery": { # Логи Celery, если используется
+            "handlers": ["platform_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+    "root": { # Корневой логгер, если другие не сработали
+        "handlers": ["console", "platform_file"],
+        "level": "INFO",
     },
 }
 
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+# Константы для определения доступа к критическим данным и управлению платформой
+# Используются в логике приложения для проверки ролей пользователей
+STORE_CRITICAL_DATA_ACCESS = ['store_owner', 'store_admin']
+PLATFORM_MANAGEMENT_ACCESS = ['owner']

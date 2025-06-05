@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}🔄 Изменение роли пользователя{% endblock %}
+
+{% block extra_css %}
+<style>
+    .role-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .role-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .role-header {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .role-body {
+        padding: 40px;
+    }
+
+    .user-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-right: 15px;
+        object-fit: cover;
+        border: 3px solid #4facfe;
+    }
+
+    .default-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-right: 15px;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .user-details h4 {
+        margin: 0 0 5px 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .current-role {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid #e1e5e9;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #fa709a;
+        background: white;
+        box-shadow: 0 0 0 0.2rem rgba(250, 112, 154, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        background: #5a6268;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .role-warning {
+        background: #fff3cd;
+        border: 1px solid #ffecb5;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #856404;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="role-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="role-card">
+                    <div class="role-header">
+                        <h1 class="mb-2">🔄 Изменение роли</h1>
+                        <p class="mb-0">Назначение или изменение прав доступа</p>
+                    </div>
+
+                    <div class="role-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Информация о пользователе -->
+                        <div class="user-info">
+                            {% if target_user.avatar %}
+                                <img src="{{ target_user.avatar.url }}" alt="Аватар" class="user-avatar">
+                            {% else %}
+                                <div class="default-avatar">
+                                    {{ target_user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="user-details">
+                                <h4>{{ target_user.name|default:target_user.username }}</h4>
+                                <div class="current-role">
+                                    Текущая роль:
+                                    {% if target_user.role == 'admin' %}
+                                        🎭 Модератор платформы
+                                    {% elif target_user.role == 'store_admin' %}
+                                        📦 Администратор магазина
+                                    {% else %}
+                                        👤 Обычный пользователь
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if target_user.role != 'user' %}
+                            <div class="role-warning">
+                                <strong>⚠️ Внимание!</strong>
+                                При увольнении пользователь потеряет доступ к административным панелям,
+                                но сохранит все права обычного пользователя платформы.
+                            </div>
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label for="{{ form.role.id_for_label }}" class="form-label">
+                                    🎯 Выберите новую роль:
+                                </label>
+                                {{ form.role }}
+                                {% if form.role.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.role.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    ✅ Применить изменения
+                                </button>
+                                <a href="{% url 'users:manage_admins' %}" class="btn btn-secondary">
+                                    ← Вернуться к списку
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

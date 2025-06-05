@@ -1,0 +1,693 @@
+/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v3.0 ===== */
+
+/* ===== БАЗОВАЯ СТРУКТУРА СТРАНИЦЫ ===== */
+.chat-page {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%) !important;
+    min-height: 100vh !important;
+    padding: 20px 0 !important;
+}
+
+/* ===== УНИФИЦИРОВАННАЯ ШАПКА ЧАТА ===== */
+.chat-header {
+    border-radius: 20px !important;
+    padding: 40px !important;
+    margin-bottom: 30px !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* VIP чат - золотая шапка */
+.chat-header.vip-header {
+    background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%) !important;
+    color: #333 !important;
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3) !important;
+}
+
+/* Общий чат - синяя шапка */
+.chat-header.general-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+    color: white !important;
+    box-shadow: 0 8px 30px rgba(0, 123, 255, 0.3) !important;
+}
+
+.chat-header::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    right: -50% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(255,255,255,0.1) !important;
+    border-radius: 50% !important;
+    transform: rotate(45deg) !important;
+}
+
+.chat-title {
+    font-size: 2.8rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 20px !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1) !important;
+    position: relative !important;
+    z-index: 2 !important;
+    line-height: 1.2 !important;
+}
+
+.vip-header .chat-title {
+    color: #333 !important;
+}
+
+.general-header .chat-title {
+    color: white !important;
+}
+
+.chat-meta-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: relative !important;
+    z-index: 2 !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+}
+
+.chat-meta-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 30px !important;
+    flex-wrap: wrap !important;
+}
+
+.meta-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+}
+
+.vip-header .meta-item {
+    color: rgba(51, 51, 51, 0.9) !important;
+}
+
+.general-header .meta-item {
+    color: rgba(255,255,255,0.9) !important;
+}
+
+.meta-item i {
+    font-size: 1.1rem !important;
+}
+
+.status-badge {
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.vip-header .status-badge {
+    background: rgba(255,255,255,0.8) !important;
+    color: #333 !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+}
+
+.general-header .status-badge {
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+.status-badge.connected {
+    background: rgba(40, 167, 69, 0.9) !important;
+    color: white !important;
+}
+
+.status-badge.connecting {
+    background: rgba(255, 193, 7, 0.9) !important;
+    color: #333 !important;
+}
+
+.status-badge.disconnected {
+    background: rgba(220, 53, 69, 0.9) !important;
+    color: white !important;
+}
+
+/* ===== УНИФИЦИРОВАННЫЕ КНОПКИ ПЕРЕКЛЮЧЕНИЯ ===== */
+.chat-switcher-buttons {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+.chat-switcher-btn {
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    border-radius: 25px !important;
+    transition: all 0.3s ease !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+    text-decoration: none !important;
+    font-size: 1rem !important;
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    min-width: 70px !important;
+    cursor: pointer !important;
+    border: 2px solid transparent !important;
+}
+
+/* Кнопки в VIP чате */
+.vip-header .chat-switcher-btn {
+    background: rgba(255,255,255,0.95) !important;
+    border-color: rgba(255,255,255,0.8) !important;
+    color: #333 !important;
+}
+
+.vip-header .chat-switcher-btn:hover:not(:disabled):not(.disabled) {
+    background: rgba(255,255,255,1) !important;
+    border-color: rgba(255,255,255,1) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
+    color: #222 !important;
+}
+
+.vip-header .chat-switcher-btn.active {
+    background: rgba(255, 215, 0, 0.95) !important;
+    border-color: #ffd700 !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4) !important;
+}
+
+/* Кнопки в общем чате */
+.general-header .chat-switcher-btn {
+    background: rgba(255,255,255,0.9) !important;
+    border-color: rgba(255,255,255,0.7) !important;
+    color: #0056b3 !important;
+}
+
+.general-header .chat-switcher-btn:hover:not(:disabled):not(.disabled) {
+    background: rgba(255,255,255,1) !important;
+    border-color: rgba(255,255,255,1) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
+    color: #003d82 !important;
+}
+
+.general-header .chat-switcher-btn.active {
+    background: rgba(40, 167, 69, 0.9) !important;
+    border-color: rgba(40, 167, 69, 1) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4) !important;
+}
+
+/* Общие стили для отключенных кнопок */
+.chat-switcher-btn.disabled {
+    background: rgba(108, 117, 125, 0.6) !important;
+    border-color: rgba(108, 117, 125, 0.5) !important;
+    color: rgba(255,255,255,0.7) !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+}
+
+.chat-emoji {
+    font-size: 1.2rem !important;
+    line-height: 1 !important;
+}
+
+.chat-label {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1 !important;
+}
+
+/* ===== VIP КОНТЕЙНЕР ЧАТА ===== */
+.vip-chat-container {
+    height: 70vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border: 2px solid #ffd700 !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    background: white !important;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3) !important;
+}
+
+.vip-chat-header {
+    background: linear-gradient(135deg, #ffd700, #ffb347) !important;
+    color: #333 !important;
+    padding: 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 2px solid #ffd700 !important;
+}
+
+.vip-chat-header h4 {
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    font-weight: bold !important;
+}
+
+.vip-badge {
+    background: linear-gradient(45deg, #ff6b6b, #ffd700) !important;
+    color: white !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 1rem !important;
+    font-size: 0.8rem !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* ===== ОБЩИЙ КОНТЕЙНЕР ЧАТА ===== */
+.chat-container {
+    height: 70vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    background: white !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+.chat-body-header {
+    background: white !important;
+    color: #495057 !important;
+    padding: 20px !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.chat-body-title {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+}
+
+.online-indicator {
+    background: #28a745 !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 15px !important;
+    font-size: 0.85rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+/* ===== СООБЩЕНИЯ ===== */
+.chat-messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+}
+
+.vip-chat-container .chat-messages {
+    background: linear-gradient(135deg, #f8f9fa, #fff) !important;
+}
+
+.chat-container .chat-messages {
+    background: #f8f9fa !important;
+}
+
+.message {
+    display: flex !important;
+    flex-direction: column !important;
+    max-width: 70% !important;
+}
+
+.message.own-message {
+    align-self: flex-end !important;
+    align-items: flex-end !important;
+}
+
+.message.other-message {
+    align-self: flex-start !important;
+    align-items: flex-start !important;
+}
+
+.message-bubble {
+    padding: 12px 18px !important;
+    border-radius: 20px !important;
+    word-wrap: break-word !important;
+    position: relative !important;
+}
+
+/* VIP сообщения */
+.vip-chat-container .own-message .message-bubble {
+    background: linear-gradient(135deg, #ffd700, #ffb347) !important;
+    color: #333 !important;
+    border-bottom-right-radius: 5px !important;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3) !important;
+}
+
+.vip-chat-container .other-message .message-bubble {
+    background: white !important;
+    border: 2px solid #ffd700 !important;
+    border-bottom-left-radius: 5px !important;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2) !important;
+}
+
+/* Общие сообщения */
+.chat-container .own-message .message-bubble {
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    color: white !important;
+    border-bottom-right-radius: 5px !important;
+}
+
+.chat-container .other-message .message-bubble {
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+    border-bottom-left-radius: 5px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+.message-header {
+    font-size: 0.8rem !important;
+    color: #6c757d !important;
+    margin-bottom: 4px !important;
+    padding: 0 6px !important;
+    font-weight: 500 !important;
+}
+
+.message-content {
+    line-height: 1.4 !important;
+    font-size: 0.95rem !important;
+}
+
+.message-time {
+    font-size: 0.7rem !important;
+    opacity: 0.7 !important;
+    margin-top: 4px !important;
+}
+
+.vip-member-badge {
+    background: linear-gradient(45deg, #ffd700, #ffb347) !important;
+    color: #333 !important;
+    padding: 0.1rem 0.4rem !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.7rem !important;
+    margin-left: 0.5rem !important;
+    font-weight: bold !important;
+}
+
+/* ===== ИНДИКАТОР ПЕЧАТИ ===== */
+.typing-indicator {
+    padding: 10px 20px !important;
+    font-style: italic !important;
+    color: #6c757d !important;
+    font-size: 0.9rem !important;
+    min-height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* ===== ПОЛЕ ВВОДА ===== */
+.chat-input {
+    padding: 20px !important;
+    background: white !important;
+}
+
+.vip-chat-container .chat-input {
+    border-top: 2px solid #ffd700 !important;
+    background: linear-gradient(135deg, #fff, #fffbf0) !important;
+}
+
+.chat-container .chat-input {
+    border-top: 1px solid #dee2e6 !important;
+}
+
+.vip-input-group {
+    border: 2px solid #ffd700 !important;
+    border-radius: 25px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2) !important;
+}
+
+.vip-input-group input {
+    border: none !important;
+    padding: 12px 18px !important;
+    background: white !important;
+    font-size: 0.95rem !important;
+}
+
+.vip-input-group input:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.vip-send-button {
+    background: linear-gradient(135deg, #ffd700, #ffb347) !important;
+    border: none !important;
+    color: #333 !important;
+    padding: 12px 24px !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease !important;
+}
+
+.vip-send-button:hover {
+    background: linear-gradient(135deg, #ffb347, #ffd700) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4) !important;
+}
+
+.politeness-notice {
+    background: linear-gradient(135deg, #e8f5e8, #f0f8f0) !important;
+    border: 1px solid #d4edda !important;
+    border-radius: 10px !important;
+    padding: 15px !important;
+    margin-bottom: 15px !important;
+    color: #155724 !important;
+    font-size: 0.9rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.politeness-notice i {
+    color: #28a745 !important;
+    font-size: 1.1rem !important;
+}
+
+/* ===== БОКОВЫЕ ПАНЕЛИ ===== */
+.vip-members-sidebar,
+.online-users-sidebar {
+    background: white !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+.vip-members-sidebar {
+    border: 1px solid #ffd700 !important;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.1) !important;
+}
+
+.online-users-sidebar {
+    border: 1px solid #e9ecef !important;
+}
+
+.sidebar-title {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 15px !important;
+    color: #495057 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.vip-member {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px !important;
+    margin-bottom: 8px !important;
+    border-radius: 10px !important;
+    background: #fffbf0 !important;
+    border: 1px solid #ffeaa7 !important;
+    transition: all 0.3s ease !important;
+}
+
+.vip-member:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2) !important;
+    background: #fff !important;
+}
+
+.vip-member .status-dot {
+    width: 10px !important;
+    height: 10px !important;
+    background: #28a745 !important;
+    border-radius: 50% !important;
+    margin-right: 12px !important;
+    border: 2px solid white !important;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5) !important;
+}
+
+.vip-member .crown-icon {
+    color: #ffd700 !important;
+    margin-left: auto !important;
+    font-size: 1.1rem !important;
+}
+
+.online-user {
+    display: flex !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #f1f3f4 !important;
+}
+
+.online-user:last-child {
+    border-bottom: none !important;
+}
+
+.status-dot {
+    width: 8px !important;
+    height: 8px !important;
+    background: #28a745 !important;
+    border-radius: 50% !important;
+    margin-right: 10px !important;
+}
+
+.user-name {
+    font-size: 0.9rem !important;
+    color: #495057 !important;
+}
+
+.connection-status {
+    padding: 6px 12px !important;
+    border-radius: 15px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+}
+
+.connection-status.connected {
+    background: #d4edda !important;
+    color: #155724 !important;
+    border: 1px solid #c3e6cb !important;
+}
+
+.connection-status.connecting {
+    background: #fff3cd !important;
+    color: #856404 !important;
+    border: 1px solid #ffeaa7 !important;
+}
+
+.connection-status.disconnected {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+    border: 1px solid #f5c6cb !important;
+}
+
+.vip-info-card {
+    background: linear-gradient(135deg, #fff, #fffbf0) !important;
+    border: 2px solid #ffd700 !important;
+    border-radius: 15px !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2) !important;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    .vip-chat-container,
+    .chat-container {
+        height: 60vh !important;
+    }
+
+    .vip-members-sidebar,
+    .online-users-sidebar {
+        display: none !important;
+    }
+
+    .message {
+        max-width: 85% !important;
+    }
+
+    .chat-title {
+        font-size: 2.2rem !important;
+    }
+
+    .chat-meta-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .chat-switcher-btn {
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* ===== СТАТУСНЫЕ СООБЩЕНИЯ ===== */
+.status-message {
+    padding: 1.5rem !important;
+    margin: 1.5rem 0 !important;
+    border-radius: 15px !important;
+    text-align: center !important;
+    font-size: 1rem !important;
+    border: 1px solid transparent !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.status-message h4 {
+    margin-bottom: 0.75rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+}
+
+.status-message p {
+    margin-bottom: 0 !important;
+    opacity: 0.9 !important;
+}
+
+.status-error {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+    color: #721c24 !important;
+    border-color: #f5c6cb !important;
+}
+
+.status-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    color: #155724 !important;
+    border-color: #c3e6cb !important;
+}
+
+.status-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+    color: #856404 !important;
+    border-color: #ffeaa7 !important;
+}
+
+.status-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%) !important;
+    color: #0c5460 !important;
+    border-color: #bee5eb !important;
+}
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ СТАТУСНЫХ СООБЩЕНИЙ ===== */
+@media (max-width: 768px) {
+    .status-message {
+        padding: 1rem !important;
+        margin: 1rem 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    .status-message h4 {
+        font-size: 1.1rem !important;
+    }
+}

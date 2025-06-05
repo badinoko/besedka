@@ -1,0 +1,43 @@
+{% extends "users/cabinet_base.html" %}
+{% load i18n %}
+
+{% block cabinet_main_content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-user-cog"></i> {% trans "Управление профилем" %}</h4>
+    </div>
+    <div class="card-body">
+        <a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2"><i class="fas fa-edit"></i> {% trans "Редактировать профиль" %}</a>
+        <a href="{% url 'users:change_password' %}" class="btn btn-secondary"><i class="fas fa-key"></i> {% trans "Сменить пароль" %}</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-shield-alt"></i> {% trans "Панель модератора" %}</h4>
+    </div>
+    <div class="card-body">
+        <p>{% blocktrans %}Добро пожаловать, {{ user.username }}! Это ваша панель для модерации контента.{% endblocktrans %}</p>
+
+        <h5>{% trans "Статистика модерации:" %}</h5>
+        {% if platform_stats %} {# Используем общую статистику, так как модераторские данные там есть #}
+            <ul>
+                <li>{% trans "Активных банов:" %} {{ platform_stats.moderation.active_bans }}</li>
+                <li>{% trans "Жалоб в ожидании:" %} {{ platform_stats.moderation.pending_reports }}</li>
+                <li>{% trans "Сообщений в чате сегодня:" %} {{ platform_stats.content.chat_messages_today }}</li>
+            </ul>
+        {% else %}
+            <p>{% trans "Статистика временно недоступна." %}</p>
+        {% endif %}
+
+        <h5 class="mt-4">{% trans "Инструменты модерации:" %}</h5>
+        <div class="list-group">
+            <a href="{% url 'moderator_admin:chat_message_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-comments"></i> {% trans "Модерация чата" %}</a>
+            <a href="{% url 'moderator_admin:gallery_photo_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-images"></i> {% trans "Модерация галереи" %}</a>
+            <a href="{% url 'moderator_admin:growlogs_growlog_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-leaf"></i> {% trans "Модерация гроу-репортов" %}</a>
+            <a href="{% url 'moderator_admin:users_banrecord_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-gavel"></i> {% trans "Управление банами" %}</a>
+            <a href="{% url 'moderator_admin:index' %}" class="list-group-item list-group-item-action"><i class="fas fa-flag"></i> {% trans "Панель модерации" %}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

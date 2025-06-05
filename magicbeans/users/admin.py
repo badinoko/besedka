@@ -6,6 +6,6 @@ User = get_user_model()
 
 # @admin.register(User) # Декоратор будет удален или закомментирован
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff')
-    search_fields = ('username', 'first_name', 'last_name', 'email')
+    list_display = ('username', 'email', 'name', 'is_staff')
+    search_fields = ('username', 'name', 'email')
     ordering = ('username',)

@@ -26,13 +26,13 @@ class StockItemInline(admin.TabularInline):
     verbose_name = _("Фасовка")
     verbose_name_plural = _("Фасовки")
 
-@admin.register(Administrator)
+# @admin.register(Administrator)
 class AdministratorAdmin(admin.ModelAdmin):
     list_display = ("name", "telegram_id", "is_active", "created_at")
     search_fields = ("name", "telegram_id")
     list_filter = ("is_active",)
 
-@admin.register(SeedBank)
+# @admin.register(SeedBank)
 class SeedBankAdmin(admin.ModelAdmin):
     list_display = ("name", "logo_preview", "strains_count", "is_visible")
     search_fields = ("name",)
@@ -48,7 +48,7 @@ class SeedBankAdmin(admin.ModelAdmin):
         return obj.strains.count()
     strains_count.short_description = _("Количество сортов")
 
-@admin.register(Strain)
+# @admin.register(Strain)
 class StrainAdmin(admin.ModelAdmin):
     list_display = (
         "name", "seed_bank", "strain_type", "images_count",
@@ -67,7 +67,7 @@ class StrainAdmin(admin.ModelAdmin):
         return obj.stock_items.count()
     stock_items_count.short_description = _("Количество фасовок")
 
-@admin.register(StrainImage)
+# @admin.register(StrainImage)
 class StrainImageAdmin(admin.ModelAdmin):
     list_display = ("strain", "image_preview", "order")
     search_fields = ("strain__name",)
@@ -79,7 +79,7 @@ class StrainImageAdmin(admin.ModelAdmin):
         return "-"
     image_preview.short_description = _("Изображение")
 
-@admin.register(StockItem)
+# @admin.register(StockItem)
 class StockItemAdmin(admin.ModelAdmin):
     list_display = (
         "strain", "seeds_count", "price", "quantity",
@@ -133,10 +133,10 @@ class StockItemAdmin(admin.ModelAdmin):
                         seedbank_name, strain_name, seeds_count, price, quantity, is_visible = row[:6]
 
                         # Находим или создаем сидбанк
-                        seedbank, _ = SeedBank.objects.get_or_create(name=seedbank_name)
+                        seedbank, unused = SeedBank.objects.get_or_create(name=seedbank_name)
 
                         # Находим или создаем сорт
-                        strain, _ = Strain.objects.get_or_create(
+                        strain, unused = Strain.objects.get_or_create(
                             name=strain_name,
                             defaults={
                                 "seed_bank": seedbank,
@@ -238,7 +238,7 @@ class StockItemAdmin(admin.ModelAdmin):
         return response
     export_to_csv.short_description = _("Экспорт выбранных фасовок в CSV")
 
-@admin.register(StockMovement)
+# @admin.register(StockMovement)
 class StockMovementAdmin(admin.ModelAdmin):
     list_display = (
         "stock_item", "movement_type", "quantity",
@@ -253,7 +253,7 @@ class OrderItemInline(admin.TabularInline):
     extra = 0
     readonly_fields = ("strain_name", "seeds_count", "price")
 
-@admin.register(Order)
+# @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "id", "user_telegram_id", "admin", "status",
@@ -264,7 +264,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
     date_hierarchy = "created_at"
 
-@admin.register(OrderItem)
+# @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = (
         "order", "strain_name", "seeds_count",
@@ -273,7 +273,7 @@ class OrderItemAdmin(admin.ModelAdmin):
     search_fields = ("strain_name", "order__user_telegram_id")
     list_filter = ("order__status",)
 
-@admin.register(ActionLog)
+# @admin.register(ActionLog)
 class ActionLogAdmin(admin.ModelAdmin):
     list_display = (
         "timestamp", "user", "action_type",

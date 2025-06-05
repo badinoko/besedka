@@ -1,7 +1,10 @@
 import pytest
 from celery.result import EagerResult
 
-from magicbeans.users.tasks import get_users_count
+# from magicbeans.users.tasks import get_users_count # Проверить путь
+# from magicbeans.users.models import User # <-- Закомментировано или удалить
+from users.models import User # <--- Новый импорт
+from users.tasks import get_users_count # <--- Предполагаемый правильный импорт
 from magicbeans.users.tests.factories import UserFactory
 
 pytestmark = pytest.mark.django_db

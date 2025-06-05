@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load i18n humanize crispy_forms_tags %}
+
+{% block title %}{{ photo.title|default:_("Фото из галереи") }} - {% trans "Галерея" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+.photo-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: .3rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important;
+}
+.comment-author-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.similar-photo-thumbnail {
+    width: 100%;
+    height: 120px; /* Фиксированная высота для единообразия */
+    object-fit: cover;
+    border-radius: .25rem;
+    transition: opacity 0.2s ease-in-out;
+}
+.similar-photo-thumbnail:hover {
+    opacity: 0.8;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'gallery:gallery' %}">{% trans "Галерея" %}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ photo.title|truncatechars:50|default:_("Фотография") }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title mb-3">{{ photo.title }}</h1>
+                    <div class="photo-container text-center mb-3">
+                        {% if photo.image %}
+                            <img src="{{ photo.image.url }}" alt="{{ photo.title }}">
+                        {% else %}
+                            <div class="alert alert-warning">{% trans "Изображение отсутствует." %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="text-muted">
+                            <i class="fas fa-user"></i> {% trans "Автор" %}: <a href="{% url 'users:detail' username=photo.author.username %}">{{ photo.author.username }}</a>
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-calendar-alt"></i> {{ photo.created_at|naturalday }}
+                        </div>
+                        <div>
+                            <a href="#" id="like-photo-btn" data-photo-id="{{ photo.pk }}" class="btn btn-outline-danger btn-sm me-2 {% if user_liked %}active{% endif %}">
+                                <i class="fas fa-heart"></i> <span id="likes-count">{{ likes_count }}</span>
+                            </a>
+                            {% if photo.author == request.user or request.user.is_staff %}
+                                <a href="{% url 'gallery:photo_edit' photo.pk %}" class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-edit"></i> {% trans "Редактировать" %}</a>
+                                <a href="{% url 'gallery:photo_delete' photo.pk %}" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> {% trans "Удалить" %}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if photo.description %}
+                        <h5><i class="fas fa-info-circle"></i> {% trans "Описание" %}:</h5>
+                        <p>{{ photo.description|linebreaksbr }}</p>
+                    {% endif %}
+
+                    {% if photo.growlog %}
+                        <p><i class="fas fa-seedling"></i> {% trans "Связано с гроу-репортом" %}: <a href="{% url 'growlogs:detail' pk=photo.growlog.pk %}">{{ photo.growlog.title }}</a></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Комментарии -->
+            <div class="mt-4">
+                <h4><i class="fas fa-comments"></i> {% trans "Комментарии" %} ({{ comments_count }})</h4>
+                <hr>
+                {% if user.is_authenticated %}
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        {{ comment_form|crispy }}
+                        <button type="submit" class="btn btn-primary mt-2"><i class="fas fa-paper-plane"></i> {% trans "Отправить" %}</button>
+                    </form>
+                {% else %}
+                    <p><a href="{% url 'account_login' %}?next={{ request.path }}">{% trans "Войдите" %}</a>, {% trans "чтобы оставить комментарий." %}</p>
+                {% endif %}
+
+                {% for comment in comments %}
+                <div class="d-flex mb-3 pb-3 border-bottom">
+                    <img src="{{ comment.author.profile_extra.avatar.url|default:'/static/images/default_avatar.png' }}" alt="{{ comment.author.username }}" class="comment-author-avatar me-3">
+                    <div class="flex-grow-1">
+                        <strong>{{ comment.author.username }}</strong> <small class="text-muted ms-2">{{ comment.created_at|naturaltime }}</small>
+                        <p class="mt-1 mb-0">{{ comment.text|linebreaksbr }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted"><i class="fas fa-comment-slash"></i> {% trans "Комментариев пока нет. Будьте первым!" %}</p>
+                {% endfor %}
+
+                <!-- Пагинация для комментариев -->
+                {% if comments.has_other_pages %}
+                <nav aria-label="Comments navigation" class="mt-3">
+                    <ul class="pagination pagination-sm justify-content-center">
+                        {% if comments.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ comments.previous_page_number }}">&laquo;</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+                        {% for i in comments.paginator.page_range %}
+                            {% if comments.number == i %}
+                                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if comments.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ comments.next_page_number }}">&raquo;</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Информация об авторе -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ photo.author.profile_extra.avatar.url|default:'/static/images/default_avatar.png' }}" alt="{{ photo.author.username }}" class="img-fluid rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                    <h5><a href="{% url 'users:detail' username=photo.author.username %}" class="text-decoration-none">{{ photo.author.username }}</a></h5>
+                    <p class="text-muted small">
+                        {% blocktrans with joined_date=photo.author.date_joined|date:"d.m.Y" %}Присоединился: {{ joined_date }}{% endblocktrans %}<br>
+                        {% blocktrans count photos_count=photo.author.photos.count %}Всего {{ photos_count }} фото{% plural %}Всего {{ photos_count }} фото{% endblocktrans %}
+                    </p>
+                    <!-- Можно добавить кнопку "Подписаться", если такая логика есть -->
+                </div>
+            </div>
+
+            <!-- Похожие фото -->
+            {% if similar_photos %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-images"></i> {% trans "Похожие фото" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-2 g-2">
+                        {% for similar_photo in similar_photos %}
+                        <div class="col">
+                            <a href="{% url 'gallery:photo_detail' similar_photo.pk %}" title="{{ similar_photo.title }}">
+                                <img src="{{ similar_photo.image.thumbnail.url }}" alt="{{ similar_photo.title }}" class="similar-photo-thumbnail">
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const likeButton = document.getElementById('like-photo-btn');
+    if (likeButton) {
+        likeButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const photoId = this.dataset.photoId;
+            const url = "{% url 'gallery:toggle_like_photo' pk=0 %}".replace('0', photoId);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    document.getElementById('likes-count').textContent = data.likes_count;
+                    if (data.liked) {
+                        this.classList.add('active');
+                        // Можно добавить более явную индикацию лайка, например, изменение иконки
+                        this.querySelector('i').classList.remove('far'); // если была пустая иконка
+                        this.querySelector('i').classList.add('fas');    // заполненная иконка
+                    } else {
+                        this.classList.remove('active');
+                        this.querySelector('i').classList.remove('fas');
+                        this.querySelector('i').classList.add('far'); // вернуть пустую, если нужно
+                    }
+                } else {
+                    console.error('Error liking photo:', data.error);
+                    // Можно вывести сообщение об ошибке пользователю
+                    alert(data.error || '{% trans "Произошла ошибка при обработке лайка." %}');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('{% trans "Ошибка сети. Попробуйте позже." %}');
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

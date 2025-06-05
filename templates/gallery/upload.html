@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Загрузить фото - Галерея{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Загрузить новое фото в галерею</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}  {# Предполагаем, что во view будет форма #}
+        <button type="submit" class="btn btn-primary">Загрузить</button>
+    </form>
+    <a href="{% url 'gallery:gallery' %}" class="btn btn-secondary mt-2">Отмена</a>
+</div>
+{% endblock %}

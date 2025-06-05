@@ -12,12 +12,14 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from magicbeans.users.forms import UserAdminChangeForm
-from magicbeans.users.models import User
-from magicbeans.users.tests.factories import UserFactory
-from magicbeans.users.views import UserRedirectView
-from magicbeans.users.views import UserUpdateView
-from magicbeans.users.views import user_detail_view
+from users.models import User
+from users.forms import UserAdminChangeForm
+from users.views import (
+    UserDetailView,
+    UserRedirectView,
+    UserUpdateView,
+    user_list_view,
+)
 
 pytestmark = pytest.mark.django_db
 

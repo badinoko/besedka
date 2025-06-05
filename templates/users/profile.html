@@ -1,52 +1,405 @@
 {% extends "base.html" %}
+{% load i18n static %}
 
-{% block title %}{{ user.username }} - Профиль{% endblock %}
+{% block title %}Личный кабинет - {{ user.username }}{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="breadcrumb-item active" aria-current="page">Личный кабинет</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-green: #2d7a32;
+    --secondary-green: #4caf50;
+    --accent-green: #81c784;
+    --light-green: #e8f5e8;
+    --dark-green: #1b5e20;
+    --border-radius: 15px;
+    --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.profile-header {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-green), var(--secondary-green), var(--accent-green));
+}
+
+.profile-info-section {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.profile-avatar {
+    position: relative;
+}
+
+.avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--accent-green);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.profile-details {
+    flex: 1;
+}
+
+.profile-name {
+    margin: 0 0 10px 0;
+    color: var(--dark-green);
+    font-size: 2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.role-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-meta {
+    color: #666;
+    margin: 10px 0;
+}
+
+.profile-meta i {
+    margin-right: 8px;
+    color: var(--primary-green);
+}
+
+.profile-sections {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+.section-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.section-header {
+    background: var(--primary-green);
+    color: white;
+    padding: 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-content {
+    padding: 25px;
+}
+
+.navigation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.nav-card {
+    display: block;
+    text-decoration: none;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: var(--transition);
+    border: 2px solid transparent;
+    color: inherit;
+}
+
+.nav-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: inherit;
+    background: white;
+    border-color: var(--accent-green);
+}
+
+.nav-card i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+    color: var(--primary-green);
+}
+
+.nav-card-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+
+.admin-nav-card {
+    border-left: 4px solid var(--primary-green);
+    background: #f0f8f0;
+}
+
+.admin-nav-card:hover {
+    background: white;
+    border-left-color: var(--dark-green);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: var(--light-green);
+    border-radius: 12px;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .profile-sections {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-info-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .navigation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                    {% else %}
-                        <div class="bg-secondary rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
-                            <span class="text-white" style="font-size: 48px;">{{ user.username|first|upper }}</span>
-                        </div>
+<div class="profile-container">
+    <!-- ЗАГОЛОВОК ПРОФИЛЯ -->
+    <div class="profile-header">
+        <div class="profile-info-section">
+            <div class="profile-avatar">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Аватар" class="avatar-img">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.svg' %}" alt="Аватар по умолчанию" class="avatar-img">
+                {% endif %}
+            </div>
+
+            <div class="profile-details">
+                <h1 class="profile-name">
+                    {{ user.name|default:user.username }}
+                    {% if user_role_badge %}
+                        <span class="badge {{ user_role_badge.class }} role-badge">{{ user_role_badge.text }}</span>
                     {% endif %}
-                    <h4 class="card-title">{{ user.get_full_name|default:user.username }}</h4>
-                    <p class="text-muted">{{ user.role }}</p>
+                </h1>
+
+                <div class="profile-meta">
+                    <div><i class="fas fa-user"></i>@{{ user.username }}</div>
+                    {% if user.email %}
+                        <div><i class="fas fa-envelope"></i>{{ user.email }}</div>
+                    {% endif %}
+                    <div><i class="fas fa-calendar"></i>Зарегистрирован {{ user.date_joined|date:"d.m.Y" }}</div>
+                    {% if user.bio %}
+                        <div style="margin-top: 10px;"><i class="fas fa-info-circle"></i>{{ user.bio }}</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">О себе</h5>
-                    <p class="card-text">{{ user.bio|default:"Пользователь пока не добавил информацию о себе." }}</p>
-                    
-                    <hr>
-                    
-                    <h5 class="card-title">Статистика</h5>
+
+        <!-- БЫСТРАЯ СТАТИСТИКА -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">{{ user_stats.orders_count|default:0 }}</span>
+                <span class="stat-label">Заказы</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ user_stats.growlogs_count|default:0 }}</span>
+                <span class="stat-label">Гроу-логи</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ user_stats.photos_count|default:0 }}</span>
+                <span class="stat-label">Фото</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ user.karma_points|default:0 }}</span>
+                <span class="stat-label">Карма</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div class="profile-sections">
+        <!-- НАВИГАЦИЯ ПО ЛИЧНОМУ КАБИНЕТУ -->
+        <div class="profile-sidebar">
+            <div class="section-card">
+                <div class="section-header">
+                    <i class="fas fa-user"></i>
+                    Личный кабинет
+                </div>
+                <div class="section-content">
+                    <div class="navigation-grid">
+                        {% for item in navigation_items %}
+                            <a href="{{ item.url }}" class="nav-card">
+                                <i class="{{ item.icon }}"></i>
+                                <div class="nav-card-title">{{ item.title }}</div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- АДМИНИСТРАТИВНЫЕ ФУНКЦИИ -->
+            {% if admin_navigation_items %}
+                <div class="section-card">
+                    <div class="section-header">
+                        <i class="fas fa-cogs"></i>
+                        Администрирование
+                    </div>
+                    <div class="section-content">
+                        <div class="navigation-grid">
+                            {% for item in admin_navigation_items %}
+                                <a href="{{ item.url }}" class="nav-card admin-nav-card">
+                                    <i class="{{ item.icon }}"></i>
+                                    <div class="nav-card-title">{{ item.title }}</div>
+                                    {% if item.type == 'admin_primary' %}
+                                        <small class="badge bg-primary mt-1">Основное</small>
+                                    {% elif item.type == 'admin_secondary' %}
+                                        <small class="badge bg-secondary mt-1">Дополнительно</small>
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ОСНОВНАЯ ИНФОРМАЦИЯ И АКТИВНОСТЬ -->
+        <div class="profile-main">
+            <!-- ПОСЛЕДНЯЯ АКТИВНОСТЬ -->
+            <div class="section-card">
+                <div class="section-header">
+                    <i class="fas fa-clock"></i>
+                    Последняя активность
+                </div>
+                <div class="section-content">
+                    {% if recent_activity %}
+                        {% for activity in recent_activity %}
+                            <div class="d-flex align-items-center p-3 border-bottom">
+                                <i class="fas fa-{{ activity.icon }} text-primary me-3"></i>
+                                <div>
+                                    <div class="fw-bold">{{ activity.title }}</div>
+                                    <small class="text-muted">{{ activity.timestamp|timesince }} назад</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>Пока нет активности</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ИНФОРМАЦИЯ О ПОЛЬЗОВАТЕЛЕ -->
+            <div class="section-card">
+                <div class="section-header">
+                    <i class="fas fa-info-circle"></i>
+                    Информация
+                </div>
+                <div class="section-content">
                     <div class="row">
-                        <div class="col-4 text-center">
-                            <h6>Гроу-логи</h6>
-                            <p class="h4">{{ user.growlogs.count }}</p>
+                        <div class="col-md-6">
+                            <strong>Имя пользователя:</strong><br>
+                            <span class="text-muted">{{ user.username }}</span>
                         </div>
-                        <div class="col-4 text-center">
-                            <h6>Фото</h6>
-                            <p class="h4">{{ user.photos.count }}</p>
+                        <div class="col-md-6">
+                            <strong>Роль:</strong><br>
+                            <span class="text-muted">{{ role_display_text|default:user.get_role_display }}</span>
                         </div>
-                        <div class="col-4 text-center">
-                            <h6>Комментарии</h6>
-                            <p class="h4">{{ user.photo_comments.count }}</p>
+                        <div class="col-md-6 mt-3">
+                            <strong>Email:</strong><br>
+                            <span class="text-muted">{{ user.email|default:"Не указан" }}</span>
                         </div>
+                        <div class="col-md-6 mt-3">
+                            <strong>Дата регистрации:</strong><br>
+                            <span class="text-muted">{{ user.date_joined|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        {% if user.last_login %}
+                        <div class="col-md-6 mt-3">
+                            <strong>Последний вход:</strong><br>
+                            <span class="text-muted">{{ user.last_login|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

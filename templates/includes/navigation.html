@@ -1,0 +1,123 @@
+{% load static i18n %}
+<!-- templates/includes/navigation.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold" href="{% url 'news:home' %}" style="{% if request and request.path and 'admin' in request.path %}color: #28a745 !important;{% endif %}">
+            <i class="fas fa-home"></i> Беседка
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavGlobal">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavGlobal">
+            <!-- ОСНОВНЫЕ ССЫЛКИ -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'news:home' %}">
+                        <i class="fas fa-newspaper"></i> Новости
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'store:catalog' %}">
+                        <i class="fas fa-store"></i> Магазин
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'growlogs:list' %}">
+                        <i class="fas fa-seedling"></i> Гроурепорты
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gallery:gallery' %}">
+                        <i class="fas fa-images"></i> Галерея
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#chatSelectionModal">
+                        <i class="fas fa-comments"></i> {% trans "Чат" %}
+                    </a>
+                </li>
+            </ul>
+
+            <!-- МЕНЮ ПОЛЬЗОВАТЕЛЯ -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
+                        <i class="fas fa-shopping-cart nav-icon"></i>
+                        <span class="nav-counter-badge cart-badge rounded-pill" style="{% if cart_items_count == 0 %}display: none;{% else %}display: flex;{% endif %}">
+                            {{ cart_items_count|default:0 }}
+                            <span class="visually-hidden">товаров в корзине</span>
+                        </span>
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                    <!-- Уведомления -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-with-counter" href="{% url 'users:notification_list' %}">
+                            <i class="fas fa-bell nav-icon"></i>
+                            <span class="nav-counter-badge notifications-badge rounded-pill" style="{% if unread_notifications_count == 0 %}display: none;{% else %}display: flex;{% endif %}">
+                                {{ unread_notifications_count|default:0 }}
+                                <span class="visually-hidden">{% translate "непрочитанных уведомлений" %}</span>
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
+                           id="userDropdownGlobal" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span>{{ user.username }}</span>
+                            {% if user_role_badge %}
+                                <span class="badge {{ user_role_badge.class }} ms-2">{{ user_role_badge.text }}</span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdownGlobal">
+                            <!-- ЛИЧНЫЙ КАБИНЕТ -->
+                            {% for item in navigation_items %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ item.url }}">
+                                        <i class="fas {{ item.icon }} me-2"></i>{{ item.title }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                            <!-- АДМИНИСТРАТИВНЫЕ ФУНКЦИИ -->
+                            {% if admin_navigation_items %}
+                                <li><hr class="dropdown-divider"></li>
+                                {% for item in admin_navigation_items %}
+                                    <li>
+                                        <a class="dropdown-item" href="{{ item.url }}">
+                                            <i class="fas {{ item.icon }} me-2"></i>{{ item.title }}
+                                            {% if item.type == 'admin_primary' %}
+                                                <span class="badge bg-primary ms-1">Основное</span>
+                                            {% elif item.type == 'admin_secondary' %}
+                                                <span class="badge bg-secondary ms-1">Доп.</span>
+                                            {% endif %}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
+
+                            <!-- ВЫХОД -->
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'account_logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'account_login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{# Гарантируем, что модальное окно выбора чата присутствует на каждой странице #}
+{% include 'includes/chat_modal.html' %}

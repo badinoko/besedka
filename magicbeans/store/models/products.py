@@ -1,25 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
-
-class SeedBank(models.Model):
-    """Модель сидбанка (производителя семян)."""
-    name = models.CharField(_("Название"), max_length=255)
-    logo = models.ImageField(
-        _("Логотип"), upload_to="seedbanks/", blank=True, null=True,
-    )
-    description = models.TextField(_("Описание"), blank=True)
-    is_visible = models.BooleanField(_("Отображается"), default=True)
-    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
-    updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
-
-    class Meta:
-        verbose_name = _("Сидбанк")
-        verbose_name_plural = _("Сидбанки")
-        ordering = ["name"]
-
-    def __str__(self):
-        return self.name
+from magicbeans_store.models.seedbank import SeedBank
 
 
 class Strain(models.Model):
@@ -48,7 +29,7 @@ class Strain(models.Model):
         related_name="strains",
         verbose_name=_("Сидбанк"),
     )
-    is_visible = models.BooleanField(_("Отображается"), default=True)
+    is_active = models.BooleanField(_("Активен"), default=True)
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Дата обновления"), auto_now=True)
 
@@ -56,6 +37,7 @@ class Strain(models.Model):
         verbose_name = _("Сорт")
         verbose_name_plural = _("Сорта")
         ordering = ["name"]
+        app_label = 'magicbeans_store'
 
     def __str__(self):
         return f"{self.name} ({self.seed_bank.name})"

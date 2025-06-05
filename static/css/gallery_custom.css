@@ -1,0 +1,69 @@
+/* Теперь здесь можно писать настоящие стили для галереи */
+
+.gallery-container {
+  column-count: 4; /* Количество колонок по умолчанию */
+  column-gap: 1rem; /* Расстояние между колонками */
+}
+
+.gallery-item {
+  display: inline-block; /* Чтобы элементы корректно располагались в колонках */
+  width: 100%; /* Элементы занимают всю ширину колонки */
+  margin-bottom: 1rem; /* Отступ снизу */
+  overflow: hidden; /* Предотвращает выход контента за пределы карточки */
+  border-radius: 0.25rem; /* Небольшое скругление углов */
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Легкая тень */
+  background-color: #fff; /* Белый фон для карточек */
+}
+
+.gallery-item img.gallery-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Адаптивность для разных размеров экрана */
+@media (max-width: 1200px) {
+  .gallery-container {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-container {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 576px) {
+  .gallery-container {
+    column-count: 1;
+  }
+}
+
+/* Дополнительные стили для информации под фото, если нужно */
+.photo-info {
+  padding: 0.75rem;
+}
+
+.photo-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.photo-author {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.photo-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.photo-actions .btn, .photo-actions .like-btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}

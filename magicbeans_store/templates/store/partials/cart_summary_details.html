@@ -1,0 +1,29 @@
+{% load i18n humanize %}
+
+<li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>{% trans "Подытог" %}</span>
+    <strong id="cart-subtotal">{{ cart.subtotal_amount|floatformat:2 }}&nbsp;₽</strong>
+</li>
+
+{% if cart.discount_amount > 0 %}
+<li class="list-group-item d-flex justify-content-between align-items-center text-success">
+    <span>
+        {% trans "Скидка" %}
+        {% if cart.applied_coupon %}
+            <small class="d-block text-muted">({% trans "Купон" %}: {{ cart.applied_coupon.code }})</small>
+        {% endif %}
+    </span>
+    <strong id="cart-discount">- {{ cart.discount_amount|floatformat:2 }}&nbsp;₽</strong>
+</li>
+{% endif %}
+
+{# Здесь можно добавить стоимость доставки, если она рассчитывается на этом этапе #}
+{# <li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>{% trans "Доставка" %}</span>
+    <strong id="cart-shipping">{{ cart.shipping_cost|default_if_none:"0"|floatformat:2 }}&nbsp;₽</strong>
+</li> #}
+
+<li class="list-group-item d-flex justify-content-between align-items-center fs-5 fw-bold">
+    <span>{% trans "Итого" %}</span>
+    <strong id="cart-total">{{ cart.total_amount|floatformat:2 }}&nbsp;₽</strong>
+</li>

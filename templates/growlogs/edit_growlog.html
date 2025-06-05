@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Редактирование" %}: {{ object.title }}{% endblock %}
+
+{% block extra_head %}
+<!-- Include SweetAlert2 for beautiful confirmations -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-edit"></i> {% trans "Редактирование гроу-репорта" %}
+                        </h4>
+                        <a href="{% url 'growlogs:detail' pk=object.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> {% trans "Назад к репорту" %}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="editGrowlogForm">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.title|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.start_date|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.strain_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.seedbank_name|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        {{ form.logo|as_crispy_field }}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.environment|as_crispy_field }}
+                                {{ form.medium|as_crispy_field }}
+                                {{ form.lighting|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.container_size|as_crispy_field }}
+                                {{ form.yield_expected|as_crispy_field }}
+                                <div class="form-check mt-3">
+                                    {{ form.is_public }}
+                                    <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
+                                        {% trans "Публичный гроу-репорт" %}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ form.nutrients|as_crispy_field }}
+                        {{ form.setup_description|as_crispy_field }}
+                        {{ form.short_description|as_crispy_field }}
+                        {{ form.goals|as_crispy_field }}
+                        {{ form.notes|as_crispy_field }}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'growlogs:detail' pk=object.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> {% trans "Отменить" %}
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> {% trans "Сохранить изменения" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar with current info -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> {% trans "Текущая информация" %}</h6>
+                </div>
+                <div class="card-body">
+                    {% if object.logo %}
+                        <div class="text-center mb-3">
+                            <img src="{{ object.logo.url }}" alt="{{ object.title }}" class="img-fluid rounded" style="max-height: 200px;">
+                        </div>
+                    {% endif %}
+
+                    <p><strong>{% trans "Название" %}:</strong> {{ object.title }}</p>
+                    <p><strong>{% trans "Дата начала" %}:</strong> {{ object.start_date|date:"d.m.Y" }}</p>
+                    <p><strong>{% trans "Текущий день" %}:</strong> {{ object.current_day }}</p>
+                    <p><strong>{% trans "Стадия" %}:</strong> {{ object.get_current_stage_display }}</p>
+                    <p><strong>{% trans "Среда выращивания" %}:</strong> {{ object.get_environment_display }}</p>
+
+                    {% with strain_info=object.get_strain_display %}
+                        <p><strong>{% trans "Сорт" %}:</strong> {{ strain_info.name }}
+                        {% if strain_info.seedbank %}
+                            <small class="text-muted">({{ strain_info.seedbank }})</small>
+                        {% endif %}
+                        </p>
+                    {% endwith %}
+
+                    <p><strong>{% trans "Статус" %}:</strong>
+                        <span class="badge bg-{% if object.is_public %}success{% else %}warning{% endif %}">
+                            {% if object.is_public %}{% trans "Публичный" %}{% else %}{% trans "Приватный" %}{% endif %}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Красивое подтверждение перед отправкой формы
+    document.getElementById('editGrowlogForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Сохранить изменения?',
+            text: 'Вы уверены, что хотите сохранить все изменения в гроу-репорте?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-save"></i> Да, сохранить',
+            cancelButtonText: '<i class="fas fa-times"></i> Отменить',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Показываем загрузку
+                Swal.fire({
+                    title: 'Сохранение...',
+                    text: 'Пожалуйста, подождите',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Отправляем форму
+                this.submit();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

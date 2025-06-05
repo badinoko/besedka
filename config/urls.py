@@ -4,18 +4,32 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path, include
 from django.views.generic import TemplateView
+from core.admin_site import store_owner_site, store_admin_site, owner_admin_site, moderator_admin_site
+from core.views import admin_selector, admin_redirect
 
 urlpatterns = [
-    # Главная страница
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path(
-        "about/",
-        TemplateView.as_view(template_name="pages/about.html"),
-        name="about",
-    ),
+    # Главная страница - новостная лента
+    path("", include("news.urls", namespace="news")),
 
-    # Django Admin
-    path("admin/", admin.site.urls),
+    # Статические страницы
+    path("pages/", include(([
+        path("about/", TemplateView.as_view(template_name="pages/about.html"), name="about"),
+    ], "pages"))),
+
+    # Тестовая страница навигации
+    path("test-navigation/", TemplateView.as_view(template_name="test_navigation.html"), name="test_navigation"),
+
+    # Главная точка входа для админки - автоматическое перенаправление по ролям
+    path("admin/", admin_redirect, name="admin_redirect"),
+
+    # Кастомные админки
+    path("store_owner/", store_owner_site.urls),  # Панель владельца магазина
+    path("store_admin_site/", store_admin_site.urls),  # Панель администратора магазина
+    path("owner_admin/", owner_admin_site.urls),  # Админка владельца платформы
+    path("moderator_admin/", moderator_admin_site.urls),  # Админка модератора
+
+    # Селектор админок (если нужно вручную выбрать)
+    path("admin-selector/", admin_selector, name="admin_selector"),
 
     # User management
     path("users/", include("users.urls", namespace="users")),
@@ -23,22 +37,21 @@ urlpatterns = [
 
     # Store
     path("store/", include("magicbeans_store.urls", namespace="store")),
-    
+
     # Grow logs
     path("growlogs/", include("growlogs.urls", namespace="growlogs")),
-    
+
     # Gallery
     path("gallery/", include("gallery.urls", namespace="gallery")),
-    
-    # Chat
+
+    # Core app urls (maintenance page, etc.)
+    path("internal/core/", include("core.urls", namespace="core")),
+
+    # Chat - ru-RU.dj-chat_1.0
     path("chat/", include("chat.urls", namespace="chat")),
-    
+
     # API urls
     path("api/", include("config.api_router")),
-
-    # Your stuff: custom urls includes go here
-
-    # Media files
 ]
 
 if settings.DEBUG:

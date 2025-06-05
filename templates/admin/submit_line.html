@@ -1,0 +1,199 @@
+{% load i18n admin_urls %}
+<div class="submit-row">
+    {% block submit-row %}
+        {% if show_save %}
+            <input type="submit" value="{% trans 'Save' %}" class="default" name="_save">
+        {% endif %}
+
+        {% if show_save_and_add_another %}
+            <input type="submit" value="{% trans 'Save and add another' %}" name="_addanother">
+        {% endif %}
+
+        {% if show_save_and_continue %}
+            <input type="submit" value="{% trans 'Save and continue editing' %}" name="_continue">
+        {% endif %}
+
+        {# Универсальная кнопка ОТМЕНА для всех админок #}
+        {% if show_cancel %}
+            {% if cancel_url %}
+                <a href="{{ cancel_url }}" class="cancel-button"
+                   title="Отменить изменения и вернуться к списку">ОТМЕНА</a>
+            {% else %}
+                <input type="button" value="ОТМЕНА" class="cancel-button"
+                       onclick="window.history.back();"
+                       title="Отменить изменения и вернуться назад">
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+</div>
+
+<style>
+/* ======================================================================
+   УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ КНОПКИ ОТМЕНА
+   ====================================================================== */
+
+.cancel-button {
+    background: #6c757d !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 15px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    margin-left: 10px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important; /* Для ссылок */
+    display: inline-block !important; /* Для ссылок */
+}
+
+.cancel-button:hover {
+    background: #5a6268 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: white !important; /* Для ссылок */
+    text-decoration: none !important; /* Для ссылок */
+}
+
+.cancel-button:active {
+    transform: translateY(0);
+    background: #495057 !important;
+    color: white !important; /* Для ссылок */
+}
+
+.cancel-button:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+    color: white !important; /* Для ссылок */
+}
+
+.cancel-button:visited {
+    color: white !important; /* Для ссылок */
+}
+
+/* ======================================================================
+   АДАПТИВНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
+   ====================================================================== */
+
+@media (max-width: 768px) {
+    .submit-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .submit-row input,
+    .submit-row .cancel-button {
+        width: 100% !important;
+        margin: 0 !important;
+        display: block !important;
+        text-align: center !important;
+        order: 1;
+    }
+
+    /* Кнопка ОТМЕНА всегда последняя на мобильных */
+    .cancel-button {
+        order: 10 !important;
+        background: #dc3545 !important; /* Красная на мобильных для акцента */
+    }
+
+    .cancel-button:hover {
+        background: #c82333 !important;
+    }
+}
+
+/* ======================================================================
+   СТИЛИ ДЛЯ ПЛАНШЕТОВ
+   ====================================================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .submit-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .cancel-button {
+        margin-left: 5px !important;
+    }
+}
+
+/* ======================================================================
+   УЛУЧШЕНИЯ ДЛЯ ACCESSIBILITY
+   ====================================================================== */
+
+/* Подсказки при фокусе */
+.cancel-button:focus::after {
+    content: " (Esc)";
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+/* Поддержка Escape для отмены */
+@media (min-width: 769px) {
+    .submit-row {
+        position: relative;
+    }
+}
+
+/* Анимация появления кнопки */
+.cancel-button {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+// Поддержка клавиши Escape для отмены
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.querySelector('.cancel-button')) {
+        // Проверяем что мы в форме редактирования
+        if (document.querySelector('form[method="post"]')) {
+            const cancelBtn = document.querySelector('.cancel-button');
+            if (cancelBtn && confirm('Отменить изменения и вернуться назад?')) {
+                cancelBtn.click();
+            }
+        }
+    }
+});
+
+// Предупреждение о несохраненных изменениях
+let formChanged = false;
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[method="post"]');
+    if (form) {
+        // Отслеживаем изменения в форме
+        form.addEventListener('input', function() {
+            formChanged = true;
+        });
+
+        form.addEventListener('change', function() {
+            formChanged = true;
+        });
+
+        // Улучшаем кнопку отмены
+        const cancelBtn = document.querySelector('.cancel-button');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    if (!confirm('У вас есть несохраненные изменения. Вы уверены, что хотите отменить их?')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                window.history.back();
+            });
+        }
+    }
+});
+</script>

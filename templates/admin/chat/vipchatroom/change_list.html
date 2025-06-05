@@ -1,0 +1,147 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .vip-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .vip-stats h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .vip-actions {
+            margin: 20px 0;
+        }
+        .vip-action-btn {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .vip-action-btn:hover {
+            background: #218838;
+            color: white;
+            text-decoration: none;
+        }
+        .vip-action-btn.manage {
+            background: #007bff;
+        }
+        .vip-action-btn.manage:hover {
+            background: #0056b3;
+        }
+        .results .action-checkbox-column {
+            width: 1.5em;
+        }
+        .object-tools {
+            margin-bottom: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content_title %}
+    <h1>{{ title }}</h1>
+
+    {% if vip_stats %}
+    <div class="vip-stats">
+        <h3>📊 Статистика VIP-чатов</h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">{{ vip_stats.total_vip_chats }}</span>
+                <span class="stat-label">Всего VIP-чатов</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ vip_stats.active_vip_chats }}</span>
+                <span class="stat-label">Активных</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ vip_stats.total_members }}</span>
+                <span class="stat-label">Участников</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block result_list %}
+    {{ block.super }}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавляем кнопки действий для каждого VIP-чата
+        const rows = document.querySelectorAll('#result_list tbody tr');
+
+        rows.forEach(function(row) {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 0) {
+                // Получаем ID VIP-чата из ссылки на изменение
+                const changeLink = row.querySelector('th a');
+                if (changeLink) {
+                    const href = changeLink.getAttribute('href');
+                    const match = href.match(/\/(\d+)\/change\//);
+                    if (match) {
+                        const vipChatId = match[1];
+
+                        // Создаем ячейку с кнопками действий
+                        const actionsCell = document.createElement('td');
+                        actionsCell.innerHTML = `
+                            <div class="vip-actions">
+                                <a href="${window.location.pathname}${vipChatId}/invite-users/"
+                                   class="vip-action-btn" title="Пригласить пользователей">
+                                    👥 Пригласить
+                                </a>
+                                <a href="${window.location.pathname}${vipChatId}/manage-members/"
+                                   class="vip-action-btn manage" title="Управление участниками">
+                                    ⚙️ Участники
+                                </a>
+                            </div>
+                        `;
+                        row.appendChild(actionsCell);
+                    }
+                }
+            }
+        });
+
+        // Добавляем заголовок для колонки действий
+        const headerRow = document.querySelector('#result_list thead tr');
+        if (headerRow) {
+            const actionsHeader = document.createElement('th');
+            actionsHeader.innerHTML = '<div class="text">Действия</div>';
+            actionsHeader.scope = 'col';
+            headerRow.appendChild(actionsHeader);
+        }
+    });
+    </script>
+{% endblock %}

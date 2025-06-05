@@ -1,0 +1,357 @@
+/* Стили для страницы списка гроу-репортов */
+
+/* .growlog-list-item {
+    background-color: yellow !important;
+    border: 3px solid orange !important; /* Добавим рамку для наглядности */
+/* } */
+
+/* Остальные стили пока закомментируем для теста */
+
+/* CSS для красивых карточек гроу-репортов в стиле магазина */
+
+/* Общие стили для страницы */
+.growlogs-page {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+/* Заголовок */
+.growlogs-header {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    color: white;
+    padding: 40px 0;
+    margin-bottom: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.growlogs-header h1 {
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.growlogs-header .lead {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Карточка приглашения к регистрации для гостей */
+.guest-invite-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #4CAF50;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(76,175,80,0.15);
+}
+
+.guest-invite-title {
+    color: #2E7D32;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.guest-invite-text {
+    color: #495057;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.guest-invite-benefits {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.guest-invite-benefits ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #495057;
+}
+
+.guest-invite-benefits li {
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.guest-register-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    color: white;
+    padding: 15px 40px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+}
+
+.guest-register-btn:hover {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76,175,80,0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Фильтры */
+.filters-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+}
+
+/* Список карточек как в магазине */
+.growlog-list {
+    margin-top: 0;
+}
+
+.growlog-list-item {
+    border: 1px solid #e9ecef;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.growlog-list-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #4CAF50;
+}
+
+/* Логотип гроу-репорта */
+.growlog-logo-container {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+}
+
+.growlog-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+}
+
+.growlog-logo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e9ecef;
+}
+
+.growlog-logo-placeholder i {
+    font-size: 2rem;
+    color: #6c757d;
+}
+
+/* Заголовок */
+.growlog-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.growlog-title a {
+    color: #2E7D32;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.growlog-title a:hover {
+    color: #1B5E20;
+    text-decoration: underline;
+}
+
+/* Бейджи стадии и среды */
+.stage-badge, .environment-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.stage-badge {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    color: white;
+}
+
+.environment-badge {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+}
+
+/* Метаинформация */
+.growlog-meta {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 12px;
+}
+
+.growlog-meta a {
+    color: #495057;
+    font-weight: 500;
+}
+
+.growlog-meta a:hover {
+    color: #2E7D32;
+}
+
+/* Описание */
+.growlog-description {
+    color: #495057;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+/* Информация о сорте */
+.growlog-strain-info {
+    font-size: 0.95rem;
+}
+
+.growlog-strain-info a {
+    color: #2E7D32;
+    font-weight: 500;
+}
+
+/* Характеристики */
+.growlog-characteristics {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Статистика внизу */
+.stats-inline {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.stat-item:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.stat-item i {
+    font-size: 1rem;
+}
+
+/* Кнопки действий */
+.growlog-actions {
+    width: 120px;
+}
+
+.growlog-actions .btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.growlog-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Пустое состояние */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 15px;
+}
+
+.empty-state .lead {
+    color: #6c757d;
+    margin-bottom: 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .growlog-list-item .d-flex {
+        flex-direction: column;
+    }
+
+    .growlog-logo-container {
+        width: 100%;
+        height: 200px;
+        margin-bottom: 15px;
+        margin-right: 0 !important;
+    }
+
+    .growlog-actions {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .stage-badge, .environment-badge {
+        margin-left: 0;
+        margin-top: 8px;
+        display: inline-block;
+    }
+
+    .stats-inline {
+        justify-content: center;
+        gap: 15px;
+    }
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.growlog-list-item {
+    animation: fadeInUp 0.6s ease forwards;
+}

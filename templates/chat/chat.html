@@ -1,0 +1,1367 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Чат сообщества" %} - Беседка{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 75vh;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        max-height: calc(75vh - 140px);
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .message.own {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-left: auto;
+        text-align: right;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+
+    .message.other {
+        background: white;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .message.system {
+        background: #e9ecef;
+        color: #6c757d;
+        text-align: center;
+        font-style: italic;
+        max-width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .message-author {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .message-text {
+        margin-bottom: 0.25rem;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .chat-input-area {
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+        background: white;
+        border-radius: 0 0 0.375rem 0.375rem;
+    }
+
+    .typing-indicator {
+        padding: 0.5rem 1rem;
+        font-style: italic;
+        color: #6c757d;
+        font-size: 0.9rem;
+        min-height: 2rem;
+    }
+
+    .user-list {
+        background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        max-height: 75vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .users-container {
+        min-height: 200px;
+    }
+
+    .user-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+        background: white;
+        border: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .user-item:hover {
+        background: #f8f9fa;
+        transform: translateX(3px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .user-avatar-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-name {
+        font-weight: 600;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .user-status {
+        font-size: 12px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    /* Стили для панели ввода с медиа */
+    .chat-input-wrapper {
+        position: relative;
+    }
+
+    .emoji-panel {
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 1rem;
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .emoji-item {
+        font-size: 24px;
+        padding: 0.5rem;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .emoji-item:hover {
+        background: #f8f9fa;
+        transform: scale(1.2);
+    }
+
+    /* Улучшенные кнопки ввода */
+    .btn-outline-secondary {
+        border-color: #dee2e6;
+        color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+        color: #495057;
+    }
+
+    /* Индикатор загрузки файлов */
+    .file-upload-indicator {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        right: 0;
+        background: rgba(13, 110, 253, 0.1);
+        border: 1px dashed #0d6efd;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        text-align: center;
+        font-size: 12px;
+        color: #0d6efd;
+    }
+
+    .user-role-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        margin-left: 0.5rem;
+    }
+
+    .status-message {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0.375rem;
+        text-align: center;
+    }
+
+    .status-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .status-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .connection-status {
+        padding: 0.5rem;
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
+    .connection-status.connected {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .connection-status.disconnected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .connection-status.connecting {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* Анимации */
+    .message {
+        animation: slideIn 0.3s ease-out;
+        transition: all 0.2s ease;
+    }
+
+    .message:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .user-item {
+        transition: all 0.2s ease;
+    }
+
+    .user-item:hover {
+        background: #e9ecef !important;
+        transform: translateX(5px);
+    }
+
+    .typing-indicator {
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Улучшенные кнопки */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Скроллбар */
+    .chat-messages::-webkit-scrollbar,
+    .user-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track,
+    .user-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb,
+    .user-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 3px;
+    }
+
+    /* Анимация для toast уведомлений */
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+
+    /* Стили для медиа контента */
+    .media-content {
+        margin: 0.5rem 0;
+    }
+
+    .media-content img {
+        display: block;
+        border: 1px solid #dee2e6;
+        transition: transform 0.2s ease;
+    }
+
+    .media-content img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .media-content video {
+        display: block;
+        border: 1px solid #dee2e6;
+    }
+
+    .media-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.2s ease;
+    }
+
+    .media-link:hover {
+        background: #e9ecef;
+        color: #212529;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Улучшенные уведомления */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .toast {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 10px;
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    .toast.success {
+        border-left: 4px solid #28a745;
+    }
+
+    .toast.error {
+        border-left: 4px solid #dc3545;
+    }
+
+    .toast.info {
+        border-left: 4px solid #17a2b8;
+    }
+
+    /* Автоскрытие через 3 секунды */
+    .toast.auto-hide {
+        animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100%); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1><i class="fas fa-comments"></i> {% trans "Чат сообщества" %}</h1>
+                <div class="connection-status connecting" id="connectionStatus">
+                    {% trans "Подключение..." %}
+                </div>
+            </div>
+
+            {% if user_status.is_banned %}
+            <div class="status-message status-error">
+                <h4><i class="fas fa-ban"></i> {% trans "Вы заблокированы в чате" %}</h4>
+                <p><strong>{% trans "Причина:" %}</strong> {{ ban_info.reason }}</p>
+                <p><strong>{% trans "До:" %}</strong> {{ ban_info.until }}</p>
+                <p><strong>{% trans "Модератор:" %}</strong> {{ ban_info.moderator }}</p>
+            </div>
+            {% else %}
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">{% trans "Общий чат" %}</h5>
+                            <small class="text-muted">{% trans "Онлайн:" %} <span id="onlineCount">0</span></small>
+                        </div>
+                        {% if is_moderator %}
+                        <div>
+                            <button class="btn btn-sm btn-outline-warning" onclick="toggleModerationPanel()">
+                                <i class="fas fa-shield-alt"></i> {% trans "Модерация" %}
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Существующие сообщения из Django контекста -->
+                    {% for message in chat_messages %}
+                    <div class="message {% if message.author == user %}own{% else %}other{% endif %}" data-message-id="{{ message.id }}">
+                        {% if message.author != user %}
+                        <div class="message-author">
+                            {{ message.author.username }}
+                            {% if message.author.role == 'owner' %}
+                                <span class="user-role-badge bg-danger">Владелец</span>
+                            {% elif message.author.role == 'admin' %}
+                                <span class="user-role-badge bg-warning">Модератор</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="message-text">{{ message.text }}</div>
+                        <div class="message-time">{{ message.created_at|date:"H:i" }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-comments fa-3x mb-3"></i>
+                        <p>Пока нет сообщений. Начните общение!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <!-- Индикатор печати -->
+                </div>
+
+                <div class="chat-input-area">
+                    {% if user_status.is_muted %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-volume-mute"></i>
+                        {% trans "Вы в муте до" %} {{ mute_info.until }}.
+                        {% trans "Причина:" %} {{ mute_info.reason }}
+                    </div>
+                    {% else %}
+                    <div class="chat-input-wrapper">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="messageInput"
+                                   placeholder="{% trans 'Введите сообщение...' %}" maxlength="500">
+                            <button class="btn btn-outline-secondary" type="button" id="emojiButton" title="Эмодзи">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" id="mediaButton" title="Прикрепить медиа">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="btn btn-primary" type="button" id="sendButton">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+
+                        <!-- Панель эмодзи -->
+                        <div id="emojiPanel" class="emoji-panel" style="display: none;">
+                            <div class="emoji-grid">
+                                <span class="emoji-item" data-emoji="😀">😀</span>
+                                <span class="emoji-item" data-emoji="😂">😂</span>
+                                <span class="emoji-item" data-emoji="😍">😍</span>
+                                <span class="emoji-item" data-emoji="🤔">🤔</span>
+                                <span class="emoji-item" data-emoji="😎">😎</span>
+                                <span class="emoji-item" data-emoji="😢">😢</span>
+                                <span class="emoji-item" data-emoji="😡">😡</span>
+                                <span class="emoji-item" data-emoji="👍">👍</span>
+                                <span class="emoji-item" data-emoji="👎">👎</span>
+                                <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                <span class="emoji-item" data-emoji="🔥">🔥</span>
+                                <span class="emoji-item" data-emoji="💯">💯</span>
+                                <span class="emoji-item" data-emoji="🌱">🌱</span>
+                                <span class="emoji-item" data-emoji="🌿">🌿</span>
+                                <span class="emoji-item" data-emoji="🌳">🌳</span>
+                                <span class="emoji-item" data-emoji="🌺">🌺</span>
+                            </div>
+                        </div>
+
+                        <!-- Скрытый input для файлов -->
+                        <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;" multiple>
+                    </div>
+                    <small class="text-muted">
+                        {% trans "Нажмите Enter для отправки. Максимум 500 символов." %}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-3">
+            <div class="user-list">
+                <h5><i class="fas fa-users"></i> {% trans "Онлайн" %} (<span id="userCount">0</span>)</h5>
+                <div id="userList" class="users-container">
+                    <!-- Список пользователей будет загружаться через WebSocket -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Контейнер для уведомлений -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Модальное окно для жалоб -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Пожаловаться на сообщение" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <input type="hidden" id="reportMessageId">
+                    <div class="mb-3">
+                        <label for="reportReason" class="form-label">{% trans "Причина жалобы" %}</label>
+                        <textarea class="form-control" id="reportReason" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
+                <button type="button" class="btn btn-danger" onclick="submitReport()">{% trans "Отправить жалобу" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class ChatClient {
+    constructor() {
+        this.socket = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+        this.reconnectDelay = 1000;
+        this.typingTimer = null;
+        this.isTyping = false;
+
+        this.init();
+    }
+
+    init() {
+        this.connect();
+        this.setupEventListeners();
+    }
+
+    connect() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/chat/main_chat/`;
+
+        this.updateConnectionStatus('connecting');
+
+        this.socket = new WebSocket(wsUrl);
+
+        this.socket.onopen = (event) => {
+            console.log('WebSocket connected');
+            this.updateConnectionStatus('connected');
+            this.reconnectAttempts = 0;
+        };
+
+        this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleMessage(data);
+        };
+
+        this.socket.onclose = (event) => {
+            console.log('WebSocket disconnected:', event.code, event.reason);
+            this.updateConnectionStatus('disconnected');
+
+            if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+                setTimeout(() => {
+                    this.reconnectAttempts++;
+                    console.log(`Reconnection attempt ${this.reconnectAttempts}`);
+                    this.connect();
+                }, this.reconnectDelay * this.reconnectAttempts);
+            }
+        };
+
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.updateConnectionStatus('disconnected');
+        };
+    }
+
+    handleMessage(data) {
+        console.log('Received message:', data);
+
+        switch(data.type) {
+            case 'chat_message':
+                this.displayMessage(data.message);
+                break;
+            case 'system_message':
+                this.displaySystemMessage(data.message);
+                break;
+            case 'user_typing':
+                this.handleTyping(data);
+                break;
+            case 'user_list_update':
+                this.updateUserList(data.users);
+                break;
+            case 'error':
+                this.showToast(data.message, 'error');
+                break;
+            case 'success':
+                this.showToast(data.message, 'success');
+                break;
+            case 'message_deleted':
+                this.handleMessageDeleted(data);
+                break;
+            default:
+                console.log('Unknown message type:', data.type);
+        }
+    }
+
+    displayMessage(message) {
+        const messagesContainer = document.getElementById('chatMessages');
+        const messageElement = document.createElement('div');
+
+        const isOwn = message.author.id === {{ user.id|default:0 }};
+        messageElement.className = `message ${isOwn ? 'own' : 'other'}`;
+
+        const timestamp = new Date(message.timestamp).toLocaleTimeString();
+
+        const roleEmoji = this.getRoleEmoji(message.author.role);
+        const authorName = roleEmoji ? `${roleEmoji} ${message.author.username}` : message.author.username;
+
+        let messageContent = '';
+
+        // Проверяем, является ли это медиа сообщением
+        if (message.is_media_message && message.media_url) {
+            const isImage = message.media_type && message.media_type.startsWith('image/');
+            const isVideo = message.media_type && message.media_type.startsWith('video/');
+
+            if (isImage) {
+                messageContent = `
+                    <div class="media-content">
+                        <img src="${message.media_url}" alt="Изображение" style="max-width: 300px; max-height: 200px; border-radius: 8px; cursor: pointer;" onclick="window.open('${message.media_url}', '_blank')">
+                    </div>
+                `;
+            } else if (isVideo) {
+                messageContent = `
+                    <div class="media-content">
+                        <video controls style="max-width: 300px; max-height: 200px; border-radius: 8px;">
+                            <source src="${message.media_url}" type="${message.media_type}">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                    </div>
+                `;
+            } else {
+                messageContent = `
+                    <div class="media-content">
+                        <a href="${message.media_url}" target="_blank" class="media-link">
+                            📎 Медиа файл (${message.media_type})
+                        </a>
+                    </div>
+                `;
+            }
+
+            // Добавляем текст если есть
+            if (message.text && message.text.trim()) {
+                messageContent += `<div class="message-text">${this.escapeHtml(message.text)}</div>`;
+            }
+        } else {
+            // Обычное текстовое сообщение
+            messageContent = `<div class="message-text">${this.escapeHtml(message.text)}</div>`;
+        }
+
+        messageElement.innerHTML = `
+            ${!isOwn ? `<div class="message-author">${authorName}</div>` : ''}
+            ${messageContent}
+            <div class="message-time">${timestamp}</div>
+        `;
+
+        // Добавляем ID сообщения для возможности удаления
+        messageElement.dataset.messageId = message.id;
+
+        // Добавляем контекстное меню для жалоб (только для чужих сообщений)
+        if (!isOwn) {
+            messageElement.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                this.showReportModal(message.id);
+            });
+
+            // Воспроизводим звук для новых сообщений от других пользователей
+            this.playNotificationSound();
+        }
+
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    displaySystemMessage(message) {
+        const messagesContainer = document.getElementById('chatMessages');
+        const messageElement = document.createElement('div');
+
+        messageElement.className = 'message system';
+        messageElement.innerHTML = `<div class="message-text">${this.escapeHtml(message.message || message.text || message)}</div>`;
+
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    handleMessageDeleted(data) {
+        // Найти и удалить сообщение из чата
+        const messageElements = document.querySelectorAll('.message');
+        messageElements.forEach(element => {
+            if (element.dataset.messageId === data.message_id) {
+                element.innerHTML = '<div class="message-text text-muted"><em>Сообщение удалено модератором</em></div>';
+                element.classList.add('deleted');
+            }
+        });
+    }
+
+    handleTyping(data) {
+        const indicator = document.getElementById('typingIndicator');
+
+        if (data.is_typing) {
+            indicator.textContent = `${data.username} печатает...`;
+        } else {
+            indicator.textContent = '';
+        }
+    }
+
+    updateUserList(users) {
+        const userList = document.getElementById('userList');
+        const userCount = document.getElementById('userCount');
+        const onlineCount = document.getElementById('onlineCount');
+
+        userList.innerHTML = '';
+
+        // Сортируем пользователей по роли (владельцы и админы сверху)
+        const sortedUsers = users.sort((a, b) => {
+            const roleOrder = { 'owner': 0, 'admin': 1, 'store_owner': 2, 'store_admin': 3, 'user': 4 };
+            return (roleOrder[a.role] || 4) - (roleOrder[b.role] || 4);
+        });
+
+        sortedUsers.forEach(user => {
+            const userElement = document.createElement('div');
+            userElement.className = 'user-item';
+
+            const roleClass = this.getRoleClass(user.role);
+            const isCurrentUser = user.id === {{ user.id|default:0 }};
+
+            const roleEmoji = this.getRoleEmoji(user.role);
+            const displayName = roleEmoji ? `${roleEmoji} ${user.username}` : user.username;
+
+            userElement.innerHTML = `
+                <div class="user-avatar-mini">
+                    ${user.username.charAt(0).toUpperCase()}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">${displayName}${isCurrentUser ? ' (вы)' : ''}</div>
+                    <div class="user-status">${this.getRoleDisplay(user.role)}</div>
+                </div>
+            `;
+
+            // Добавляем контекстное меню для модераторов
+            if ({{ is_moderator|yesno:"true,false" }} && !isCurrentUser) {
+                userElement.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.showModerationMenu(e, user);
+                });
+                userElement.style.cursor = 'context-menu';
+                userElement.title = 'ПКМ для модерации';
+            }
+
+            userList.appendChild(userElement);
+        });
+
+        userCount.textContent = users.length;
+        onlineCount.textContent = users.length;
+    }
+
+    sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+
+        if (message && this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({
+                type: 'message',
+                message: message
+            }));
+
+            input.value = '';
+            this.stopTyping();
+        }
+    }
+
+    startTyping() {
+        if (!this.isTyping) {
+            this.isTyping = true;
+            this.socket.send(JSON.stringify({
+                type: 'typing',
+                is_typing: true
+            }));
+        }
+
+        clearTimeout(this.typingTimer);
+        this.typingTimer = setTimeout(() => {
+            this.stopTyping();
+        }, 3000);
+    }
+
+    stopTyping() {
+        if (this.isTyping) {
+            this.isTyping = false;
+            this.socket.send(JSON.stringify({
+                type: 'typing',
+                is_typing: false
+            }));
+        }
+        clearTimeout(this.typingTimer);
+    }
+
+    setupEventListeners() {
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const emojiButton = document.getElementById('emojiButton');
+        const mediaButton = document.getElementById('mediaButton');
+        const emojiPanel = document.getElementById('emojiPanel');
+        const mediaInput = document.getElementById('mediaInput');
+
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.sendMessage();
+                } else {
+                    this.startTyping();
+                }
+            });
+        }
+
+        if (sendButton) {
+            sendButton.addEventListener('click', () => {
+                this.sendMessage();
+            });
+        }
+
+        // Обработчик кнопки эмодзи
+        if (emojiButton) {
+            emojiButton.addEventListener('click', () => {
+                const isVisible = emojiPanel.style.display !== 'none';
+                emojiPanel.style.display = isVisible ? 'none' : 'block';
+            });
+        }
+
+        // Обработчик клика по эмодзи
+        if (emojiPanel) {
+            emojiPanel.addEventListener('click', (e) => {
+                if (e.target.classList.contains('emoji-item')) {
+                    const emoji = e.target.dataset.emoji;
+                    messageInput.value += emoji;
+                    messageInput.focus();
+                    emojiPanel.style.display = 'none';
+                }
+            });
+        }
+
+        // Обработчик кнопки медиа
+        if (mediaButton) {
+            mediaButton.addEventListener('click', () => {
+                mediaInput.click();
+            });
+        }
+
+        // Обработчик выбора файлов
+        if (mediaInput) {
+            mediaInput.addEventListener('change', (e) => {
+                this.handleFileUpload(e.target.files);
+            });
+        }
+
+        // Закрытие панели эмодзи при клике вне её
+        document.addEventListener('click', (e) => {
+            if (!emojiButton.contains(e.target) && !emojiPanel.contains(e.target)) {
+                emojiPanel.style.display = 'none';
+            }
+        });
+    }
+
+    updateConnectionStatus(status) {
+        const statusElement = document.getElementById('connectionStatus');
+        statusElement.className = `connection-status ${status}`;
+
+        switch(status) {
+            case 'connected':
+                statusElement.textContent = '{% trans "Подключено" %}';
+                break;
+            case 'connecting':
+                statusElement.textContent = '{% trans "Подключение..." %}';
+                break;
+            case 'disconnected':
+                statusElement.textContent = '{% trans "Отключено" %}';
+                break;
+        }
+    }
+
+    showError(message) {
+        this.showToast(message, 'error');
+    }
+
+    showSuccess(message) {
+        this.showToast(message, 'success');
+    }
+
+    showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type} auto-hide`;
+        toast.innerHTML = `
+            <div class="toast-body p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} me-2"></i>
+                    <span>${this.escapeHtml(message)}</span>
+                </div>
+            </div>
+        `;
+
+        toastContainer.appendChild(toast);
+
+        // Автоудаление через 3 секунды
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 3000);
+    }
+
+    playNotificationSound() {
+        // Простой звук уведомления
+        try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWTQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.play().catch(() => {}); // Игнорируем ошибки
+        } catch (e) {
+            // Браузер не поддерживает или заблокировал звук
+        }
+    }
+
+    showReportModal(messageId) {
+        document.getElementById('reportMessageId').value = messageId;
+        const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+        modal.show();
+    }
+
+    showModerationMenu(event, user) {
+        // Удаляем существующее меню если есть
+        const existingMenu = document.getElementById('moderationContextMenu');
+        if (existingMenu) {
+            existingMenu.remove();
+        }
+
+        // Создаем контекстное меню
+        const menu = document.createElement('div');
+        menu.id = 'moderationContextMenu';
+        menu.className = 'moderation-context-menu';
+        menu.style.cssText = `
+            position: fixed;
+            top: ${event.clientY}px;
+            left: ${event.clientX}px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            min-width: 200px;
+            padding: 8px 0;
+        `;
+
+        const menuItems = [
+            {
+                icon: '🔇',
+                text: 'Мут на 5 минут',
+                action: () => this.quickMute(user.id, 5, 'Быстрый мут')
+            },
+            {
+                icon: '🔇',
+                text: 'Мут на 30 минут',
+                action: () => this.quickMute(user.id, 30, 'Мут на полчаса')
+            },
+            {
+                icon: '🚫',
+                text: 'Бан на 1 час',
+                action: () => this.quickBan(user.id, 60, 'Временный бан')
+            },
+            {
+                icon: '🚫',
+                text: 'Бан на 24 часа',
+                action: () => this.quickBan(user.id, 1440, 'Бан на сутки')
+            },
+            {
+                icon: '👤',
+                text: 'Профиль пользователя',
+                action: () => window.open(`/users/${user.username}/`, '_blank')
+            }
+        ];
+
+        menuItems.forEach(item => {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'moderation-menu-item';
+            menuItem.style.cssText = `
+                padding: 8px 16px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: background 0.2s;
+            `;
+            menuItem.innerHTML = `<span>${item.icon}</span> ${item.text}`;
+
+            menuItem.addEventListener('mouseenter', () => {
+                menuItem.style.background = '#f5f5f5';
+            });
+            menuItem.addEventListener('mouseleave', () => {
+                menuItem.style.background = 'transparent';
+            });
+            menuItem.addEventListener('click', () => {
+                item.action();
+                menu.remove();
+            });
+
+            menu.appendChild(menuItem);
+        });
+
+        document.body.appendChild(menu);
+
+        // Закрываем меню при клике вне его
+        const closeMenu = (e) => {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeMenu), 100);
+    }
+
+    quickMute(userId, minutes, reason) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({
+                type: 'moderate',
+                action: 'mute',
+                target_user_id: userId,
+                duration: minutes,
+                reason: reason
+            }));
+        }
+    }
+
+    quickBan(userId, minutes, reason) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({
+                type: 'moderate',
+                action: 'ban',
+                target_user_id: userId,
+                duration: minutes,
+                reason: reason
+            }));
+        }
+    }
+
+    handleFileUpload(files) {
+        // ВРЕМЕННО ЗАКОММЕНТИРОВАНО: Проблемы с медиа загрузкой
+        this.showToast('Загрузка медиа временно недоступна', 'error');
+        return;
+
+        // if (!files || files.length === 0) return;
+
+        // const maxSize = 10 * 1024 * 1024; // 10MB
+        // const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm'];
+
+        // for (let file of files) {
+        //     if (file.size > maxSize) {
+        //         this.showToast(`Файл ${file.name} слишком большой (максимум 10MB)`, 'error');
+        //         continue;
+        //     }
+
+        //     if (!allowedTypes.includes(file.type)) {
+        //         this.showToast(`Тип файла ${file.name} не поддерживается`, 'error');
+        //         continue;
+        //     }
+
+        //     this.uploadFile(file);
+        // }
+    }
+
+    uploadFile(file) {
+        // ВРЕМЕННО ЗАКОММЕНТИРОВАНО: Проблемы с медиа загрузкой
+        this.showToast('Загрузка медиа временно недоступна', 'error');
+        return;
+
+        // console.log('🔍 Начинаем загрузку файла:', file.name, file.size, 'байт');
+
+        // // Показываем индикатор загрузки
+        // this.showUploadIndicator(file.name);
+
+        // // Создаем FormData для отправки файла
+        // const formData = new FormData();
+        // formData.append('file', file);
+
+        // // Получаем CSRF токен
+        // const csrfToken = this.getCSRFToken();
+        // console.log('🔑 CSRF токен:', csrfToken ? `найден (${csrfToken.length} символов)` : 'НЕ НАЙДЕН');
+
+        // if (!csrfToken) {
+        //     this.hideUploadIndicator();
+        //     this.showToast('Ошибка: CSRF токен не найден', 'error');
+        //     return;
+        // }
+
+        // console.log('📤 Отправляем запрос на /chat/upload/');
+
+        // // Отправляем файл на сервер
+        // fetch('/chat/upload/', {
+        //     method: 'POST',
+        //     body: formData,
+        //     headers: {
+        //         'X-CSRFToken': csrfToken
+        //     }
+        // })
+        // .then(response => {
+        //     console.log('📥 Получен ответ:', response.status, response.statusText);
+        //     return response.json();
+        // })
+        // .then(data => {
+        //     console.log('📋 Данные ответа:', data);
+        //     this.hideUploadIndicator();
+        //     if (data.success) {
+        //         console.log('✅ Файл загружен успешно:', data.file_url);
+        //         // Отправляем сообщение с медиа
+        //         this.sendMediaMessage(data.file_url, file.type);
+        //     } else {
+        //         console.error('❌ Ошибка загрузки:', data.error);
+        //         this.showToast(data.error || 'Ошибка загрузки файла', 'error');
+        //     }
+        // })
+        // .catch(error => {
+        //     console.error('💥 Ошибка fetch:', error);
+        //     this.hideUploadIndicator();
+        //     this.showToast('Ошибка загрузки файла', 'error');
+        // });
+    }
+
+    sendMediaMessage(fileUrl, fileType) {
+        // ВРЕМЕННО ЗАКОММЕНТИРОВАНО: Проблемы с медиа сообщениями
+        this.showToast('Отправка медиа временно недоступна', 'error');
+        return;
+
+        // if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        //     this.socket.send(JSON.stringify({
+        //         type: 'media_message',
+        //         file_url: fileUrl,
+        //         file_type: fileType
+        //     }));
+        // }
+    }
+
+    showUploadIndicator(fileName) {
+        const indicator = document.createElement('div');
+        indicator.className = 'file-upload-indicator';
+        indicator.id = 'uploadIndicator';
+        indicator.innerHTML = `📤 Загружается: ${fileName}...`;
+
+        const inputWrapper = document.querySelector('.chat-input-wrapper');
+        inputWrapper.appendChild(indicator);
+    }
+
+    hideUploadIndicator() {
+        const indicator = document.getElementById('uploadIndicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    getCSRFToken() {
+        // Способ 1: Из мета-тега
+        let token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (token && token.length > 10) {
+            return token;
+        }
+
+        // Способ 2: Из скрытого поля формы
+        token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        if (token && token.length > 10) {
+            return token;
+        }
+
+        // Способ 3: Из cookie
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken' && value && value.length > 10) {
+                return value;
+            }
+        }
+
+        // Способ 4: Попытка получить из Django
+        const csrfElements = document.querySelectorAll('[name*="csrf"]');
+        for (let element of csrfElements) {
+            if (element.value && element.value.length > 10) {
+                return element.value;
+            }
+        }
+
+        console.error('CSRF токен не найден!');
+        return '';
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    getRoleClass(role) {
+        switch(role) {
+            case 'owner': return 'bg-danger text-white';
+            case 'admin': return 'bg-warning text-dark';
+            case 'store_owner': return 'bg-info text-white';
+            case 'store_admin': return 'bg-secondary text-white';
+            default: return 'bg-light text-dark';
+        }
+    }
+
+    getRoleDisplay(role) {
+        switch(role) {
+            case 'owner': return '👑 Владелец';
+            case 'admin': return '🛡️ Модератор';
+            case 'store_owner': return '🏪 Владелец магазина';
+            case 'store_admin': return '⚙️ Админ магазина';
+            default: return '👤 Пользователь';
+        }
+    }
+
+    getRoleEmoji(role) {
+        switch(role) {
+            case 'owner': return '👑';
+            case 'admin': return '🛡️';
+            case 'store_owner': return '🏪';
+            case 'store_admin': return '⚙️';
+            default: return '';
+        }
+    }
+}
+
+// Функции для модальных окон
+function submitReport() {
+    const messageId = document.getElementById('reportMessageId').value;
+    const reason = document.getElementById('reportReason').value.trim();
+
+    if (!reason) {
+        alert('{% trans "Укажите причину жалобы" %}');
+        return;
+    }
+
+    if (window.chatClient && window.chatClient.socket) {
+        window.chatClient.socket.send(JSON.stringify({
+            type: 'report',
+            message_id: messageId,
+            reason: reason
+        }));
+    }
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+    modal.hide();
+
+    document.getElementById('reportReason').value = '';
+}
+
+// Функция для кнопки модерации
+function toggleModerationPanel() {
+    // Пока что просто показываем уведомление
+    if (window.chatClient) {
+        window.chatClient.showToast('Панель модерации в разработке', 'info');
+    } else {
+        alert('Панель модерации в разработке');
+    }
+}
+
+// Инициализация чата
+document.addEventListener('DOMContentLoaded', function() {
+    {% if not user_status.is_banned %}
+    window.chatClient = new ChatClient();
+    {% endif %}
+});
+</script>
+{% endblock %}

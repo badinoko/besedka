@@ -1,60 +1,298 @@
 {% extends "base.html" %}
+{% load i18n static %}
 
-{% block title %}Беседка - Главная{% endblock %}
+{% block title %}Главная - Беседка{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active">Главная</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-blue: #4285f4;
+    --success-green: #34a853;
+    --warning-orange: #fbbc04;
+    --danger-red: #ea4335;
+    --dark: #202124;
+    --light: #f8f9fa;
+    --border-radius: 15px;
+    --transition: all 0.3s ease;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 3rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+}
+
+.hero-section .lead {
+    font-size: 1.3rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.feature-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transition: var(--transition);
+}
+
+.feature-card.store::before { background: var(--primary-blue); }
+.feature-card.reports::before { background: var(--success-green); }
+.feature-card.gallery::before { background: var(--warning-orange); }
+.feature-card.chat::before { background: var(--danger-red); }
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.feature-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.feature-card h3 {
+    color: var(--dark);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: #666;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.btn-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.btn-store { background: var(--primary-blue); }
+.btn-store:hover { background: #3367d6; color: white; }
+
+.btn-reports { background: var(--success-green); }
+.btn-reports:hover { background: #2d7d32; color: white; }
+
+.btn-gallery { background: var(--warning-orange); }
+.btn-gallery:hover { background: #f57c00; color: white; }
+
+.btn-chat { background: var(--danger-red); }
+.btn-chat:hover { background: #d32f2f; color: white; }
+
+.welcome-section {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.welcome-section h4 {
+    color: var(--dark);
+    margin-bottom: 1rem;
+}
+
+.auth-section {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.auth-section h4 {
+    margin-bottom: 1rem;
+}
+
+.auth-section p {
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+
+.btn-auth {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    margin: 0.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid white;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.btn-auth:hover {
+    background: white;
+    color: #f5576c;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-section {
+        padding: 2rem 0;
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-12 text-center mb-5">
-            <h1>Добро пожаловать в Беседку</h1>
-            <p class="lead">Ваше пространство для общения и обмена опытом</p>
-        </div>
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <h1>🌱 Добро пожаловать в Беседку!</h1>
+        <p class="lead">Ваше пространство для общения, обмена опытом и покупок</p>
+        <p>Присоединяйтесь к нашему дружному сообществу растениеводов!</p>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Магазин Magic Beans</h5>
-                    <p class="card-text">Широкий выбор семян от проверенных производителей.</p>
-                    <a href="{% url 'store:catalog' %}" class="btn btn-primary">Перейти в магазин</a>
-                </div>
-            </div>
+<!-- Main Features -->
+<div class="container">
+    <div class="features-grid">
+        <!-- Магазин -->
+        <div class="feature-card store">
+            <span class="feature-icon">🏪</span>
+            <h3>Магазин</h3>
+            <p>Широкий выбор товаров от проверенных производителей. Качественные семена, удобрения и оборудование.</p>
+            <a href="{% url 'store:catalog' %}" class="btn-feature btn-store">
+                <i class="fas fa-shopping-cart"></i>
+                Перейти в магазин
+            </a>
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Гроу-логи</h5>
-                    <p class="card-text">Делитесь своим опытом и учитесь у других.</p>
-                    <a href="{% url 'growlogs:list' %}" class="btn btn-primary">Смотреть логи</a>
-                </div>
-            </div>
+        <!-- Grow Reports -->
+        <div class="feature-card reports">
+            <span class="feature-icon">📊</span>
+            <h3>Grow Reports</h3>
+            <p>Делитесь опытом и учитесь у других. Подробные отчеты о выращивании с фотографиями и советами.</p>
+            <a href="{% url 'growlogs:list' %}" class="btn-feature btn-reports">
+                <i class="fas fa-chart-line"></i>
+                Смотреть отчеты
+            </a>
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Галерея</h5>
-                    <p class="card-text">Фотографии и достижения нашего сообщества.</p>
-                    <a href="{% url 'gallery:list' %}" class="btn btn-primary">Открыть галерею</a>
-                </div>
-            </div>
+        <!-- Галерея -->
+        <div class="feature-card gallery">
+            <span class="feature-icon">📸</span>
+            <h3>Галерея</h3>
+            <p>Фотографии от нашего сообщества. Делитесь своими успехами и вдохновляйтесь работами других.</p>
+            <a href="{% url 'gallery:gallery' %}" class="btn-feature btn-gallery">
+                <i class="fas fa-images"></i>
+                Открыть галерею
+            </a>
+        </div>
+
+        <!-- Чат -->
+        <div class="feature-card chat">
+            <span class="feature-icon">💬</span>
+            <h3>Чат</h3>
+            <p>Общение в реальном времени с единомышленниками. Задавайте вопросы и делитесь опытом.</p>
+            <a href="{% url 'chat:home' %}" class="btn-feature btn-chat">
+                <i class="fas fa-comments"></i>
+                {% trans "Чат" %}
+            </a>
         </div>
     </div>
 
     {% if user.is_authenticated %}
-    <div class="row mt-4">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Общий чат</h5>
-                    <p class="card-text">Присоединяйтесь к обсуждению с другими участниками.</p>
-                    <a href="{% url 'chat:room' %}" class="btn btn-success">Войти в чат</a>
-                </div>
-            </div>
+    <!-- Welcome Back Section -->
+    <div class="welcome-section">
+        <h4>👋 Добро пожаловать, {{ user.get_display_name|default:user.username }}!</h4>
+        <p class="text-muted">Рады видеть вас снова в нашем сообществе</p>
+
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-primary">
+                <i class="fas fa-user"></i> Личный кабинет
+            </a>
+            <a href="#" class="btn btn-outline-success">
+                <i class="fas fa-plus"></i> Создать отчет
+            </a>
+            <a href="#" class="btn btn-outline-warning">
+                <i class="fas fa-camera"></i> Загрузить фото
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Authentication Section -->
+    <div class="auth-section">
+        <h4>🚀 Присоединяйтесь к сообществу!</h4>
+        <p>Войдите или зарегистрируйтесь, чтобы получить доступ ко всем возможностям платформы</p>
+
+        <div>
+            <a href="{% url 'account_login' %}" class="btn-auth">
+                <i class="fas fa-sign-in-alt"></i>
+                Войти в аккаунт
+            </a>
+            <a href="#" class="btn-auth">
+                <i class="fab fa-telegram"></i>
+                Войти через Telegram
+            </a>
         </div>
     </div>
     {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}

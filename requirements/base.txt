@@ -2,7 +2,7 @@ python-slugify==8.0.4  # https://github.com/un33k/python-slugify
 Pillow==10.2.0 # pyup: != 11.2.0  # https://github.com/python-pillow/Pillow
 argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 whitenoise==6.4.0  # https://github.com/evansd/whitenoise
-redis==4.5.5  # https://github.com/redis/redis-py
+redis==4.6.0  # https://github.com/redis/redis-py
 hiredis==3.1.1  # https://github.com/redis/hiredis-py
 celery==5.3.6  # pyup: < 6.0  # https://github.com/celery/celery
 django-celery-beat==2.7.0  # https://github.com/celery/django-celery-beat
@@ -20,7 +20,18 @@ django-crispy-forms==2.4  # https://github.com/django-crispy-forms/django-crispy
 crispy-bootstrap5==2025.4  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-redis==5.4.0  # https://github.com/jazzband/django-redis
 djangorestframework==3.14.0 # https://github.com/encode/django-rest-framework
+djangorestframework-simplejwt==5.5.0 # https://github.com/jazzband/djangorestframework-simplejwt
+drf-spectacular==0.28.0 # https://github.com/tfranzel/drf-spectacular
 django-extensions==3.2.3
 django-debug-toolbar==4.2.0
 django-anymail==10.2
 sentry-sdk==1.17.0
+
+# Admin Interface
+# ------------------------------------------------------------------------------
+django-admin-interface==0.30.0
+django-import-export==4.3.7
+django-guardian==3.0.0
+django-colorfield==0.14.0
+channels==4.0.0
+channels_redis==4.2.0

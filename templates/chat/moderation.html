@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Панель модерации чата{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Панель модерации чата</h1>
+
+    <h2>Активные жалобы ({{ reports.count }})</h2>
+    {% if reports %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Сообщение</th>
+                    <th>Автор</th>
+                    <th>Пожаловался</th>
+                    <th>Причина</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                    <tr>
+                        <td>{{ report.message.text|truncatechars:50 }}</td>
+                        <td>{{ report.message.author.username }}</td>
+                        <td>{{ report.reporter.username }}</td>
+                        <td>{{ report.reason }}</td>
+                        <td>{{ report.created_at|date:"d.m.Y H:i" }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success resolve-report" data-report-id="{{ report.id }}" data-action="resolve">Разрешить</button>
+                            <button class="btn btn-sm btn-warning resolve-report" data-report-id="{{ report.id }}" data-action="dismiss">Отклонить</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет активных жалоб.</p>
+    {% endif %}
+
+    {# Здесь можно добавить другие элементы управления модерацией #}
+
+</div>
+
+{% comment %}
+<script>
+// ... JS для обработки кнопок ...
+</script>
+{% endcomment %}
+{% endblock %}

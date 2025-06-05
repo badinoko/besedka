@@ -1,0 +1,171 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}Запуск парсера новостей{% endblock %}
+
+{% block extrahead %}
+<style>
+.parser-form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.parser-info {
+    background: #e8f4fd;
+    border: 1px solid #0066cc;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.parser-info h3 {
+    color: #0066cc;
+    margin-top: 0;
+}
+
+.parser-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.parser-warning h4 {
+    color: #856404;
+    margin-top: 0;
+}
+
+.submit-row {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn-primary {
+    background-color: #0066cc;
+    border-color: #0066cc;
+    color: white;
+    padding: 10px 30px;
+    font-size: 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #0052a3;
+    border-color: #0052a3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    margin-right: 10px;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.stat-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="parser-form">
+    <h1>🚀 Запуск парсера новостей</h1>
+
+    <div class="parser-info">
+        <h3>📋 Информация о парсере</h3>
+        <p>Парсер автоматически собирает новости с настроенных источников, переводит их на русский язык с помощью Google Translate API и сохраняет для модерации.</p>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ sources_count }}</div>
+                <div class="stat-label">Активных источников</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ pending_count }}</div>
+                <div class="stat-label">Ожидает модерации</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ published_count }}</div>
+                <div class="stat-label">Опубликовано</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="parser-warning">
+        <h4>⚠️ Важная информация</h4>
+        <ul>
+            <li>Парсинг может занять несколько минут в зависимости от количества источников</li>
+            <li>Все новости после парсинга попадают в статус "Ожидает модерации"</li>
+            <li>Для работы переводчика необходим настроенный Google Cloud Translation API</li>
+            <li>Дублированные статьи автоматически отфильтровываются</li>
+        </ul>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="submit-row">
+            <a href="{% url 'admin:news_parsednews_changelist' %}" class="btn-secondary">
+                ← Назад к списку новостей
+            </a>
+            <button type="submit" class="btn-primary">
+                🔄 Запустить парсинг
+            </button>
+        </div>
+    </form>
+
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <h3>📚 Полезные ссылки</h3>
+        <ul>
+            <li><a href="{% url 'admin:news_newsource_changelist' %}">Управление источниками новостей</a></li>
+            <li><a href="{% url 'admin:news_newscategory_changelist' %}">Управление категориями</a></li>
+            <li><a href="{% url 'admin:news_parsinglog_changelist' %}">Логи парсинга</a></li>
+        </ul>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = document.querySelector('.btn-primary');
+
+    form.addEventListener('submit', function() {
+        submitBtn.innerHTML = '⏳ Парсинг запущен...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

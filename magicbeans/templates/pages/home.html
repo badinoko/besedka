@@ -1,8 +1,70 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
-<h1>Добро пожаловать в Magic Beans!</h1>
-<p>Это главная страница вашего проекта.</p>
+<div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <h1 class="text-center mb-4">{% trans "Добро пожаловать в Беседку" %}</h1>
+    <p class="text-center mb-5">{% trans "Ваше пространство для общения и обмена опытом" %}</p>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Магазин Magic Beans" %}</h5>
+                    <p class="card-text">{% trans "Широкий выбор семян от проверенных производителей." %}</p>
+                    <a href="{% url 'store:catalog' %}" class="btn btn-primary">{% trans "Перейти в магазин" %}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Гроу-логи" %}</h5>
+                    <p class="card-text">{% trans "Делитесь своим опытом и учитесь у других." %}</p>
+                    <a href="{% url 'growlogs:list' %}" class="btn btn-primary">{% trans "Смотреть логи" %}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Галерея" %}</h5>
+                    <p class="card-text">{% trans "Фотографии и достижения нашего сообщества." %}</p>
+                    <a href="{% url 'gallery:gallery' %}" class="btn btn-primary">{% trans "Открыть галерею" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{% trans "Общий чат" %}</h5>
+                <p class="card-text">{% trans "Присоединяйтесь к обсуждению с другими участниками." %}</p>
+                <div class="btn-group">
+                    <a href="#" onclick="alert('Чат временно недоступен')" class="btn btn-success">{% trans "Чат недоступен" %}</a>
+                </div>
+            </div>
+        </div>
+
+        {% if user.has_admin_access %}
+            <div class="alert alert-warning">
+                <h5 class="alert-heading">{% trans "У вас есть доступ к панели управления магазином!" %}</h5>
+                <a href="{% url 'admin:index' %}" class="btn btn-warning">{% trans "Перейти в админку магазина" %}</a>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
 {% endblock %}
 
 

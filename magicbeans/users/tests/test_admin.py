@@ -7,8 +7,9 @@ from django.contrib import admin
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
+from django.contrib.auth import get_user_model
 
-from magicbeans.users.models import User
+from users.models import User
 
 
 class TestUserAdmin:

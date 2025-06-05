@@ -276,3 +276,33 @@ magicbeans/media/
 .env.*
 .env
 .envs/*
+
+# Database
+db.sqlite3
+*.db
+
+# Secrets and settings
+local_settings.py
+secret_settings.py
+
+# Media files
+media/
+
+# Logs
+*.log
+logs/
+
+# Cache
+*.cache
+
+# IDE
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

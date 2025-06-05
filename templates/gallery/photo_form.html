@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}
+        {% trans "Редактировать фото" %}: {{ object.title|truncatechars:30 }}
+    {% else %}
+        {% trans "Загрузить новое фото" %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        {% if object %}
+                            <i class="fas fa-edit"></i> {% trans "Редактировать фото" %}
+                        {% else %}
+                            <i class="fas fa-upload"></i> {% trans "Загрузить новое фото" %}
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        {% if object.image %}
+                            <div class="my-3">
+                                <p class="mb-1"><strong>{% trans "Текущее изображение" %}:</strong></p>
+                                <img src="{{ object.image.medium.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% if object %}{% url 'gallery:photo_detail' object.pk %}{% else %}{% url 'gallery:gallery' %}{% endif %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> {% trans "Отмена" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                {% if object %}
+                                    {% trans "Сохранить изменения" %}
+                                {% else %}
+                                    {% trans "Загрузить фото" %}
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,62 +1,498 @@
 {% extends "base.html" %}
+{% load i18n static %}
 
-{% block title %}Чат{% endblock %}
+{% block title %}{% trans "Общий чат Беседки" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/chat_room.css' %}">
+<style>
+/* Стили, специфичные для этой страницы, можно оставить здесь или перенести в chat_room.css */
+#chat-messages {
+    height: 60vh; /* Увеличена высота для лучшего обзора */
+    overflow-y: auto;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: .25rem;
+    background-color: #f8f9fa;
+}
+.message-wrapper {
+    margin-bottom: 1rem;
+    display: flex;
+}
+.message-wrapper.current-user {
+    justify-content: flex-end;
+}
+.message-content {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+.message-wrapper.current-user .message-content {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom-right-radius: 0;
+}
+.message-wrapper:not(.current-user) .message-content {
+    background-color: #e9ecef;
+    color: #212529;
+    border-bottom-left-radius: 0;
+}
+.message-author {
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-bottom: 0.25rem;
+}
+.message-wrapper.current-user .message-author {
+    /* Скрываем автора для своих сообщений или стилизуем иначе */
+    /* display: none; */
+}
+.message-timestamp {
+    font-size: 0.75em;
+    color: #6c757d;
+}
+.message-wrapper.current-user .message-timestamp {
+    color: #e0e0e0;
+}
+
+.system-message .message-content {
+    background-color: transparent;
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 0.5rem 0;
+}
+.system-message.warning .message-content {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+#online-users-list {
+    list-style-type: none;
+    padding-left: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+#online-users-list li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+#online-users-list li:last-child {
+    border-bottom: none;
+}
+#typing-indicator span {
+    font-style: italic;
+    color: #6c757d;
+}
+.message-actions button {
+    font-size: 0.8rem;
+    padding: 0.1rem 0.4rem;
+    margin-left: 0.3rem;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid mt-4">
     <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Общий чат</h5>
+        <!-- Колонка чата -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-comments"></i> {% trans "Общий чат Беседки" %}</h5>
+                    <span id="connection-status" class="badge bg-light text-dark">{% trans "Подключение..." %}</span>
                 </div>
-                <div class="card-body" style="height: 500px; overflow-y: auto;" id="chat-messages">
-                    {% for message in messages %}
-                    <div class="message mb-3 {% if message.author == user %}text-end{% endif %}">
-                        <div class="message-content {% if message.author == user %}bg-primary text-white{% else %}bg-light{% endif %} p-2 d-inline-block rounded">
-                            {% if message.is_system %}
-                            <div class="system-message text-muted">
-                                {{ message.text }}
-                            </div>
-                            {% else %}
-                            <div class="message-header small text-muted mb-1">
-                                {{ message.author.username }} • {{ message.created_at|date:"H:i" }}
-                            </div>
-                            <div class="message-text">
-                                {{ message.text }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
+                <div id="chat-messages" class="card-body">
+                    <!-- Сообщения будут загружаться сюда -->
                 </div>
-                <div class="card-footer">
+                <div id="typing-indicator" class="px-3 pb-2 pt-0"><span class="small">&nbsp;</span></div>
+                <div class="card-footer bg-light">
                     <form id="chat-form" class="d-flex">
-                        <input type="text" class="form-control me-2" id="message-input" placeholder="Введите сообщение...">
-                        <button type="submit" class="btn btn-primary">Отправить</button>
+                        <input type="text" class="form-control me-2" id="message-input" placeholder="{% trans "Введите ваше сообщение..." %}" autocomplete="off" disabled>
+                        <button type="submit" class="btn btn-primary" id="send-button" disabled>
+                            <i class="fas fa-paper-plane"></i> {% trans "Отправить" %}
+                        </button>
                     </form>
+                    <div id="error-message-area" class="text-danger small mt-2">&nbsp;</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Колонка пользователей онлайн -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-users"></i> {% trans "Онлайн" %} (<span id="online-users-count">0</span>)</h6>
+                </div>
+                <ul id="online-users-list" class="list-group list-group-flush">
+                    <!-- Список пользователей будет здесь -->
+                </ul>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Модальное окно для жалобы -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reportModalLabel">{% trans "Пожаловаться на сообщение" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="report-form">
+          <input type="hidden" id="report-message-id">
+          <div class="mb-3">
+            <label for="report-reason" class="form-label">{% trans "Причина жалобы" %}:</label>
+            <textarea class="form-control" id="report-reason" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-danger">{% trans "Отправить жалобу" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для действий модератора -->
+<div class="modal fade" id="moderateModal" tabindex="-1" aria-labelledby="moderateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="moderateModalLabel">{% trans "Действия модератора" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{% trans "Пользователь" %}: <strong id="moderate-username"></strong></p>
+        <input type="hidden" id="moderate-user-id">
+        <input type="hidden" id="moderate-message-id">
+
+        <div class="mb-3">
+            <label for="moderate-reason" class="form-label">{% trans "Причина (обязательно для мута/бана)" %}:</label>
+            <input type="text" class="form-control" id="moderate-reason">
+        </div>
+        <div class="mb-3">
+            <label for="moderate-duration" class="form-label">{% trans "Длительность (минуты, для мута/бана)" %}:</label>
+            <input type="number" class="form-control" id="moderate-duration" placeholder="{% trans "Например, 60 для часа" %}">
+        </div>
+
+        <button type="button" class="btn btn-warning me-2" id="moderate-mute-btn">{% trans "Мут" %}</button>
+        <button type="button" class="btn btn-danger me-2" id="moderate-ban-btn">{% trans "Бан" %}</button>
+        <button type="button" class="btn btn-secondary" id="moderate-delete-msg-btn" style="display:none;">{% trans "Удалить сообщение" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
-{% block extra_js %}
+{% block extra_scripts %}
 <script>
-    // Placeholder for WebSocket chat implementation
-    document.getElementById('chat-form').addEventListener('submit', function(e) {
+    const chatSocketProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(
+        chatSocketProtocol + '://' + window.location.host + '/ws/chat/general/'
+    );
+
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const chatForm = document.getElementById('chat-form');
+    const typingIndicator = document.getElementById('typing-indicator').querySelector('span');
+    const onlineUsersList = document.getElementById('online-users-list');
+    const onlineUsersCount = document.getElementById('online-users-count');
+    const connectionStatus = document.getElementById('connection-status');
+    const errorMessageArea = document.getElementById('error-message-area');
+
+    const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+    const reportForm = document.getElementById('report-form');
+    const reportMessageIdInput = document.getElementById('report-message-id');
+    const reportReasonInput = document.getElementById('report-reason');
+
+    const moderateModal = new bootstrap.Modal(document.getElementById('moderateModal'));
+    const moderateUsernameEl = document.getElementById('moderate-username');
+    const moderateUserIdInput = document.getElementById('moderate-user-id');
+    const moderateMessageIdInput = document.getElementById('moderate-message-id');
+    const moderateReasonInput = document.getElementById('moderate-reason');
+    const moderateDurationInput = document.getElementById('moderate-duration');
+    const moderateMuteBtn = document.getElementById('moderate-mute-btn');
+    const moderateBanBtn = document.getElementById('moderate-ban-btn');
+    const moderateDeleteMsgBtn = document.getElementById('moderate-delete-msg-btn');
+
+    let typingTimeout;
+    const currentUserID = parseInt("{{ request.user.id|default:0 }}");
+    const isModerator = "{{ request.user.role|default:'user' }}" === "owner" || "{{ request.user.role|default:'user' }}" === "admin";
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTemporaryError(message) {
+        errorMessageArea.textContent = message;
+        setTimeout(() => {
+            errorMessageArea.textContent = '\xa0'; // non-breaking space to keep height
+        }, 5000);
+    }
+
+    function formatTimestamp(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function displayMessage(data) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.classList.add('message-wrapper');
+        messageWrapper.dataset.messageId = data.id;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message-content');
+
+        if (data.is_system) {
+            messageWrapper.classList.add('system-message');
+            if (data.level === 'warning') {
+                 messageWrapper.classList.add('warning');
+            }
+            messageDiv.innerHTML = `<p class="mb-0">${data.text}</p><small class="message-timestamp">${formatTimestamp(data.timestamp)}</small>`;
+        } else {
+            if (data.author.id === currentUserID) {
+                messageWrapper.classList.add('current-user');
+            }
+
+            let authorHtml = `<div class="message-author">${data.author.username}</div>`;
+            if (data.author.id === currentUserID) { // Скрываем автора для своих сообщений или стилизуем иначе
+                 authorHtml = "";
+            }
+
+            messageDiv.innerHTML = `
+                ${authorHtml}
+                <div class="message-text">${data.text}</div>
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                    <small class="message-timestamp">${formatTimestamp(data.timestamp)}</small>
+                    <div class="message-actions"></div>
+                </div>
+            `;
+
+            const actionsDiv = messageDiv.querySelector('.message-actions');
+            if (currentUserID !== data.author.id) {
+                const reportButton = document.createElement('button');
+                reportButton.classList.add('btn', 'btn-sm', 'btn-outline-warning');
+                reportButton.innerHTML = '<i class="fas fa-flag"></i>';
+                reportButton.title = '{% trans "Пожаловаться" %}';
+                reportButton.onclick = () => openReportModal(data.id);
+                actionsDiv.appendChild(reportButton);
+            }
+
+            if (isModerator) {
+                const moderateButton = document.createElement('button');
+                moderateButton.classList.add('btn', 'btn-sm', 'btn-outline-danger');
+                moderateButton.innerHTML = '<i class="fas fa-shield-alt"></i>';
+                moderateButton.title = '{% trans "Модерировать" %}';
+                moderateButton.onclick = () => openModerateModal(data.author.id, data.author.username, data.id);
+                actionsDiv.appendChild(moderateButton);
+            }
+        }
+        messageWrapper.appendChild(messageDiv);
+        chatMessages.appendChild(messageWrapper);
+        scrollToBottom();
+    }
+
+    chatSocket.onopen = function(e) {
+        console.log('Chat socket connected.');
+        connectionStatus.textContent = '{% trans "Подключено" %}';
+        connectionStatus.classList.remove('bg-light', 'text-dark');
+        connectionStatus.classList.add('bg-success', 'text-white');
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log('Data received:', data);
+
+        switch (data.type) {
+            case 'message':
+                displayMessage(data.data);
+                break;
+            case 'system':
+                displayMessage(data.data); // Системные сообщения отображаются так же
+                break;
+            case 'typing':
+                // TODO: Реализовать отображение кто печатает (если несколько)
+                if (data.data.is_typing) {
+                    typingIndicator.textContent = `${data.data.username} {% trans "печатает..." %}`;
+                } else {
+                    typingIndicator.innerHTML = '&nbsp;';
+                }
+                break;
+            case 'user_list': // Предполагаемый тип для обновления списка пользователей
+                onlineUsersCount.textContent = data.users.length;
+                onlineUsersList.innerHTML = '';
+                data.users.forEach(user => {
+                    const li = document.createElement('li');
+                    li.textContent = user.username;
+                    // TODO: Добавить роль и, возможно, ссылку на профиль
+                    onlineUsersList.appendChild(li);
+                });
+                break;
+            case 'error':
+                showTemporaryError(data.message);
+                break;
+            case 'success':
+                // Можно добавить вывод data.message в toast или аналогичный элемент
+                console.log('Success:', data.message);
+                if(data.action_type === 'message_deleted' || data.action_type === 'user_muted' || data.action_type === 'user_banned') {
+                    // Можно закрыть модальное окно модерации, если оно было открыто для этого действия
+                    moderateModal.hide();
+                }
+                break;
+            case 'message_deleted':
+                const messageToUpdate = chatMessages.querySelector(`.message-wrapper[data-message-id='${data.message_id}']`);
+                if (messageToUpdate) {
+                    // Заменяем содержимое на системное сообщение об удалении
+                    messageToUpdate.classList.add('system-message');
+                    messageToUpdate.classList.remove('current-user'); // на случай если удаляли свое
+                    messageToUpdate.innerHTML = `<div class="message-content"><p class="mb-0">${data.replacement_text}</p></div>`;
+                }
+                break;
+
+            default:
+                console.warn('Unknown message type:', data.type);
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly. Code:', e.code);
+        connectionStatus.textContent = '{% trans "Отключено" %}';
+        connectionStatus.classList.remove('bg-success');
+        connectionStatus.classList.add('bg-danger', 'text-white');
+        messageInput.disabled = true;
+        sendButton.disabled = true;
+        showTemporaryError('{% trans "Соединение с чатом потеряно. Попытка переподключения..." %}');
+        // TODO: Реализовать логику переподключения, например, через setTimeout
+    };
+
+    chatForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const input = document.getElementById('message-input');
-        const message = input.value.trim();
+        const message = messageInput.value.trim();
         if (message) {
-            // Here will be WebSocket message sending
-            input.value = '';
+            chatSocket.send(JSON.stringify({
+                'type': 'message',
+                'message': message
+            }));
+            messageInput.value = '';
+            // Сообщаем, что перестали печатать
+            if (typingTimeout) clearTimeout(typingTimeout);
+            chatSocket.send(JSON.stringify({'type': 'typing', 'is_typing': false}));
         }
     });
 
-    // Auto-scroll to bottom
-    const chatMessages = document.getElementById('chat-messages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    messageInput.addEventListener('input', function() {
+        if (typingTimeout) clearTimeout(typingTimeout);
+
+        // Сообщаем, что начали печатать (если еще не сообщали)
+        if (messageInput.value.length > 0 && !typingIndicator.textContent.includes('{% trans "печатает..." %}')) {
+             chatSocket.send(JSON.stringify({'type': 'typing', 'is_typing': true}));
+        }
+
+        typingTimeout = setTimeout(() => {
+            chatSocket.send(JSON.stringify({'type': 'typing', 'is_typing': false}));
+        }, 2000); // Считаем, что перестали печатать через 2 сек бездействия
+    });
+
+    // Обработка жалоб
+    reportForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const messageId = reportMessageIdInput.value;
+        const reason = reportReasonInput.value.trim();
+        if (messageId && reason) {
+            chatSocket.send(JSON.stringify({
+                'type': 'report',
+                'message_id': messageId,
+                'reason': reason
+            }));
+            reportModal.hide();
+            reportReasonInput.value = '';
+        } else {
+            alert('{% trans "Укажите причину жалобы." %}')
+        }
+    });
+
+    function openReportModal(messageId) {
+        reportMessageIdInput.value = messageId;
+        reportModal.show();
+    }
+
+    // Обработка модерации
+    function openModerateModal(userId, username, messageId = null) {
+        moderateUsernameEl.textContent = username;
+        moderateUserIdInput.value = userId;
+        moderateMessageIdInput.value = messageId || '';
+
+        moderateReasonInput.value = '';
+        moderateDurationInput.value = '';
+
+        if (messageId) {
+            moderateDeleteMsgBtn.style.display = 'inline-block';
+        } else {
+            moderateDeleteMsgBtn.style.display = 'none';
+        }
+        moderateModal.show();
+    }
+
+    moderateMuteBtn.addEventListener('click', function() {
+        const targetUserId = moderateUserIdInput.value;
+        const reason = moderateReasonInput.value.trim();
+        const duration = moderateDurationInput.value.trim();
+        if (!targetUserId || !reason || !duration) {
+            alert('{% trans "Для мута укажите пользователя, причину и длительность." %}');
+            return;
+        }
+        chatSocket.send(JSON.stringify({
+            'type': 'moderate',
+            'action': 'mute',
+            'target_user_id': parseInt(targetUserId),
+            'reason': reason,
+            'duration': parseInt(duration)
+        }));
+    });
+
+    moderateBanBtn.addEventListener('click', function() {
+        const targetUserId = moderateUserIdInput.value;
+        const reason = moderateReasonInput.value.trim();
+        const duration = moderateDurationInput.value.trim(); // Может быть пустым для перманентного
+        if (!targetUserId || !reason ) {
+            alert('{% trans "Для бана укажите пользователя и причину. Длительность опциональна (перманентно если пусто)." %}');
+            return;
+        }
+        chatSocket.send(JSON.stringify({
+            'type': 'moderate',
+            'action': 'ban',
+            'target_user_id': parseInt(targetUserId),
+            'reason': reason,
+            'duration': duration ? parseInt(duration) : null
+        }));
+    });
+
+    moderateDeleteMsgBtn.addEventListener('click', function() {
+        const messageId = moderateMessageIdInput.value;
+        const reason = moderateReasonInput.value.trim(); // Причина для удаления может быть опциональной
+        if (!messageId) {
+            alert('{% trans "ID сообщения не указан для удаления." %}');
+            return;
+        }
+         chatSocket.send(JSON.stringify({
+            'type': 'moderate',
+            'action': 'delete_message',
+            'message_id': parseInt(messageId),
+            'reason': reason
+        }));
+    });
+
+    // Загрузка начальных данных (например, списка пользователей), если необходимо
+    // chatSocket.onopen = () => { ... chatSocket.send(JSON.stringify({'type': 'get_user_list'})); ... };
+    // Первоначальную загрузку сообщений выполняет consumer при connect
+
+    scrollToBottom(); // На случай если были серверные сообщения при загрузке
 </script>
-{% endblock %} 
+{% endblock %}

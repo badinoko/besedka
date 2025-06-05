@@ -1,0 +1,213 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #2e7d32;
+        --secondary: #388e3c;
+        --accent: #ff9800;
+        --primary-fg: #fff;
+        --nav-bg: #f8f9fa;
+        --nav-border: #dee2e6;
+        --nav-text: #495057;
+        --nav-text-hover: #007bff;
+        --nav-active-bg: #007bff;
+        --nav-active-text: #fff;
+    }
+
+    /* АГРЕССИВНОЕ СКРЫТИЕ ЛЕВОГО САЙДБАРА DJANGO ADMIN */
+    /* Стандартные Django Admin селекторы */
+    #content-related,
+    .nav-sidebar,
+    .main-sidebar,
+    .main-sidebar-wrapper,
+    .nav-sidebar-container,
+    .sidebar,
+    .admin-sidebar,
+    #sidebar,
+    .left-sidebar,
+    .admin-nav-sidebar,
+    .nav-sidebar-wrapper,
+    .sidebar-wrapper,
+    .admin-sidebar-wrapper {
+        display: none !important;
+        width: 0 !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    /* admin_interface специфичные селекторы */
+    body.admin-interface .nav-sidebar-container,
+    body.admin-interface .main-sidebar-wrapper,
+    body.admin-interface nav.main-sidebar,
+    body.admin-interface .sidebar-wrapper,
+    body.admin-interface .main-sidebar,
+    body.admin-interface .content-wrapper .sidebar,
+    .admin-interface .nav-sidebar,
+    body.admin-interface .sidebar,
+    body.admin-interface .left-sidebar {
+        display: none !important;
+        width: 0 !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    /* Расширение контента на всю ширину */
+    #content-main,
+    .main #content,
+    #content.colM,
+    #content.colMS,
+    #content.colSM,
+    .content-wrapper,
+    .main-content,
+    body.admin-interface .content-wrapper,
+    body.admin-interface .main-container,
+    .container-fluid.admin-interface,
+    body.admin-interface .wrapper,
+    body.admin-interface .main-wrapper {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 !important;
+    }
+
+    /* СКРЫТИЕ СТАНДАРТНОЙ ШАПКИ DJANGO ADMIN */
+    body.besedka-admin #header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* Убираем отступы сверху для контента */
+    body.besedka-admin #content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    /* СТИЛИ ДЛЯ ЕДИНОЙ НАВИГАЦИИ БЕСЕДКИ */
+    #besedka-unified-navigation {
+        background-color: var(--nav-bg);
+        border-bottom: 1px solid var(--nav-border);
+        margin: 0;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    /* УЛУЧШЕННЫЕ ХЛЕБНЫЕ КРОШКИ - УВЕЛИЧЕННЫЙ РАЗМЕР */
+    div.breadcrumbs {
+        background: var(--nav-bg);
+        border: none;
+        border-bottom: 1px solid var(--nav-border);
+        padding: 15px 20px;  /* Увеличен padding */
+        font-size: 18px;     /* Увеличен размер с 16px до 18px */
+        font-weight: 500;
+        margin: 0;
+        color: var(--nav-text);
+        line-height: 1.4;    /* Улучшена читаемость */
+    }
+
+    div.breadcrumbs a {
+        color: var(--nav-text-hover);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    div.breadcrumbs a:hover {
+        text-decoration: underline;
+        color: var(--primary);
+    }
+
+    div.breadcrumbs .separator {
+        margin: 0 12px;      /* Увеличен отступ с 10px до 12px */
+        color: #6c757d;
+        font-size: 20px;     /* Увеличен размер разделителя */
+        font-weight: normal;
+    }
+
+    /* УЛУЧШЕНИЯ ДЛЯ СУЩЕСТВУЮЩИХ ЭЛЕМЕНТОВ */
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--primary);
+        color: var(--primary-fg);
+    }
+
+    a:link, a:visited {
+        color: var(--primary);
+    }
+
+    /* Скрытие стандартных ugly кнопок импорта/экспорта */
+    a[href*="import"], a[href*="export"] {
+        display: none !important;
+    }
+
+    /* ИНДИКАТОР РОЛИ АДМИНИСТРАТОРА */
+    .admin-type-indicator {
+        background-color: var(--accent) !important;
+        color: #fff !important;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    /* АДАПТИВНОСТЬ */
+    @media (max-width: 768px) {
+        div.breadcrumbs {
+            padding: 12px 15px;
+            font-size: 16px;
+        }
+
+        div.breadcrumbs .separator {
+            margin: 0 8px;
+            font-size: 18px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block title %}
+    {% if 'store_admin' in request.resolver_match.namespace %}
+        {{ title }} | Magic Beans - Администратор магазина
+    {% elif request.resolver_match.namespace == 'store_owner_admin' %}
+        {{ title }} | Magic Beans - Владелец магазина
+    {% elif request.resolver_match.namespace == 'owner_admin' %}
+        {{ title }} | Беседка - Управление платформой
+    {% elif request.resolver_match.namespace == 'moderator_admin' %}
+        {{ title }} | Беседка - Модерация
+    {% else %}
+        {{ title }} | {{ site_title|default:_('Беседка - Админка') }}
+    {% endif %}
+{% endblock %}
+
+{% block branding %}
+    <!-- Брендинг теперь в единой навигации -->
+{% endblock %}
+
+{% block userlinks %}
+    <!-- Пользовательские ссылки теперь в единой навигации -->
+{% endblock %}
+
+{% block nav-global %}
+    <!-- Глобальная навигация теперь в единой навигации -->
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} besedka-admin{% endblock %}
+
+{% block header %}
+    {# Вставляем единую навигацию Беседки #}
+    {% include "includes/navigation.html" %}
+    {# Стандартная шапка админки скрыта через CSS (body.besedka-admin #header) #}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Беседка - Модерация') }}{% endblock %}
+
+<!-- ДОБАВЛЯЕМ УНИФИЦИРОВАННУЮ НАВИГАЦИЮ -->
+{% block nav-global %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Цветовая тема модератора */
+    :root {
+        --primary: #dc2626;
+        --secondary: #f97316;
+        --accent: #ff9800;
+        --primary-fg: #fff;
+    }
+    #header {
+        display: none !important;
+    }
+    #content h1, .content h1, #content-main > h1:first-child, .main > h1:first-child { display: none !important; }
+</style>
+{% endblock %}
+
+{% block header %}
+    {% include 'includes/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    {% include "includes/chat_modal.html" %}
+{% endblock %}

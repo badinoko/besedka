@@ -1,42 +1,211 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Каталог - Magic Beans{% endblock %}
+{% block title %}{% translate "Каталог" %} - Magic Beans{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">Каталог семян</h1>
-    
     <div class="row">
-        {% for strain in strains %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                {% if strain.breeder.logo %}
-                <div class="card-header">
-                    <img src="{{ strain.breeder.logo.url }}" alt="{{ strain.breeder.name }}" class="img-fluid" style="max-height: 40px;">
-                </div>
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ strain.name }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ strain.breeder.name }}</h6>
-                    <p class="card-text">{{ strain.description|truncatewords:20 }}</p>
-                    <ul class="list-group list-group-flush mb-3">
-                        <li class="list-group-item">Генетика: {{ strain.genetics }}</li>
-                        <li class="list-group-item">Цветение: {{ strain.flowering_time }} недель</li>
-                        {% if strain.thc_content %}
-                        <li class="list-group-item">THC: {{ strain.thc_content }}</li>
+        <div class="col-md-3">
+            <h4 class="mb-3">{% translate "Сидбанки" %}</h4>
+            <div class="list-group mb-4">
+                <a href="{% url 'store:catalog' %}"
+                   class="list-group-item list-group-item-action {% if not selected_seedbank_id %}active{% endif %}">
+                   {% translate "Все сидбанки" %}
+                </a>
+                {% for sb in seedbanks %}
+                <a href="{% url 'store:catalog' %}?seedbank_id={{ sb.pk }}{% if request.GET.name %}&name={{ request.GET.name }}{% endif %}{% for gen_type in request.GET.getlist.genetics %}&genetics={{ gen_type }}{% endfor %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}"
+                   class="list-group-item list-group-item-action {% if selected_seedbank_id == sb.pk %}active{% endif %}">
+                    {{ sb.name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <h4 class="mb-3">{% translate "Фильтры" %}</h4>
+            <form method="get" class="mb-4">
+                {# {% csrf_token %} #} {# Удален CSRF токен для GET формы #}
+                {{ filter_form.media }}
+                {{ filter_form.management_form }}
+                {% for field in filter_form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
                         {% endif %}
-                    </ul>
-                    <a href="{% url 'store:strain_detail' strain.pk %}" class="btn btn-primary">Подробнее</a>
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <input type="hidden" name="seedbank_id" value="{{ selected_seedbank_id|default_if_none:'' }}">
+                <button type="submit" class="btn btn-primary w-100">{% translate "Применить" %}</button>
+                <a href="{% url 'store:catalog' %}" class="btn btn-secondary w-100 mt-2">{% translate "Сбросить все" %}</a>
+            </form>
+        </div>
+
+        <div class="col-md-9">
+            <h1 class="mb-4">{% translate "Каталог семян" %}</h1>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="list-group strain-list">
+                {% for strain in strains %}
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 shadow-sm strain-list-item">
+                    <div class="d-flex w-100">
+                        <div class="flex-shrink-0 me-3 strain-image-container">
+                            <img src="{{ strain.get_image_url }}" alt="{{ strain.name }}" class="strain-image img-fluid">
+                        </div>
+                        <div class="flex-shrink-0 me-3 strain-logo-container">
+                            {% if strain.seedbank.logo %}
+                                <img src="{{ strain.seedbank.logo.url }}" alt="{{ strain.seedbank.name }}" class="strain-logo img-fluid" >
+                            {% else %}
+                                <div class="strain-logo-placeholder"><span>{{ strain.seedbank.name|slice:":2" }}</span></div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1"><a href="{% url 'store:strain_detail' strain.pk %}" class="text-decoration-none">{{ strain.name }}</a></h5>
+                                <small class="text-muted">{{ strain.seedbank.name }}</small>
+                            </div>
+                            <p class="mb-1 strain-description">{{ strain.description|truncatewords:25 }}</p>
+                            <div class="row strain-characteristics mt-2">
+                                <div class="col-sm-4"><small><strong>{% translate "Тип" %}:</strong> {{ strain.get_strain_type_display }}</small></div>
+                                <div class="col-sm-4"><small><strong>{% translate "Цветение" %}:</strong> {{ strain.get_flowering_time_display }}</small></div>
+                                {% if strain.thc_content and strain.thc_content != 'unknown' %}
+                                <div class="col-sm-4"><small><strong>THC:</strong> {{ strain.get_thc_content_display }}</small></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="ms-auto text-end strain-actions">
+                            {% if strain.get_min_price %}
+                                <h5 class="mb-1 price-highlight">{{ strain.get_min_price }} {% translate "руб." %}</h5>
+                                <a href="{% url 'store:strain_detail' strain.pk %}" class="btn btn-primary btn-sm mt-2 w-100">{% translate "Подробнее" %}</a>
+                            {% else %}
+                                <small class="text-muted">{% translate "Нет в наличии" %}</small>
+                                <a href="{% url 'store:strain_detail' strain.pk %}" class="btn btn-outline-primary btn-sm mt-2 w-100">{% translate "Подробнее" %}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        {% translate "В каталоге пока нет доступных сортов по вашему запросу." %}
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+
+            {# Пагинация ... #}
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value_list in request.GET.lists %}{% for value in value_list %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% endfor %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active" aria-current="page"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value_list in request.GET.lists %}{% for value in value_list %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% endfor %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value_list in request.GET.lists %}{% for value in value_list %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% endfor %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                В каталоге пока нет доступных сортов.
-            </div>
-        </div>
-        {% endfor %}
     </div>
 </div>
-{% endblock %} 
+
+<style>
+.strain-list-item {
+    border-radius: .5rem;
+    transition: all .2s ease-in-out;
+}
+.strain-list-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075), 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+.strain-image-container {
+    width: 100px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: .5rem;
+    background-color: #f8f9fa;
+}
+.strain-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: .5rem;
+}
+.strain-logo-container {
+    width: 60px;
+    height: 50px; /* Фиксированная высота для выравнивания */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Обрезать лого, если оно слишком большое */
+}
+.strain-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.strain-logo-placeholder {
+    width: 60px;
+    height: 60px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .25rem;
+    font-weight: bold;
+    color: #777;
+}
+.strain-actions {
+    min-width: 120px; /* Чтобы кнопка и цена не переносились сильно */
+}
+.price-highlight {
+    color: var(--bs-primary);
+}
+.strain-description {
+    font-size: 0.9rem;
+    color: #555;
+}
+.strain-characteristics small {
+    font-size: 0.85rem;
+    color: #444;
+}
+</style>
+{% endblock %}

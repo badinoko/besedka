@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}👥 {{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .admin-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    .admin-header {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .admin-body {
+        padding: 40px;
+    }
+
+    .user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .user-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: 2px solid #e0e6ed;
+    }
+
+    .user-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .user-card.admin {
+        border-color: #4facfe;
+        background: linear-gradient(135deg, #f8fdff 0%, #f0f9ff 100%);
+    }
+
+    .user-card.store-admin {
+        border-color: #43e97b;
+        background: linear-gradient(135deg, #f0fff4 0%, #f0fff4 100%);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-right: 15px;
+        object-fit: cover;
+        border: 3px solid #4facfe;
+    }
+
+    .default-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-right: 15px;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .user-details h4 {
+        margin: 0 0 5px 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .user-role {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .role-admin {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .role-store-admin {
+        background: #e8f5e8;
+        color: #2e7d32;
+    }
+
+    .role-user {
+        background: #f5f5f5;
+        color: #666;
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-promote {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-promote:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(67, 233, 123, 0.4);
+    }
+
+    .btn-demote {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-demote:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(250, 112, 154, 0.4);
+    }
+
+    .btn-manage {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-manage:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e0e6ed;
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #4facfe;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-state .emoji {
+        font-size: 64px;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .user-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .admin-body {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="admin-card">
+                    <div class="admin-header">
+                        <h1 class="mb-2">👥 {{ title }}</h1>
+                        <p class="mb-0">Управление сотрудниками и правами доступа</p>
+                    </div>
+
+                    <div class="admin-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Статистика -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ managed_users|length }}</div>
+                                <div class="stat-label">Всего пользователей</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">
+                                    {% with admin_count=managed_users|dictsort:"role"|yesno:"admin,store_admin"|length %}
+                                        {{ admin_count|default:0 }}
+                                    {% endwith %}
+                                </div>
+                                <div class="stat-label">Активных админов</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">
+                                    {% with regular_count=managed_users|dictsort:"role"|yesno:"user"|length %}
+                                        {{ regular_count|default:0 }}
+                                    {% endwith %}
+                                </div>
+                                <div class="stat-label">Обычных пользователей</div>
+                            </div>
+                        </div>
+
+                        {% if managed_users %}
+                            <div class="user-grid">
+                                {% for target_user in managed_users %}
+                                    <div class="user-card {% if target_user.role != 'user' %}admin{% endif %}">
+                                        <div class="user-info">
+                                            {% if target_user.avatar %}
+                                                <img src="{{ target_user.avatar.url }}" alt="Аватар" class="user-avatar">
+                                            {% else %}
+                                                <div class="default-avatar">
+                                                    {{ target_user.username|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="user-details">
+                                                <h4>{{ target_user.name|default:target_user.username }}</h4>
+                                                <div class="user-role
+                                                    {% if target_user.role == 'admin' %}role-admin
+                                                    {% elif target_user.role == 'store_admin' %}role-store-admin
+                                                    {% else %}role-user{% endif %}">
+                                                    {% if target_user.role == 'admin' %}
+                                                        🎭 Модератор платформы
+                                                    {% elif target_user.role == 'store_admin' %}
+                                                        📦 Админ магазина
+                                                    {% else %}
+                                                        👤 Пользователь
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="user-actions">
+                                            {% if target_user.role == 'user' %}
+                                                <!-- Назначить админом -->
+                                                <a href="{% url 'users:change_role' target_user.pk %}" class="btn btn-promote">
+                                                    {% if can_promote_to == 'admin' %}
+                                                        🎭 Назначить модератором
+                                                    {% else %}
+                                                        📦 Назначить админом магазина
+                                                    {% endif %}
+                                                </a>
+                                            {% else %}
+                                                <!-- Уволить -->
+                                                <a href="{% url 'users:change_role' target_user.pk %}" class="btn btn-demote">
+                                                    👇 Уволить
+                                                </a>
+                                                <!-- Управлять -->
+                                                <a href="{% url 'users:change_role' target_user.pk %}" class="btn btn-manage">
+                                                    ⚙️ Управлять
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <span class="emoji">👥</span>
+                                <h3>Пользователи не найдены</h3>
+                                <p>В системе пока нет пользователей для управления</p>
+                            </div>
+                        {% endif %}
+
+                        <!-- Кнопка возврата -->
+                        <div class="text-center">
+                            <a href="{% url 'users:profile' %}" class="btn btn-secondary">
+                                ← Вернуться в профиль
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Подтверждение увольнения
+    document.addEventListener('DOMContentLoaded', function() {
+        const demoteButtons = document.querySelectorAll('.btn-demote');
+
+        demoteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const confirmed = confirm('Вы уверены, что хотите уволить этого сотрудника? Он станет обычным пользователем.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

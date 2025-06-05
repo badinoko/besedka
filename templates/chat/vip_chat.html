@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load chat_extras %}
+
+{% block title %}VIP Чат - Беседка{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/chat_modal.css' %}?v=4.0.0">
+<link rel="stylesheet" type="text/css" href="{% static 'css/chat_styles.css' %}?v=4.0.0">
+<style>
+    /* VIP-специфические стили */
+    .vip-header {
+        background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+        color: #333;
+    }
+
+    .vip-header .chat-title {
+        color: #333;
+    }
+
+    .vip-header .chat-meta-row .meta-item {
+        color: #333;
+    }
+
+    .vip-header .chat-meta-row .meta-item i {
+        color: #b8860b;
+    }
+
+    .chat-switcher-btn.active {
+        background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+        color: #333;
+    }
+
+    .politeness-notice {
+        background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+        color: #333;
+    }
+
+    .sidebar-title .text-primary {
+        color: #ffd700 !important;
+    }
+
+    .badge.bg-primary {
+        background-color: #ffd700 !important;
+        color: #333 !important;
+    }
+
+    .card-title .text-primary {
+        color: #ffd700 !important;
+    }
+
+    .text-primary {
+        color: #ffd700 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-page">
+    <div class="container">
+        {% can_access_vip_chat user as vip_access %}
+        {% if not vip_access %}
+        <div class="status-message status-error">
+            <h4><i class="fas fa-crown"></i> {% trans "VIP доступ недоступен" %}</h4>
+            <p>{% trans "Для доступа к VIP чату необходим специальный статус." %}</p>
+        </div>
+        {% else %}
+
+        <!-- КНОПКИ ПЕРЕКЛЮЧЕНИЯ ЧАТОВ -->
+        {% if user.is_authenticated %}
+        <div class="d-flex justify-content-center mb-4">
+            <div class="btn-group" role="group" aria-label="Переключение чатов">
+                <!-- Общий чат -->
+                <a href="{% url 'chat:general' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-comments me-2"></i>Общий чат
+                </a>
+
+                <!-- VIP чат (активный) -->
+                <button type="button" class="btn btn-warning active" disabled>
+                    <i class="fas fa-crown me-2"></i>VIP чат
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+        <div class="row">
+            <div class="col-lg-9 col-md-8">
+                <div class="chat-container">
+                    <!-- Статус подключения -->
+                    <div class="chat-body-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h4 class="chat-body-title mb-0">
+                                <i class="fas fa-crown me-2"></i>
+                                VIP Обсуждение
+                            </h4>
+                            <span id="connection-status" class="status-badge connecting">
+                                <i class="fas fa-circle me-1"></i> Подключение...
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Сообщения чата -->
+                    <div id="chat-messages" class="chat-messages">
+                        {% for message in chat_messages %}
+                        <div class="message {% if message.author == user %}own-message{% else %}other-message{% endif %}">
+                            {% if message.author != user %}
+                            <div class="message-header">
+                                <i class="fas fa-crown text-warning me-1"></i>{{ message.author.username }}
+                                {% if message.author.role == 'owner' %}
+                                    <span class="badge bg-danger">Владелец</span>
+                                {% elif message.author.role == 'admin' %}
+                                    <span class="badge bg-warning">Модератор</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <div class="message-bubble">
+                                <div class="message-content">{{ message.content }}</div>
+                                <div class="message-time">{{ message.created|date:"H:i" }}</div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-crown fa-3x mb-3 text-warning opacity-50"></i>
+                            <p class="mb-0">{% trans "Добро пожаловать в VIP беседку! Здесь пока нет сообщений." %}</p>
+                            <p><small>{% trans "Станьте первым, кто напишет в эксклюзивном чате!" %}</small></p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Индикатор печати -->
+                    <div id="typing-indicator" class="typing-indicator"></div>
+
+                    <!-- Поле ввода сообщения -->
+                    <div class="chat-input">
+                        {% if user.is_authenticated %}
+                        <!-- Напоминание о VIP статусе -->
+                        <div class="politeness-notice">
+                            <i class="fas fa-crown"></i>
+                            <span>Добро пожаловать в эксклюзивный VIP-чат сообщества Беседка!</span>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="text"
+                                   id="message-input"
+                                   class="form-control"
+                                   placeholder="Напишите VIP сообщение..."
+                                   autocomplete="off">
+                            <button class="btn btn-primary" type="button" id="send-button">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Отправить
+                            </button>
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Нажмите Enter для отправки сообщения
+                        </small>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <a href="{% url 'account_login' %}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Войдите для участия в чате
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель VIP участников -->
+            <div class="col-lg-3 col-md-4">
+                <div class="online-users-sidebar">
+                    <div class="sidebar-title">
+                        <i class="fas fa-crown text-primary"></i>
+                        VIP Участники
+                        <span class="badge bg-primary ms-2" id="online-count-badge">0</span>
+                    </div>
+
+                    <!-- Список VIP участников -->
+                    <div id="online-users-list">
+                        <!-- VIP пользователи будут загружены через WebSocket -->
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-crown fa-2x mb-2 text-warning opacity-50"></i>
+                            <p class="mb-0 small">{% trans "Загрузка VIP участников..." %}</p>
+                        </div>
+                    </div>
+
+                    <!-- Статистика VIP чата -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                Статистика VIP
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="fw-bold text-primary">{{ total_vip_messages|default:0 }}</div>
+                                    <small class="text-muted">Сообщений</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-success">{{ total_vip_users|default:0 }}</div>
+                                    <small class="text-muted">VIP участников</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Информация о VIP чате -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-crown text-primary me-2"></i>
+                                VIP Привилегии
+                            </h6>
+                            <ul class="list-unstyled small mb-0">
+                                <li class="mb-1"><i class="fas fa-check text-success me-1"></i> Эксклюзивный доступ</li>
+                                <li class="mb-1"><i class="fas fa-check text-success me-1"></i> Приоритетная поддержка</li>
+                                <li class="mb-1"><i class="fas fa-check text-success me-1"></i> Особые возможности</li>
+                                <li class="mb-0"><i class="fas fa-check text-success me-1"></i> VIP сообщество</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ===== VIP ЧАТ JAVASCRIPT ===== -->
+<script src="{% static 'js/chat_client.js' %}?v=4.1.0"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация VIP чата
+    if (typeof ChatClient !== 'undefined') {
+        const vipChat = new ChatClient('vip');
+
+        // Обновление счетчика онлайн пользователей
+        vipChat.onUserUpdate = function(data) {
+            if (data.online_count !== undefined) {
+                // Обновляем счетчик в заголовке тоже
+                const headerMeta = document.querySelector('.header-meta .meta-item:first-child span');
+                if (headerMeta) {
+                    headerMeta.textContent = 'Онлайн: ' + data.online_count;
+                }
+
+                document.getElementById('online-count-badge').textContent = data.online_count;
+            }
+
+            if (data.online_users) {
+                this.updateOnlineUsersList(data.online_users);
+            }
+        };
+
+        // Функция обновления списка онлайн пользователей
+        vipChat.updateOnlineUsersList = function(users) {
+            const onlineList = document.getElementById('online-users-list');
+            if (!onlineList) return;
+
+            if (users.length === 0) {
+                onlineList.innerHTML = `
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-crown fa-2x mb-2 text-warning opacity-50"></i>
+                        <p class="mb-0 small">Нет VIP участников онлайн</p>
+                    </div>
+                `;
+                return;
+            }
+
+            onlineList.innerHTML = users.map(user => `
+                <div class="online-user">
+                    <div class="status-dot"></div>
+                    <span class="user-name">
+                        <i class="fas fa-crown text-warning me-1"></i>${user.username}
+                    </span>
+                </div>
+            `).join('');
+        };
+    }
+});
+</script>
+{% endblock %}

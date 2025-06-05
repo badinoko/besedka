@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Новости - Беседка{% endblock %}
+
+{% block extra_css %}
+<style>
+    .news-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        background: white;
+        min-height: 420px; /* Увеличиваем минимальную высоту */
+    }
+
+    .news-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .news-image {
+        height: 220px; /* Увеличиваем высоту изображения */
+        object-fit: cover;
+        width: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    .news-card:hover .news-image {
+        transform: scale(1.05);
+    }
+
+    .news-meta {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .news-excerpt {
+        color: #495057;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .category-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 25px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .pinned-post {
+        border-left: 4px solid #ffc107;
+        background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+    }
+
+    .poll-card {
+        border-left: 4px solid #17a2b8;
+        background: linear-gradient(135deg, #e6f7ff 0%, #ffffff 100%);
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.2);
+    }
+
+    .video-card {
+        border-left: 4px solid #dc3545;
+        background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+    }
+
+    .sidebar-widget {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .search-form {
+        position: relative;
+    }
+
+    .search-form .form-control {
+        padding-right: 3rem;
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        transition: border-color 0.3s ease;
+        padding: 0.75rem 1rem;
+    }
+
+    .search-form .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+
+    .search-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #007bff;
+        border: none;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .search-btn:hover {
+        background: #0056b3;
+    }
+
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .category-list li {
+        margin-bottom: 0.75rem;
+    }
+
+    .category-list a {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .category-list a:hover {
+        background: #007bff;
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .category-list .badge {
+        margin-left: auto;
+    }
+
+    .post-stats {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .post-stats i {
+        margin-right: 0.25rem;
+        color: #007bff;
+    }
+
+    .post-stats span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Улучшенные теги */
+    .tag-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #bbdefb;
+        transition: all 0.3s ease;
+    }
+
+    .tag-badge:hover {
+        background: #1976d2;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Улучшенная пагинация */
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: 1px solid #dee2e6;
+        color: #007bff;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #007bff;
+        border-color: #007bff;
+    }
+
+    /* Анимация загрузки карточек */
+    .news-card {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Задержка анимации для каждой карточки */
+    .news-card:nth-child(1) { animation-delay: 0.1s; }
+    .news-card:nth-child(2) { animation-delay: 0.2s; }
+    .news-card:nth-child(3) { animation-delay: 0.3s; }
+    .news-card:nth-child(4) { animation-delay: 0.4s; }
+    .news-card:nth-child(5) { animation-delay: 0.5s; }
+    .news-card:nth-child(6) { animation-delay: 0.6s; }
+
+    /* Улучшенный заголовок карточки */
+    .card-title a {
+        font-weight: 600;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.3s ease;
+    }
+
+    .card-title a:hover {
+        color: #007bff !important;
+    }
+
+    /* Кнопка "Читать" */
+    .btn-read-more {
+        border-radius: 20px;
+        padding: 0.4rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid #007bff;
+    }
+
+    .btn-read-more:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    }
+
+    /* Улучшенный разделитель */
+    .card-divider {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #dee2e6, transparent);
+        margin: 1rem 0;
+    }
+
+    /* Улучшенные статистики */
+    .post-stats span {
+        background: #f8f9fa;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .post-stats span:hover {
+        background: #e9ecef;
+        transform: translateY(-1px);
+    }
+
+    /* Улучшенная информация об авторе */
+    .author-info {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+        border: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div class="col-lg-8">
+        <!-- ЗАГОЛОВОК И ФИЛЬТРЫ -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-newspaper text-primary me-2"></i>
+                Новости сообщества
+            </h1>
+
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-filter me-1"></i> Фильтр
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?filter=all">Все новости</a></li>
+                    <li><a class="dropdown-item" href="?filter=articles">Статьи</a></li>
+                    <li><a class="dropdown-item" href="?filter=polls">Опросы</a></li>
+                    <li><a class="dropdown-item" href="?filter=videos">Видео</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="?filter=pinned">Закрепленные</a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ЗАКРЕПЛЕННЫЕ ПОСТЫ -->
+        {% if pinned_posts %}
+        <div class="mb-4">
+            <h3 class="h5 mb-3">
+                <i class="fas fa-thumbtack text-warning me-2"></i>
+                Закрепленные новости
+            </h3>
+            {% for post in pinned_posts %}
+            <div class="card news-card pinned-post mb-3">
+                <div class="row g-0">
+                    {% if post.image %}
+                    <div class="col-md-4">
+                        <img src="{{ post.image.url }}" class="news-image" alt="{{ post.title }}">
+                    </div>
+                    <div class="col-md-8">
+                    {% else %}
+                    <div class="col-12">
+                    {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="category-badge bg-warning text-dark">
+                                    <i class="fas fa-thumbtack me-1"></i>
+                                    Закреплено
+                                </span>
+                                <small class="news-meta">{{ post.published_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+
+                            <h5 class="card-title">
+                                <a href="{% url 'news:post_detail' post.slug %}" class="text-decoration-none text-dark">
+                                    {{ post.title }}
+                                </a>
+                            </h5>
+
+                            {% if post.excerpt %}
+                            <p class="news-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="post-stats">
+                                    <span><i class="fas fa-eye"></i>{{ post.views_count }}</span>
+                                    <span><i class="fas fa-comments"></i>{{ post.comments.count }}</span>
+                                    <span><i class="fas fa-heart"></i>{{ post.reactions.count }}</span>
+                                </div>
+                                <small class="text-muted">{{ post.author.username }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ОБЫЧНЫЕ ПОСТЫ -->
+        <div class="row">
+            {% for post in posts %}
+            <div class="col-lg-6 mb-4">
+                <div class="card news-card h-100 {% if post.post_type == 'poll' %}poll-card{% elif post.post_type == 'video_link' %}video-card{% endif %}">
+                    {% if post.image %}
+                    <div class="position-relative overflow-hidden">
+                        <img src="{{ post.image.url }}" class="news-image" alt="{{ post.title }}">
+                        <div class="position-absolute top-0 end-0 m-2">
+                            {% if post.post_type == 'poll' %}
+                            <span class="category-badge bg-info text-white">
+                                <i class="fas fa-poll me-1"></i>Опрос
+                            </span>
+                            {% elif post.post_type == 'video_link' %}
+                            <span class="category-badge bg-danger text-white">
+                                <i class="fas fa-video me-1"></i>Видео
+                            </span>
+                            {% else %}
+                            <span class="category-badge bg-success text-white">
+                                <i class="fas fa-file-alt me-1"></i>Статья
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="card-body d-flex flex-column p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            {% if post.category %}
+                            <span class="category-badge bg-primary text-white">
+                                <i class="fas fa-folder me-1"></i>{{ post.category.name }}
+                            </span>
+                            {% endif %}
+
+                            <small class="news-meta">
+                                <i class="fas fa-clock me-1"></i>{{ post.published_at|date:"d.m.Y" }}
+                            </small>
+                        </div>
+
+                        <h5 class="card-title mb-3">
+                            <a href="{% url 'news:post_detail' post.slug %}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+
+                        {% if post.excerpt %}
+                        <p class="news-excerpt flex-grow-1 mb-3">{{ post.excerpt|truncatewords:20 }}</p>
+                        {% endif %}
+
+                        <!-- ТЕГИ -->
+                        {% if post.tags.all %}
+                        <div class="mb-3">
+                            {% for tag in post.tags.all|slice:":3" %}
+                            <a href="{% url 'news:tag_posts' tag.slug %}" class="badge tag-badge text-decoration-none me-1 mb-1">
+                                #{{ tag.name }}
+                            </a>
+                            {% endfor %}
+                            {% if post.tags.count > 3 %}
+                            <span class="badge bg-light text-muted">+{{ post.tags.count|add:"-3" }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-auto">
+                            <hr class="card-divider">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="post-stats">
+                                    <span title="Просмотры">
+                                        <i class="fas fa-eye"></i>{{ post.views_count }}
+                                    </span>
+                                    <span title="Комментарии">
+                                        <i class="fas fa-comments"></i>{{ post.comments.count }}
+                                    </span>
+                                    <span title="Реакции">
+                                        <i class="fas fa-heart"></i>{{ post.reactions.count }}
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="author-info">
+                                        <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                                    </span>
+                                    <a href="{% url 'news:post_detail' post.slug %}" class="btn btn-outline-primary btn-sm btn-read-more">
+                                        Читать
+                                        <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                    <h3 class="text-muted">Пока нет новостей</h3>
+                    <p class="text-muted">Станьте первым, кто поделится интересной новостью!</p>
+                    {% if user.is_authenticated and user.is_staff %}
+                    <a href="/admin/" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Добавить новость
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ПАГИНАЦИЯ -->
+        {% if is_paginated %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- САЙДБАР -->
+    <div class="col-lg-4">
+        <!-- ПОИСК -->
+        <div class="sidebar-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-search text-primary me-2"></i>
+                Поиск новостей
+            </h5>
+            <form method="get" action="{% url 'news:search' %}" class="search-form">
+                <input type="text" name="q" class="form-control" placeholder="Введите ключевые слова..." value="{{ request.GET.q }}">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- КАТЕГОРИИ -->
+        {% if categories %}
+        <div class="sidebar-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-folder text-primary me-2"></i>
+                Категории
+            </h5>
+            <ul class="category-list">
+                {% for category in categories %}
+                <li>
+                    <a href="{% url 'news:category_posts' category.slug %}">
+                        {{ category.name }}
+                        <span class="badge bg-secondary">{{ category.posts.published.count }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- ПОПУЛЯРНЫЕ ТЕГИ -->
+        {% if popular_tags %}
+        <div class="sidebar-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-tags text-primary me-2"></i>
+                Популярные теги
+            </h5>
+            <div class="d-flex flex-wrap gap-1">
+                {% for tag in popular_tags %}
+                <a href="{% url 'news:tag_posts' tag.slug %}" class="badge bg-light text-dark text-decoration-none">
+                    #{{ tag.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- СТАТИСТИКА -->
+        <div class="sidebar-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-chart-bar text-primary me-2"></i>
+                Статистика
+            </h5>
+            <div class="row text-center">
+                <div class="col-6">
+                    <div class="border-end">
+                        <h4 class="text-primary mb-0">{{ total_posts }}</h4>
+                        <small class="text-muted">Новостей</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <h4 class="text-success mb-0">{{ total_comments }}</h4>
+                    <small class="text-muted">Комментариев</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОСЛЕДНИЕ КОММЕНТАРИИ -->
+        {% if recent_comments %}
+        <div class="sidebar-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-comments text-primary me-2"></i>
+                Последние комментарии
+            </h5>
+            {% for comment in recent_comments %}
+            <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                <div class="d-flex align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            <a href="{% url 'news:post_detail' comment.post.slug %}#comment-{{ comment.id }}" class="text-decoration-none">
+                                {{ comment.post.title|truncatechars:30 }}
+                            </a>
+                        </h6>
+                        <p class="mb-1 small text-muted">{{ comment.content|truncatewords:10 }}</p>
+                        <small class="text-muted">
+                            {{ comment.author.username }} • {{ comment.created_at|timesince }} назад
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const cards = document.querySelectorAll('.news-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

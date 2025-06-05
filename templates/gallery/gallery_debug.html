@@ -1,0 +1,14 @@
+{% extends 'gallery/gallery.html' %}
+{% block title %}Debug Gallery{% endblock %}
+{% block content %}
+<h1 class="mt-4">Debug Gallery</h1>
+<div class="row">
+    {% for photo in photos %}
+        <div class="col-md-3 mb-3">
+            <img src="{{ photo.image.url }}" class="img-fluid rounded">
+        </div>
+    {% empty %}
+        <p>Нет фото для отображения.</p>
+    {% endfor %}
+</div>
+{% endblock %}

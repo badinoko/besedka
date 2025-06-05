@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n static humanize %}
+
+{% block title %}{% trans "Заказ успешно оформлен" %} - {{ block.super }}{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'news:home' %}">{% trans "Главная" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'store:catalog' %}">{% trans "Каталог" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Заказ оформлен" %}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="display-4 text-success mb-3"><i class="bi bi-check-circle-fill"></i></h1>
+                    <h2 class="mb-3">{% trans "Спасибо за ваш заказ!" %}</h2>
+                    <p class="lead">
+                        {% blocktrans with order_id=order.pk %}Ваш заказ <strong>#{{ order_id }}</strong> успешно оформлен.{% endblocktrans %}
+                    </p>
+                    <p>{% trans "Наши менеджеры свяжутся с вами в ближайшее время для подтверждения деталей и уточнения способа оплаты и доставки." %}</p>
+                    <hr class="my-4">
+                    <p class="mb-0">
+                        <a href="{% url 'store:my_orders' %}" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-list-check"></i> {% trans "Мои заказы" %}
+                        </a>
+                        <a href="{% url 'store:catalog' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left-circle"></i> {% trans "Продолжить покупки" %}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

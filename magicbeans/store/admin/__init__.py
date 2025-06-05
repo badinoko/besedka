@@ -3,30 +3,34 @@
 Регистрирует все административные классы для моделей магазина.
 """
 from django.contrib import admin
-import sys
-import os
-
-# Используем абсолютный импорт из файла models.py
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from models import Administrator, SeedBank, Strain, StrainImage, StockItem, StockMovement, Order, OrderItem, ActionLog
-
-# Импортируем административные классы
 from magicbeans.store.admin.administrators import AdministratorAdmin
 from magicbeans.store.admin.stock_admin import StockItemAdmin, StockMovementAdmin
+from magicbeans.store.models import SeedBank, Strain, StrainImage, ActionLog
+# Все декораторы закомментированы - регистрация происходит в magicbeans_store/admin.py
 
-# Регистрируем все административные классы
-admin.site.register(Administrator, AdministratorAdmin)
-admin.site.register(StockItem, StockItemAdmin)
-admin.site.register(StockMovement, StockMovementAdmin)
+# @admin.register(SeedBank)
+# class OldSeedBankAdmin(admin.ModelAdmin):
+#     list_display = ("name", "is_visible", "created_at", "updated_at")
+#     search_fields = ("name",)
+#     list_filter = ("is_visible",)
+#     ordering = ("name",)
 
-# Для моделей, у которых нет специализированных административных классов
-# можно использовать стандартную регистрацию:
-admin.site.register(SeedBank)
-admin.site.register(Strain)
-admin.site.register(StrainImage)
-admin.site.register(Order)
-admin.site.register(OrderItem)
-admin.site.register(ActionLog)
+# @admin.register(Strain)
+# class OldStrainAdmin(admin.ModelAdmin):
+#     list_display = ("name", "strain_type", "seed_bank", "is_visible", "created_at", "updated_at")
+#     search_fields = ("name", "seed_bank__name")
+#     list_filter = ("strain_type", "seed_bank", "is_visible")
+#     ordering = ("name",)
 
-# Определяем список экспортируемых имен
-__all__ = []
+# @admin.register(StrainImage)
+# class OldStrainImageAdmin(admin.ModelAdmin):
+#     list_display = ("strain", "order", "image")
+#     search_fields = ("strain__name",)
+#     ordering = ("strain", "order")
+
+# @admin.register(ActionLog)
+# class OldActionLogAdmin(admin.ModelAdmin):
+#     list_display = ("user", "action_type", "timestamp", "model_name", "object_id", "object_repr")
+#     search_fields = ("user__username", "model_name", "object_repr")
+#     list_filter = ("action_type", "model_name")
+#     date_hierarchy = "timestamp"

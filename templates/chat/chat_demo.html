@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Демо чата" %} - Беседка{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-intro {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        text-align: center;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .chat-intro h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .chat-intro p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .demo-notice {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .demo-notice i {
+        color: #856404;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+    .chat-features {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .feature-item i {
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-right: 1rem;
+        width: 30px;
+        text-align: center;
+    }
+
+    .feature-item h5 {
+        margin: 0 0 0.5rem 0;
+        color: #333;
+    }
+
+    .feature-item p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .comparison-table {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .comparison-table table {
+        margin-bottom: 0;
+    }
+
+    .comparison-table .table-success {
+        background-color: #d4edda !important;
+    }
+
+    .comparison-table .table-danger {
+        background-color: #f8d7da !important;
+    }
+
+    .success-notice {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .success-notice i {
+        color: #155724;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Заголовок -->
+            <div class="chat-intro">
+                <h1><i class="fas fa-comments"></i> {% trans "Демо нового чата" %}</h1>
+                <p>{% trans "Современное решение вместо самописного кода" %}</p>
+            </div>
+
+            <!-- Успешная замена -->
+            <div class="success-notice">
+                <i class="fas fa-check-circle"></i>
+                <strong>{% trans "Чат успешно заменен!" %}</strong>
+                {% trans "Самописный код заменен на профессиональное решение Tawk.to. Виджет в правом нижнем углу работает в реальном времени!" %}
+            </div>
+
+            <!-- Сравнение -->
+            <div class="comparison-table">
+                <h3 class="mb-4">{% trans "Что мы получили:" %}</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>{% trans "Характеристика" %}</th>
+                                <th>{% trans "Самописный чат" %}</th>
+                                <th>{% trans "Tawk.to (новый)" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>{% trans "Время разработки" %}</strong></td>
+                                <td class="table-danger">{% trans "Недели/месяцы" %}</td>
+                                <td class="table-success">{% trans "5 минут ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Поддержка кода" %}</strong></td>
+                                <td class="table-danger">{% trans "Постоянная отладка" %}</td>
+                                <td class="table-success">{% trans "Не требуется ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Мобильные приложения" %}</strong></td>
+                                <td class="table-danger">{% trans "Нет" %}</td>
+                                <td class="table-success">{% trans "iOS + Android ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Надежность" %}</strong></td>
+                                <td class="table-danger">{% trans "Падения, баги" %}</td>
+                                <td class="table-success">{% trans "99.9% uptime ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Стоимость" %}</strong></td>
+                                <td class="table-danger">{% trans "Время разработчика" %}</td>
+                                <td class="table-success">{% trans "Бесплатно ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Дизайн" %}</strong></td>
+                                <td class="table-danger">{% trans "Самодельный" %}</td>
+                                <td class="table-success">{% trans "Профессиональный ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Файлы/изображения" %}</strong></td>
+                                <td class="table-danger">{% trans "Не работало" %}</td>
+                                <td class="table-success">{% trans "Из коробки ✅" %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>{% trans "Уведомления" %}</strong></td>
+                                <td class="table-danger">{% trans "Проблемы" %}</td>
+                                <td class="table-success">{% trans "Push + Email ✅" %}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Возможности чата -->
+            <div class="chat-features">
+                <h3 class="mb-4">{% trans "Что получаем с Tawk.to:" %}</h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <i class="fas fa-bolt"></i>
+                            <div>
+                                <h5>{% trans "Мгновенные сообщения" %}</h5>
+                                <p>{% trans "Реальное время без задержек" %}</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div>
+                                <h5>{% trans "Мобильные приложения" %}</h5>
+                                <p>{% trans "Модераторы могут отвечать с телефона" %}</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="fas fa-file-image"></i>
+                            <div>
+                                <h5>{% trans "Обмен файлами" %}</h5>
+                                <p>{% trans "Изображения, документы, видео" %}</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <h5>{% trans "Безопасность" %}</h5>
+                                <p>{% trans "Защита данных, модерация" %}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <div>
+                                <h5>{% trans "Аналитика" %}</h5>
+                                <p>{% trans "Статистика чатов и пользователей" %}</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="fas fa-bell"></i>
+                            <div>
+                                <h5>{% trans "Уведомления" %}</h5>
+                                <p>{% trans "Push, email, звуковые сигналы" %}</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="fas fa-globe"></i>
+                            <div>
+                                <h5>{% trans "Мультиязычность" %}</h5>
+                                <p>{% trans "Поддержка русского языка" %}</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h5>{% trans "24/7 работа" %}</h5>
+                                <p>{% trans "Никаких падений сервера" %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Инструкции -->
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> {% trans "Как протестировать:" %}</h5>
+                <ol class="mb-0">
+                    <li>{% trans "Найдите иконку чата в правом нижнем углу страницы" %}</li>
+                    <li>{% trans "Нажмите на неё для открытия окна чата" %}</li>
+                    <li>{% trans "Напишите тестовое сообщение" %}</li>
+                    <li>{% trans "Попробуйте отправить изображение" %}</li>
+                </ol>
+            </div>
+
+            <!-- Ссылки на старый чат -->
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-link"></i> {% trans "Доступ к старому чату:" %}</h5>
+                <p class="mb-2">{% trans "Старый самописный чат временно недоступен:" %}</p>
+                <button class="btn btn-outline-warning me-2" onclick="alert('Старый чат временно недоступен')">{% trans "Старый чат" %}</button>
+                <button class="btn btn-outline-info" onclick="alert('Красивый чат временно недоступен')">{% trans "Красивый чат" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tawk.to Live Chat Widget (ДЕМО) -->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+// Используем демо-ID для тестирования
+s1.src='https://embed.tawk.to/5d8c8ef677aa790be3333c7e/default';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+
+// Настройка виджета
+Tawk_API.onLoad = function(){
+    // Настраиваем пользователя
+    Tawk_API.setAttributes({
+        'name' : '{{ user.get_full_name|default:user.username }}',
+        'email' : '{{ user.email }}',
+        'role' : '{{ user.role|default:"user" }}'
+    }, function(error){
+        if(error) {
+            console.log('Ошибка настройки пользователя:', error);
+        }
+    });
+
+    // События чата
+    Tawk_API.addEvent('onChatStarted', function(){
+        console.log('Чат начат пользователем');
+    });
+
+    Tawk_API.addEvent('onChatEnded', function(){
+        console.log('Чат завершен');
+    });
+
+    Tawk_API.addEvent('onChatMessageVisitor', function(message){
+        console.log('Сообщение от пользователя:', message);
+    });
+
+    Tawk_API.addEvent('onChatMessageAgent', function(message){
+        console.log('Сообщение от агента:', message);
+    });
+};
+
+// Кастомизация внешнего вида
+Tawk_API.customStyle = {
+    visibility : {
+        desktop : {
+            position : 'br', // bottom right
+            xOffset : 20,
+            yOffset : 20
+        },
+        mobile : {
+            position : 'br',
+            xOffset : 10,
+            yOffset : 10
+        }
+    },
+    widget : {
+        color : {
+            theme : '#667eea', // Цвет из дизайна сайта
+            launcherText : '#FFFFFF'
+        }
+    }
+};
+
+// Автоматическое приветствие для демо
+Tawk_API.onLoad = function(){
+    setTimeout(function(){
+        if(typeof Tawk_API.showWidget === 'function') {
+            Tawk_API.showWidget();
+        }
+    }, 2000);
+};
+</script>
+{% endblock %}

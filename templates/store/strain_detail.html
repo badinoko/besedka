@@ -1,30 +1,93 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ strain.name }} - Magic Beans{% endblock %}
 
+{% block extra_css %}
+<style>
+/* .toast-container был здесь, но теперь используется глобальный .toast-container-custom из base.html */
+.form-inline .form-control {
+    width: auto; /* Позволяет полю количества быть компактным */
+    display: inline-block;
+}
+.strain-detail-image {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    max-height: 250px;
+    object-fit: cover;
+    width: 100%;
+}
+.strain-detail-image:hover {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
+
 {% block content %}
+{# Контейнер для Toast уведомлений из base.html будет использоваться #}
+{# <div class="toast-container position-fixed top-0 end-0 p-3"> #}
+{#     Сюда будут добавляться toast'ы через JS #}
+{# </div> #}
+
 <div class="container">
+    {# Отображение сообщений Django УДАЛЕНО отсюда, так как base.html теперь их обрабатывает как toasts #}
+    {# {% if messages %} ... {% endif %} #}
+
     <div class="row mb-4">
         <div class="col-md-8">
             <h1>{{ strain.name }}</h1>
-            <h4 class="text-muted">{{ strain.breeder.name }}</h4>
+            <h4 class="text-muted">{{ strain.seedbank.name }}</h4>
         </div>
-        {% if strain.breeder.logo %}
+        {% if strain.seedbank.logo %}
         <div class="col-md-4 text-end">
-            <img src="{{ strain.breeder.logo.url }}" alt="{{ strain.breeder.name }}" class="img-fluid" style="max-height: 80px;">
+            <img src="{{ strain.seedbank.logo.url }}" alt="{{ strain.seedbank.name }}" class="img-fluid" style="max-height: 80px;">
         </div>
         {% endif %}
     </div>
 
     <div class="row">
         <div class="col-md-8">
+            {% if strain.has_images %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Изображения</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for image in strain.images.all %}
+                        <div class="col-md-6 mb-3">
+                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:strain.name }}"
+                                 class="img-fluid rounded shadow-sm strain-detail-image"
+                                 data-bs-toggle="modal" data-bs-target="#imageModal{{ image.id }}">
+                        </div>
+
+                        <!-- Modal для увеличенного изображения -->
+                        <div class="modal fade" id="imageModal{{ image.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">{{ strain.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:strain.name }}" class="img-fluid">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="card mb-4">
                 <div class="card-header">
                     <h5>Описание</h5>
                 </div>
                 <div class="card-body">
                     <p>{{ strain.description|linebreaks }}</p>
-                    
+
                     <h5 class="mt-4">Характеристики</h5>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>Генетика:</strong> {{ strain.genetics }}</li>
@@ -52,26 +115,50 @@
                     <h5>Доступные упаковки</h5>
                 </div>
                 <div class="card-body">
-                    {% if stock_items %}
+                    {% if stock_items_with_forms %}
                         <ul class="list-group list-group-flush">
-                        {% for item in stock_items %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ item.seeds_count }} шт.</span>
-                                {% if item.discount > 0 %}
-                                <div>
-                                    <span class="text-decoration-line-through">{{ item.price }} руб.</span>
-                                    <span class="badge bg-danger">-{{ item.discount }}%</span>
-                                    <strong class="ms-2">{{ item.final_price }} руб.</strong>
+                        {% for data_item in stock_items_with_forms %}
+                            {% with item=data_item.item form=data_item.form %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ item.seeds_count }} семян - <strong>{{ item.price }} руб.</strong></span>
+                                    {% if item.quantity > 0 %}
+                                        <span class="badge bg-success">В наличии: {{ item.quantity }} упак.</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Нет в наличии</span>
+                                    {% endif %}
                                 </div>
-                                {% else %}
-                                <strong>{{ item.price }} руб.</strong>
+                                {% if item.quantity > 0 and form %}
+                                    <form action="{% url 'store:add_to_cart' %}" method="post" class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        {{ form.stock_item_id }}
+                                        <div class="input-group input-group-sm mb-1">
+                                            <span class="input-group-text">{% translate "Кол-во" %}:</span>
+                                            <input type="number" name="{{ form.quantity.name }}" value="{{ form.quantity.value|default:1 }}"
+                                                   min="1" max="{{ item.quantity }}"
+                                                   class="form-control form-control-sm quantity-input"
+                                                   id="id_quantity_stock_{{ item.pk }}"
+                                                   data-stock-item-id="{{ item.pk }}"
+                                                   data-max-quantity="{{ item.quantity }}"
+                                                   style="width: 70px;">
+                                            <button type="submit" class="btn btn-primary">{% translate "В корзину" %}</button>
+                                        </div>
+                                        <div class="text-muted mb-2" style="font-size: 0.8rem;">
+                                            <span id="available_stock_{{ item.pk }}">{% translate "Доступно:" %} {{ item.quantity }} упак.</span>
+                                        </div>
+                                        {% if form.quantity.errors %}
+                                            {% for error in form.quantity.errors %}
+                                                <small class="text-danger d-block">{{ error }}</small>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </form>
+                                {% elif item.quantity <= 0 %}
+                                    <p class="text-danger">{% translate "Нет в наличии" %}</p>
                                 {% endif %}
                             </li>
+                            {% endwith %}
                         {% endfor %}
                         </ul>
-                        <div class="mt-3">
-                            <a href="#" class="btn btn-success w-100">Заказать через Telegram</a>
-                        </div>
                     {% else %}
                         <div class="alert alert-warning">
                             В данный момент нет в наличии.
@@ -85,5 +172,138 @@
     <div class="mt-3">
         <a href="{% url 'store:catalog' %}" class="btn btn-outline-secondary">&laquo; Назад к каталогу</a>
     </div>
+
+    {# Кнопка перейти в корзину, если корзина не пуста (позже можно добавить условие на context.cart.items.exists) #}
+    <div class="mt-3">
+        <a href="{% url 'store:cart_detail' %}" class="btn btn-success w-100"><i class="bi bi-cart-check-fill me-2"></i>{% translate "Перейти в корзину" %}</a>
+    </div>
 </div>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Функция для создания и показа toast уведомления
+    function showToast(message, type = 'success') {
+        // Используем глобальный контейнер из base.html
+        const toastContainer = document.querySelector('.toast-container-custom');
+        if (!toastContainer) {
+            console.error('.toast-container-custom not found in base.html');
+            // В качестве запасного варианта, можно создать контейнер динамически,
+            // но лучше убедиться, что он есть в base.html
+            return;
+        }
+
+        const toastId = 'toast-' + Date.now();
+        // Используем классы Bootstrap для alert, чтобы соответствовать стилю Django messages в base.html
+        const alertType = (type === 'danger' || type === 'error') ? 'alert-danger' :
+                          (type === 'warning') ? 'alert-warning' :
+                          (type === 'info') ? 'alert-info' : 'alert-success';
+
+        const toastHTML = `
+            <div class="alert ${alertType} alert-dismissible fade show auto-hide-alert" role="alert" id="${toastId}">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+        // Применяем логику автоскрытия и для этих AJAX-сообщений
+        const toastElement = document.getElementById(toastId);
+        if (toastElement) {
+            setTimeout(function() {
+                if (toastElement) {
+                    const closeBtn = toastElement.querySelector('.btn-close');
+                    if (closeBtn) {
+                        closeBtn.click(); // Используем Bootstrap для закрытия
+                    } else {
+                        toastElement.remove(); // Если кнопки нет, просто удаляем
+                    }
+                }
+            }, 5000); // 5 секунд
+
+            // Опционально: если bootstrap.Toast используется для Django messages в base.html,
+            // то и здесь нужно его инициализировать для правильной анимации закрытия.
+            // const bsToast = new bootstrap.Toast(toastElement, { delay: 5000 });
+            // bsToast.show();
+            // toastElement.addEventListener('hidden.bs.toast', function () {
+            //     toastElement.remove();
+            // });
+        }
+    }
+
+    // Обработка отправки форм добавления в корзину
+    const addToCartForms = document.querySelectorAll('.add-to-cart-form');
+    addToCartForms.forEach(form => {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+            const formData = new FormData(form);
+            const url = form.action;
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'), // Убедимся что CSRF токен передается
+                    'X-Requested-With': 'XMLHttpRequest' // Помечаем как AJAX запрос
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+
+                    // ✅ ОБНОВЛЯЕМ СЧЕТЧИК КОРЗИНЫ В ШАПКЕ
+                    if (window.CartCounter && data.cart_total_items !== undefined) {
+                        window.CartCounter.update(data.cart_total_items);
+                    }
+
+                    // Обновляем отображаемый остаток на странице товара
+                    if (data.stock_item_id && typeof data.updated_stock_quantity !== 'undefined') {
+                        const stockAvailableSpan = document.getElementById(`available_stock_${data.stock_item_id}`);
+                        const quantityInput = document.getElementById(`id_quantity_stock_${data.stock_item_id}`);
+                        if (stockAvailableSpan) {
+                            stockAvailableSpan.textContent = `{% translate "Доступно:" %} ${data.updated_stock_quantity} упак.`;
+                        }
+                        // Также обновляем атрибут max у поля ввода количества
+                        if (quantityInput) {
+                            quantityInput.setAttribute('max', data.updated_stock_quantity);
+                            // Если текущее значение в поле ввода стало больше нового максимума, корректируем его
+                            if (parseInt(quantityInput.value) > data.updated_stock_quantity) {
+                                quantityInput.value = data.updated_stock_quantity;
+                            }
+                        }
+                    }
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                showToast('{% translate "Ошибка при добавлении в корзину. Пожалуйста, попробуйте еще раз." %}', 'danger');
+            });
+        });
+    });
+
+    // Обработка изменения количества для отображения доступного остатка
+    const quantityInputs = document.querySelectorAll('.quantity-input');
+    quantityInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const currentValue = parseInt(this.value, 10);
+            const maxAllowed = parseInt(this.getAttribute('max'), 10);
+            if (currentValue > maxAllowed) {
+                this.value = maxAllowed; // Не даем выбрать больше, чем есть
+                showToast('{% translate "Выбрано максимальное доступное количество." %}', 'warning');
+            }
+            if (currentValue < 1) {
+                this.value = 1; // Минимум 1
+            }
+        });
+    });
+
+    // Удаляем закомментированный блок, который вызывал ошибки линтера
+
+});
+</script>
+{% endblock %}

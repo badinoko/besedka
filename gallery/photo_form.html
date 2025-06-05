@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Загрузить фото{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Загрузить новое фото</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary mt-3">Загрузить</button>
+        <a href="{% url 'gallery:gallery' %}" class="btn btn-secondary mt-3">Отмена</a>
+    </form>
+</div>
+{% endblock %}

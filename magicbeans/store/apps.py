@@ -1,7 +1,5 @@
 from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
-import contextlib
-from django.contrib import admin
 
 
 class StoreConfig(AppConfig):
@@ -9,14 +7,26 @@ class StoreConfig(AppConfig):
     verbose_name = _("Store")
 
     def ready(self):
+        """
+        Регистрируем модели в админке магазина после загрузки всех приложений.
+        """
         # Импортируем сигналы
-        with contextlib.suppress(ImportError):
-            import magicbeans.store.signals  # noqa: F401
+        import magicbeans.store.signals  # noqa: F401
 
-        # Регистрируем кастомный административный сайт
-        with contextlib.suppress(ImportError):
-            from django.contrib import admin as django_admin
-            from magicbeans.store.admin.site import StoreAdminSite
+        # Регистрируем модели в админке магазина
+        from core.admin_site import store_admin_site
+        from magicbeans.store.models import (
+            Administrator, SeedBank, Strain, StrainImage,
+            StockItem, StockMovement, Order, OrderItem
+        )
+        from magicbeans.store.admin.administrators import AdministratorAdmin
+        from magicbeans.store.admin.stock_admin import StockItemAdmin, StockMovementAdmin
 
-            if not isinstance(django_admin.site, StoreAdminSite):
-                admin.site = StoreAdminSite(name="admin")
+        store_admin_site.register(Administrator, AdministratorAdmin)
+        store_admin_site.register(SeedBank)
+        store_admin_site.register(Strain)
+        store_admin_site.register(StrainImage)
+        store_admin_site.register(StockItem, StockItemAdmin)
+        store_admin_site.register(StockMovement, StockMovementAdmin)
+        store_admin_site.register(Order)
+        store_admin_site.register(OrderItem)

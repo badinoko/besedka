@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load chat_extras %}
+
+{% block title %}Чат Беседка - Беседка{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/chat_modal.css' %}?v=4.0.0">
+<link rel="stylesheet" type="text/css" href="{% static 'css/chat_styles.css' %}?v=4.0.0">
+{% endblock %}
+
+{% block content %}
+<!-- ОСНОВНОЙ КОНТЕНТ БЕЗ ДУБЛИРОВАНИЯ ЗАГОЛОВКА -->
+<div class="chat-page">
+    <div class="container">
+        <!-- КНОПКИ ПЕРЕКЛЮЧЕНИЯ ЧАТОВ -->
+        {% if user.is_authenticated %}
+        <div class="d-flex justify-content-center mb-4">
+            <div class="btn-group" role="group" aria-label="Переключение чатов">
+                <!-- Общий чат (активный) -->
+                <button type="button" class="btn btn-primary active" disabled>
+                    <i class="fas fa-comments me-2"></i>Общий чат
+                </button>
+
+                <!-- VIP чат -->
+                {% if user.role == 'owner' or user.role == 'admin' %}
+                <a href="{% url 'chat:vip' %}" class="btn btn-outline-warning">
+                    <i class="fas fa-crown me-2"></i>VIP чат
+                </a>
+                {% else %}
+                <button type="button" class="btn btn-outline-secondary" disabled title="Недоступен">
+                    <i class="fas fa-lock me-2"></i>VIP чат
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-lg-9 col-md-8">
+                <div class="chat-container">
+                    <!-- Статус подключения -->
+                    <div class="chat-body-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h4 class="chat-body-title mb-0">
+                                <i class="fas fa-comments me-2"></i>
+                                Общее обсуждение
+                            </h4>
+                            <span id="connection-status" class="status-badge connecting">
+                                <i class="fas fa-circle me-1"></i> Подключение...
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Сообщения чата -->
+                    <div id="chat-messages" class="chat-messages">
+                        {% for message in chat_messages %}
+                        <div class="message {% if message.author == user %}own-message{% else %}other-message{% endif %}">
+                            {% if message.author != user %}
+                            <div class="message-header">
+                                {{ message.author.username }}
+                                {% if message.author.role == 'admin' or message.author.role == 'owner' %}
+                                <span class="badge bg-success">Админ</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <div class="message-bubble">
+                                <div class="message-content">{{ message.content }}</div>
+                                <div class="message-time">{{ message.timestamp|date:"H:i" }}</div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                            <p class="mb-0">Чат пуст. Начните общение!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Индикатор печати -->
+                    <div id="typing-indicator" class="typing-indicator"></div>
+
+                    <!-- Поле ввода сообщения -->
+                    <div class="chat-input">
+                        {% if user.is_authenticated %}
+                        <!-- Напоминание о вежливости -->
+                        <div class="politeness-notice">
+                            <i class="fas fa-heart"></i>
+                            <span>Помните о вежливости и уважении к другим участникам сообщества!</span>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="text"
+                                   id="message-input"
+                                   class="form-control"
+                                   placeholder="Напишите сообщение..."
+                                   autocomplete="off">
+                            <button class="btn btn-primary" type="button" id="send-button">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Отправить
+                            </button>
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Нажмите Enter для отправки сообщения
+                        </small>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <a href="{% url 'account_login' %}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Войдите для участия в чате
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель онлайн пользователей -->
+            <div class="col-lg-3 col-md-4">
+                <div class="online-users-sidebar">
+                    <div class="sidebar-title">
+                        <i class="fas fa-users text-primary"></i>
+                        Онлайн
+                        <span class="badge bg-primary ms-2" id="online-count-badge">{{ online_count|default:0 }}</span>
+                    </div>
+
+                    <!-- Список онлайн пользователей -->
+                    <div id="online-users-list">
+                        {% for user_online in online_users %}
+                        <div class="online-user">
+                            <div class="status-dot"></div>
+                            <span class="user-name">{{ user_online.username }}</span>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-user-slash fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0 small">Нет пользователей онлайн</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Статистика чата -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                Статистика
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="fw-bold text-primary">{{ total_messages|default:0 }}</div>
+                                    <small class="text-muted">Сообщений</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-success">{{ total_users|default:0 }}</div>
+                                    <small class="text-muted">Участников</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Информация о чате -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle text-info me-2"></i>
+                                Правила чата
+                            </h6>
+                            <ul class="list-unstyled small mb-0">
+                                <li class="mb-1"><i class="fas fa-check text-success me-1"></i> Будьте вежливы</li>
+                                <li class="mb-1"><i class="fas fa-check text-success me-1"></i> Не спамьте</li>
+                                <li class="mb-1"><i class="fas fa-check text-success me-1"></i> Уважайте других</li>
+                                <li class="mb-0"><i class="fas fa-check text-success me-1"></i> Помогайте новичкам</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ОБЩИЙ ЧАТ JAVASCRIPT ===== -->
+<script src="{% static 'js/chat_client.js' %}?v=4.1.0"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация общего чата
+    if (typeof ChatClient !== 'undefined') {
+        const generalChat = new ChatClient('general');
+
+        // Обновление счетчика онлайн пользователей
+        generalChat.onUserUpdate = function(data) {
+            if (data.online_count !== undefined) {
+                // Обновляем счетчик в заголовке тоже
+                const headerMeta = document.querySelector('.header-meta .meta-item:first-child span');
+                if (headerMeta) {
+                    headerMeta.textContent = 'Онлайн: ' + data.online_count;
+                }
+
+                document.getElementById('online-count-badge').textContent = data.online_count;
+            }
+
+            if (data.online_users) {
+                this.updateOnlineUsersList(data.online_users);
+            }
+        };
+
+        // Функция обновления списка онлайн пользователей
+        generalChat.updateOnlineUsersList = function(users) {
+            const onlineList = document.getElementById('online-users-list');
+            if (!onlineList) return;
+
+            if (users.length === 0) {
+                onlineList.innerHTML = `
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-user-slash fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0 small">Нет пользователей онлайн</p>
+                    </div>
+                `;
+                return;
+            }
+
+            onlineList.innerHTML = users.map(user => `
+                <div class="online-user">
+                    <div class="status-dot"></div>
+                    <span class="user-name">${user.username}</span>
+                </div>
+            `).join('');
+        };
+    }
+});
+</script>
+{% endblock %}

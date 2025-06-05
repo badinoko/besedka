@@ -1,0 +1,357 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}👑 Управление владельцами магазина{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{{ _('Home') }}</a>
+    &rsaquo; <a href="{% url 'owner_admin:index' %}">{{ _('Админка владельца') }}</a>
+    &rsaquo; {{ _('Управление владельцами магазина') }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>👑 Управление владельцами магазина</h1>
+<p class="help">Управление доступом к магазину "Magic Beans". Создавайте временные учетные данные для новых владельцев или отзывайте доступ.</p>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+        {% if 'Временный пароль:' in message %}
+        <div class="temp-password-warning">
+            <strong>⚠️ ВАЖНО:</strong> Сохраните эти данные немедленно! Пароль больше не будет показан.
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="management-container">
+    <!-- Форма управления -->
+    <div class="management-form">
+        <h2>🔧 Действия</h2>
+        <form method="post" class="store-owner-form">
+            {% csrf_token %}
+
+            <div class="field-group">
+                {{ form.action.label_tag }}
+                {{ form.action }}
+                {% if form.action.help_text %}
+                    <p class="help">{{ form.action.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Поля для создания нового владельца -->
+            <div id="create-fields" style="display: none;">
+                <h3>📝 Создание нового владельца</h3>
+                <div class="field-group">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div class="field-group">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.email.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div class="warning-box">
+                    <strong>⚠️ Внимание:</strong> Будут созданы временные учетные данные, действительные 24 часа.
+                    Новый владелец должен немедленно сменить пароль.
+                </div>
+            </div>
+
+            <!-- Поля для отзыва доступа -->
+            <div id="revoke-fields" style="display: none;">
+                <h3>🚫 Отзыв доступа</h3>
+                <div class="field-group">
+                    {{ form.user_to_revoke.label_tag }}
+                    {{ form.user_to_revoke }}
+                    {% if form.user_to_revoke.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.user_to_revoke.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div class="danger-box">
+                    <strong>🚨 Опасно:</strong> Доступ будет немедленно отозван. Пользователь не сможет входить в админку магазина.
+                </div>
+            </div>
+
+            <div class="submit-group">
+                <button type="submit" class="btn-primary">Выполнить действие</button>
+                <a href="{% url 'owner_admin:index' %}" class="btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Текущие владельцы -->
+    <div class="current-owners">
+        <h2>👥 Текущие владельцы магазина</h2>
+        {% if current_store_owners %}
+            <table class="owners-table">
+                <thead>
+                    <tr>
+                        <th>Пользователь</th>
+                        <th>Email</th>
+                        <th>Дата создания</th>
+                        <th>Последний вход</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for owner in current_store_owners %}
+                    <tr>
+                        <td>
+                            <strong>{{ owner.username }}</strong>
+                            {% if owner.profile_extra.temp_password %}
+                                <span class="temp-badge">🔑 Временный</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ owner.email }}</td>
+                        <td>{{ owner.date_joined|date:"d.m.Y H:i" }}</td>
+                        <td>
+                            {% if owner.last_login %}
+                                {{ owner.last_login|date:"d.m.Y H:i" }}
+                            {% else %}
+                                <em>Никогда</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if owner.is_active %}
+                                <span class="status-active">✅ Активен</span>
+                            {% else %}
+                                <span class="status-inactive">❌ Неактивен</span>
+                            {% endif %}
+                            {% if owner.profile_extra.temp_password and owner.profile_extra.password_expires_at %}
+                                <br><small>Истекает: {{ owner.profile_extra.password_expires_at|date:"d.m.Y H:i" }}</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-owners">
+                <p>🤷‍♂️ Нет активных владельцев магазина</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.management-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.management-form, .current-owners {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+}
+
+.field-group {
+    margin-bottom: 15px;
+}
+
+.field-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.field-group input, .field-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    color: #856404;
+}
+
+.danger-box {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    color: #721c24;
+}
+
+.submit-group {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+    color: white;
+    text-decoration: none;
+}
+
+.owners-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.owners-table th, .owners-table td {
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.owners-table th {
+    background: #e9ecef;
+    font-weight: bold;
+}
+
+.temp-badge {
+    background: #ffeaa7;
+    color: #856404;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+.status-active {
+    color: #155724;
+    font-weight: bold;
+}
+
+.status-inactive {
+    color: #721c24;
+    font-weight: bold;
+}
+
+.no-owners {
+    text-align: center;
+    color: #6c757d;
+    margin: 20px 0;
+}
+
+.alert {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.alert-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error, .alert-danger {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.temp-password-warning {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    color: #856404;
+}
+
+.errorlist {
+    color: #dc3545;
+    margin: 5px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.errorlist li {
+    margin: 2px 0;
+}
+
+@media (max-width: 768px) {
+    .management-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const actionSelect = document.querySelector('#id_action');
+    const createFields = document.querySelector('#create-fields');
+    const revokeFields = document.querySelector('#revoke-fields');
+
+    function toggleFields() {
+        const action = actionSelect.value;
+
+        if (action === 'create_new') {
+            createFields.style.display = 'block';
+            revokeFields.style.display = 'none';
+        } else if (action === 'revoke_access') {
+            createFields.style.display = 'none';
+            revokeFields.style.display = 'block';
+        } else {
+            createFields.style.display = 'none';
+            revokeFields.style.display = 'none';
+        }
+    }
+
+    // Показать нужные поля при загрузке
+    toggleFields();
+
+    // Показать нужные поля при изменении
+    actionSelect.addEventListener('change', toggleFields);
+});
+</script>
+{% endblock %}

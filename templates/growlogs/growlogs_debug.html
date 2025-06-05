@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Гроу-репорты (отладка){% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Гроу-репорты (отладка)</h1>
+
+    <p>Количество гроу-репортов: {{ growlogs|length }}</p>
+
+    {% if growlogs %}
+        <ul>
+            {% for growlog in growlogs %}
+            <li>
+                <strong>{{ growlog.title }}</strong> -
+                Автор: {{ growlog.grower.username }} -
+                Создано: {{ growlog.created_at|date:"d.m.Y H:i" }}
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Гроу-репортов пока нет.</p>
+    {% endif %}
+</div>
+{% endblock %}

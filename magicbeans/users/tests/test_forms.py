@@ -1,9 +1,13 @@
 """Module for all Form Tests."""
 
 from django.utils.translation import gettext_lazy as _
+import pytest
+from django.contrib.auth import get_user_model
 
-from magicbeans.users.forms import UserAdminCreationForm
-from magicbeans.users.models import User
+# from magicbeans.users.forms import UserAdminCreationForm # Проверить, нужен ли этот импорт и откуда он на самом деле
+# from magicbeans.users.models import User # <-- Закомментировано или удалить
+from users.models import User # <--- Новый импорт
+from users.forms import UserAdminCreationForm # <--- Предполагаемый правильный импорт формы
 
 
 class TestUserAdminCreationForm:

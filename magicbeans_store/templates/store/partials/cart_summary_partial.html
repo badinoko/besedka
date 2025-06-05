@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load humanize %}
+
+<div id="cart-summary-details">
+    <p>{% trans "Subtotal" %}: {{ cart.subtotal_amount|intcomma }} {{ CURRENCY_SYMBOL }}</p>
+    {% if cart.applied_coupon %}
+        <p>{% trans "Discount" %} ({{ cart.applied_coupon.code }}): -{{ cart.discount_amount|intcomma }} {{ CURRENCY_SYMBOL }}</p>
+    {% endif %}
+    <p><strong>{% trans "Total" %}: {{ cart.get_total_amount|intcomma }} {{ CURRENCY_SYMBOL }}</strong></p>
+</div>

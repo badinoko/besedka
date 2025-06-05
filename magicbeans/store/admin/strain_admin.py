@@ -18,7 +18,8 @@ class StockItemInline(admin.TabularInline):
     verbose_name_plural = "Фасовки"
 
 
-@admin.register(Strain)
+# Декоратор закомментирован - регистрация происходит в magicbeans_store/admin.py
+# @admin.register(Strain)
 class StrainAdmin(admin.ModelAdmin):
     list_display = ("name_colored", "seed_bank", "strain_type", "is_visible", "thc_content", "cbd_content", "flowering_time", "created_at", "updated_at")
     list_filter = ("seed_bank", "strain_type", "is_visible")
@@ -39,4 +40,4 @@ class StrainAdmin(admin.ModelAdmin):
 
     def make_invisible(self, request, queryset):
         queryset.update(is_visible=False)
-    make_invisible.short_description = "Сделать выбранные сорта невидимыми" 
+    make_invisible.short_description = "Сделать выбранные сорта невидимыми"

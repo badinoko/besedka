@@ -1,14 +1,19 @@
-# Файл с заглушкой для папки моделей
-# В данной реализации мы используем один файл models.py для всех моделей
-# Оставляем пустым для избежания циклических импортовм все модели из основного файла models.py для обратной совместимости
-# с кодом, который ожидает импортировать из magicbeans.store.models
-from magicbeans.store.models import (
-    Administrator, SeedBank, Strain, StrainImage,
-    StockItem, StockMovement, Order, OrderItem, ActionLog
-)
+"""
+Инициализация моделей магазина.
+Импортируем все модели для удобного доступа через magicbeans.store.models
+"""
+from magicbeans.store.models.administrators import Administrator
+from magicbeans.store.models.products import SeedBank, Strain, StrainImage
+from magicbeans.store.models.stock import StockItem, StockMovement
+from magicbeans.store.models.orders import Order, OrderItem
 
-# Определяем список экспортируемых имен - все, что есть в основном файле models.py
 __all__ = [
-    "ActionLog", "Administrator", "Order", "OrderItem", "SeedBank",
-    "StockItem", "StockMovement", "Strain", "StrainImage",
+    'Administrator',
+    'SeedBank',
+    'Strain',
+    'StrainImage',
+    'StockItem',
+    'StockMovement',
+    'Order',
+    'OrderItem',
 ]

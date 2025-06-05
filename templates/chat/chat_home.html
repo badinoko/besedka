@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Чат сообщества" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-comments text-primary me-2"></i>
+                    {% trans "Чат сообщества" %}
+                </h1>
+                <div>
+                    <a href="{% url 'chat:create_discussion' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>
+                        {% trans "Создать обсуждение" %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <ul class="nav nav-tabs mb-4" id="chatTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                        <i class="fas fa-home me-1"></i>
+                        {% trans "Обзор" %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="private-tab" data-bs-toggle="tab" data-bs-target="#private" type="button" role="tab">
+                        <i class="fas fa-user-friends me-1"></i>
+                        {% trans "Приватные чаты" %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="discussions-tab" data-bs-toggle="tab" data-bs-target="#discussions" type="button" role="tab">
+                        <i class="fas fa-users me-1"></i>
+                        {% trans "Обсуждения" %}
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Содержимое вкладок -->
+            <div class="tab-content" id="chatTabsContent">
+                <!-- Обзор -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row">
+                        <!-- Последние приватные чаты -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-friends text-info me-2"></i>
+                                        {% trans "Последние приватные чаты" %}
+                                    </h5>
+                                    <a href="{% url 'chat:private_chats' %}" class="btn btn-sm btn-outline-primary">
+                                        {% trans "Все чаты" %}
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    {% if private_threads %}
+                                        {% for thread in private_threads %}
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="avatar-sm me-3">
+                                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">
+                                                        <a href="{% url 'chat:private_thread' thread.id %}" class="text-decoration-none">
+                                                            {% if thread.user1 == user %}
+                                                                {{ thread.user2.get_full_name|default:thread.user2.username }}
+                                                            {% else %}
+                                                                {{ thread.user1.get_full_name|default:thread.user1.username }}
+                                                            {% endif %}
+                                                        </a>
+                                                    </h6>
+                                                    {% with last_msg=thread.room.latest_message %}
+                                                        {% if last_msg %}
+                                                            <small class="text-muted">
+                                                                {{ last_msg.content|truncatechars:50 }}
+                                                            </small>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">
+                                                        {% if thread.room.room_messages.count > 0 %}
+                                                            {{ thread.room.room_messages.count }} сообщений
+                                                        {% else %}
+                                                            Новый чат
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted text-center py-3">
+                                            <i class="fas fa-comments fa-2x mb-2 d-block"></i>
+                                            {% trans "У вас пока нет приватных чатов" %}
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Активные обсуждения -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users text-success me-2"></i>
+                                        {% trans "Мои обсуждения" %}
+                                    </h5>
+                                    <a href="{% url 'chat:discussions' %}" class="btn btn-sm btn-outline-primary">
+                                        {% trans "Все обсуждения" %}
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    {% if active_discussions %}
+                                        {% for discussion in active_discussions %}
+                                            <div class="mb-3">
+                                                <h6 class="mb-1">
+                                                    <a href="{% url 'chat:discussion_detail' discussion.slug %}" class="text-decoration-none">
+                                                        {{ discussion.headline }}
+                                                    </a>
+                                                </h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-user me-1"></i>
+                                                        {{ discussion.members.count }} {% trans "участников" %}
+                                                    </small>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-comments me-1"></i>
+                                                        {{ discussion.room.room_messages.count }} сообщений
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted text-center py-3">
+                                            <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                                            {% trans "Вы не участвуете в обсуждениях" %}
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Трендовые обсуждения -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-fire text-warning me-2"></i>
+                                        {% trans "Популярные обсуждения" %}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if trending_discussions %}
+                                        <div class="row">
+                                            {% for discussion in trending_discussions %}
+                                                <div class="col-md-6 col-lg-4 mb-3">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">
+                                                                <a href="{% url 'chat:discussion_detail' discussion.slug %}" class="text-decoration-none">
+                                                                    {{ discussion.headline }}
+                                                                </a>
+                                                            </h6>
+                                                            {% if discussion.description %}
+                                                                <p class="card-text text-muted small">
+                                                                    {{ discussion.description|truncatechars:100 }}
+                                                                </p>
+                                                            {% endif %}
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-user me-1"></i>
+                                                                    {{ discussion.members.count }}
+                                                                </small>
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-comments me-1"></i>
+                                                                    {{ discussion.room.room_messages.count }}
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted text-center py-3">
+                                            <i class="fas fa-fire fa-2x mb-2 d-block"></i>
+                                            {% trans "Пока нет популярных обсуждений" %}
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Приватные чаты -->
+                <div class="tab-pane fade" id="private" role="tabpanel">
+                    <div class="text-center py-5">
+                        <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                        <h4>{% trans "Приватные чаты" %}</h4>
+                        <p class="text-muted">{% trans "Здесь будет список ваших приватных чатов" %}</p>
+                        <a href="{% url 'chat:private_chats' %}" class="btn btn-primary">
+                            {% trans "Перейти к чатам" %}
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Обсуждения -->
+                <div class="tab-pane fade" id="discussions" role="tabpanel">
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h4>{% trans "Групповые обсуждения" %}</h4>
+                        <p class="text-muted">{% trans "Здесь будет список всех обсуждений" %}</p>
+                        <a href="{% url 'chat:discussions' %}" class="btn btn-primary">
+                            {% trans "Перейти к обсуждениям" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

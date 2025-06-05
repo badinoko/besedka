@@ -1,12 +1,12 @@
 from django.contrib import admin
 from django.urls import path
-from django.utils.translation import gettext_lazy as _
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
 from datetime import datetime
 import csv
 import io
+from django.utils.translation import gettext_lazy as _
 
 from magicbeans.store.models import StockItem, StockMovement, Strain, SeedBank
 from magicbeans.store.forms import CsvImportForm
@@ -26,7 +26,8 @@ class StockMovementInline(admin.TabularInline):
         return False
 
 
-@admin.register(StockItem)
+# Декоратор закомментирован - регистрация происходит в magicbeans_store/admin.py
+# @admin.register(StockItem)
 class StockItemAdmin(admin.ModelAdmin):
     """Административный интерфейс для управления фасовками товара."""
     list_display = (
@@ -77,10 +78,10 @@ class StockItemAdmin(admin.ModelAdmin):
                         seedbank_name, strain_name, seeds_count, price, quantity, is_visible = row[:6]
 
                         # Находим или создаем сидбанк
-                        seedbank, _ = SeedBank.objects.get_or_create(name=seedbank_name)
+                        seedbank, unused = SeedBank.objects.get_or_create(name=seedbank_name)
 
                         # Находим или создаем сорт
-                        strain, _ = Strain.objects.get_or_create(
+                        strain, unused = Strain.objects.get_or_create(
                             name=strain_name,
                             defaults={
                                 "seed_bank": seedbank,
@@ -182,7 +183,8 @@ class StockItemAdmin(admin.ModelAdmin):
     export_to_csv.short_description = _("Экспорт выбранных фасовок в CSV")
 
 
-@admin.register(StockMovement)
+# Декоратор закомментирован - регистрация происходит в magicbeans_store/admin.py
+# @admin.register(StockMovement)
 class StockMovementAdmin(admin.ModelAdmin):
     """Административный интерфейс для управления движениями товаров."""
     list_display = (

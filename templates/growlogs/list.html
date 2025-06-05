@@ -1,47 +1,1100 @@
 {% extends "base.html" %}
+{% load i18n humanize static %}
 
-{% block title %}Гроу-логи{% endblock %}
+{% block title %}🌱 Гроурепорты сообщества{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Общие стили для страницы */
+    .growlogs-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    /* Заголовок - исправлено скругление сверху */
+    .growlogs-header {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+        border-radius: 20px 20px 20px 20px; /* Теперь скруглено везде */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .growlogs-header h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .growlogs-header .lead {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .header-btn {
+        background: rgba(255,255,255,0.95);
+        border: 2px solid rgba(255,255,255,0.9);
+        color: #2E7D32 !important;
+        font-weight: 700;
+        padding: 15px 30px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        text-decoration: none !important;
+        font-size: 1.1rem;
+    }
+
+    .header-btn:hover {
+        background: rgba(255,255,255,1);
+        border-color: rgba(255,255,255,1);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+        color: #1B5E20 !important;
+        text-decoration: none !important;
+    }
+
+    /* Карточка приглашения к регистрации для гостей */
+    .guest-invite-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #4CAF50;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(76,175,80,0.15);
+    }
+
+    .guest-invite-title {
+        color: #2E7D32;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .guest-invite-text {
+        color: #495057;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .guest-invite-benefits {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .guest-invite-benefits ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #495057;
+    }
+
+    .guest-invite-benefits li {
+        margin-bottom: 8px;
+        font-size: 1rem;
+    }
+
+    .guest-register-btn {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 15px 40px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+    }
+
+    .guest-register-btn:hover {
+        background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76,175,80,0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Фильтры */
+    .filters-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 0.2rem rgba(76,175,80,0.25);
+    }
+
+    .input-group-text {
+        background: #f8f9fa;
+        border-color: #ced4da;
+        color: #6c757d;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+    }
+
+    /* Карточки репортов - ГОРИЗОНТАЛЬНЫЕ ПРЯМОУГОЛЬНИКИ */
+    .growlogs-container {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .growlog-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        display: flex;
+        min-height: 200px;
+        position: relative;
+    }
+
+    .growlog-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+
+    /* Ссылка для всей карточки */
+    .growlog-card-link {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+    }
+
+    .growlog-card-link:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .growlog-card-link:focus {
+        outline: 2px solid #4CAF50;
+        outline-offset: 2px;
+    }
+
+    /* Левая часть - фото */
+    .growlog-photo {
+        width: 280px;
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .growlog-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .growlog-card:hover .growlog-photo img {
+        transform: scale(1.05);
+    }
+
+    .growlog-photo-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 3rem;
+    }
+
+    /* Средняя часть - основной контент */
+    .growlog-main-content {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Правая часть - параметры среды (4 строки) */
+    .growlog-params {
+        width: 200px;
+        flex-shrink: 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-left: 1px solid #e9ecef;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .params-title {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .param-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid #e9ecef;
+        font-size: 0.85rem;
+    }
+
+    .param-row:last-child {
+        border-bottom: none;
+    }
+
+    .param-label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .param-value {
+        color: #2c3e50;
+        font-weight: 700;
+        background: #ffffff;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+
+    /* Заголовок карточки */
+    .growlog-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .growlog-card-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+        line-height: 1.3;
+        flex: 1;
+        margin-right: 15px;
+    }
+
+    .growlog-card-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .growlog-card-title a:hover {
+        color: #4CAF50;
+    }
+
+    /* Метаинформация */
+    .growlog-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .meta-link {
+        color: inherit;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .meta-link:hover {
+        color: #4CAF50;
+    }
+
+    /* Описание */
+    .growlog-description {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 15px;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Информация о сорте */
+    .strain-info {
+        background: #f0f8ff;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 15px;
+        border-left: 4px solid #4CAF50;
+    }
+
+    .strain-name {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .strain-name a {
+        color: #4CAF50;
+        text-decoration: none;
+    }
+
+    .strain-name a:hover {
+        text-decoration: underline;
+    }
+
+    .strain-seedbank {
+        color: #6c757d;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .strain-custom {
+        color: #6c757d;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Статистика в подвале карточки */
+    .growlog-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+        margin-top: auto;
+    }
+
+    .stats-left {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .stats-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #6c757d;
+        font-size: 0.85rem;
+        transition: color 0.3s ease;
+    }
+
+    .stat-item:hover {
+        color: #4CAF50;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    /* Кнопка лайка */
+    .like-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .like-btn:hover {
+        color: #dc3545;
+        transform: scale(1.1);
+    }
+
+    .like-btn:hover .fas.fa-heart {
+        animation: heartbeat 0.6s ease-in-out;
+    }
+
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    /* Читать кнопка */
+    .read-more-btn {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .read-more-btn:hover {
+        background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(76,175,80,0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Бейджи статуса */
+    .status-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .status-badge {
+        background: #e9ecef;
+        color: #495057;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .status-badge.public {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.private {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Пагинация */
+    .pagination {
+        margin-top: 40px;
+        justify-content: center;
+    }
+
+    .page-link {
+        color: #4CAF50;
+        border-color: #4CAF50;
+        border-radius: 8px;
+        margin: 0 2px;
+    }
+
+    .page-link:hover {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+        color: white;
+    }
+
+    .page-item.active .page-link {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 992px) {
+        .growlog-card {
+            flex-direction: column;
+            min-height: auto;
+        }
+
+        .growlog-photo {
+            width: 100%;
+            height: 200px;
+        }
+
+        .growlog-params {
+            width: 100%;
+            border-left: none;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .params-title {
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .growlog-card {
+            margin: 0 -15px 20px -15px;
+            border-radius: 0;
+        }
+
+        .growlogs-header {
+            border-radius: 0;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col">
-            <h1>Гроу-логи</h1>
-        </div>
-        {% if user.is_authenticated %}
-        <div class="col text-end">
-            <a href="{% url 'growlogs:create' %}" class="btn btn-primary">Создать гроу-лог</a>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="row">
-        {% for growlog in growlogs %}
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <h5 class="card-title">{{ growlog.title }}</h5>
-                        {% if not growlog.is_public %}
-                        <span class="badge bg-warning">Приватный</span>
+<div class="growlogs-page">
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="growlogs-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-3">
+                            <i class="fas fa-seedling me-3"></i>
+                            Гроурепорты сообщества
+                        </h1>
+                        <p class="lead mb-0">
+                            Делитесь опытом выращивания и изучайте техники других гроверов
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'growlogs:create' %}" class="btn btn-light btn-lg">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Создать репорт
+                            </a>
+                        {% else %}
+                            <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-light btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Войти
+                            </a>
                         {% endif %}
                     </div>
-                    <h6 class="card-subtitle mb-2 text-muted">
-                        {{ growlog.grower.username }} • {{ growlog.start_date|date:"d.m.Y" }}
-                    </h6>
-                    {% if growlog.strain %}
-                    <p class="card-text">Сорт: {{ growlog.strain.name }}</p>
-                    {% endif %}
-                    <p class="card-text">{{ growlog.setup_description|truncatewords:30 }}</p>
-                    <a href="{% url 'growlogs:detail' growlog.pk %}" class="btn btn-primary">Читать</a>
                 </div>
             </div>
         </div>
-        {% empty %}
-        <div class="col">
-            <p class="text-center">Пока нет ни одного гроу-лога.</p>
+
+        <!-- Приглашение для гостей -->
+        {% if not user.is_authenticated %}
+        <div class="guest-invite-card">
+            <h2 class="guest-invite-title">
+                <i class="fas fa-seedling me-2"></i>
+                Присоединяйтесь к сообществу гроверов!
+            </h2>
+            <p class="guest-invite-text">
+                Зарегистрируйтесь, чтобы создавать свои гроурепорты, комментировать, лайкать и общаться с другими садоводами.
+            </p>
+            <div class="guest-invite-benefits">
+                <h6><strong>Что вас ждет:</strong></h6>
+                <ul>
+                    <li>Создание подробных дневников выращивания</li>
+                    <li>Обмен опытом с опытными гроверами</li>
+                    <li>Доступ к эксклюзивным материалам и советам</li>
+                    <li>Участие в обсуждениях и конкурсах</li>
+                </ul>
+            </div>
+            <a href="{% url 'account_signup' %}" class="guest-register-btn">
+                <i class="fas fa-user-plus me-2"></i>
+                Зарегистрироваться бесплатно
+            </a>
         </div>
-        {% endfor %}
+        {% endif %}
+
+        <!-- Фильтры и поиск -->
+        <div class="filters-card">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text"
+                               name="search"
+                               class="form-control"
+                               placeholder="Поиск по названию, автору или сорту..."
+                               value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="stage" class="form-select">
+                        <option value="">Все стадии</option>
+                        {% for value, label in stages %}
+                            <option value="{{ value }}" {% if current_stage == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="environment" class="form-select">
+                        <option value="">Все среды</option>
+                        {% for value, label in environments %}
+                            <option value="{{ value }}" {% if current_environment == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="sort_by" class="form-select">
+                        <option value="-start_date" {% if current_sort == '-start_date' %}selected{% endif %}>Новые сначала</option>
+                        <option value="start_date" {% if current_sort == 'start_date' %}selected{% endif %}>Старые сначала</option>
+                        <option value="-views_count" {% if current_sort == '-views_count' %}selected{% endif %}>Популярные</option>
+                        <option value="title" {% if current_sort == 'title' %}selected{% endif %}>По названию А-Я</option>
+                        <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>По названию Я-А</option>
+                        <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>По дате создания</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i>
+                        Применить
+                    </button>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'growlogs:list' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>
+                        Сбросить фильтры
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Список гроурепортов в новом красивом дизайне -->
+        {% if growlogs %}
+            <div class="growlogs-container">
+                {% for growlog in growlogs %}
+                <div class="growlog-card">
+                    <!-- Обёртка-ссылка для всей карточки -->
+                    <a href="{% url 'growlogs:detail' growlog.pk %}" class="growlog-card-link">
+                        <!-- Левая часть - фото -->
+                        <div class="growlog-photo">
+                            {% if growlog.logo %}
+                                <img src="{{ growlog.logo.url }}" alt="{{ growlog.title }}">
+                            {% elif growlog.main_photo %}
+                                <img src="{{ growlog.main_photo.url }}" alt="{{ growlog.title }}">
+                            {% else %}
+                                <div class="growlog-photo-placeholder">
+                                    <i class="fas fa-seedling"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Средняя часть - основной контент -->
+                        <div class="growlog-main-content">
+                            <!-- Заголовок и статус -->
+                            <div class="growlog-card-header">
+                                <h5 class="growlog-card-title">{{ growlog.title }}</h5>
+                                <div class="status-badges">
+                                    <span class="status-badge {% if growlog.is_public %}public{% else %}private{% endif %}">
+                                        {% if growlog.is_public %}
+                                            <i class="fas fa-globe-americas me-1"></i>Публичный
+                                        {% else %}
+                                            <i class="fas fa-lock me-1"></i>Приватный
+                                        {% endif %}
+                                    </span>
+                                    <span class="status-badge">{{ growlog.get_current_stage_display }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Метаинформация -->
+                            <div class="growlog-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-user"></i>
+                                    <span class="meta-link">{{ growlog.grower.username }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ growlog.start_date|date:"d.m.Y" }}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    День {{ growlog.current_day }}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-eye"></i>
+                                    {{ growlog.get_environment_display }}
+                                </div>
+                            </div>
+
+                            <!-- Описание -->
+                            <div class="growlog-description">
+                                {{ growlog.display_description }}
+                            </div>
+
+                            <!-- Информация о сорте -->
+                            {% if growlog.strain or growlog.strain_custom %}
+                            <div class="strain-info">
+                                <div class="strain-name">
+                                    <i class="fas fa-seedling"></i>
+                                    {% if growlog.strain %}
+                                        {% with strain_info=growlog.get_strain_display %}
+                                            {% if strain_info.from_store and strain_info.url %}
+                                                {{ strain_info.name }}
+                                                {% if strain_info.seedbank %}
+                                                    <span class="strain-seedbank">от {{ strain_info.seedbank }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {{ strain_info.name }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        {{ growlog.strain_custom }}
+                                        <small class="strain-custom">(произвольный сорт)</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Статистика в футере -->
+                            <div class="growlog-stats">
+                                <div class="stats-left">
+                                    <button class="stat-item like-btn" onclick="event.preventDefault(); event.stopPropagation(); toggleLike({{ growlog.pk }})" title="Лайк">
+                                        <i class="fas fa-heart"></i>
+                                        <span id="likes-count-{{ growlog.pk }}">{{ growlog.likes.count }}</span>
+                                    </button>
+                                    <div class="stat-item">
+                                        <i class="fas fa-eye"></i>
+                                        <span class="stat-value">{{ growlog.views_count|default:0 }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="stat-value">{{ growlog.comments.count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Правая часть - параметры среды -->
+                        <div class="growlog-params">
+                            <div class="params-title">Условия выращивания</div>
+
+                            {% if growlog.medium %}
+                            <div class="param-row">
+                                <span class="param-label">Субстрат</span>
+                                <span class="param-value">{{ growlog.medium|truncatewords:2 }}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if growlog.lighting %}
+                            <div class="param-row">
+                                <span class="param-label">Освещение</span>
+                                <span class="param-value">{{ growlog.lighting|truncatewords:2 }}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if growlog.container_size %}
+                            <div class="param-row">
+                                <span class="param-label">Горшок</span>
+                                <span class="param-value">{{ growlog.container_size }}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if growlog.environment %}
+                            <div class="param-row">
+                                <span class="param-label">Среда</span>
+                                <span class="param-value">{{ growlog.get_environment_display }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Пагинация -->
+            {% if is_paginated %}
+            <nav aria-label="Пагинация гроурепортов" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <!-- Пустое состояние -->
+            <div class="empty-state">
+                <i class="fas fa-seedling"></i>
+                <h3>Гроурепортов пока нет</h3>
+                <p class="lead">
+                    {% if search_query or current_stage or current_environment %}
+                        По вашему запросу ничего не найдено. Попробуйте изменить фильтры.
+                    {% else %}
+                        Станьте первым, кто поделится своим опытом выращивания!
+                    {% endif %}
+                </p>
+                {% if user.is_authenticated and not search_query %}
+                    <a href="{% url 'growlogs:create' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Создать первый репорт
+                    </a>
+                {% elif not user.is_authenticated %}
+                    <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Войти, чтобы создать репорт
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек гроурепортов
+    const cards = document.querySelectorAll('.growlog-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100); // Поочередное появление
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Добавляем hover эффекты для карточек
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 15px 45px rgba(0,0,0,0.2)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+        });
+    });
+});
+
+// Функция лайка с улучшенной анимацией
+function toggleLike(growlogId) {
+    {% if user.is_authenticated %}
+        const likeBtn = document.querySelector(`button[onclick*="${growlogId}"]`);
+        const heartIcon = likeBtn.querySelector('.fas.fa-heart');
+        const likesElement = document.getElementById('likes-count-' + growlogId);
+
+        // Временно отключаем кнопку
+        likeBtn.disabled = true;
+
+        // Анимация нажатия
+        heartIcon.style.transform = 'scale(1.3)';
+        heartIcon.style.color = '#dc3545';
+
+        const url = "{% url 'growlogs:toggle_like' pk=0 %}".replace('0', growlogId);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем счетчик
+                likesElement.textContent = data.likes_count;
+
+                // Анимация успеха
+                if (data.liked) {
+                    heartIcon.style.color = '#dc3545';
+                    // Эффект частиц
+                    createHeartParticles(likeBtn);
+                } else {
+                    heartIcon.style.color = '#6c757d';
+                }
+
+                // Анимация счетчика
+                likesElement.style.transform = 'scale(1.3)';
+                likesElement.style.color = '#4CAF50';
+
+                setTimeout(() => {
+                    likesElement.style.transform = 'scale(1)';
+                    likesElement.style.color = '#2c3e50';
+                }, 300);
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling like:', error);
+            // Возвращаем исходное состояние при ошибке
+            heartIcon.style.transform = 'scale(1)';
+            heartIcon.style.color = '#6c757d';
+        })
+        .finally(() => {
+            // Включаем кнопку обратно
+            setTimeout(() => {
+                likeBtn.disabled = false;
+                heartIcon.style.transform = 'scale(1)';
+            }, 300);
+        });
+    {% else %}
+        // Анимация для неавторизованных пользователей
+        const loginPrompt = document.createElement('div');
+        loginPrompt.className = 'alert alert-info alert-dismissible fade show position-fixed';
+        loginPrompt.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+        loginPrompt.innerHTML = `
+            <i class="fas fa-info-circle me-2"></i>
+            Войдите, чтобы ставить лайки
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(loginPrompt);
+
+        // Автоматически скрываем через 3 секунды
+        setTimeout(() => {
+            if (loginPrompt.parentNode) {
+                loginPrompt.remove();
+            }
+        }, 3000);
+    {% endif %}
+}
+
+// Функция создания анимации частиц при лайке
+function createHeartParticles(button) {
+    const rect = button.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('div');
+        particle.innerHTML = '❤️';
+        particle.style.cssText = `
+            position: fixed;
+            left: ${centerX}px;
+            top: ${centerY}px;
+            pointer-events: none;
+            z-index: 9999;
+            font-size: 12px;
+            opacity: 1;
+            transform: translate(-50%, -50%);
+        `;
+
+        document.body.appendChild(particle);
+
+        // Анимация частицы
+        const angle = (Math.PI * 2 * i) / 6;
+        const distance = 50 + Math.random() * 30;
+        const duration = 800 + Math.random() * 400;
+
+        particle.animate([
+            {
+                transform: 'translate(-50%, -50%) scale(1)',
+                opacity: 1
+            },
+            {
+                transform: `translate(${Math.cos(angle) * distance - 50}px, ${Math.sin(angle) * distance - 50}px) scale(0)`,
+                opacity: 0
+            }
+        ], {
+            duration: duration,
+            easing: 'ease-out',
+            fill: 'forwards'
+        }).onfinish = () => {
+            particle.remove();
+        };
+    }
+}
+
+// Предотвращаем случайные клики при скролле
+document.addEventListener('touchmove', function() {
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.style.pointerEvents = 'none';
+    });
+
+    clearTimeout(window.scrollTimeout);
+    window.scrollTimeout = setTimeout(() => {
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.style.pointerEvents = 'auto';
+        });
+    }, 100);
+});
+</script>
+{% endblock %}

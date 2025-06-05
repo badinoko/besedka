@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}#{{ tag.name }} - Новости - Беседка{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item">
+    <a href="{% url 'news:home' %}">Новости</a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">#{{ tag.name }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 2rem 0;
+        margin: -1.5rem -15px 2rem -15px;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .news-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .news-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .news-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .news-meta {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .news-excerpt {
+        color: #495057;
+        line-height: 1.6;
+    }
+
+    .category-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+    }
+
+    .post-stats {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .post-stats i {
+        margin-right: 0.25rem;
+    }
+
+    .tag-cloud {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .tag-badge {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        text-decoration: none;
+        margin: 0.25rem 0.25rem 0.25rem 0;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .tag-badge:hover {
+        background: #28a745;
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .tag-badge.current {
+        background: #28a745;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ЗАГОЛОВОК ТЕГА -->
+<div class="tag-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 mb-3">
+                    <i class="fas fa-hashtag me-2"></i>{{ tag.name }}
+                </h1>
+                <p class="lead">Новости с тегом "{{ tag.name }}"</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark fs-6">
+                        <i class="fas fa-newspaper me-1"></i>
+                        {{ posts.count }} {{ posts.count|pluralize:"новость,новости,новостей" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div class="col-lg-8">
+        <!-- СВЯЗАННЫЕ ТЕГИ -->
+        {% if related_tags %}
+        <div class="tag-cloud">
+            <h6 class="mb-3">
+                <i class="fas fa-tags text-success me-2"></i>
+                Связанные теги:
+            </h6>
+            <a href="{% url 'news:tag_posts' tag.slug %}" class="tag-badge current">
+                #{{ tag.name }}
+            </a>
+            {% for related_tag in related_tags %}
+            <a href="{% url 'news:tag_posts' related_tag.slug %}" class="tag-badge">
+                #{{ related_tag.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- СПИСОК ПОСТОВ -->
+        <div class="row">
+            {% for post in posts %}
+            <div class="col-md-6 mb-4">
+                <div class="card news-card h-100">
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" class="news-image" alt="{{ post.title }}">
+                    {% endif %}
+
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            {% if post.category %}
+                            <span class="category-badge bg-primary text-white">
+                                {{ post.category.name }}
+                            </span>
+                            {% endif %}
+
+                            {% if post.post_type == 'poll' %}
+                            <span class="category-badge bg-info text-white">
+                                <i class="fas fa-poll me-1"></i>Опрос
+                            </span>
+                            {% elif post.post_type == 'video_link' %}
+                            <span class="category-badge bg-danger text-white">
+                                <i class="fas fa-video me-1"></i>Видео
+                            </span>
+                            {% endif %}
+
+                            {% if post.is_pinned %}
+                            <span class="category-badge bg-warning text-dark">
+                                <i class="fas fa-thumbtack me-1"></i>Закреплено
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="card-title">
+                            <a href="{% url 'news:post_detail' post.slug %}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+
+                        {% if post.excerpt %}
+                        <p class="news-excerpt flex-grow-1">{{ post.excerpt|truncatewords:15 }}</p>
+                        {% endif %}
+
+                        <!-- ТЕГИ -->
+                        {% if post.tags.all %}
+                        <div class="mb-2">
+                            {% for post_tag in post.tags.all|slice:":4" %}
+                            <a href="{% url 'news:tag_posts' post_tag.slug %}"
+                               class="badge {% if post_tag.slug == tag.slug %}bg-success{% else %}bg-light text-dark{% endif %} text-decoration-none me-1">
+                                #{{ post_tag.name }}
+                            </a>
+                            {% endfor %}
+                            {% if post.tags.count > 4 %}
+                            <span class="badge bg-light text-muted">+{{ post.tags.count|add:"-4" }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="post-stats">
+                                    <span><i class="fas fa-eye"></i>{{ post.views_count }}</span>
+                                    <span><i class="fas fa-comments"></i>{{ post.comments.count }}</span>
+                                    <span><i class="fas fa-heart"></i>{{ post.reactions.count }}</span>
+                                </div>
+                                <small class="news-meta">{{ post.published_at|date:"d.m.Y" }}</small>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-tag fa-3x text-muted mb-3"></i>
+                    <h3 class="text-muted">Новостей с тегом "{{ tag.name }}" не найдено</h3>
+                    <p class="text-muted">Попробуйте поискать по другим тегам или вернитесь к общему списку новостей.</p>
+                    <a href="{% url 'news:home' %}" class="btn btn-primary">
+                        <i class="fas fa-newspaper me-1"></i>Все новости
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ПАГИНАЦИЯ -->
+        {% if is_paginated %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- САЙДБАР -->
+    <div class="col-lg-4">
+        <!-- ИНФОРМАЦИЯ О ТЕГЕ -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-hashtag text-success me-2"></i>
+                    О теге
+                </h5>
+                <h6 class="text-success">#{{ tag.name }}</h6>
+                <p class="text-muted">Тег используется для группировки связанных новостей и облегчения поиска контента по интересующим темам.</p>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-success mb-0">{{ posts.count }}</h4>
+                            <small class="text-muted">Новостей</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-primary mb-0">{{ total_comments }}</h4>
+                        <small class="text-muted">Комментариев</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- КАТЕГОРИИ С ЭТИМ ТЕГОМ -->
+        {% if tag_categories %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-folder text-primary me-2"></i>
+                    Категории
+                </h5>
+                <p class="small text-muted mb-3">Категории, в которых встречается тег "{{ tag.name }}":</p>
+                <div class="list-group list-group-flush">
+                    {% for category in tag_categories %}
+                    <a href="{% url 'news:category_posts' category.slug %}"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        {{ category.name }}
+                        <span class="badge bg-primary rounded-pill">{{ category.post_count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ПОПУЛЯРНЫЕ ТЕГИ -->
+        {% if popular_tags %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-fire text-danger me-2"></i>
+                    Популярные теги
+                </h5>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for popular_tag in popular_tags %}
+                    <a href="{% url 'news:tag_posts' popular_tag.slug %}"
+                       class="badge {% if popular_tag.slug == tag.slug %}bg-success{% else %}bg-light text-dark{% endif %} text-decoration-none">
+                        #{{ popular_tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- АВТОРЫ, ИСПОЛЬЗУЮЩИЕ ЭТОТ ТЕГ -->
+        {% if tag_authors %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-users text-info me-2"></i>
+                    Активные авторы
+                </h5>
+                <p class="small text-muted mb-3">Авторы, которые чаще всего используют тег "{{ tag.name }}":</p>
+                {% for author in tag_authors %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <i class="fas fa-user-circle text-info me-2"></i>
+                        <strong>{{ author.username }}</strong>
+                    </div>
+                    <span class="badge bg-info">{{ author.post_count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ПОСЛЕДНИЕ НОВОСТИ БЕЗ ЭТОГО ТЕГА -->
+        {% if recent_other_posts %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock text-primary me-2"></i>
+                    Другие новости
+                </h5>
+                {% for recent_post in recent_other_posts %}
+                <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <h6 class="mb-1">
+                        <a href="{% url 'news:post_detail' recent_post.slug %}" class="text-decoration-none">
+                            {{ recent_post.title|truncatechars:40 }}
+                        </a>
+                    </h6>
+                    <small class="text-muted">
+                        {% if recent_post.category %}{{ recent_post.category.name }} • {% endif %}
+                        {{ recent_post.published_at|timesince }} назад
+                    </small>
+                    {% if recent_post.tags.all %}
+                    <div class="mt-1">
+                        {% for post_tag in recent_post.tags.all|slice:":2" %}
+                        <a href="{% url 'news:tag_posts' post_tag.slug %}" class="badge bg-light text-dark text-decoration-none me-1">
+                            #{{ post_tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <a href="{% url 'news:home' %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-newspaper me-1"></i>Все новости
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const cards = document.querySelectorAll('.news-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

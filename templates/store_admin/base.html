@@ -1,0 +1,601 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #2e7d32;
+        --secondary: #388e3c;
+        --accent: #ff9800;
+        --primary-fg: #fff;
+        --nav-bg: #f8f9fa;
+        --nav-border: #dee2e6;
+        --nav-text: #495057;
+        --nav-text-hover: #007bff;
+        --nav-active-bg: #007bff;
+        --nav-active-text: #fff;
+    }
+
+    /* Компактная шапка */
+    #header {
+        background: white;
+        border-bottom: 1px solid var(--nav-border);
+        padding: 8px 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #header .inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    #branding h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    #site-name a {
+        text-decoration: none;
+        color: var(--primary);
+    }
+
+    /* Компактная навигация */
+    .compact-nav {
+        background: var(--nav-bg);
+        border-bottom: 1px solid var(--nav-border);
+        padding: 0;
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .nav-items {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        color: var(--nav-text);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border-right: 1px solid var(--nav-border);
+        white-space: nowrap;
+    }
+
+    .nav-item:hover {
+        background: #e9ecef;
+        color: var(--nav-text-hover);
+    }
+
+    .nav-item.active {
+        background: var(--nav-active-bg);
+        color: var(--nav-active-text);
+    }
+
+    .nav-item:last-child {
+        border-right: none;
+    }
+
+    .nav-icon {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+    }
+
+    /* Пользовательское меню - компактное */
+    #user-tools {
+        margin-left: auto;
+        position: relative;
+    }
+
+    .user-menu-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .user-menu-trigger {
+        background: white;
+        border: 1px solid var(--nav-border);
+        color: var(--nav-text);
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .user-menu-trigger:hover {
+        background: #f8f9fa;
+        border-color: var(--nav-text-hover);
+        color: var(--nav-text-hover);
+    }
+
+    .user-menu-trigger .user-avatar {
+        width: 20px;
+        height: 20px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid var(--nav-border);
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        min-width: 260px;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-5px);
+        transition: all 0.2s ease;
+        margin-top: 2px;
+    }
+
+    .user-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .user-dropdown-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+        border-radius: 6px 6px 0 0;
+    }
+
+    .user-dropdown-header .user-info {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+
+    .user-dropdown-header .user-role {
+        font-size: 11px;
+        background: var(--accent);
+        color: white;
+        padding: 1px 6px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .user-dropdown-section {
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .user-dropdown-section:last-child {
+        border-bottom: none;
+    }
+
+    .user-dropdown-section h4 {
+        margin: 0 0 4px 0;
+        padding: 0 16px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .user-dropdown-item {
+        display: block;
+        padding: 6px 16px;
+        color: #333;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-size: 12px;
+    }
+
+    .user-dropdown-item:hover {
+        background: #f5f5f5;
+        color: #333;
+    }
+
+    .user-dropdown-item.danger {
+        color: #dc3545;
+    }
+
+    .user-dropdown-item.danger:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    /* Кнопка добавления рядом с поиском */
+    .search-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .add-btn {
+        background: var(--primary);
+        color: white;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .add-btn:hover {
+        background: var(--secondary);
+        color: white;
+    }
+
+    /* Breadcrumbs компактные */
+    div.breadcrumbs {
+        background: #f8f9fa;
+        border: none;
+        border-bottom: 1px solid var(--nav-border);
+        padding: 8px 20px;
+        font-size: 12px;
+        margin: 0;
+    }
+
+    div.breadcrumbs a {
+        color: var(--nav-text-hover);
+        text-decoration: none;
+    }
+
+    div.breadcrumbs a:hover {
+        text-decoration: underline;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .nav-items {
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            border-right: none;
+            border-bottom: 1px solid var(--nav-border);
+            flex: 1 1 50%;
+            justify-content: center;
+        }
+
+        .user-dropdown {
+            min-width: 220px;
+            right: -10px;
+        }
+
+        #header .inner {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-container {
+            padding: 0 10px;
+        }
+    }
+
+    /* Улучшения для существующих элементов */
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--primary);
+    }
+
+    a:link, a:visited {
+        color: var(--primary);
+    }
+
+    /* Скрытие стандартных ugly кнопок импорта/экспорта */
+    a[href*="import"], a[href*="export"] {
+        display: none !important;
+    }
+
+    /* Красивые кнопки импорта/экспорта (когда активированы) */
+    .btn-import, .btn-export {
+        background: #6c757d;
+        color: white;
+        padding: 4px 8px;
+        border: none;
+        border-radius: 3px;
+        font-size: 11px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block !important;
+        margin: 2px;
+        transition: background 0.2s ease;
+    }
+
+    .btn-import:hover, .btn-export:hover {
+        background: #5a6268;
+        color: white;
+    }
+
+    .btn-import {
+        background: #007bff;
+    }
+
+    .btn-import:hover {
+        background: #0056b3;
+    }
+
+    .btn-export {
+        background: #28a745;
+    }
+
+    .btn-export:hover {
+        background: #1e7e34;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Выпадающее меню пользователя
+    const userTrigger = document.querySelector('.user-menu-trigger');
+    const userDropdown = document.querySelector('.user-dropdown');
+
+    if (userTrigger && userDropdown) {
+        userTrigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        // Закрытие при клике вне меню
+        document.addEventListener('click', function(e) {
+            if (!userTrigger.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('show');
+            }
+        });
+    }
+
+    // Улучшение поиска с кнопкой добавления
+    const searchForm = document.querySelector('#changelist-search');
+    if (searchForm) {
+        const searchContainer = document.createElement('div');
+        searchContainer.className = 'search-controls';
+
+        // Перемещаем поиск в контейнер
+        const searchFormClone = searchForm.cloneNode(true);
+        searchForm.parentNode.replaceChild(searchContainer, searchForm);
+        searchContainer.appendChild(searchFormClone);
+
+        // Добавляем кнопку добавления (определяем тип страницы)
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('seedbank')) {
+            const addBtn = document.createElement('a');
+            addBtn.href = currentPath + 'add/';
+            addBtn.className = 'add-btn';
+            addBtn.innerHTML = '➕ Добавить сидбанк';
+            searchContainer.appendChild(addBtn);
+        } else if (currentPath.includes('strain')) {
+            const addBtn = document.createElement('a');
+            addBtn.href = currentPath + 'add/';
+            addBtn.className = 'add-btn';
+            addBtn.innerHTML = '➕ Добавить сорт';
+            searchContainer.appendChild(addBtn);
+        }
+    }
+
+    // Подсвечиваем активный пункт навигации
+    const currentPath = window.location.pathname;
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const href = item.getAttribute('href');
+        if (href && currentPath.includes(href.split('/').pop())) {
+            item.classList.add('active');
+        }
+    });
+});
+
+// Функция для отображения инструментов импорта/экспорта
+function showImportExportTools() {
+    const importExportButtons = document.querySelectorAll('a[href*="import"], a[href*="export"]');
+
+    if (importExportButtons.length > 0) {
+        importExportButtons.forEach(btn => {
+            btn.style.display = 'inline-block';
+            btn.className = btn.href.includes('import') ? 'btn-import' : 'btn-export';
+        });
+
+        // Размещаем кнопки рядом с поиском
+        const searchControls = document.querySelector('.search-controls');
+        if (searchControls) {
+            importExportButtons.forEach(btn => {
+                searchControls.appendChild(btn.cloneNode(true));
+            });
+        }
+
+        alert('Кнопки импорта/экспорта активированы рядом с поиском');
+    } else {
+        alert('Инструменты импорта/экспорта недоступны на этой странице');
+    }
+}
+</script>
+{% endblock %}
+
+{% block branding %}
+<div class="inner">
+    <h1 id="site-name">
+        <a href="{% url 'store_admin:index' %}">
+            🌱 Magic Beans
+        </a>
+    </h1>
+
+    <!-- Пользовательское меню -->
+    <div id="user-tools">
+        <div class="user-menu-container">
+            <div class="user-menu-trigger">
+                <div class="user-avatar">
+                    {{ user.get_short_name|first|upper|default:"👤" }}
+                </div>
+                <span>{{ user.get_short_name|default:user.username }}</span>
+                <span style="font-size: 9px;">▼</span>
+            </div>
+
+            <div class="user-dropdown">
+                <div class="user-dropdown-header">
+                    <div class="user-info">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="user-role">{{ user.get_role_display }}</div>
+                </div>
+
+                <div class="user-dropdown-section">
+                    <h4>Личный кабинет</h4>
+                    <a href="{% url 'users:profile' %}" class="user-dropdown-item">
+                        👤 Мой профиль
+                    </a>
+                    {% if user.has_usable_password %}
+                    <a href="{% url 'admin:password_change' %}" class="user-dropdown-item">
+                        🔑 Сменить пароль
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="user-dropdown-section">
+                    <h4>Навигация по сайту</h4>
+                    <a href="/" class="user-dropdown-item">
+                        🏠 Главная страница
+                    </a>
+                    <a href="{% url 'growlogs:list' %}" class="user-dropdown-item">
+                        📔 Дневники выращивания
+                    </a>
+                    <a href="{% url 'gallery:gallery' %}" class="user-dropdown-item">
+                        🖼️ Галерея
+                    </a>
+                    <a href="{% url 'chat:home' %}" class="user-dropdown-item">
+                        <i class="fas fa-comments"></i>
+                        {% trans "Чат" %}
+                    </a>
+                </div>
+
+                {% if user.role == 'owner' or user.role == 'admin' or user.role == 'store_owner' %}
+                <div class="user-dropdown-section">
+                    <h4>Административные панели</h4>
+                    {% if user.role == 'owner' or user.role == 'admin' %}
+                    <a href="{% url 'owner_admin:index' %}" class="user-dropdown-item">
+                        👑 Админка владельца
+                    </a>
+                    {% endif %}
+                    {% if user.role == 'owner' or user.role == 'admin' %}
+                    <a href="{% url 'moderator_admin:index' %}" class="user-dropdown-item">
+                        🎭 Модерация
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'admin_selector' %}" class="user-dropdown-item">
+                        ⚙️ Выбор админки
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Кнопки импорта/экспорта спрятаны сюда -->
+                {% if 'seedbank' in request.resolver_match.url_name or 'strain' in request.resolver_match.url_name %}
+                <div class="user-dropdown-section">
+                    <h4>Инструменты</h4>
+                    <a href="#" onclick="showImportExportTools()" class="user-dropdown-item">
+                        📥📤 Импорт/Экспорт
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="user-dropdown-section">
+                    <form id="logout-form" method="post" action="{% url 'admin:logout' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="user-dropdown-item danger" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer;">
+                            🚪 Выйти из системы
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block userlinks %}
+<!-- Пользовательские ссылки перенесены в шапку -->
+{% endblock %}
+
+{% block nav-global %}
+<div class="compact-nav">
+    <div class="nav-container">
+        <div class="nav-items">
+            <a href="{% url 'store_admin:index' %}" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                Главная
+            </a>
+            <a href="/store_admin/magicbeans_store/seedbank/" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6ZM12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16Z"/>
+                </svg>
+                Сидбанки
+            </a>
+            <a href="/store_admin/magicbeans_store/strain/" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"/>
+                </svg>
+                Сорта
+            </a>
+            <a href="/store_admin/magicbeans_store/stockitem/" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M20 3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V5C22 3.9 21.1 3 20 3ZM20 19H4V5H20V19Z"/>
+                </svg>
+                Склад
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="/">🏠 На сайт</a> &rsaquo;
+  <a href="{% url 'store_admin:index' %}">🌱 Админка магазина</a>
+  {% if title %} &rsaquo; {{ title }}{% endif %}
+</div>
+{% endblock %}
+
+{% block footer %}
+<div id="footer">
+    <div class="store-admin-footer">
+        <p>&copy; {% now "Y" %} Magic Beans. Панель управления магазином семян.</p>
+    </div>
+</div>
+{% endblock %}

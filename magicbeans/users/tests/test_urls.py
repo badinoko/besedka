@@ -1,7 +1,8 @@
-from django.urls import resolve
-from django.urls import reverse
+import pytest
+from django.urls import resolve, reverse
 
-from magicbeans.users.models import User
+# from magicbeans.users.models import User # <-- Закомментировано или удалить
+from users.models import User # <--- Новый импорт
 
 
 def test_detail(user: User):

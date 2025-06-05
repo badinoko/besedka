@@ -4,13 +4,14 @@ from django.urls import reverse
 from magicbeans.store.models import SeedBank
 from magicbeans.store.models import Strain
 
-
-@admin.register(SeedBank)
+# Декоратор закомментирован - регистрация происходит в magicbeans_store/admin.py
+# @admin.register(SeedBank)
 class SeedBankAdmin(admin.ModelAdmin):
     list_display = ("name_colored", "is_visible", "website", "created_at", "updated_at", "view_strains_link")
     list_filter = ("is_visible",)
     search_fields = ("name", "website")
     actions = ["make_visible", "make_invisible"]
+    ordering = ('name',)
 
     def name_colored(self, obj):
         if not obj.is_visible:
@@ -30,4 +31,4 @@ class SeedBankAdmin(admin.ModelAdmin):
 
     def make_invisible(self, request, queryset):
         queryset.update(is_visible=False)
-    make_invisible.short_description = "Сделать выбранные сидбанки невидимыми" 
+    make_invisible.short_description = "Сделать выбранные сидбанки невидимыми"

@@ -1,0 +1,313 @@
+/* ======================================================================
+   АДАПТИВНАЯ АДМИНКА MAGIC BEANS - УМНОЕ ФОРМАТИРОВАНИЕ
+   ====================================================================== */
+
+/* Основные переменные для адаптивности */
+:root {
+    --column-min-width: 120px;
+    --column-max-width: 300px;
+    --mobile-breakpoint: 768px;
+    --tablet-breakpoint: 1024px;
+}
+
+/* ======================================================================
+   АДАПТИВНЫЕ СТОЛБЦЫ ТАБЛИЦ
+   ====================================================================== */
+
+/* Автоматическое изменение размера столбцов */
+.results table {
+    table-layout: auto;
+    width: 100%;
+    min-width: 800px; /* Минимальная ширина для горизонтальной прокрутки */
+}
+
+.results th, .results td {
+    min-width: var(--column-min-width);
+    max-width: var(--column-max-width);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+}
+
+/* Изменяемые столбцы - УБИРАЕМ курсор по умолчанию */
+.results th {
+    border-right: 2px solid #ddd;
+    cursor: default; /* Обычный курсор вместо col-resize */
+}
+
+.results th:hover {
+    border-right-color: #417690;
+}
+
+/* ======================================================================
+   УЛУЧШЕННОЕ ВЫРАВНИВАНИЕ
+   ====================================================================== */
+
+/* Центрирование булевых полей (галочки) */
+.results td .icon-yes,
+.results td .icon-no,
+.results th:has-text("Активен"),
+.results th:contains("Активен") {
+    text-align: center !important;
+}
+
+/* Центрирование столбцов с галочками */
+.results td:nth-child(4), /* Обычно столбец "Активен" */
+.results th:nth-child(4) {
+    text-align: center !important;
+}
+
+/* Улучшенное выравнивание заголовков */
+.results th {
+    padding: 8px 12px;
+    font-weight: 600;
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* Центрирование числовых данных */
+.results td:has([class*="number"]),
+.results td:has(input[type="number"]) {
+    text-align: right;
+    padding-right: 16px;
+}
+
+/* Улучшенные отступы для ячеек */
+.results td {
+    padding: 8px 12px;
+    vertical-align: middle;
+}
+
+/* Иконки галочек - лучшее выравнивание */
+.results .icon-yes,
+.results .icon-no {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin: 0 auto;
+}
+
+/* ======================================================================
+   МОБИЛЬНАЯ АДАПТИВНОСТЬ
+   ====================================================================== */
+
+@media (max-width: 768px) {
+    /* Скрываем менее важные столбцы на мобильных */
+    .results th:nth-child(n+5),
+    .results td:nth-child(n+5) {
+        display: none;
+    }
+
+    /* Основные столбцы занимают всю ширину */
+    .results th, .results td {
+        min-width: auto;
+        max-width: none;
+    }
+
+    /* Мобильное меню */
+    .breadcrumbs {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    /* Кнопки действий */
+    .object-tools {
+        margin: 0;
+        float: none;
+    }
+
+    .object-tools li {
+        display: block;
+        margin: 5px 0;
+    }
+
+    .object-tools a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Сверхкомпактный режим для маленьких экранов */
+    .results th:nth-child(n+4),
+    .results td:nth-child(n+4) {
+        display: none;
+    }
+
+    /* Увеличиваем размер кнопок для пальцев */
+    .results input[type="checkbox"] {
+        transform: scale(1.5);
+        margin: 5px;
+    }
+
+    /* Компактные формы */
+    .form-row {
+        margin-bottom: 10px;
+    }
+
+    .form-row label {
+        display: block;
+        margin-bottom: 3px;
+        font-weight: bold;
+    }
+}
+
+/* ======================================================================
+   ПЛАНШЕТНАЯ АДАПТИВНОСТЬ
+   ====================================================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* Скрываем только самые детальные столбцы */
+    .results th:nth-child(n+7),
+    .results td:nth-child(n+7) {
+        display: none;
+    }
+
+    /* Оптимизируем боковую панель */
+    #changelist-sidebar {
+        width: 200px;
+    }
+
+    #changelist .results {
+        margin-right: 210px;
+    }
+}
+
+/* ======================================================================
+   УМНАЯ ПРОКРУТКА И ФИКСИРОВАННЫЕ ЗАГОЛОВКИ
+   ====================================================================== */
+
+/* Горизонтальная прокрутка с сохранением заголовков */
+.results {
+    overflow-x: auto;
+    max-width: 100%;
+    position: relative;
+}
+
+/* Фиксированные заголовки при прокрутке */
+@media (min-width: 769px) {
+    .results thead th {
+        position: sticky;
+        top: 0;
+        background: #f8f9fa;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Фиксируем первый столбец (название товара) */
+    .results th:first-child,
+    .results td:first-child {
+        position: sticky;
+        left: 0;
+        background: #fff;
+        z-index: 5;
+        border-right: 2px solid #ddd;
+    }
+
+    .results th:first-child {
+        z-index: 15;
+        background: #f8f9fa;
+    }
+}
+
+/* ======================================================================
+   УЛУЧШЕННАЯ ЧИТАЕМОСТЬ
+   ====================================================================== */
+
+/* Альтернативные цвета строк */
+.results tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.results tr:hover {
+    background-color: #e8f4f8;
+}
+
+/* Лучшее выделение активных элементов */
+.results th.sorted {
+    background-color: #e1f5fe;
+}
+
+/* Индикаторы изменяемых столбцов */
+.results th::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: transparent;
+    cursor: col-resize;
+}
+
+.results th:hover::after {
+    background: #417690;
+}
+
+/* ======================================================================
+   КНОПКИ И КОНТРОЛЫ
+   ====================================================================== */
+
+/* Адаптивные кнопки */
+.submit-row input, .object-tools a {
+    min-height: 44px; /* Размер для касания пальцем */
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .submit-row input, .object-tools a {
+        width: 100%;
+        margin: 5px 0;
+        display: block;
+        text-align: center;
+    }
+}
+
+/* ======================================================================
+   ФИЛЬТРЫ И ПОИСК
+   ====================================================================== */
+
+@media (max-width: 768px) {
+    /* Мобильные фильтры */
+    #changelist-sidebar {
+        position: fixed;
+        top: 0;
+        right: -250px;
+        width: 250px;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+        transition: right 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+    #changelist-sidebar.open {
+        right: 0;
+    }
+
+    /* Кнопка открытия фильтров */
+    .filter-toggle {
+        display: block;
+        padding: 10px 15px;
+        background: #417690;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+
+    #changelist .results {
+        margin-right: 0;
+    }
+}
+
+@media (min-width: 769px) {
+    .filter-toggle {
+        display: none;
+    }
+}

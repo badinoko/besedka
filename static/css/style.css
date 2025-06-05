@@ -1,0 +1,87 @@
+/* Улучшенные счетчики для корзины и уведомлений */
+.nav-link-with-counter {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.5rem 0.75rem !important;
+    min-width: 50px !important; /* Минимальная ширина для стабильности */
+}
+
+.nav-link-with-counter .nav-icon {
+    font-size: 1.4rem !important; /* Увеличиваем иконки */
+    transition: transform 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.nav-link-with-counter:hover .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-counter-badge {
+    position: absolute !important;
+    top: 8px !important; /* Ближе к иконке */
+    right: 8px !important; /* Ближе к иконке */
+    min-width: 20px !important;
+    height: 20px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #343a40 !important; /* Темная обводка для контраста */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+    z-index: 10 !important;
+    line-height: 1 !important;
+    transform: translate(50%, -50%) !important; /* Центрируем относительно угла иконки */
+}
+
+.nav-counter-badge.cart-badge {
+    background-color: #0d6efd !important; /* Синий для корзины */
+    color: white !important;
+}
+
+.nav-counter-badge.notifications-badge {
+    background-color: #dc3545 !important; /* Красный для уведомлений */
+    color: white !important;
+}
+
+/* Анимация появления счетчика */
+.nav-counter-badge {
+    animation: badgeAppear 0.3s ease-out;
+}
+
+@keyframes badgeAppear {
+    0% {
+        transform: translate(50%, -50%) scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(50%, -50%) scale(1.2);
+    }
+    100% {
+        transform: translate(50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .nav-link-with-counter {
+        min-width: 45px !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+
+    .nav-link-with-counter .nav-icon {
+        font-size: 1.3rem !important;
+    }
+
+    .nav-counter-badge {
+        top: 6px !important;
+        right: 6px !important;
+        min-width: 18px !important;
+        height: 18px !important;
+        font-size: 0.65rem !important;
+    }
+}
