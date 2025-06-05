@@ -598,29 +598,19 @@ class Notification(models.Model):
         Например, переход к заказу, посту, комментарию, профилю пользователя, чату.
         Возвращает None, если действие не предусмотрено.
         """
-        if not self.content_object: # Если нет связанного объекта, действия нет
-            return None
-
         # 1. Стандартный способ: пытаемся вызвать get_absolute_url() у content_object
-        if hasattr(self.content_object, 'get_absolute_url'):
+        if self.content_object and hasattr(self.content_object, 'get_absolute_url'):
             try:
                 url = self.content_object.get_absolute_url()
                 if url: # Убедимся, что URL не пустой
-                    # Для комментариев попробуем добавить якорь, если это сам комментарий
-                    # Эта логика предполагает, что content_object для УВЕДОМЛЕНИЯ О КОММЕНТАРИИ
-                    # является РОДИТЕЛЬСКИМ ОБЪЕКТОМ (пост, фото, гроулог), а ID комментария
-                    # нужно будет передавать как-то иначе, если нужен точный якорь.
-                    # Пока просто возвращаем URL родителя.
                     return url
-            except NoReverseMatch:
+            except (NoReverseMatch, Exception):
                 pass # Ошибка реверсирования, попробуем другие способы
-            except Exception:
-                pass # Другие возможные ошибки
 
-        # 2. Специальная логика для определенных типов, если get_absolute_url не сработал или не подходит
+        # 2. Специальная логика для определенных типов уведомлений
 
         if self.notification_type == self.NotificationType.ORDER:
-            # Для заказов, content_object - это сам заказ (Order instance)
+            # Для заказов
             if hasattr(self.content_object, 'pk'):
                 try:
                     if self.recipient.is_store_owner() or self.recipient.is_store_admin():
@@ -630,29 +620,123 @@ class Notification(models.Model):
                         # URL для личного кабинета пользователя
                         return reverse('store:order_detail', kwargs={'order_id': self.content_object.pk})
                 except NoReverseMatch:
-                    pass # Если эти URL не найдены, вернется None ниже
+                    # Если специфичный URL не найден, ведем в магазин
+                    try:
+                        return reverse('store:catalog')
+                    except NoReverseMatch:
+                        pass
 
         elif self.notification_type == self.NotificationType.FOLLOW:
-            # Для подписок, content_object - это пользователь, на которого подписались (User instance)
-            # или пользователь, который подписался (sender).
-            # Предположим, что content_object НЕ устанавливается, а используется sender.
-            if self.sender and hasattr(self.sender, 'get_absolute_url'):
-                try:
-                    return self.sender.get_absolute_url() # URL профиля того, кто подписался
-                except NoReverseMatch:
-                    pass
+            # Для подписок ведем к подписчикам/подпискам в личном кабинете
+            try:
+                return reverse('users:profile')  # Пока ведем в личный кабинет
+            except NoReverseMatch:
+                pass
+
+        elif self.notification_type == self.NotificationType.LIKE:
+            # Для лайков попытаемся определить тип объекта и перейти в соответствующий раздел
+            if self.content_object:
+                # Проверяем тип объекта через content_type
+                content_type_model = self.content_type.model
+
+                if content_type_model in ['post', 'growlog', 'growlogentry']:
+                    # Лайк гроу-репорта - ведем в гроу-репорты
+                    try:
+                        return reverse('growlogs:list')
+                    except NoReverseMatch:
+                        pass
+
+                elif content_type_model in ['photo', 'image', 'galleryimage']:
+                    # Лайк фото - ведем в галерею
+                    try:
+                        return reverse('gallery:gallery')
+                    except NoReverseMatch:
+                        pass
+
+                elif content_type_model in ['newspost', 'article', 'news']:
+                    # Лайк новости - ведем в новости
+                    try:
+                        return reverse('news:home')
+                    except NoReverseMatch:
+                        pass
+
+            # Если не смогли определить тип, ведем в личный кабинет
+            try:
+                return reverse('users:profile')
+            except NoReverseMatch:
+                pass
+
+        elif self.notification_type == self.NotificationType.COMMENT:
+            # Для комментариев аналогично лайкам - определяем тип родительского объекта
+            if self.content_object:
+                content_type_model = self.content_type.model
+
+                if content_type_model in ['post', 'growlog', 'growlogentry']:
+                    # Комментарий к гроу-репорту
+                    try:
+                        return reverse('growlogs:list')
+                    except NoReverseMatch:
+                        pass
+
+                elif content_type_model in ['photo', 'image', 'galleryimage']:
+                    # Комментарий к фото
+                    try:
+                        return reverse('gallery:gallery')
+                    except NoReverseMatch:
+                        pass
+
+                elif content_type_model in ['newspost', 'article', 'news']:
+                    # Комментарий к новости
+                    try:
+                        return reverse('news:home')
+                    except NoReverseMatch:
+                        pass
+
+            # Если не смогли определить тип, ведем в личный кабинет
+            try:
+                return reverse('users:profile')
+            except NoReverseMatch:
+                pass
 
         elif self.notification_type == self.NotificationType.MENTION:
-            # Для упоминаний, content_object может быть User (кого упомянули)
-            # или объект, где произошло упоминание (Post, Comment). Cложно стандартизировать.
-            # Если content_object это User, то сработает общий hasattr(self.content_object, 'get_absolute_url') выше.
-            # Если это Post/Comment, то тоже. Пока оставим так.
-            pass
+            # Для упоминаний аналогично
+            if self.content_object:
+                content_type_model = self.content_type.model
+
+                if content_type_model in ['post', 'growlog', 'growlogentry']:
+                    try:
+                        return reverse('growlogs:list')
+                    except NoReverseMatch:
+                        pass
+
+                elif content_type_model in ['photo', 'image', 'galleryimage']:
+                    try:
+                        return reverse('gallery:gallery')
+                    except NoReverseMatch:
+                        pass
+
+                elif content_type_model in ['newspost', 'article', 'news']:
+                    try:
+                        return reverse('news:home')
+                    except NoReverseMatch:
+                        pass
+
+            try:
+                return reverse('users:profile')
+            except NoReverseMatch:
+                pass
 
         elif self.notification_type == self.NotificationType.CHAT_MESSAGE:
-            # Для сообщений чата, content_object - это Room instance
-            # Общий hasattr(self.content_object, 'get_absolute_url') должен сработать, если у Room есть get_absolute_url
-            pass
+            # Уведомления чата временно отключены (см. CHAT_DEVELOPMENT_PLANS.md)
+            # В будущем планируется реализация умных уведомлений только при упоминаниях
+            return None
+
+        elif self.notification_type == self.NotificationType.SYSTEM:
+            # Системные уведомления - в личный кабинет
+            try:
+                return reverse('users:profile')
+            except NoReverseMatch:
+                pass
 
         # Если ни один из способов не дал URL, возвращаем None
         return None
@@ -661,9 +745,16 @@ class Notification(models.Model):
     def is_actionable(self):
         """
         Проверяет, является ли уведомление "кликабельным" (имеет ли оно URL для действия).
+        Только определенные типы уведомлений должны быть кликабельными.
         """
-        action_url = self.get_action_url()
-        return action_url is not None and action_url != '#'
+        # Только заказы должны быть кликабельными
+        if self.notification_type == self.NotificationType.ORDER:
+            action_url = self.get_action_url()
+            return action_url is not None and action_url != '#'
+
+        # Остальные типы уведомлений не кликабельны
+        # Пользователи могут использовать кнопки для действий
+        return False
 
     def mark_as_read(self):
         """Помечает уведомление как прочитанное."""

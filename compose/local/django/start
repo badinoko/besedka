@@ -4,6 +4,6 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-
 python manage.py migrate
-exec uvicorn config.asgi:application --host 0.0.0.0 --reload --reload-include '*.html'
+python manage.py collectstatic --noinput
+exec daphne -b 0.0.0.0 -p 8001 config.asgi:application

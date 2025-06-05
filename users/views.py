@@ -439,13 +439,16 @@ def mark_all_notifications_read(request):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # AJAX запрос
             unread_notifications_count = request.user.notifications.filter(is_read=False).count()
-            total_notifications_count = request.user.notifications.count()  # Добавлено
+            total_notifications_count = request.user.notifications.count()
             return JsonResponse({
                 'success': True,
                 'updated_count': updated_count,
                 'message': f'Помечено как прочитанные: {updated_count} уведомлений' if updated_count > 0 else 'Все уведомления уже прочитаны',
+                # Унифицированные ключи для всех функций
+                'unread_count': unread_notifications_count,
+                'total_count': total_notifications_count,
                 'unread_notifications_count': unread_notifications_count,
-                'total_notifications_count': total_notifications_count  # Добавлено
+                'total_notifications_count': total_notifications_count
             })
         else:
             # Обычный запрос

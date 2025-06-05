@@ -15,11 +15,11 @@ services:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
     image: besedka_local_web
-    command: python manage.py runserver 0.0.0.0:8000
+    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "8001:8001"
     env_file:
       - ./.env
     depends_on:

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:13
@@ -12,22 +10,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  web:
-    build:
-      context: .
-      dockerfile: compose/local/django/Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
+  redis:
+    image: redis:6
     ports:
-      - "8000:8000"
-    depends_on:
-      - postgres
-    environment:
-      DATABASE_URL: postgres://magic_beans_user:magic_beans_password@postgres:5432/magic_beans_db
-      DJANGO_SETTINGS_MODULE: config.settings.local
-    env_file:
-      - .env
+      - "6379:6379"
 
 volumes:
   postgres_data:

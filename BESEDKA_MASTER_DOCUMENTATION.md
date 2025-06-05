@@ -499,20 +499,44 @@ python manage.py runserver  # НЕ поддерживает WebSocket!
 - **Админка владельца магазина:** http://localhost:8001/store-owner-admin/
 - **Админка администратора магазина:** http://localhost:8001/store-admin/
 
+### **🐳 ПРАВИЛЬНАЯ СТРУКТУРА DOCKER КОНТЕЙНЕРОВ:**
+
+**КРИТИЧЕСКИ ВАЖНО!** Все контейнеры должны быть в группе `magic_beans_new`:
+
+```
+📁 magic_beans_new (группа контейнеров)
+  ├── web-1 (besedka_local_web) - Django приложение
+  ├── redis-1 (redis:6) - Redis для кеширования и WebSocket  
+  └── postgres-1 (postgres:13) - База данных PostgreSQL
+```
+
 ### **Команды запуска:**
 ```bash
-# Запуск контейнеров
-docker-compose up -d
+# ПРАВИЛЬНЫЙ запуск всех контейнеров
+docker-compose -f docker-compose.local.yml up -d
 
-# Запуск сервера разработки (ОБЯЗАТЕЛЬНО Daphne!)
+# Проверка правильной структуры
+docker ps
+# Должно показать: magic_beans_new-web-1, magic_beans_new-redis-1, magic_beans_new-postgres-1
+
+# Запуск основного сервера (ОБЯЗАТЕЛЬНО Daphne!)
 daphne -b 127.0.0.1 -p 8001 config.asgi:application
 
 # Применение миграций
-docker-compose exec web python manage.py migrate
+docker-compose -f docker-compose.local.yml exec web python manage.py migrate
 
 # Запуск тестов
-docker-compose exec web python manage.py test
+docker-compose -f docker-compose.local.yml exec web python manage.py test
+
+# Остановка всех контейнеров
+docker-compose -f docker-compose.local.yml down
 ```
+
+**⚠️ ЧАСТЫЕ ОШИБКИ:**
+- ❌ НЕ использовать отдельный контейнер `redis-besedka`
+- ❌ НЕ использовать основной `docker-compose.yml` (в нем нет Redis)
+- ❌ НЕ запускать контейнеры по отдельности
+- ✅ ВСЕГДА использовать `docker-compose.local.yml` для полной функциональности
 
 ---
 

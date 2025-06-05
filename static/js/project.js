@@ -1,5 +1,61 @@
 /* Основной JavaScript файл проекта "Беседка" */
 
+/**
+ * Глобальная функция для отображения toast уведомлений
+ * @param {string} message - Текст сообщения
+ * @param {string} type - Тип: success, error, warning, info
+ * @param {number} duration - Длительность в миллисекундах (по умолчанию 4000)
+ */
+function showToast(message, type = 'success', duration = 4000) {
+    const container = document.getElementById('global-toast-container');
+    if (!container) {
+        console.error('Toast container not found');
+        return;
+    }
+
+    // Создаем уникальный ID для toast
+    const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+
+    // Определяем иконку и цвет для разных типов
+    const typeConfig = {
+        success: { icon: 'fas fa-check-circle', bgClass: 'bg-success' },
+        error: { icon: 'fas fa-exclamation-circle', bgClass: 'bg-danger' },
+        warning: { icon: 'fas fa-exclamation-triangle', bgClass: 'bg-warning' },
+        info: { icon: 'fas fa-info-circle', bgClass: 'bg-info' }
+    };
+
+    const config = typeConfig[type] || typeConfig.info;
+
+    // HTML для toast
+    const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-white ${config.bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i class="${config.icon} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    // Добавляем toast в контейнер
+    container.insertAdjacentHTML('beforeend', toastHTML);
+
+    // Показываем toast
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        delay: duration
+    });
+
+    toast.show();
+
+    // Удаляем toast из DOM после скрытия
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🌱 Беседка загружена!');
 
