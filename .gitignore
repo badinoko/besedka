@@ -306,3 +306,8 @@ logs/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Secret keys and credentials
+*api-key.json
+*credentials.json
+*service-account*.json
