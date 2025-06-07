@@ -10,8 +10,10 @@ from django.db import models
 from django.utils import timezone
 from datetime import date, timedelta
 import json
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
+from django.core.paginator import Paginator
 
 from .models import GrowLog, GrowLogEntry, GrowLogComment, GrowLogEntryLike, GrowLogEntryComment
 from .forms import GrowLogCreateForm, GrowLogEntryForm, GrowLogCommentForm, GrowLogEntryCommentForm
@@ -917,3 +919,147 @@ class GrowLogEntryUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['growlog'] = self.object.growlog
         return context
+
+@require_GET
+def filter_growlogs_ajax(request):
+    """AJAX-обработчик для фильтрации гроурепортов"""
+    try:
+        filter_type = request.GET.get('filter', 'all')
+        page = request.GET.get('page', 1)
+
+        # Базовый queryset публичных гроурепортов
+        queryset = GrowLog.objects.filter(
+            is_active=True,
+            is_public=True
+        ).select_related('grower', 'strain').prefetch_related('likes', 'comments')
+
+        # Применяем фильтрацию
+        if filter_type == 'new':
+            # Новые сначала по дате начала
+            queryset = queryset.order_by('-start_date', '-id')
+        elif filter_type == 'popular':
+            # Популярные по просмотрам
+            queryset = queryset.order_by('-views_count', '-start_date')
+        elif filter_type == 'active':
+            # Активные (не завершенные)
+            queryset = queryset.exclude(current_stage='harvest').order_by('-start_date')
+        elif filter_type == 'completed':
+            # Завершенные (на стадии сбора урожая)
+            queryset = queryset.filter(current_stage='harvest').order_by('-start_date')
+        else:
+            # По умолчанию - новые сначала
+            queryset = queryset.order_by('-start_date', '-id')
+
+        # Пагинация
+        paginator = Paginator(queryset, 12)  # По 12 репортов на страницу как в оригинальном представлении
+        try:
+            growlogs_page = paginator.page(page)
+        except:
+            growlogs_page = paginator.page(1)
+
+        # Рендерим HTML с карточками гроурепортов - используем тот же шаблон, что и в списке
+        growlogs_html = ""
+        for growlog in growlogs_page:
+            growlog_card_html = render_to_string('growlogs/partials/growlog_card.html', {
+                'growlog': growlog,
+                'user': request.user
+            })
+            growlogs_html += growlog_card_html
+
+        # Если нет результатов, показываем пустое состояние
+        if not growlogs_html:
+            growlogs_html = render_to_string('growlogs/partials/empty_state.html')
+
+        # Рендерим пагинацию
+        pagination_html = ''
+        if growlogs_page.has_other_pages():
+            pagination_html = render_to_string('growlogs/partials/pagination.html', {
+                'page_obj': growlogs_page,
+                'is_paginated': True,
+                'current_filter': filter_type
+            })
+
+        return JsonResponse({
+            'success': True,
+            'growlogs_html': growlogs_html,
+            'pagination_html': pagination_html,
+            'growlogs_count': growlogs_page.paginator.count
+        })
+
+    except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
+        return JsonResponse({
+            'error': str(e),
+            'traceback': error_traceback
+        }, status=500)
+
+@require_GET
+def filter_debug(request):
+    """Отладочное представление для проверки фильтрации гроурепортов"""
+    from django.http import HttpResponse
+    import json
+
+    try:
+        filter_type = request.GET.get('filter', 'all')
+
+        # Базовый queryset публичных гроурепортов
+        queryset = GrowLog.objects.filter(
+            is_active=True,
+            is_public=True
+        ).select_related('grower', 'strain')
+
+        # Информация о шаблонах
+        import os
+        templates_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'templates', 'growlogs', 'partials')
+        templates_list = os.listdir(templates_dir) if os.path.exists(templates_dir) else []
+
+        # Проверка доступа к шаблонам
+        from django.template.loader import get_template
+        template_statuses = {}
+        for template_name in ['growlog_cards.html', 'pagination.html']:
+            try:
+                get_template(f'growlogs/partials/{template_name}')
+                template_statuses[template_name] = 'OK'
+            except Exception as e:
+                template_statuses[template_name] = str(e)
+
+        # Результаты для отображения
+        debug_info = {
+            'filter_type': filter_type,
+            'growlogs_count': queryset.count(),
+            'growlogs_data': [
+                {
+                    'id': gl.id,
+                    'title': gl.title,
+                    'grower': gl.grower.username,
+                    'stage': gl.current_stage,
+                    'public': gl.is_public,
+                    'active': gl.is_active
+                }
+                for gl in queryset[:5]  # Первые 5 для отладки
+            ],
+            'templates_dir': templates_dir,
+            'templates_list': templates_list,
+            'template_statuses': template_statuses,
+            'user_authenticated': request.user.is_authenticated,
+            'user': str(request.user)
+        }
+
+        # Возвращаем JSON с отладочной информацией
+        return HttpResponse(
+            json.dumps(debug_info, indent=4, default=str),
+            content_type='application/json'
+        )
+
+    except Exception as e:
+        import traceback
+        error_info = {
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }
+        return HttpResponse(
+            json.dumps(error_info, indent=4),
+            content_type='application/json',
+            status=500
+        )
