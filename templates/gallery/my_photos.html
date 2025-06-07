@@ -12,7 +12,7 @@
 <script type="module">
 import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js';
 const lightbox = new PhotoSwipeLightbox({
-  gallery: '#my-photos-gallery',
+  gallery: '.gallery-masonry',
   children: 'a',
   pswpModule: () => import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js')
 });
@@ -21,9 +21,9 @@ lightbox.init();
 <!-- Masonry для адаптивной сетки -->
 <script src="https://unpkg.com/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
 <!-- Унифицированные hero-кнопки -->
-<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250608012">
+    <link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250609070">
 <!-- CSS для галереи -->
-<link rel="stylesheet" href="{% static 'css/gallery_modern.css' %}?v=20250608013">
+<link rel="stylesheet" href="{% static 'css/gallery_modern.css' %}?v=20250608110">
 <!-- Мета-данные для JavaScript -->
 <meta name="user-authenticated" content="{% if user.is_authenticated %}true{% else %}false{% endif %}">
 <meta name="csrf-token" content="{{ csrf_token }}">
@@ -35,47 +35,39 @@ lightbox.init();
 
 {% block content %}
 <div class="gallery-page">
-    <div class="hero-container">
-        <div class="container">
-            <!-- КОМПАКТНАЯ ГЕРОЙ СЕКЦИЯ КАК В ГАЛЕРЕЕ -->
-            <div class="gallery-hero" data-aos="fade-up" data-aos-duration="600">
-                <div class="container">
-                    <div class="hero-content text-center">
-                        <div class="user-header mb-3">
-                            <img src="{{ user.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
-                                 alt="{{ user.display_name }}"
-                                 class="user-avatar me-3"
-                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.3); box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                            <div class="user-info d-inline-block text-start">
-                                <h1 class="hero-title mb-1">📸 Мои фотографии</h1>
-                                <p class="hero-subtitle mb-0">Управляйте своими фотографиями и следите за статистикой</p>
-                            </div>
-                        </div>
+    <div class="container">
+        <!-- КОМПАКТНАЯ ГЕРОЙ СЕКЦИЯ КАК В ГАЛЕРЕЕ -->
+        <div class="gallery-hero" data-aos="fade-up" data-aos-duration="500">
+            <div class="container">
+                <div class="hero-content text-center">
+                    <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">📸 Мои фотографии</h1>
+                    <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200" data-aos-duration="500">Управляйте своими фотографиями и следите за статистикой</p>
 
+                    <div class="hero-stats-and-actions">
                         <div class="hero-stats">
-                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="400">
                                 <span class="stat-number">{{ total_photos }}</span>
                                 <span class="stat-label">Всего фото</span>
                             </div>
-                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="200">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="500">
                                 <span class="stat-number">{{ total_public_photos }}</span>
                                 <span class="stat-label">Публичных</span>
                             </div>
-                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="600">
                                 <span class="stat-number">{{ total_private_photos }}</span>
                                 <span class="stat-label">Приватных</span>
                             </div>
-                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="400">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="700">
                                 <span class="stat-number">{{ total_likes }}</span>
                                 <span class="stat-label">Лайков</span>
                             </div>
                         </div>
 
                         <div class="hero-actions">
-                            <a href="{% url 'gallery:upload' %}" class="hero-btn me-3" data-aos="fade-in" data-aos-delay="150">
+                            <a href="{% url 'gallery:upload' %}" class="hero-btn" data-aos="fade-in" data-aos-delay="800">
                                 <i class="fas fa-upload me-2"></i>Загрузить фото
                             </a>
-                            <a href="{% url 'gallery:gallery' %}" class="hero-btn-secondary" data-aos="fade-in" data-aos-delay="200">
+                            <a href="{% url 'gallery:gallery' %}" class="hero-btn-secondary" data-aos="fade-in" data-aos-delay="850">
                                 <i class="fas fa-arrow-left me-2"></i>В галерею
                             </a>
                         </div>
@@ -83,161 +75,157 @@ lightbox.init();
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="content-container">
-        <div class="container">
-            <!-- ОТДЕЛЬНЫЕ КОМПАКТНЫЕ ФИЛЬТРЫ -->
-            <div class="gallery-filters" data-aos="fade-up" data-aos-delay="300">
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">
-                        <i class="fas fa-images"></i>
-                        Все мои фото
-                    </button>
-                    <button class="filter-tab" data-filter="public">
-                        <i class="fas fa-eye"></i>
-                        Публичные
-                    </button>
-                    <button class="filter-tab" data-filter="private">
-                        <i class="fas fa-eye-slash"></i>
-                        Приватные
-                    </button>
-                </div>
+        <!-- ОТДЕЛЬНЫЕ КОМПАКТНЫЕ ФИЛЬТРЫ -->
+        <div class="gallery-filters" data-aos="fade-up" data-aos-delay="300">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    <i class="fas fa-images"></i>
+                    Все мои фото
+                </button>
+                <button class="filter-tab" data-filter="public">
+                    <i class="fas fa-eye"></i>
+                    Публичные
+                </button>
+                <button class="filter-tab" data-filter="private">
+                    <i class="fas fa-eye-slash"></i>
+                    Приватные
+                </button>
+            </div>
+        </div>
+
+        {% if photos %}
+            <!-- Информация о результатах -->
+            <div class="results-info text-center mb-4" data-aos="fade-up">
+                <span class="results-count">
+                    Показано {{ photos|length }}
+                    {% if is_paginated %}из {{ paginator.count }}{% endif %}
+                    ваших фотографий
+                </span>
             </div>
 
-            {% if photos %}
-                <!-- Информация о результатах -->
-                <div class="results-info text-center mb-4" data-aos="fade-up">
-                    <span class="results-count">
-                        Показано {{ photos|length }}
-                        {% if is_paginated %}из {{ paginator.count }}{% endif %}
-                        ваших фотографий
-                    </span>
-                </div>
-
-                <!-- Современная галерея -->
-                <div class="gallery-masonry" id="my-photos-gallery">
-                    {% for photo in photos %}
-                    <div class="gallery-card" data-aos="fade-up" data-filter-type="{% if photo.is_public %}public{% else %}private{% endif %}">
-                        <a href="{{ photo.image.url }}" data-pswp-width="{{ photo.image.width|default:800 }}" data-pswp-height="{{ photo.image.height|default:600 }}">
-                            <div class="photo-container">
-                                <img src="{{ photo.image.url }}" class="photo-image" alt="{{ photo.title|default:'Фото из галереи' }}">
-                                {% if not photo.is_public %}
-                                <div class="photo-badge private-badge">
-                                    <i class="fas fa-eye-slash"></i> Приватное
-                                </div>
-                                {% endif %}
-                                {% if photo.growlog %}
-                                <div class="photo-badge growlog-badge">
-                                    <i class="fas fa-seedling"></i> Гроу-репорт
-                                </div>
-                                {% endif %}
+            <!-- Современная галерея -->
+            <div class="gallery-masonry">
+                {% for photo in photos %}
+                <div class="gallery-card" data-aos="fade-up" data-filter-type="{% if photo.is_public %}public{% else %}private{% endif %}">
+                    <a href="{{ photo.image.url }}" data-pswp-width="{{ photo.image.width|default:800 }}" data-pswp-height="{{ photo.image.height|default:600 }}">
+                        <div class="photo-container">
+                            <img src="{{ photo.image.url }}" class="photo-image" alt="{{ photo.title|default:'Фото из галереи' }}">
+                            {% if not photo.is_public %}
+                            <div class="photo-badge private-badge">
+                                <i class="fas fa-eye-slash"></i> Приватное
                             </div>
-                        </a>
-                        <div class="card-info">
-                            <div class="card-header">
-                                <div class="author-info">
-                                    <img src="{{ photo.author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
-                                         alt="{{ photo.author.display_name }}" class="author-avatar">
-                                    <div class="author-details">
-                                        <span class="author-name">{{ photo.author.display_name }}</span>
-                                        <div class="photo-date">{{ photo.created_at|date:"d.m.Y" }}</div>
-                                    </div>
-                                </div>
+                            {% endif %}
+                            {% if photo.growlog %}
+                            <div class="photo-badge growlog-badge">
+                                <i class="fas fa-seedling"></i> Гроу-репорт
                             </div>
-                            <div class="card-body">
-                                <h5 class="photo-title">{{ photo.title|default:"Без названия" }}</h5>
-                                {% if photo.description %}
-                                    <p class="photo-description">{{ photo.description }}</p>
-                                {% endif %}
-                            </div>
-                            <div class="card-footer">
-                                <div class="photo-stats">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-heart"></i>
-                                        <span>{{ photo.likes.count }}</span>
-                                    </div>
-                                    <div class="stat-icon">
-                                        <i class="fas fa-comment"></i>
-                                        <span>{{ photo.comments.count }}</span>
-                                    </div>
-                                    {% if photo.growlog %}
-                                    <div class="stat-icon growlog-indicator">
-                                        <i class="fas fa-seedling"></i>
-                                        <span>Гроу</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="card-actions">
-                                    <a href="{% url 'gallery:photo_detail' photo.pk %}" class="action-btn view-btn me-2">
-                                        <i class="fas fa-eye"></i>
-                                        Смотреть
-                                    </a>
-                                    <a href="{% url 'gallery:photo_edit' photo.pk %}" class="action-btn edit-btn me-2">
-                                        <i class="fas fa-edit"></i>
-                                        Править
-                                    </a>
-                                    <a href="{% url 'gallery:photo_delete' photo.pk %}" class="action-btn delete-btn">
-                                        <i class="fas fa-trash"></i>
-                                        Удалить
-                                    </a>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div class="card-info">
+                        <div class="card-header">
+                            <div class="author-info">
+                                <img src="{{ photo.author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
+                                     alt="{{ photo.author.display_name }}" class="author-avatar">
+                                <div class="author-details">
+                                    <span class="author-name">{{ photo.author.display_name }}</span>
+                                    <div class="photo-date">{{ photo.created_at|date:"d.m.Y" }}</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Пагинация -->
-                {% if is_paginated %}
-                <nav aria-label="Пагинация моих фотографий" data-aos="fade-up">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Первая</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Предыдущая</a>
-                            </li>
-                        {% endif %}
-
-                        {% for i in paginator.page_range %}
-                            {% if page_obj.number == i %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ i }}</span>
-                                </li>
-                            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ i }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ i }}</a>
-                                </li>
+                        <div class="card-body">
+                            <h5 class="photo-title">{{ photo.title|default:"Без названия" }}</h5>
+                            {% if photo.description %}
+                                <p class="photo-description">{{ photo.description }}</p>
                             {% endif %}
-                        {% endfor %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="photo-stats">
+                                <div class="stat-icon">
+                                    <i class="fas fa-heart"></i>
+                                    <span>{{ photo.likes.count }}</span>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-comment"></i>
+                                    <span>{{ photo.comments.count }}</span>
+                                </div>
+                                {% if photo.growlog %}
+                                <div class="stat-icon growlog-indicator">
+                                    <i class="fas fa-seedling"></i>
+                                    <span>Гроу</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-actions">
+                                <a href="{% url 'gallery:photo_detail' photo.pk %}" class="action-btn view-btn me-2">
+                                    <i class="fas fa-eye"></i>
+                                    Смотреть
+                                </a>
+                                <a href="{% url 'gallery:photo_edit' photo.pk %}" class="action-btn edit-btn me-2">
+                                    <i class="fas fa-edit"></i>
+                                    Править
+                                </a>
+                                <a href="{% url 'gallery:photo_delete' photo.pk %}" class="action-btn delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                    Удалить
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
 
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Следующая</a>
+            <!-- Пагинация -->
+            {% if is_paginated %}
+            <nav aria-label="Пагинация моих фотографий" data-aos="fade-up">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Первая</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Предыдущая</a>
+                        </li>
+                    {% endif %}
+
+                    {% for i in paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
                             </li>
+                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ paginator.num_pages }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Последняя</a>
+                                <a class="page-link" href="?page={{ i }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ i }}</a>
                             </li>
                         {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-            {% else %}
-                <!-- Сообщение об отсутствии фотографий -->
-                <div class="empty-state text-center" data-aos="fade-up">
-                    <div class="empty-icon">
-                        <i class="fas fa-camera fa-4x text-muted mb-4"></i>
-                    </div>
-                    <h3 class="text-muted">У вас пока нет фотографий</h3>
-                    <p class="text-muted mb-4">Загрузите свою первую фотографию и поделитесь ею с сообществом!</p>
-                    <a href="{% url 'gallery:upload' %}" class="hero-btn">
-                        <i class="fas fa-upload me-2"></i>Загрузить первое фото
-                    </a>
-                </div>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Следующая</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ paginator.num_pages }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Последняя</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
             {% endif %}
-        </div>
+        {% else %}
+            <!-- Сообщение об отсутствии фотографий -->
+            <div class="empty-state text-center" data-aos="fade-up">
+                <div class="empty-icon">
+                    <i class="fas fa-camera fa-4x text-muted mb-4"></i>
+                </div>
+                <h3 class="text-muted">У вас пока нет фотографий</h3>
+                <p class="text-muted mb-4">Загрузите свою первую фотографию и поделитесь ею с сообществом!</p>
+                <a href="{% url 'gallery:upload' %}" class="hero-btn">
+                    <i class="fas fa-upload me-2"></i>Загрузить первое фото
+                </a>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -258,7 +246,7 @@ lightbox.init();
 <!-- Masonry для адаптивной сетки -->
 <script src="https://unpkg.com/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
 <!-- Фильтрация и инициализация -->
-<script src="{% static 'js/gallery_modern.js' %}?v=20250608013"></script>
+<script src="{% static 'js/gallery_modern.js' %}?v=20250608050"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Инициализация AOS

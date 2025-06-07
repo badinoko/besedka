@@ -8,7 +8,7 @@
 <!-- AOS Animation -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <!-- Унифицированные hero-кнопки -->
-<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250608">
+<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250609070">
 <!-- Мета-данные для JavaScript -->
 <meta name="user-authenticated" content="{% if user.is_authenticated %}true{% else %}false{% endif %}">
 <meta name="csrf-token" content="{{ csrf_token }}">
@@ -495,24 +495,27 @@
     <div class="hero-container">
         <div class="container">
             <!-- ГЕРОЙ СЕКЦИЯ С ПРАВИЛЬНОЙ СТАТИСТИКОЙ -->
-            <div class="news-hero" data-aos="fade-up" data-aos-duration="600">
+            <div class="news-hero" data-aos="fade-up" data-aos-duration="500">
             <div class="container">
                 <div class="hero-content text-center">
                     <h1 class="hero-title">📰 Новости сообщества</h1>
                     <p class="hero-subtitle">Будьте в курсе последних событий и трендов мира растениеводства</p>
 
-                    <div class="hero-stats">
-                        <div class="stat-item" data-aos="zoom-in" data-aos-delay="100">
-                            <span class="stat-number">{{ total_posts }}</span>
-                            <span class="stat-label">Новостей</span>
-                        </div>
-                        <div class="stat-item" data-aos="zoom-in" data-aos-delay="200">
-                            <span class="stat-number">{{ total_categories }}</span>
-                            <span class="stat-label">Категорий</span>
-                        </div>
-                        <div class="stat-item" data-aos="zoom-in" data-aos-delay="300">
-                            <span class="stat-number">{{ total_views }}</span>
-                            <span class="stat-label">Просмотров</span>
+                    <!-- КОМПАКТНЫЙ КОНТЕЙНЕР: ТОЛЬКО СЧЕТЧИКИ -->
+                    <div class="hero-stats-and-actions" data-aos="fade-up" data-aos-delay="300" data-aos-duration="500">
+                        <div class="hero-stats">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="400" data-aos-duration="300">
+                                <span class="stat-number">{{ total_posts }}</span>
+                                <span class="stat-label">Новостей</span>
+                            </div>
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="500" data-aos-duration="300">
+                                <span class="stat-number">{{ total_categories }}</span>
+                                <span class="stat-label">Категорий</span>
+                            </div>
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="600" data-aos-duration="300">
+                                <span class="stat-number">{{ total_views }}</span>
+                                <span class="stat-label">Просмотров</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -522,7 +525,7 @@
 
     <div class="container">
         <!-- СОВРЕМЕННЫЕ ФИЛЬТРЫ С AJAX -->
-        <div class="news-filters" data-aos="fade-up">
+        <div class="news-filters" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">
             <div class="filter-tabs">
                 <button class="filter-tab {% if current_filter == 'all' or not current_filter %}active{% endif %}" data-filter="all">
                     <i class="fas fa-list"></i>
@@ -740,20 +743,20 @@
                         // Переинициализируем AOS для новых элементов
                         AOS.refresh();
 
-                        // Мягкая прокрутка к началу контента (без резких движений)
+                        // Прокрутка только если пользователь ОЧЕНЬ далеко от контента
                         setTimeout(() => {
                             const filtersElement = document.querySelector('.news-filters');
                             const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                            const filtersTop = filtersElement.offsetTop - 20; // Добавляем небольшой отступ
+                            const filtersTop = filtersElement.offsetTop - 100;
 
-                            // Прокручиваем только если пользователь далеко от фильтров
-                            if (Math.abs(currentScrollTop - filtersTop) > 100) {
+                            // Прокручиваем ТОЛЬКО если пользователь далеко (больше 2 экранов) от фильтров
+                            if (currentScrollTop > filtersTop + 800) {
                                 window.scrollTo({
                                     top: filtersTop,
                                     behavior: 'smooth'
                                 });
                             }
-                        }, 150);
+                        }, 100);
                     } else {
                         console.error('Ошибка загрузки новостей:', data.error);
                     }

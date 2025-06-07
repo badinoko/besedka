@@ -1,4 +1,5 @@
-/* КОМПАКТНАЯ GALLERY В СТИЛЕ ГРОУРЕПОРТОВ - ЭТАЛОН */
+/* КОМПАКТНАЯ GALLERY В СТИЛЕ ГРОУРЕПОРТОВ - ЭТАЛОН v2.0 */
+/* БЕЗ ГРАНИЦ И С УНИФИЦИРОВАННЫМИ РАЗМЕРАМИ */
 
 /* Основные переменные */
 :root {
@@ -14,7 +15,7 @@
     --gallery-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
     --gallery-shadow-hover: 0 15px 35px rgba(31, 38, 135, 0.5);
     --gallery-border-radius: 16px;
-    --gallery-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --gallery-transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Общие стили для страницы */
@@ -24,114 +25,18 @@
     padding: 20px 0;
 }
 
-/* ГЕРОЙ СЕКЦИЯ - ТОЧНЫЕ РАЗМЕРЫ КАК В ГРОУРЕПОРТАХ */
-.gallery-hero {
-    background: linear-gradient(135deg, var(--gallery-primary) 0%, var(--gallery-secondary) 100%);
-    color: white;
-    padding: 1rem 0 !important;
-    margin-bottom: 2rem;
-    border-radius: 1rem;
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-}
+/* ГЕРОЙ СЕКЦИЯ - УБИРАЕМ ДУБЛИРУЮЩИЕ СТИЛИ */
+/* Все стили hero теперь в unified_hero_buttons.css */
 
-.gallery-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 2;
-}
-
-.hero-title {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
-.hero-subtitle {
-    font-size: 1rem;
-    opacity: 0.9;
-    margin-bottom: 0.75rem;
-    font-weight: 300;
-}
-
-.hero-stats {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.stat-item {
-    text-align: center;
-    background: var(--gallery-glass);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--gallery-glass-border);
-    border-radius: var(--gallery-border-radius);
-    padding: 0.5rem 0.7rem;
-    min-width: 100px;
-    width: auto;
-    max-width: 140px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.stat-number {
-    display: block;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1;
-    margin-bottom: 0.3rem;
-    word-break: break-all;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.stat-label {
-    font-size: 0.75rem;
-    color: #ffffff;
-    opacity: 0.95;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    line-height: 1.2;
-    word-break: break-word;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
-.hero-actions {
-    position: relative;
-    z-index: 2;
-    margin-top: 1rem;
-}
-
-/* ФИЛЬТРЫ - ТОЧНЫЕ РАЗМЕРЫ КАК В ГРОУРЕПОРТАХ */
+/* ФИЛЬТРЫ - УБИРАЕМ ГРАНИЦЫ И УНИФИЦИРУЕМ */
 .gallery-filters {
-    background: var(--gallery-glass);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--gallery-glass-border);
-    border-radius: var(--gallery-border-radius);
-    padding: 0.5rem !important;
-    margin: 0 0 1rem 0 !important;
-    box-shadow: var(--gallery-shadow);
+    background: rgba(255, 255, 255, 0.95) !important; /* УБИРАЕМ ГРАНИЦЫ */
+    backdrop-filter: blur(20px) !important;
+    border: none !important; /* УБИРАЕМ ВСЕ ГРАНИЦЫ */
+    border-radius: 1rem !important;
+    padding: 0.75rem !important; /* УНИФИЦИРОВАННАЯ ВЫСОТА */
+    margin-bottom: 1.5rem !important;
+    box-shadow: 0 2px 15px rgba(31, 38, 135, 0.1) !important;
 }
 
 .filter-tabs {
@@ -147,8 +52,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(111, 66, 193, 0.15);
+    border: 1px solid rgba(111, 66, 193, 0.3);
     border-radius: 1.5rem;
     color: var(--gallery-dark);
     text-decoration: none;
@@ -179,6 +84,7 @@
     display: flex;
     flex-wrap: wrap;
     margin: -10px;
+    position: static;
 }
 
 .gallery-card {
@@ -466,9 +372,6 @@
         flex: 0 0 calc(50% - 20px);
         max-width: calc(50% - 20px);
     }
-    .hero-title {
-        font-size: 1.8rem;
-    }
     .filter-tabs {
         justify-content: center;
         gap: 0.3rem;
@@ -479,15 +382,5 @@
     .gallery-card {
         flex: 0 0 calc(100% - 20px);
         max-width: calc(100% - 20px);
-    }
-    .hero-title {
-        font-size: 1.5rem;
-    }
-    .hero-stats {
-        gap: 0.5rem;
-    }
-    .stat-item {
-        min-width: 80px;
-        padding: 0.4rem 0.6rem;
     }
 }

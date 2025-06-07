@@ -224,15 +224,15 @@ class ModernGallery {
      * Анимации при скролле
      */
     initScrollAnimations() {
-        // Параллакс эффект для hero секции
-        const hero = document.querySelector('.gallery-hero');
-        if (hero) {
-            window.addEventListener('scroll', () => {
-                const scrolled = window.pageYOffset;
-                const rate = scrolled * -0.5;
-                hero.style.transform = `translateY(${rate}px)`;
-            });
-        }
+        // Параллакс эффект ОТКЛЮЧЕН - мешал прокрутке
+        // const hero = document.querySelector('.gallery-hero');
+        // if (hero) {
+        //     window.addEventListener('scroll', () => {
+        //         const scrolled = window.pageYOffset;
+        //         const rate = scrolled * -0.5;
+        //         hero.style.transform = `translateY(${rate}px)`;
+        //     });
+        // }
 
         // Показ/скрытие кнопки "наверх"
         this.initScrollToTop();

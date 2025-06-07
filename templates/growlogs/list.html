@@ -7,7 +7,7 @@
 <!-- AOS Animation -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <!-- Унифицированные hero-кнопки -->
-<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250608002">
+<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250609070">
 <!-- Мета-данные для JavaScript -->
 <meta name="user-authenticated" content="{% if user.is_authenticated %}true{% else %}false{% endif %}">
 <meta name="csrf-token" content="{{ csrf_token }}">
@@ -882,42 +882,45 @@
 <div class="growlogs-page">
     <div class="container">
                 <!-- Герой секция в стиле галереи -->
-        <div class="growlogs-hero">
+        <div class="growlogs-hero" data-aos="fade-up" data-aos-duration="800">
             <div class="container">
                 <div class="hero-content text-center">
-                    <h1 class="hero-title">🌱 Гроурепорты сообщества</h1>
-                    <p class="hero-subtitle">Делитесь опытом выращивания и изучайте техники других гроверов</p>
+                    <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">🌱 Гроурепорты сообщества</h1>
+                    <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">Делитесь опытом выращивания и изучайте техники других гроверов</p>
 
-                    <div class="hero-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">{{ total_reports|default:0 }}</span>
-                            <span class="stat-label">Репортов</span>
+                    <!-- КОМПАКТНЫЙ КОНТЕЙНЕР: СЧЕТЧИКИ СЛЕВА, КНОПКА СПРАВА -->
+                    <div class="hero-stats-and-actions" data-aos="fade-up" data-aos-delay="300" data-aos-duration="500">
+                        <div class="hero-stats">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="400" data-aos-duration="300">
+                                <span class="stat-number">{{ total_reports|default:0 }}</span>
+                                <span class="stat-label">Репортов</span>
+                            </div>
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="500" data-aos-duration="300">
+                                <span class="stat-number">{{ total_growers|default:0 }}</span>
+                                <span class="stat-label">Гроверов</span>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">{{ total_growers|default:0 }}</span>
-                            <span class="stat-label">Гроверов</span>
-                        </div>
-                    </div>
 
-                    {% if user.is_authenticated %}
-                    <div class="hero-actions mt-4">
-                        <a href="{% url 'growlogs:create' %}" class="hero-btn">
-                            <i class="fas fa-plus-circle me-2"></i>Создать репорт
-                        </a>
+                        {% if user.is_authenticated %}
+                        <div class="hero-actions">
+                            <a href="{% url 'growlogs:create' %}" class="hero-btn" data-aos="fade-in" data-aos-delay="700" data-aos-duration="300">
+                                <i class="fas fa-plus-circle me-2"></i>Создать репорт
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="hero-actions">
+                            <a href="{% url 'account_login' %}?next={{ request.path }}" class="hero-btn" data-aos="fade-in" data-aos-delay="700" data-aos-duration="300">
+                                <i class="fas fa-sign-in-alt me-2"></i>Войти
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% else %}
-                    <div class="hero-actions mt-4">
-                        <a href="{% url 'account_login' %}?next={{ request.path }}" class="hero-btn">
-                            <i class="fas fa-sign-in-alt me-2"></i>Войти
-                        </a>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
                 <!-- Современные фильтры в стиле галереи -->
-        <div class="growlogs-filters">
+        <div class="growlogs-filters" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
             <div class="filter-tabs">
                 <button class="filter-tab active" data-filter="newest">
                     <i class="fas fa-clock"></i>
@@ -938,7 +941,7 @@
             </div>
 
             <div class="search-controls">
-                <form method="get" class="d-flex flex-wrap gap-2 align-items-center justify-content-center" id="growlogsFilterForm">
+                <form method="get" class="d-flex flex-wrap gap-2 align-items-center justify-content-center" id="growlogsFilterForm" onsubmit="return false;">
                     <div class="input-group" style="max-width: 300px;">
                         <span class="input-group-text">
                             <i class="fas fa-search"></i>
@@ -1212,10 +1215,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Инициализация AOS
     AOS.init({
-        duration: 600,
-        easing: 'ease-out',
-        once: true,
-        offset: 50
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: false,
+        offset: 100,
+        delay: 0,
+        mirror: false,
+        anchorPlacement: 'top-bottom'
     });
 
     // Дополнительные hover эффекты для карточек (AOS уже обрабатывает появление)
@@ -1284,12 +1290,113 @@ document.addEventListener('DOMContentLoaded', function() {
         // УБИРАЕМ ПРИНУДИТЕЛЬНУЮ ПРОКРУТКУ - пусть пользователь сам скроллит
         // Только обновляем URL и перезагружаем страницу
 
-        // Обновляем URL без перезагрузки страницы
+        // AJAX запрос вместо перезагрузки страницы
+        loadGrowlogsFiltered(url);
+    }
+
+    // Функция AJAX загрузки отфильтрованных гроу-репортов
+    function loadGrowlogsFiltered(url) {
+        const growlogsContainer = document.querySelector('.growlogs-container');
+        const paginationContainer = document.querySelector('.pagination')?.parentElement;
+        const resultsInfo = document.querySelector('.results-info');
+        const emptyState = document.querySelector('.empty-state');
+
+        // Показываем индикатор загрузки
+        if (growlogsContainer) {
+            growlogsContainer.style.opacity = '0.5';
+            growlogsContainer.style.pointerEvents = 'none';
+        }
+
+        // Обновляем URL
         window.history.pushState({ path: url }, '', url);
 
-        // Перезагружаем страницу для применения фильтров
-        // В будущем можно заменить на AJAX запрос
-        window.location.reload();
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Создаем временный элемент для парсинга ответа
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+
+            // Извлекаем новый контент
+            const newGrowlogsContainer = tempDiv.querySelector('.growlogs-container');
+            const newPagination = tempDiv.querySelector('.pagination')?.parentElement;
+            const newResultsInfo = tempDiv.querySelector('.results-info');
+            const newEmptyState = tempDiv.querySelector('.empty-state');
+
+            // Обновляем контент
+            if (newGrowlogsContainer && growlogsContainer) {
+                growlogsContainer.innerHTML = newGrowlogsContainer.innerHTML;
+            } else if (newEmptyState && !growlogsContainer) {
+                // Если нет результатов, показываем empty state
+                const contentArea = document.querySelector('.col-12');
+                if (contentArea) {
+                    if (growlogsContainer) growlogsContainer.remove();
+                    if (resultsInfo) resultsInfo.remove();
+                    if (paginationContainer) paginationContainer.remove();
+                    contentArea.appendChild(newEmptyState);
+                }
+            }
+
+            // Обновляем информацию о результатах
+            if (newResultsInfo && resultsInfo) {
+                resultsInfo.innerHTML = newResultsInfo.innerHTML;
+            } else if (newResultsInfo && !resultsInfo) {
+                const contentArea = document.querySelector('.col-12');
+                contentArea.insertBefore(newResultsInfo, contentArea.querySelector('.growlogs-container'));
+            }
+
+            // Обновляем пагинацию
+            if (newPagination && paginationContainer) {
+                paginationContainer.innerHTML = newPagination.innerHTML;
+            } else if (paginationContainer && !newPagination) {
+                paginationContainer.remove();
+            }
+
+            // Восстанавливаем состояние
+            if (growlogsContainer) {
+                growlogsContainer.style.opacity = '1';
+                growlogsContainer.style.pointerEvents = 'auto';
+            }
+
+            // Переинициализируем AOS для новых элементов
+            AOS.refresh();
+
+            // Переинициализируем обработчики лайков
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleLike(this.dataset.growlogId);
+                });
+            });
+
+            // Плавная прокрутка к результатам (только если пользователь далеко от них)
+            const filtersElement = document.querySelector('.filters-section');
+            if (filtersElement) {
+                const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const filtersTop = filtersElement.offsetTop - 100;
+
+                // Прокручиваем только если пользователь очень далеко (больше 2 экранов) от фильтров
+                if (currentScrollTop > filtersTop + 800) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: filtersTop,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке результатов:', error);
+            // При ошибке делаем обычный переход
+            window.location.href = url;
+        });
     }
 
     // Обработчики фильтров
