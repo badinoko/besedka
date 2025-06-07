@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}Фотографии {{ author.display_name }} - Галерея{% endblock %}
+
+{% block extra_css %}
+<!-- Modern Gallery CSS -->
+<link rel="stylesheet" href="{% static 'css/gallery_modern.css' %}?v=20250606">
+{% endblock %}
+
+{% block content %}
+<!-- Компактный заголовок с информацией об авторе -->
+<div class="gallery-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
+                             alt="{{ author.display_name }}"
+                             class="rounded-circle me-3"
+                             style="width: 60px; height: 60px; object-fit: cover;">
+                        <div>
+                            <h1 class="hero-title mb-1">
+                                <i class="fas fa-camera-retro me-2"></i>
+                                Фотографии {{ author.display_name }}
+                            </h1>
+                            <p class="hero-subtitle mb-0">
+                                {% if author.bio %}
+                                    {{ author.bio|truncatechars:80 }}
+                                {% else %}
+                                    Участник сообщества с {{ author.date_joined|date:"d.m.Y" }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">{{ total_photos }}</span>
+                            <span class="stat-label">фотографий</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">{{ total_likes }}</span>
+                            <span class="stat-label">лайков</span>
+                        </div>
+                        {% if author.growlogs.exists %}
+                        <div class="stat-item">
+                            <span class="stat-number">{{ author.growlogs.count }}</span>
+                            <span class="stat-label">гроу-репортов</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{% url 'gallery:gallery' %}" class="btn btn-outline-light btn-lg" style="text-decoration: none; z-index: 1000; position: relative;">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Вернуться в галерею
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4" style="max-width: 1200px;">
+    <!-- Только кнопки фильтров без выпадающего меню -->
+    <div class="gallery-filters">
+        <div class="filter-tabs">
+            <button class="filter-tab {% if current_sort == '-created_at' or not current_sort %}active{% endif %}"
+                    onclick="window.location.href='{% url 'gallery:author_photos' username=author.username %}'">
+                <i class="fas fa-clock"></i>
+                <span>Новые</span>
+            </button>
+            <button class="filter-tab {% if current_sort == 'popular' %}active{% endif %}"
+                    onclick="window.location.href='{% url 'gallery:author_photos' username=author.username %}?sort=popular'">
+                <i class="fas fa-fire"></i>
+                <span>Популярные</span>
+            </button>
+            <button class="filter-tab {% if current_sort == 'commented' %}active{% endif %}"
+                    onclick="window.location.href='{% url 'gallery:author_photos' username=author.username %}?sort=commented'">
+                <i class="fas fa-comments"></i>
+                <span>Обсуждаемые</span>
+            </button>
+            {% if author.growlogs.exists %}
+            <button class="filter-tab" data-filter="growlogs">
+                <i class="fas fa-seedling me-2"></i>
+                Гроу-репорты
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if photos %}
+        <!-- Счетчик результатов -->
+        <div class="results-info">
+            <span class="results-count">
+                Показано {{ photos|length }}
+                {% if is_paginated %}из {{ paginator.count }}{% endif %}
+                фотографий
+            </span>
+        </div>
+
+        <!-- Галерея с Masonry -->
+        <div class="gallery-masonry" id="gallery-masonry">
+            {% for photo in photos %}
+            <div class="gallery-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <!-- Убираем PhotoSwipe ссылку, делаем простой контейнер -->
+                <div class="photo-container" onclick="window.location.href='{% url 'gallery:photo_detail' photo.pk %}';" style="cursor: pointer;">
+                    <img src="{{ photo.image.url }}"
+                         alt="{{ photo.title|default:'Фото из галереи' }}"
+                         class="photo-image"
+                         loading="lazy">
+                    <!-- Убираем оверлей с информацией при наведении -->
+                </div>
+
+                <!-- Карточка с действиями -->
+                <div class="card-info">
+                    <div class="card-body">
+                        <h3 class="photo-title">{{ photo.title|default:"Без названия" }}</h3>
+                        {% if photo.description %}
+                            <p class="photo-description">{{ photo.description|truncatechars:100 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="photo-stats">
+                            <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}"
+                                    data-photo-id="{{ photo.id }}"
+                                    data-url="{% url 'gallery:photo_like' pk=photo.pk %}"
+                                    onclick="event.stopPropagation();"
+                                    {% if not user.is_authenticated %}disabled title="Войдите для лайков"{% endif %}>
+                                <i class="fas fa-heart"></i>
+                                <span class="like-count">{{ photo.likes.count }}</span>
+                            </button>
+                            <span class="comment-count">
+                                <i class="fas fa-comments"></i>
+                                {{ photo.comments.count }}
+                            </span>
+                            {% if photo.growlog %}
+                            <span class="growlog-indicator" title="Связано с гроу-репортом">
+                                <i class="fas fa-seedling"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="{% url 'gallery:photo_detail' photo.pk %}" class="view-btn" onclick="event.stopPropagation();">
+                            <i class="fas fa-eye"></i>
+                            <span>Смотреть</span>
+                        </a>
+
+                        <!-- Кнопки редактирования только для автора -->
+                        {% if user.is_authenticated and photo.author == user %}
+                            <a href="{% url 'gallery:photo_edit' photo.pk %}" class="edit-btn" title="Редактировать" onclick="event.stopPropagation();">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'gallery:photo_delete' photo.pk %}" class="delete-btn" title="Удалить" onclick="event.stopPropagation();">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <div class="gallery-pagination">
+            <nav aria-label="Gallery pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Пустое состояние -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <h3>У {{ author.display_name }} пока нет фотографий</h3>
+            <p class="text-muted">Возможно, они скоро появятся!</p>
+            <a href="{% url 'gallery:gallery' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться в галерею
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- AOS Animation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+<!-- Gallery Modern JS -->
+<script src="{% static 'js/gallery_modern.js' %}?v=20250606"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Лайки
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            if (this.disabled) return;
+
+            const photoId = this.dataset.photoId;
+            const url = this.dataset.url;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    const likeCount = this.querySelector('.like-count');
+                    likeCount.textContent = data.likes_count;
+
+                    if (data.liked) {
+                        this.classList.add('liked');
+                    } else {
+                        this.classList.remove('liked');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,11 +1,297 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block title %}{% translate "Каталог" %} - Magic Beans{% endblock %}
 
+{% block extra_css %}
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- Унифицированные hero-кнопки -->
+<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250608">
+<style>
+    /* УНИФИЦИРОВАННАЯ HERO-СЕКЦИЯ В СТИЛЕ ГАЛЕРЕИ И ГРОУРЕПОРТОВ */
+    :root {
+        --store-primary: #28a745;
+        --store-secondary: #1e7e34;
+        --store-accent: #6eb464;
+        --store-success: #81c784;
+        --store-warning: #FFC107;
+        --store-dark: #2d3748;
+        --store-light: #f7fafc;
+        --store-glass: rgba(255, 255, 255, 0.1);
+        --store-glass-border: rgba(255, 255, 255, 0.2);
+        --store-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        --store-shadow-hover: 0 15px 35px rgba(31, 38, 135, 0.5);
+        --store-border-radius: 16px;
+        --store-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Общие стили для страницы */
+    .store-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e8 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    /* ГЕРОЙ СЕКЦИЯ */
+    .store-hero {
+        background: linear-gradient(135deg, var(--store-primary) 0%, var(--store-secondary) 100%);
+        color: white;
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .store-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+        font-weight: 300;
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .stat-item {
+        text-align: center;
+        background: var(--store-glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--store-glass-border);
+        border-radius: var(--store-border-radius);
+        padding: 0.6rem 0.8rem;
+        min-width: 100px;
+        width: auto;
+        max-width: 140px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .stat-number {
+        display: block;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--store-accent);
+        line-height: 1;
+        margin-bottom: 0.3rem;
+        word-break: break-all;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .hero-actions {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-btn {
+        background: linear-gradient(135deg, #FFC107 0%, #FF8F00 100%);
+        border: 2px solid #FFC107;
+        color: #ffffff !important;
+        font-weight: 700;
+        padding: 15px 30px;
+        border-radius: 12px;
+        transition: var(--store-transition);
+        text-decoration: none !important;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+
+    .hero-btn:hover {
+        background: linear-gradient(135deg, #FF8F00 0%, #E65100 100%);
+        border-color: #FF8F00;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 143, 0, 0.5);
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
+
+    /* Карточка закрытого магазина для гостей */
+    .store-closed-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #ffc107;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(255,193,7,0.15);
+    }
+
+    .store-closed-title {
+        color: #f57c00;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .store-closed-text {
+        color: #495057;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .store-closed-features {
+        background: #fff8e1;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .store-closed-features ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #495057;
+    }
+
+    .store-closed-features li {
+        margin-bottom: 8px;
+        font-size: 1rem;
+    }
+
+    .store-login-btn {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        color: white;
+        padding: 15px 40px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+    }
+
+    .store-login-btn:hover {
+        background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40,167,69,0.4);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row">
+<div class="store-page">
+    <div class="hero-container">
+        <div class="container">
+            <!-- ГЕРОЙ СЕКЦИЯ -->
+            <div class="store-hero" data-aos="fade-up" data-aos-duration="600">
+            <div class="container">
+                <div class="hero-content text-center">
+                    <h1 class="hero-title">🌱 Magic Beans Store</h1>
+                    <p class="hero-subtitle">Премиальные семена от ведущих сидбанков мира</p>
+
+                    <div class="hero-stats">
+                        <div class="stat-item" data-aos="zoom-in" data-aos-delay="100">
+                            <span class="stat-number">{{ strains.count|default:0 }}</span>
+                            <span class="stat-label">Сортов</span>
+                        </div>
+                        <div class="stat-item" data-aos="zoom-in" data-aos-delay="200">
+                            <span class="stat-number">{{ seedbanks.count|default:0 }}</span>
+                            <span class="stat-label">Сидбанков</span>
+                        </div>
+                        <div class="stat-item" data-aos="zoom-in" data-aos-delay="300">
+                            <span class="stat-number">{{ total_orders|default:0 }}</span>
+                            <span class="stat-label">Заказов</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-actions mt-4">
+                        {% if user.is_authenticated %}
+                            <a href="#catalog" class="hero-btn" data-aos="fade-in" data-aos-delay="150">
+                                <i class="fas fa-shopping-cart me-2"></i>Перейти к покупкам
+                            </a>
+                        {% else %}
+                            <a href="{% url 'account_login' %}?next={{ request.path }}" class="hero-btn" data-aos="fade-in" data-aos-delay="150">
+                                <i class="fas fa-sign-in-alt me-2"></i>Войти для покупок
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if not user.is_authenticated %}
+        <!-- Карточка информации о магазине для гостей -->
+        <div class="store-closed-card" data-aos="fade-up">
+            <div class="store-closed-title">
+                <i class="fas fa-lock me-2"></i>
+                Магазин только для участников сообщества
+            </div>
+            <div class="store-closed-text">
+                Для доступа к каталогу премиальных семян необходима регистрация в нашем сообществе
+            </div>
+            <div class="store-closed-features">
+                <h5 class="mb-3">🌟 Что вас ждет:</h5>
+                <ul>
+                    <li>✅ Семена от проверенных сидбанков</li>
+                    <li>✅ Гарантия качества и свежести</li>
+                    <li>✅ Быстрая доставка по всей стране</li>
+                    <li>✅ Поддержка опытных гроверов</li>
+                    <li>✅ Эксклюзивные сорта и акции</li>
+                </ul>
+            </div>
+            <a href="{% url 'account_signup' %}" class="store-login-btn">
+                <i class="fas fa-user-plus me-2"></i>Присоединиться к сообществу
+            </a>
+        </div>
+        {% endif %}
+
+    <div id="catalog" class="row">
         <div class="col-md-3">
             <h4 class="mb-3">{% translate "Сидбанки" %}</h4>
             <div class="list-group mb-4">
@@ -142,7 +428,40 @@
             {% endif %}
         </div>
     </div>
+    </div>
 </div>
+
+{% block extra_js %}
+<!-- AOS Animation -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация AOS
+    AOS.init({
+        duration: 600,
+        easing: 'ease-out',
+        once: true,
+        offset: 50
+    });
+
+    // Дополнительные hover эффекты для карточек товаров
+    const items = document.querySelectorAll('.strain-list-item');
+    items.forEach((item, index) => {
+        // Добавляем AOS атрибуты для анимации
+        item.setAttribute('data-aos', 'fade-up');
+        item.setAttribute('data-aos-delay', ((index % 10) * 50).toString());
+
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+});
+</script>
+{% endblock %}
 
 <style>
 .strain-list-item {

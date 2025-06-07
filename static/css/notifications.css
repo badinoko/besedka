@@ -279,13 +279,15 @@ i[class*="fa-"], .fa, .fas, .far, .fal, .fab {
 
 /* Кнопки действий */
 .notification-actions {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid #e9ecef;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .notification-actions .btn {
@@ -304,6 +306,16 @@ i[class*="fa-"], .fa, .fas, .far, .fal, .fab {
 .notification-actions .btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Специальные стили для кнопок "Перейти" */
+.notification-actions .btn-primary {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
 }
 
 /* Чекбоксы */

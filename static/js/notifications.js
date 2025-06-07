@@ -190,6 +190,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log('[DEBUG] markAllAsRead response:', data);
+
             if (data.success) {
                 // Обновляем все уведомления на странице
                 document.querySelectorAll('.notification-item').forEach(item => {
@@ -210,13 +212,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем счетчик в навигации
-                updateNotificationBadge(data.unread_count);
+                // ИСПРАВЛЕНИЕ: Используем правильные ключи ответа
+                const unreadCount = data.unread_count || data.unread_notifications_count || 0;
+                const totalCount = data.total_count || data.total_notifications_count || 0;
+
+                // Обновляем счетчик в навигации
+                updateNotificationBadge(unreadCount);
 
                 // Обновляем счетчики на странице
-                updateAllCounters(data.unread_count, data.total_count);
+                updateAllCounters(unreadCount, totalCount);
 
-                showToast('Все уведомления помечены как прочитанные', 'success');
+                showToast(data.message || 'Все уведомления помечены как прочитанные', 'success');
+            } else {
+                showToast('Ошибка при пометке уведомлений', 'error');
             }
         })
         .catch(error => {

@@ -627,134 +627,61 @@ class Notification(models.Model):
                         pass
 
         elif self.notification_type == self.NotificationType.FOLLOW:
-            # Для подписок ведем к подписчикам/подпискам в личном кабинете
+            # Для подписок ведем в личный кабинет
             try:
-                return reverse('users:profile')  # Пока ведем в личный кабинет
+                return reverse('users:profile')
             except NoReverseMatch:
-                pass
+                return reverse('news:home')  # Fallback
 
         elif self.notification_type == self.NotificationType.LIKE:
-            # Для лайков попытаемся определить тип объекта и перейти в соответствующий раздел
-            if self.content_object:
-                # Проверяем тип объекта через content_type
-                content_type_model = self.content_type.model
-
-                if content_type_model in ['post', 'growlog', 'growlogentry']:
-                    # Лайк гроу-репорта - ведем в гроу-репорты
-                    try:
-                        return reverse('growlogs:list')
-                    except NoReverseMatch:
-                        pass
-
-                elif content_type_model in ['photo', 'image', 'galleryimage']:
-                    # Лайк фото - ведем в галерею
-                    try:
-                        return reverse('gallery:gallery')
-                    except NoReverseMatch:
-                        pass
-
-                elif content_type_model in ['newspost', 'article', 'news']:
-                    # Лайк новости - ведем в новости
-                    try:
-                        return reverse('news:home')
-                    except NoReverseMatch:
-                        pass
-
-            # Если не смогли определить тип, ведем в личный кабинет
+            # Для лайков ведем в галерею (основное место для лайков)
             try:
-                return reverse('users:profile')
+                return reverse('gallery:gallery')
             except NoReverseMatch:
-                pass
+                return reverse('news:home')  # Fallback
 
         elif self.notification_type == self.NotificationType.COMMENT:
-            # Для комментариев аналогично лайкам - определяем тип родительского объекта
-            if self.content_object:
-                content_type_model = self.content_type.model
-
-                if content_type_model in ['post', 'growlog', 'growlogentry']:
-                    # Комментарий к гроу-репорту
-                    try:
-                        return reverse('growlogs:list')
-                    except NoReverseMatch:
-                        pass
-
-                elif content_type_model in ['photo', 'image', 'galleryimage']:
-                    # Комментарий к фото
-                    try:
-                        return reverse('gallery:gallery')
-                    except NoReverseMatch:
-                        pass
-
-                elif content_type_model in ['newspost', 'article', 'news']:
-                    # Комментарий к новости
-                    try:
-                        return reverse('news:home')
-                    except NoReverseMatch:
-                        pass
-
-            # Если не смогли определить тип, ведем в личный кабинет
+            # Для комментариев ведем в гроу-репорты (основное место для комментариев)
             try:
-                return reverse('users:profile')
+                return reverse('growlogs:list')
             except NoReverseMatch:
-                pass
+                return reverse('news:home')  # Fallback
 
         elif self.notification_type == self.NotificationType.MENTION:
-            # Для упоминаний аналогично
-            if self.content_object:
-                content_type_model = self.content_type.model
-
-                if content_type_model in ['post', 'growlog', 'growlogentry']:
-                    try:
-                        return reverse('growlogs:list')
-                    except NoReverseMatch:
-                        pass
-
-                elif content_type_model in ['photo', 'image', 'galleryimage']:
-                    try:
-                        return reverse('gallery:gallery')
-                    except NoReverseMatch:
-                        pass
-
-                elif content_type_model in ['newspost', 'article', 'news']:
-                    try:
-                        return reverse('news:home')
-                    except NoReverseMatch:
-                        pass
-
+            # Для упоминаний ведем в личный кабинет
             try:
                 return reverse('users:profile')
             except NoReverseMatch:
-                pass
+                return reverse('news:home')  # Fallback
 
         elif self.notification_type == self.NotificationType.CHAT_MESSAGE:
-            # Уведомления чата временно отключены (см. CHAT_DEVELOPMENT_PLANS.md)
-            # В будущем планируется реализация умных уведомлений только при упоминаниях
-            return None
+            # Для сообщений в чате ведем на главную (чат доступен через модальное окно)
+            try:
+                return reverse('news:home')
+            except NoReverseMatch:
+                pass
 
         elif self.notification_type == self.NotificationType.SYSTEM:
             # Системные уведомления - в личный кабинет
             try:
                 return reverse('users:profile')
             except NoReverseMatch:
-                pass
+                return reverse('news:home')  # Fallback
 
-        # Если ни один из способов не дал URL, возвращаем None
-        return None
+        # Если ни один из способов не дал URL, возвращаем главную страницу как fallback
+        try:
+            return reverse('news:home')
+        except:
+            return '/'  # Последний fallback
 
     @property
     def is_actionable(self):
         """
         Проверяет, является ли уведомление "кликабельным" (имеет ли оно URL для действия).
-        Только определенные типы уведомлений должны быть кликабельными.
+        Все уведомления должны иметь возможность навигации к соответствующим разделам.
         """
-        # Только заказы должны быть кликабельными
-        if self.notification_type == self.NotificationType.ORDER:
-            action_url = self.get_action_url()
-            return action_url is not None and action_url != '#'
-
-        # Остальные типы уведомлений не кликабельны
-        # Пользователи могут использовать кнопки для действий
-        return False
+        action_url = self.get_action_url()
+        return action_url is not None and action_url != '#' and action_url != 'None'
 
     def mark_as_read(self):
         """Помечает уведомление как прочитанное."""
@@ -764,7 +691,23 @@ class Notification(models.Model):
 
     @classmethod
     def create_notification(cls, recipient, notification_type, title, message, sender=None, content_object=None):
-        """Создает новое уведомление."""
+        """
+        Создает новое уведомление с проверкой прав доступа.
+
+        Валидирует, что пользователь может получать уведомления данного типа
+        в зависимости от его роли и доступных функций.
+        """
+        # Проверяем, может ли пользователь получать уведомления данного типа
+        if not cls.can_receive_notification(recipient, notification_type):
+            # Логируем попытку создания недопустимого уведомления
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                f"Попытка создать недопустимое уведомление типа '{notification_type}' "
+                f"для пользователя '{recipient.username}' (роль: {recipient.role})"
+            )
+            return None
+
         return cls.objects.create(
             recipient=recipient,
             sender=sender,
@@ -773,6 +716,53 @@ class Notification(models.Model):
             message=message,
             content_object=content_object
         )
+
+    @classmethod
+    def can_receive_notification(cls, user, notification_type):
+        """
+        Проверяет, может ли пользователь получать уведомления данного типа
+        в зависимости от его роли и доступных функций.
+        """
+        # Гости могут получать только уведомления о заказах
+        if user.role == 'guest':
+            return notification_type == cls.NotificationType.ORDER
+
+        # Неаутентифицированные пользователи не получают уведомления
+        if not user.is_authenticated:
+            return False
+
+        # Проверяем доступность функций по типам уведомлений
+        if notification_type == cls.NotificationType.LIKE:
+            # Лайки доступны только аутентифицированным пользователям
+            # Гости не могут лайкать, значит и уведомления о лайках не нужны
+            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+
+        elif notification_type == cls.NotificationType.COMMENT:
+            # Комментарии доступны только аутентифицированным пользователям
+            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+
+        elif notification_type == cls.NotificationType.FOLLOW:
+            # Подписки доступны только аутентифицированным пользователям
+            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+
+        elif notification_type == cls.NotificationType.MENTION:
+            # Упоминания в чате - только для тех, кто имеет доступ к чату
+            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+
+        elif notification_type == cls.NotificationType.CHAT_MESSAGE:
+            # Сообщения в чате - только для тех, кто имеет доступ к чату
+            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+
+        elif notification_type == cls.NotificationType.ORDER:
+            # Уведомления о заказах могут получать все (включая гостей)
+            return True
+
+        elif notification_type == cls.NotificationType.SYSTEM:
+            # Системные уведомления - только для аутентифицированных пользователей
+            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+
+        # По умолчанию запрещаем
+        return False
 
 class UserProfile(models.Model):
     """

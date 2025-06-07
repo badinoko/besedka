@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const photoId = likeBtn.dataset.photoId;
 
             {% if user.is_authenticated %}
-                const url = "{% url 'gallery:toggle_like' pk=0 %}".replace('0', photoId);
+                const url = "{% url 'gallery:photo_like' pk=0 %}".replace('0', photoId);
 
                 fetch(url, {
                     method: 'POST',

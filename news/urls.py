@@ -22,6 +22,7 @@ urlpatterns = [
     path('ajax/toggle-comment-reaction/', views.toggle_comment_reaction, name='toggle_comment_reaction'),
     path('ajax/add-comment/', views.add_comment, name='add_comment'),
     path('ajax/poll-vote/', views.vote_in_poll, name='vote_in_poll'),
+    path('ajax/filter-news/', views.filter_news_ajax, name='filter_news_ajax'),
 
     # Поиск
     path('search/', views.search_posts, name='search'),

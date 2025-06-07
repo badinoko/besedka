@@ -277,7 +277,9 @@ class ForcePasswordChangeMiddleware:
             try:
                 admin_logout_url = reverse('admin:logout')
                 if request.path == admin_logout_url: # Check if current path is admin logout
-                     allowed_url_names_for_temp_password.append(resolve(admin_logout_url).url_name)
+                     resolved_url_name = resolve(admin_logout_url).url_name
+                     if resolved_url_name:  # Проверяем что url_name не None
+                         allowed_url_names_for_temp_password.append(resolved_url_name)
             except: # nosec
                 pass # admin:logout might not exist or other admin logout names used.
 
@@ -394,12 +396,22 @@ class MaintenanceModeMiddleware(MiddlewareMixin):
         except NoReverseMatch:
             # Не удалось построить URL для страницы обслуживания, это серьезная ошибка конфигурации
             # В этом случае лучше ничего не делать, чтобы не сломать сайт полностью
-            # Можно залогировать ошибку
-            print(f"ERROR: Could not reverse URL for maintenance page with slug {target_section_slug}. Check core.urls.")
+            # Логируем ошибку
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Could not reverse URL for maintenance page with slug {target_section_slug}. Check core.urls.")
             return None
         except Exception as e:
-            # Другие возможные ошибки
-            print(f"ERROR in MaintenanceModeMiddleware: {e}")
+            # Другие возможные ошибки - используем логирование вместо print
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                error_message = str(e)
+            except UnicodeDecodeError:
+                error_message = repr(e)
+            except Exception:
+                error_message = "Unknown error in MaintenanceModeMiddleware"
+            logger.error(f"MaintenanceModeMiddleware error: {error_message}")
             return None
 
         return None

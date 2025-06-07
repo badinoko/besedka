@@ -1,0 +1,383 @@
+/* 🎨 УНИФИЦИРОВАННЫЕ СТИЛИ HERO-КНОПОК ДЛЯ ВСЕХ РАЗДЕЛОВ ПРОЕКТА "БЕСЕДКА" */
+
+:root {
+    /* Кнопки переменные - УСИЛЕННЫЙ 3D ЭФФЕКТ */
+    --hero-btn-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --hero-btn-shine-transition: left 0.5s ease;
+    --hero-btn-border-radius: 12px;
+    --hero-btn-shadow: 0 8px 25px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.1);
+    --hero-btn-shadow-hover: 0 15px 40px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.2);
+    --hero-btn-shadow-floating: 0 12px 35px rgba(0,0,0,0.3), 0 6px 15px rgba(0,0,0,0.15);
+    --hero-btn-text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* === ОСНОВНАЯ HERO-КНОПКА === */
+.hero-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid #667eea;
+    color: #ffffff !important;
+    font-weight: 700;
+    padding: 15px 30px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none !important;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.hero-btn:hover::before {
+    left: 100%;
+}
+
+.hero-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    border-color: #764ba2;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(118, 75, 162, 0.5);
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.hero-btn:focus {
+    outline: 2px solid rgba(76, 175, 80, 0.5);
+    outline-offset: 2px;
+}
+
+/* === ВТОРИЧНАЯ HERO-КНОПКА === */
+.hero-btn-secondary {
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 15px 30px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none !important;
+    font-size: 1.1rem;
+    backdrop-filter: blur(10px);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.hero-btn-secondary:hover::before {
+    left: 100%;
+}
+
+.hero-btn-secondary:hover {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.hero-btn-secondary:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* === ЦВЕТОВЫЕ ВАРИАНТЫ ДЛЯ РАЗНЫХ РАЗДЕЛОВ === */
+
+/* Галерея - фиолетовый с 3D эффектом (УНИФИЦИРОВАННЫЕ КНОПКИ) */
+.gallery-hero .hero-btn {
+    background: linear-gradient(135deg, #6f42c1 0%, #563d7c 100%) !important;
+    border-color: #6f42c1 !important;
+    box-shadow: 0 12px 35px rgba(111, 66, 193, 0.4), 0 6px 15px rgba(111, 66, 193, 0.2) !important;
+    /* Принудительно применяем все основные стили */
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    transform: translateY(-2px) translateZ(0) !important;
+    filter: brightness(1.05) !important;
+}
+
+.gallery-hero .hero-btn:hover {
+    background: linear-gradient(135deg, #563d7c 0%, #452d5f 100%) !important;
+    border-color: #563d7c !important;
+    box-shadow: 0 18px 45px rgba(111, 66, 193, 0.6), 0 10px 25px rgba(111, 66, 193, 0.3) !important;
+    transform: translateY(-5px) scale(1.02) translateZ(0) !important;
+    filter: brightness(1.1) !important;
+}
+
+/* Унификация ВТОРИЧНОЙ кнопки в галерее */
+.gallery-hero .hero-btn-secondary {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) translateZ(0) !important;
+    filter: brightness(1.05) !important;
+    box-shadow: 0 12px 35px rgba(255, 255, 255, 0.2), 0 6px 15px rgba(255, 255, 255, 0.1) !important;
+}
+
+.gallery-hero .hero-btn-secondary:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    transform: translateY(-5px) scale(1.02) translateZ(0) !important;
+    filter: brightness(1.1) !important;
+    box-shadow: 0 18px 45px rgba(255, 255, 255, 0.3), 0 10px 25px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Новости - синий с 3D эффектом */
+.news-hero .hero-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #007bff;
+    box-shadow: 0 12px 35px rgba(0, 123, 255, 0.4), 0 6px 15px rgba(0, 123, 255, 0.2);
+}
+
+.news-hero .hero-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    border-color: #0056b3;
+    box-shadow: 0 18px 45px rgba(0, 123, 255, 0.6), 0 10px 25px rgba(0, 123, 255, 0.3);
+}
+
+/* Магазин - зеленый с 3D эффектом (как основной) */
+.store-hero .hero-btn {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border-color: #28a745;
+    box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4), 0 6px 15px rgba(40, 167, 69, 0.2);
+}
+
+.store-hero .hero-btn:hover {
+    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+    border-color: #1e7e34;
+    box-shadow: 0 18px 45px rgba(40, 167, 69, 0.6), 0 10px 25px rgba(40, 167, 69, 0.3);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+    .hero-btn,
+    .hero-btn-secondary {
+        padding: 12px 24px;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        width: auto;
+        max-width: 280px;
+    }
+
+    .hero-container {
+        padding: 10px 0 0 0;
+    }
+
+    .gallery-hero,
+    .news-hero,
+    .store-hero,
+    .growlog-hero {
+        margin: 0 0 1rem 0 !important;
+    }
+
+    .gallery-filters,
+    .news-filters,
+    .growlog-filters {
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-btn,
+    .hero-btn-secondary {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* === АНИМАЦИИ === */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+    50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+    100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+}
+
+.hero-btn.pulse,
+.hero-btn-secondary.pulse {
+    animation: pulse-glow 2s infinite;
+}
+
+.hero-btn:active,
+.hero-btn-secondary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+    transition: all 0.1s ease !important;
+}
+
+/* Приоритет для корректного отображения */
+.hero-btn.btn,
+.hero-btn-secondary.btn {
+    display: inline-block !important;
+    text-align: center !important;
+}
+
+.hero-btn i,
+.hero-btn-secondary i {
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.hero-btn:hover i,
+.hero-btn-secondary:hover i {
+    transform: scale(1.1);
+}
+
+.hero-btn:focus-visible,
+.hero-btn-secondary:focus-visible {
+    outline: 2px solid rgba(76, 175, 80, 0.8);
+    outline-offset: 3px;
+}
+
+/* Убираем анимации при загрузке */
+.hero-btn,
+.hero-btn-secondary {
+    animation: none !important;
+}
+
+/* Анимации появления убираем - они мешают */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-btn:nth-child(1) { animation-delay: 0.1s; }
+.hero-btn:nth-child(2) { animation-delay: 0.2s; }
+.hero-btn-secondary:nth-child(1) { animation-delay: 0.15s; }
+.hero-btn-secondary:nth-child(2) { animation-delay: 0.25s; }
+
+/* === СТАБИЛИЗАЦИЯ ПОЗИЦИОНИРОВАНИЯ === */
+
+.page-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.hero-container {
+    width: 100%;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
+}
+
+.content-container {
+    width: 100%;
+    position: relative;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    z-index: 2;
+    background: transparent;
+}
+
+/* === ФИКСАЦИЯ ШИРИНЫ ДЛЯ РАЗДЕЛОВ === */
+
+.gallery-hero,
+.news-hero,
+.store-hero,
+.growlogs-hero {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 2rem 0 !important;
+    position: relative !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+}
+
+.gallery-filters,
+.news-filters,
+.growlogs-filters {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 1.5rem 0 !important;
+    position: relative !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+}
+
+/* Контейнеры в разделах */
+.container,
+.container-fluid {
+    position: relative !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Фиксы для body и html */
+body {
+    overflow-x: hidden;
+    position: relative;
+}
+
+html {
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    position: relative;
+}
+
+/* Исправляем широкие контейнеры */
+.gallery-page .container {
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 15px !important;
+}
+
+.news-page .container {
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 15px !important;
+}
+
+.store-page .container {
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 15px !important;
+}
+
+.growlogs-page .container {
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 15px !important;
+}

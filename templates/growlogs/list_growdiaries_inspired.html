@@ -4,6 +4,8 @@
 {% block title %}🌱 Гроурепорты сообщества{% endblock %}
 
 {% block extra_css %}
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <style>
     /* ===== ОБЩИЕ СТИЛИ ===== */
     .growlogs-page {
@@ -39,19 +41,23 @@
         color: #2E7D32 !important;
         font-weight: 700;
         padding: 15px 30px;
-        border-radius: 30px;
+        border-radius: 12px;
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         text-decoration: none !important;
         font-size: 1.1rem;
+        text-shadow: none;
+        letter-spacing: 0.5px;
     }
 
     .header-btn:hover {
         background: rgba(255,255,255,1);
+        border-color: rgba(255,255,255,1);
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0,0,0,0.25);
         color: #1B5E20 !important;
+        text-decoration: none !important;
     }
 
     /* ===== КАРТОЧКИ ГРОУРЕПОРТОВ (СТИЛЬ GROWDIARIES) ===== */
@@ -489,20 +495,24 @@
 <div class="growlogs-page">
     <div class="container">
         <!-- Заголовок -->
-        <div class="growlogs-header">
+        <div class="growlogs-header" data-aos="fade-down" data-aos-duration="500" data-aos-easing="ease-out-quart">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
-                        <h1><i class="fas fa-seedling me-3"></i>Гроурепорты сообщества</h1>
-                        <p class="lead mb-0">Делитесь опытом выращивания и изучайте методы других гроверов</p>
+                        <h1 data-aos="fade-right" data-aos-delay="200" data-aos-duration="800">
+                            <i class="fas fa-seedling me-3"></i>Гроурепорты сообщества
+                        </h1>
+                        <p class="lead mb-0" data-aos="fade-right" data-aos-delay="400" data-aos-duration="800">
+                            Делитесь опытом выращивания и изучайте методы других гроверов
+                        </p>
                     </div>
                     <div class="col-lg-4 text-lg-end text-center mt-3 mt-lg-0">
                         {% if user.is_authenticated %}
-                            <a href="{% url 'growlogs:create' %}" class="header-btn">
+                            <a href="{% url 'growlogs:create' %}" class="header-btn" data-aos="fade-up" data-aos-delay="600" data-aos-duration="800">
                                 <i class="fas fa-plus me-2"></i>Создать репорт
                             </a>
                         {% else %}
-                            <a href="{% url 'account_signup' %}" class="header-btn">
+                            <a href="{% url 'account_signup' %}" class="header-btn" data-aos="fade-up" data-aos-delay="600" data-aos-duration="800">
                                 <i class="fas fa-user-plus me-2"></i>Присоединиться
                             </a>
                         {% endif %}
@@ -683,8 +693,19 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- AOS Animation -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация AOS
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out-quart',
+        once: true,
+        offset: 100,
+        delay: 0
+    });
+
     // Анимация появления карточек
     const cards = document.querySelectorAll('.growlog-card');
     const observer = new IntersectionObserver((entries) => {

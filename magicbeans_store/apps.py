@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 class MagicbeansStoreConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'magicbeans_store'
-    verbose_name = _("Магазин Magic Beans")
+    verbose_name = _("Магазин")
 
     def ready(self):
         """

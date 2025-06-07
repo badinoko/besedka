@@ -1,0 +1,93 @@
+/* ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ КНОПОК УВЕДОМЛЕНИЙ */
+
+/* Убеждаемся, что блок действий виден */
+.notification-actions {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    margin-top: 10px !important;
+    border-top: 2px solid #e9ecef !important;
+}
+
+/* Принудительные стили для кнопок "Перейти" */
+.notification-actions .btn-primary,
+.notification-actions a.btn-primary {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    min-width: 80px !important;
+    height: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    z-index: 20 !important;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3) !important;
+}
+
+/* Hover эффект для кнопок */
+.notification-actions .btn-primary:hover,
+.notification-actions a.btn-primary:hover {
+    background-color: #0056b3 !important;
+    border-color: #0056b3 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.4) !important;
+}
+
+/* Иконки в кнопках */
+.notification-actions .btn-primary i,
+.notification-actions a.btn-primary i {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-size: 12px !important;
+    margin-right: 4px !important;
+}
+
+/* Убеждаемся, что текст виден */
+.notification-actions .btn-primary span,
+.notification-actions a.btn-primary span {
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+/* Дополнительная защита от скрытия */
+.notification-item .notification-actions {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* Принудительное отображение для всех кнопок в блоке действий */
+.notification-actions > * {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Финальные красивые стили */
+.notification-actions {
+    background: rgba(248, 249, 250, 0.8) !important;
+    border-top: 1px solid #e9ecef !important;
+}
+
+.notification-actions .btn-primary {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}

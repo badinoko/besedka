@@ -109,8 +109,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "core.context_processors.navigation.navigation_context",  # 🚀 Unified navigation context
-                "users.context_processors.navigation_context",
+                "users.context_processors.navigation_context",  # 🚀 Unified navigation context
                 "magicbeans_store.context_processors.cart_item_count",
             ],
         },
@@ -302,7 +301,7 @@ SIMPLE_JWT = {
 # ------------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Беседка API',
-    'DESCRIPTION': 'API для интеграции с Telegram-ботом магазина Magic Beans',
+            'DESCRIPTION': 'API для интеграции с Telegram-ботом магазина',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,

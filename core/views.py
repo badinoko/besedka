@@ -76,7 +76,7 @@ def admin_selector(request):
     # Админка магазина
     if request.user.is_superuser or getattr(request.user, 'role', None) in ['owner', 'admin', 'store_owner', 'store_admin']:
         admin_panels.append({
-            'name': _('Управление магазином Magic Beans'),
+                            'name': _('Управление магазином'),
             'url': '/store_admin_site/',
             'icon': 'fa-store',
             'color': '#2e7d32',

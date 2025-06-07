@@ -10,7 +10,7 @@ from django.utils import timezone
 
 
 class Command(BaseCommand):
-    help = 'Создает тестовые данные для магазина Magic Beans'
+    help = 'Создает тестовые данные для магазина'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -20,7 +20,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('🌱 Создание тестовых данных для Magic Beans...'))
+        self.stdout.write(self.style.SUCCESS('🌱 Создание тестовых данных для магазина...'))
 
         try:
             with transaction.atomic():

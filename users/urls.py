@@ -28,15 +28,20 @@ urlpatterns = [
     path("manage-admins/", views.manage_admins_view, name="manage_admins_alias"),  # Альтернативный URL
     path("cabinet/role/<int:user_id>/", views.change_user_role_view, name="change_role"),  # Изменение роли
 
-    # Детали пользователей
-    path("<str:username>/", views.user_detail_view, name="detail"),
-    path("", views.user_redirect_view, name="redirect"),
-
-    # Маршрут для управления владельцами магазина
+    # Маршруты для управления владельцами магазина (ДОЛЖНЫ БЫТЬ ПЕРЕД <str:username>)
     path("owner/manage-store-owners/", admin_views.StoreOwnerManagementView.as_view(), name="store_owner_management"),
     path(
         "owner-platform/manage-store-owner/",
         ManageStoreOwnerView.as_view(),
         name="manage_store_owner",
     ),
+
+    # Редирект пользователя
+    path("", views.user_redirect_view, name="redirect"),
+
+    # Детали пользователей (ДОЛЖЕН БЫТЬ ПОСЛЕДНИМ)
+    path("<str:username>/", views.user_detail_view, name="detail"),
+
+    # API для тестирования (временно отключено)
+    # path("api/notifications-count/", views.get_notifications_count_api, name="notifications_count_api"),
 ]

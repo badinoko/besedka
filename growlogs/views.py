@@ -22,7 +22,7 @@ from magicbeans_store.models import Strain, SeedBank
 class GrowLogListView(ListView):
     """Список всех публичных гроу-логов"""
     model = GrowLog
-    template_name = 'growlogs/list_growdiaries_inspired.html'
+    template_name = 'growlogs/list.html'
     context_object_name = 'growlogs'
     paginate_by = 12
 
@@ -83,6 +83,15 @@ class GrowLogListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Добавляем статистику для hero-секции
+        all_growlogs = GrowLog.objects.filter(is_active=True, is_public=True)
+        total_reports = all_growlogs.count()
+        total_growers = all_growlogs.values('grower').distinct().count()
+
+        # Считаем общее количество дней опыта
+        total_days = sum([growlog.current_day for growlog in all_growlogs])
+
         context.update({
             'stages': GrowLog.STAGE_CHOICES,
             'environments': GrowLog.ENVIRONMENT_CHOICES,
@@ -90,6 +99,10 @@ class GrowLogListView(ListView):
             'current_stage': self.request.GET.get('stage', ''),
             'current_environment': self.request.GET.get('environment', ''),
             'current_sort': self.request.GET.get('sort_by', '-start_date'),
+            # Статистика для hero-секции
+            'total_reports': total_reports,
+            'total_growers': total_growers,
+            'total_days': total_days,
         })
         return context
 
@@ -595,52 +608,50 @@ class GrowLogEntryCreateView(LoginRequiredMixin, CreateView):
 
 @login_required
 def toggle_like_growlog(request, pk):
-    """Лайк/анлайк гроу-лога"""
+    """НЕОБРАТИМЫЙ лайк гроу-лога (для системы кармы и рейтинга)"""
     growlog = get_object_or_404(GrowLog, pk=pk)
     user = request.user
-    action_taken = ""
 
+    # Проверяем, уже лайкнул ли пользователь
     if user in growlog.likes.all():
-        growlog.likes.remove(user)
-        action_taken = "unliked"
-        ActionLog.objects.create(
-            user=user,
-            action_type='growlog_unliked',
-            model_name='GrowLog',
-            object_id=growlog.pk,
-            object_repr=str(growlog),
-            details=f'User unliked growlog: {growlog.title}'
-        )
-        messages.success(request, f'Вы убрали лайк с "{growlog.title}"')
-    else:
-        growlog.likes.add(user)
-        action_taken = "liked"
-        ActionLog.objects.create(
-            user=user,
-            action_type='growlog_liked',
-            model_name='GrowLog',
-            object_id=growlog.pk,
-            object_repr=str(growlog),
-            details=f'User liked growlog: {growlog.title}'
-        )
-        messages.success(request, f'Вы лайкнули "{growlog.title}"')
+        return JsonResponse({
+            'success': False,
+            'liked': True,
+            'action': 'already_liked',
+            'likes_count': growlog.likes.count(),
+            'message': 'Вы уже поставили лайк этому репорту'
+        })
 
-        # Уведомление автору (если не сам себе лайк)
-        if growlog.grower != user:
-            Notification.objects.create(
-                recipient=growlog.grower,
-                sender=user,
-                notification_type='like',
-                title='Новый лайк!',
-                message=f'{user.username} лайкнул ваш гроу-лог "{growlog.title}"',
-                content_object=growlog
-            )
+    # Добавляем лайк (необратимо)
+    growlog.likes.add(user)
+    action_taken = "liked"
+
+    ActionLog.objects.create(
+        user=user,
+        action_type='growlog_liked',
+        model_name='GrowLog',
+        object_id=growlog.pk,
+        object_repr=str(growlog),
+        details=f'User liked growlog: {growlog.title}'
+    )
+
+    # Уведомление автору (если не сам себе лайк)
+    if growlog.grower != user:
+        Notification.objects.create(
+            recipient=growlog.grower,
+            sender=user,
+            notification_type='like',
+            title='Новый лайк!',
+            message=f'{user.username} лайкнул ваш гроу-лог "{growlog.title}"',
+            content_object=growlog
+        )
 
     return JsonResponse({
         'success': True,
-        'liked': action_taken == "liked",
+        'liked': True,
         'action': action_taken,
-        'likes_count': growlog.likes.count()
+        'likes_count': growlog.likes.count(),
+        'message': 'Лайк засчитан! Спасибо за поддержку'
     })
 
 class GrowLogCommentCreateView(LoginRequiredMixin, CreateView):
@@ -696,7 +707,7 @@ class GrowLogCommentCreateView(LoginRequiredMixin, CreateView):
 @login_required
 @require_POST
 def toggle_entry_like(request, entry_id):
-    """AJAX view для лайка записи гроу-лога"""
+    """НЕОБРАТИМЫЙ лайк записи гроу-лога (для системы кармы и рейтинга)"""
     try:
         entry = get_object_or_404(GrowLogEntry, id=entry_id)
 
@@ -710,17 +721,22 @@ def toggle_entry_like(request, entry_id):
         )
 
         if not created:
-            like.delete()
-            action = 'unliked'
-        else:
-            action = 'liked'
+            # Лайк уже существует - нельзя отозвать
+            return JsonResponse({
+                'status': 'error',
+                'action': 'already_liked',
+                'likes_count': entry.likes.count(),
+                'message': 'Вы уже поставили лайк этой записи'
+            })
 
+        # Лайк успешно добавлен
         likes_count = entry.likes.count()
 
         return JsonResponse({
             'status': 'ok',
-            'action': action,
-            'likes_count': likes_count
+            'action': 'liked',
+            'likes_count': likes_count,
+            'message': 'Лайк засчитан! Спасибо за поддержку'
         })
 
     except Exception as e:

@@ -14,23 +14,42 @@ class BaseCustomAdminSite(AdminSite):
     # (панель навигации Беседки уже присутствует в шапке через templates/admin/base_site.html)
     enable_nav_sidebar: bool = False
     login_form = None # Используем форму от allauth
-    login_url = reverse_lazy(settings.LOGIN_URL) # Явно указываем глобальный LOGIN_URL через reverse_lazy
+    # Убираем login_url чтобы использовать стандартную логику Django Admin
 
     def login(self, request, extra_context=None):
-        """Перенаправляет на глобальную страницу входа (allauth)."""
-        return redirect_to_login(
-            request.get_full_path(),
-            settings.LOGIN_URL # Используем LOGIN_URL из настроек
-        )
+        """
+        Кастомная логика логина для админок.
+        Если пользователь уже авторизован, но не имеет прав - показываем ошибку.
+        Если не авторизован - перенаправляем на allauth.
+        """
+        if request.user.is_authenticated:
+            if not self.has_permission(request):
+                from django.contrib import messages
+                from django.shortcuts import render
+                messages.error(request, 'У вас нет прав доступа к этой административной панели.')
+                return render(request, 'admin/login.html', {
+                    'title': 'Доступ запрещен',
+                    'error_message': 'У вас нет прав доступа к этой административной панели.',
+                    **self.each_context(request),
+                })
+            else:
+                # Пользователь авторизован и имеет права - перенаправляем на главную админки
+                return redirect(f'/{self.name}/')
+        else:
+            # Пользователь не авторизован - перенаправляем на allauth
+            return redirect_to_login(
+                request.get_full_path(),
+                settings.LOGIN_URL
+            )
 
 class StoreOwnerSite(BaseCustomAdminSite):
     """
     Кастомный AdminSite для ВЛАДЕЛЬЦА магазина.
     Полный доступ ко всем функциям управления магазином.
     """
-    site_header = _("Magic Beans - Владелец магазина")
-    site_title = _("Magic Beans - Панель владельца")
-    index_title = _("Панель владельца магазина Magic Beans")
+    site_header = _("Владелец магазина")
+    site_title = _("Панель владельца")
+    index_title = _("Панель владельца магазина")
     index_template = "store_owner/index.html"
     site_url = "/"
     app_name = 'store_owner_admin'
@@ -154,9 +173,9 @@ class StoreAdminSite(BaseCustomAdminSite):
     Кастомный AdminSite для АДМИНИСТРАТОРА магазина.
     Ограниченный доступ - помощник владельца магазина.
     """
-    site_header = _("Magic Beans - Администратор магазина")
-    site_title = _("Magic Beans - Панель администратора")
-    index_title = _("Панель администратора магазина Magic Beans")
+    site_header = _("Администратор магазина")
+    site_title = _("Панель администратора")
+    index_title = _("Панель администратора магазина")
     index_template = "store_admin/index.html"
     site_url = "/"
     app_name = 'store_admin_site'
@@ -287,7 +306,7 @@ class StoreAdminSite(BaseCustomAdminSite):
             'available_sections': available_sections,
             'user_role': user.role,
             'user_role_display': user.get_role_display(),
-            'title': _("Панель администратора магазина Magic Beans"),
+            'title': _("Панель администратора магазина"),
             'admin_type': 'store_admin',
             'admin_type_display': _("Администратор магазина"),
         })
@@ -369,7 +388,7 @@ class OwnerAdminSite(BaseCustomAdminSite):
             available_sections.append({
                 'id': 'platform_settings',
                 'title': _("⚙️ Настройки платформы и магазина"),
-                'description': _("Полное управление платформой Беседка и магазином Magic Beans"),
+                'description': _("Полное управление платформой Беседка и магазином"),
                 'items': [
                     {
                         'title': _("🎭 Перейти в админку модератора"),
