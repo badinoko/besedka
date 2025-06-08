@@ -463,10 +463,10 @@ def add_comment(request):
     try:
         data = json.loads(request.body)
         post_id = data.get('post_id')
-        content = data.get('content', '').strip()
+        text = data.get('content', '').strip()  # Оставляем 'content' в запросе для обратной совместимости с фронтендом
         parent_id = data.get('parent_id')
 
-        if not post_id or not content:
+        if not post_id or not text:
             return JsonResponse({'error': 'Не указаны обязательные поля'}, status=400)
 
         post = get_object_or_404(Post, id=post_id)
@@ -475,7 +475,7 @@ def add_comment(request):
         comment = Comment.objects.create(
             post=post,
             author=request.user,
-            content=content
+            text=text
         )
 
         # Если это ответ на комментарий

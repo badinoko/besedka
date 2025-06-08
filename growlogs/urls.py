@@ -27,4 +27,7 @@ urlpatterns = [
 
     # Комментарии
     path('<int:growlog_pk>/comment/', views.GrowLogCommentCreateView.as_view(), name='comment_create'),
+
+    # AJAX эндпоинт для фильтрации
+    path('filter-growlogs-ajax/', views.filter_growlogs_ajax, name='filter_growlogs_ajax'),
 ]

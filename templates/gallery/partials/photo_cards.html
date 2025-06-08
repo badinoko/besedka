@@ -1,0 +1,150 @@
+{% load static %}
+{% load i18n %}
+{% load humanize %}
+
+{% if photos %}
+    <!-- Информация о результатах -->
+    <div class="results-info text-center mb-4" data-aos="fade-up">
+        <span class="results-count">
+            Показано {{ photos|length }}
+            {% if page_obj %}из {{ page_obj.paginator.count }}{% endif %}
+            фотографий
+        </span>
+        {% if request.GET.search %}
+            <span class="search-query">по запросу "{{ request.GET.search }}"</span>
+        {% endif %}
+    </div>
+
+    <!-- Современная галерея -->
+    <div class="gallery-masonry">
+        {% for photo in photos %}
+        <div class="gallery-card" data-aos="fade-up">
+            <a href="{% url 'gallery:photo_detail' photo.pk %}" class="card-link">
+                <div class="photo-container">
+                    <img src="{{ photo.image.url }}" class="photo-image" alt="{{ photo.title|default:'Фото из галереи' }}">
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <div class="author-info">
+                            <img src="{{ photo.author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
+                                 alt="{{ photo.author.display_name }}" class="author-avatar">
+                            <div class="author-details">
+                                <span class="author-name">
+                                    {{ photo.author.display_name }}
+                                </span>
+                                <div class="photo-date">{{ photo.created_at|date:"d.m.Y" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="photo-title">{{ photo.title|default:"Без названия" }}</h5>
+                        {% if photo.description %}
+                            <p class="photo-description">{{ photo.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="photo-stats">
+                            <div class="like-indicator">
+                                <i class="fas fa-heart"></i>
+                                <span>{{ photo.likes.count }}</span>
+                            </div>
+                            <div class="comment-count">
+                                <i class="fas fa-comment"></i>
+                                <span>{{ photo.comments.count }}</span>
+                            </div>
+                            {% if photo.growlog %}
+                            <div class="growlog-indicator">
+                                <i class="fas fa-seedling"></i>
+                                <span>Гроу</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if is_paginated %}
+    <nav aria-label="Пагинация галереи" data-aos="fade-up">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Первая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Предыдущая</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Следующая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Последняя</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+{% else %}
+    <!-- Пустое состояние -->
+    <div class="empty-gallery" data-aos="fade-up">
+        <div class="empty-icon">
+            <i class="fas fa-camera-retro"></i>
+        </div>
+        <h3 class="empty-title">
+            {% if request.GET.search %}
+                Ничего не найдено
+            {% else %}
+                {% comment %}Определяем заголовок в зависимости от фильтра{% endcomment %}
+                {% if current_filter == 'growlog' %}
+                    Нет фотографий из гроу-репортов
+                {% elif current_filter == 'popular' %}
+                    Нет популярных фотографий
+                {% elif current_filter == 'commented' %}
+                    Нет обсуждаемых фотографий
+                {% elif page_type == 'my_photos' %}
+                    У вас пока нет фотографий
+                {% else %}
+                    В галерее пока нет фотографий
+                {% endif %}
+            {% endif %}
+        </h3>
+        <p class="empty-text">
+            {% if request.GET.search %}
+                Попробуйте изменить поисковый запрос или сбросить фильтры
+            {% else %}
+                {% comment %}Определяем текст в зависимости от фильтра{% endcomment %}
+                {% if current_filter == 'growlog' %}
+                    Пока нет фотографий, связанных с гроу-репортами. Попробуйте другой фильтр или добавьте фотографии к своим гроу-репортам.
+                {% elif current_filter == 'popular' %}
+                    Пока нет популярных фотографий. Попробуйте другой фильтр.
+                {% elif current_filter == 'commented' %}
+                    Пока нет обсуждаемых фотографий. Попробуйте другой фильтр.
+                {% elif page_type == 'my_photos' %}
+                    Загрузите первую фотографию, чтобы поделиться с сообществом!
+                {% else %}
+                    Станьте первым, кто поделится красивыми фотографиями!
+                {% endif %}
+            {% endif %}
+        </p>
+        {% comment %}Кнопка загрузки показывается ТОЛЬКО для "Мои фото" или основной галереи без фильтрации{% endcomment %}
+        {% if user.is_authenticated and not request.GET.search %}
+            {% if page_type == 'my_photos' or current_filter == 'newest' or not current_filter %}
+                <a href="{% url 'gallery:upload' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-upload me-2"></i>
+                    {% if page_type == 'my_photos' %}Загрузить первое фото{% else %}Загрузить новое фото{% endif %}
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}

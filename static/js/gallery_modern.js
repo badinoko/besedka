@@ -1,5 +1,5 @@
 /**
- * СОВРЕМЕННАЯ ГАЛЕРЕЯ - JavaScript функциональность
+ * СОВРЕМЕННАЯ ГАЛЕРЕЯ - JavaScript функциональность v20250609080
  * Включает: систему лайков с анимацией, AJAX запросы, Masonry layout
  */
 
@@ -12,7 +12,8 @@ class ModernGallery {
 
     init() {
         this.initMasonry();
-        this.initLikeSystem();
+        // Отключаем систему лайков на странице "Мои фотографии"
+        // this.initLikeSystem();
         this.initSearchForm();
         this.initScrollAnimations();
         this.initImageLazyLoading();
@@ -22,26 +23,56 @@ class ModernGallery {
      * Инициализация layout галереи
      */
     initMasonry() {
-        // Убираем Masonry, используем CSS Grid
-        const grid = document.querySelector('#gallery-masonry');
+        // Проверяем, есть ли галерея на странице
+        const grid = document.querySelector('.gallery-masonry');
         if (!grid) return;
 
-        // Простая инициализация без Masonry
-        console.log('Gallery grid initialized with CSS Grid');
+        // Инициализируем Masonry для адаптивной сетки
+        try {
+            this.masonryInstance = new Masonry(grid, {
+                itemSelector: '.gallery-card',
+                percentPosition: true,
+                gutter: 20
+            });
 
-        // Убираем старые обработчики Masonry
-        this.masonryInstance = null;
+            console.log('Masonry initialized successfully');
+
+            // Обновляем layout после загрузки изображений
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    if (this.masonryInstance) {
+                        this.masonryInstance.layout();
+                    }
+                }, 500);
+            });
+        } catch (error) {
+            console.error('Failed to initialize Masonry:', error);
+        }
     }
 
     /**
      * Система лайков с анимацией
+     * ОТКЛЮЧЕНА для страницы "Мои фотографии"
+     * ДОСТУПНА только на детальной странице фото
      */
     initLikeSystem() {
+        // Проверяем, находимся ли мы на детальной странице
+        const isDetailPage = window.location.pathname.includes('/photo/') &&
+                            !window.location.pathname.includes('/edit/') &&
+                            !window.location.pathname.includes('/delete/');
+
+        if (!isDetailPage) {
+            // Не инициализируем лайки вне детальной страницы
+            console.log('Like system disabled - not on detail page');
+            return;
+        }
+
         document.addEventListener('click', (e) => {
             const likeBtn = e.target.closest('.like-btn');
             if (!likeBtn || likeBtn.disabled) return;
 
             e.preventDefault();
+            e.stopPropagation(); // Предотвращаем всплытие
             this.handleLike(likeBtn);
         });
     }
@@ -80,6 +111,11 @@ class ModernGallery {
             if (data.status === 'ok') {
                 this.updateLikeButton(likeBtn, data);
                 this.animateLike(likeBtn, data.action === 'liked');
+
+                // Показываем сообщение об успехе
+                if (data.message) {
+                    this.showNotification(data.message, 'success');
+                }
             } else {
                 console.error('Like error:', data.error || data.message);
                 this.showNotification('Ошибка при обработке лайка', 'error');
@@ -104,11 +140,9 @@ class ModernGallery {
             likeCount.textContent = data.likes_count;
         }
 
-        // Обновляем состояние кнопки
+        // Обновляем состояние кнопки (для необратимых лайков)
         if (data.action === 'liked') {
             likeBtn.classList.add('liked');
-        } else {
-            likeBtn.classList.remove('liked');
         }
     }
 
@@ -127,11 +161,13 @@ class ModernGallery {
             this.createLikeParticles(likeBtn);
         }
 
-        // Добавляем класс для CSS анимации
-        likeBtn.classList.add('liked');
+        // Добавляем класс для CSS анимации (необратимые лайки)
+        likeBtn.classList.add('animation');
         setTimeout(() => {
-            if (!isLiked) {
-                likeBtn.classList.remove('liked');
+            likeBtn.classList.remove('animation');
+            // Для необратимых лайков - класс liked остается навсегда
+            if (isLiked) {
+                likeBtn.classList.add('liked');
             }
         }, 600);
     }

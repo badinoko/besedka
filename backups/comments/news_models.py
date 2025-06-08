@@ -8,9 +8,6 @@ from django.db.models import Count, Q
 import uuid
 from PIL import Image
 import os
-from django.utils.translation import gettext_lazy as _
-from django.utils.html import strip_tags
-from core.models import BaseComment
 
 User = get_user_model()
 
@@ -255,9 +252,17 @@ class PostView(models.Model):
         return f"{user_info} просмотрел {self.post.title}"
 
 
-class Comment(BaseComment):
-    """Комментарии к постам с поддержкой вложенных комментариев"""
+class Comment(models.Model):
+    """Комментарии к постам"""
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name="Пост")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Автор")
+    content = models.TextField(validators=[MinLengthValidator(3)], verbose_name="Содержание")
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,
+                              related_name='replies', verbose_name="Родительский комментарий")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
+    is_edited = models.BooleanField(default=False, verbose_name="Отредактирован")
 
     class Meta:
         verbose_name = "Комментарий"
@@ -270,6 +275,20 @@ class Comment(BaseComment):
 
     def __str__(self):
         return f"Комментарий от {self.author.username} к {self.post.title}"
+
+    def save(self, *args, **kwargs):
+        # Отмечаем как отредактированный если изменяется содержание
+        if self.pk:
+            original = Comment.objects.get(pk=self.pk)
+            if original.content != self.content:
+                self.is_edited = True
+        super().save(*args, **kwargs)
+
+    def get_replies(self):
+        return self.replies.all()
+
+    def get_replies_count(self):
+        return self.replies.count()
 
 
 class Reaction(models.Model):

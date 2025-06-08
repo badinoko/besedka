@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
-from core.models import PublicModel, TimeStampedModel, BaseComment
+from core.models import PublicModel, TimeStampedModel
 from django.conf import settings
 from growlogs.models import GrowLog, GrowLogEntry
 
@@ -30,11 +30,13 @@ class Photo(PublicModel):
     def get_absolute_url(self):
         return reverse('gallery:photo_detail', args=[self.id])
 
-class PhotoComment(BaseComment):
+class PhotoComment(TimeStampedModel):
     """
-    Represents a comment on a photo with support for nested comments.
+    Represents a comment on a photo.
     """
     photo = models.ForeignKey(Photo, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='photo_comments')
+    text = models.TextField(_("Comment"))
 
     class Meta:
         verbose_name = _("Photo Comment")

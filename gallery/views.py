@@ -6,7 +6,7 @@ from .models import Photo, PhotoComment
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from django.http import JsonResponse, HttpResponseForbidden, Http404
+from django.http import JsonResponse, HttpResponseForbidden, Http404, HttpResponse
 from django.db.models import Q, F, Count, Prefetch
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -19,6 +19,7 @@ from .forms import PhotoUploadForm, PhotoCommentForm, PhotoSearchForm
 from core.models import ActionLog
 from users.models import Notification
 from django.contrib.auth import get_user_model
+from django.template.loader import render_to_string
 
 def photo_list(request):
     """Display list of photos."""
@@ -51,7 +52,27 @@ class GalleryView(ListView):
     paginate_by = 24
 
     def get_queryset(self):
-        queryset = Photo.objects.filter(is_public=True, is_active=True)
+        queryset = Photo.objects.filter(is_public=True, is_active=True).annotate(
+            likes_count=Count('likes'),
+            comments_count=Count('comments')
+        )
+
+        # Фильтрация по автору
+        author = self.request.GET.get('author')
+        if author:
+            print(f"🔍 DEBUG: Фильтрация по автору: {author}")
+            User = get_user_model()
+            try:
+                author_user = User.objects.get(username=author)
+                print(f"✅ DEBUG: Найден пользователь: {author_user.username}")
+                queryset = queryset.filter(author=author_user)
+                print(f"📊 DEBUG: Количество фото автора: {queryset.count()}")
+            except User.DoesNotExist:
+                print(f"❌ DEBUG: Пользователь {author} не найден")
+                # Если пользователь не найден, показываем пустой результат
+                queryset = queryset.none()
+        else:
+            print("🌐 DEBUG: Показываем все фото (без фильтра автора)")
 
         # Поиск
         search = self.request.GET.get('search')
@@ -63,28 +84,22 @@ class GalleryView(ListView):
                 Q(growlog__title__icontains=search)
             )
 
-        # Фильтры
-        author = self.request.GET.get('author')
-        if author:
-            queryset = queryset.filter(author__username__icontains=author)
-
-        growlog = self.request.GET.get('growlog')
-        if growlog:
-            queryset = queryset.filter(growlog__isnull=False)
-
-        # Сортировка
-        sort_by = self.request.GET.get('sort', '-created_at')
-        if sort_by == 'popular':
-            queryset = queryset.annotate(likes_count=Count('likes')).order_by('-likes_count', '-created_at')
-        elif sort_by == 'commented':
-            queryset = queryset.annotate(comments_count=Count('comments')).order_by('-comments_count', '-created_at')
-        else:
-            queryset = queryset.order_by(sort_by)
+        # Фильтры от табов
+        filter_by = self.request.GET.get('filter')
+        if filter_by == 'popular':
+            queryset = queryset.order_by('-likes_count', '-created_at')
+        elif filter_by == 'commented':
+            queryset = queryset.order_by('-comments_count', '-created_at')
+        elif filter_by == 'growlog':
+            queryset = queryset.filter(growlog__isnull=False).order_by('-created_at')
+        else: # newest и по умолчанию
+            queryset = queryset.order_by('-created_at')
 
         return queryset.select_related('author', 'growlog').prefetch_related('likes', 'comments')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['page_type'] = 'gallery' # Флаг для шаблона
 
         # Добавляем информацию о лайках для текущего пользователя
         if self.request.user.is_authenticated:
@@ -93,24 +108,57 @@ class GalleryView(ListView):
         else:
             context['user_liked_photos'] = []
 
-        # Статистика для hero секции
-        context['total_photos'] = Photo.objects.filter(is_public=True, is_active=True).count()
-        context['total_authors'] = Photo.objects.filter(is_public=True, is_active=True).values('author').distinct().count()
-        context['total_likes'] = Photo.objects.filter(is_public=True, is_active=True).aggregate(
-            total_likes=Count('likes')
-        )['total_likes'] or 0
+        # Проверяем фильтрацию по автору
+        author_username = self.request.GET.get('author')
+        context['current_author'] = None
+        if author_username:
+            User = get_user_model()
+            try:
+                context['current_author'] = User.objects.get(username=author_username)
+            except User.DoesNotExist:
+                pass
+
+        # Статистика для hero секции (адаптируется под фильтр автора)
+        if context['current_author']:
+            # Статистика конкретного автора
+            author_photos = Photo.objects.filter(
+                author=context['current_author'],
+                is_public=True,
+                is_active=True
+            )
+            context['total_photos'] = author_photos.count()
+            context['total_authors'] = 1  # Один автор
+            context['total_likes'] = author_photos.aggregate(
+                total_likes=Count('likes')
+            )['total_likes'] or 0
+        else:
+            # Общая статистика
+            context['total_photos'] = Photo.objects.filter(is_public=True, is_active=True).count()
+            context['total_authors'] = Photo.objects.filter(is_public=True, is_active=True).values('author').distinct().count()
+            context['total_likes'] = Photo.objects.filter(is_public=True, is_active=True).aggregate(
+                total_likes=Count('likes')
+            )['total_likes'] or 0
 
         # Форма поиска
         context['search_form'] = PhotoSearchForm(self.request.GET or None)
         context['search_query'] = self.request.GET.get('search', '')
         context['current_sort'] = self.request.GET.get('sort', '-created_at')
+        context['current_filter'] = self.request.GET.get('filter', 'newest')
 
         return context
 
+    def get(self, request, *args, **kwargs):
+        """Обрабатываем AJAX запросы для фильтрации"""
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            self.object_list = self.get_queryset()
+            context = self.get_context_data()
+            return render(request, 'gallery/partials/photo_cards.html', context)
+        return super().get(request, *args, **kwargs)
+
 class MyPhotosView(LoginRequiredMixin, ListView):
-    """Мои фотографии"""
+    """Мои фотографии - ИСПОЛЬЗУЕТ ТОТ ЖЕ ШАБЛОН, ЧТО И ГАЛЕРЕЯ"""
     model = Photo
-    template_name = 'gallery/my_photos.html'
+    template_name = 'gallery/gallery_modern.html' # УНИФИЦИРОВАННЫЙ ШАБЛОН
     context_object_name = 'photos'
     paginate_by = 24
 
@@ -120,39 +168,30 @@ class MyPhotosView(LoginRequiredMixin, ListView):
             is_active=True
         )
 
-        # Сортировка
-        sort_by = self.request.GET.get('sort', '-created_at')
-        if sort_by == 'popular':
-            queryset = queryset.annotate(likes_count=Count('likes')).order_by('-likes_count', '-created_at')
-        elif sort_by == 'commented':
-            queryset = queryset.annotate(comments_count=Count('comments')).order_by('-comments_count', '-created_at')
-        else:
-            queryset = queryset.order_by(sort_by)
+        # Фильтры от табов
+        filter_by = self.request.GET.get('filter')
+        if filter_by == 'public':
+            queryset = queryset.filter(is_public=True)
+        elif filter_by == 'private':
+            queryset = queryset.filter(is_public=False)
 
-        return queryset.select_related('growlog').prefetch_related('likes', 'comments')
+        return queryset.order_by('-created_at').select_related('growlog').prefetch_related('likes', 'comments')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['page_type'] = 'my_photos' # Флаг для шаблона
 
         # Статистика пользователя
-        base_queryset = Photo.objects.filter(
-            author=self.request.user,
-            is_active=True
-        )
-
+        base_queryset = Photo.objects.filter(author=self.request.user, is_active=True)
         context['total_photos'] = base_queryset.count()
         context['total_public_photos'] = base_queryset.filter(is_public=True).count()
         context['total_private_photos'] = base_queryset.filter(is_public=False).count()
-        context['total_likes'] = base_queryset.aggregate(
-            total_likes=Count('likes')
-        )['total_likes'] or 0
-        context['current_sort'] = self.request.GET.get('sort', '-created_at')
-
-        # Добавляем информацию о лайках для текущего пользователя
-        liked_photos = self.request.user.liked_photos.values_list('id', flat=True)
-        context['user_liked_photos'] = list(liked_photos)
+        context['total_likes'] = base_queryset.aggregate(total_likes=Count('likes'))['total_likes'] or 0
+        context['current_filter'] = self.request.GET.get('filter', 'all')
 
         return context
+
+    # AJAX фильтрация теперь в отдельной функции filter_gallery_ajax
 
 class PhotoDetailView(DetailView):
     """Просмотр фото с комментариями"""
@@ -189,13 +228,6 @@ class PhotoDetailView(DetailView):
         if self.request.user.is_authenticated:
             user_liked = self.object.likes.filter(id=self.request.user.id).exists()
 
-        # Похожие фото (из того же гроу-лога или от того же автора)
-        similar_photos = Photo.objects.filter(
-            Q(growlog=self.object.growlog) | Q(author=self.object.author),
-            is_public=True,
-            is_active=True
-        ).exclude(id=self.object.id)[:6]
-
         context.update({
             'comments': comments_page,
             'comment_form': PhotoCommentForm(),
@@ -203,7 +235,6 @@ class PhotoDetailView(DetailView):
             'user_liked': user_liked,
             'likes_count': self.object.likes.count(),
             'comments_count': self.object.comments.count(),
-            'similar_photos': similar_photos,
         })
         return context
 
@@ -278,7 +309,7 @@ class PhotoUploadView(LoginRequiredMixin, CreateView):
         return reverse('gallery:photo_detail', kwargs={'pk': self.object.pk})
 
 def toggle_like_photo(request, pk):
-    """AJAX лайк/дизлайк фотографии"""
+    """AJAX лайк фотографии (НЕОБРАТИМЫЙ для системы кармы)"""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
 
@@ -287,11 +318,19 @@ def toggle_like_photo(request, pk):
 
     photo = get_object_or_404(Photo, pk=pk)
 
+    # Проверяем, уже лайкнул ли пользователь (НЕОБРАТИМЫЕ ЛАЙКИ)
     if photo.likes.filter(id=request.user.id).exists():
-        photo.likes.remove(request.user)
-        liked = False
-        action = 'unliked'
+        # Лайк уже поставлен, возвращаем сообщение без удаления лайка
+        return JsonResponse({
+            'success': True,
+            'status': 'ok',
+            'likes_count': photo.likes.count(),
+            'liked': True,
+            'action': 'already_liked',
+            'message': 'Вы уже поставили лайк этой фотографии'
+        })
     else:
+        # Добавляем лайк (необратимо)
         photo.likes.add(request.user)
         liked = True
         action = 'liked'
@@ -321,7 +360,8 @@ def toggle_like_photo(request, pk):
         'status': 'ok',
         'likes_count': photo.likes.count(),
         'liked': liked,
-        'action': action
+        'action': action,
+        'message': 'Лайк засчитан! Спасибо за поддержку'
     })
 
 class PhotoUpdateView(LoginRequiredMixin, UpdateView):
@@ -438,73 +478,100 @@ def load_more_photos(request):
         'next_page': photos.next_page_number() if photos.has_next() else None
     })
 
-class AuthorPhotosView(ListView):
-    """Фотографии конкретного автора"""
-    model = Photo
-    template_name = 'gallery/author_photos.html'
-    context_object_name = 'photos'
-    paginate_by = 24
+def filter_gallery_ajax(request):
+    """AJAX-обработчик для фильтрации галереи (ПО ЭТАЛОНУ НОВОСТЕЙ)"""
 
-    def dispatch(self, request, *args, **kwargs):
-        """Проверяем, не смотрит ли пользователь свои собственные фотографии"""
-        User = get_user_model()
+    try:
+        filter_type = request.GET.get('filter', 'newest')
+        page = request.GET.get('page', 1)
+        section = request.GET.get('section', 'gallery')  # gallery или my_photos
+        author = request.GET.get('author')  # Параметр автора
 
-        username = self.kwargs['username']
+        if section == 'my_photos':
+            # Логика для "Мои фотографии"
+            if not request.user.is_authenticated:
+                return JsonResponse({'error': 'Authentication required'}, status=401)
 
-        # Если пользователь авторизован и смотрит свои фотографии - перенаправляем на my-photos
-        if request.user.is_authenticated and request.user.username == username:
-            return redirect('gallery:my_photos')
+            queryset = Photo.objects.filter(
+                author=request.user,
+                is_active=True
+            ).annotate(
+                likes_count=Count('likes'),
+                comments_count=Count('comments')
+            )
 
-        return super().dispatch(request, *args, **kwargs)
+            # Применяем фильтр для моих фото
+            if filter_type == 'public':
+                queryset = queryset.filter(is_public=True)
+            elif filter_type == 'private':
+                queryset = queryset.filter(is_public=False)
+            # Если filter_type == 'all' - показываем все (публичные и приватные)
 
-    def get_queryset(self):
-        User = get_user_model()
-
-        self.author = get_object_or_404(User, username=self.kwargs['username'])
-
-        queryset = Photo.objects.filter(
-            author=self.author,
-            is_public=True,
-            is_active=True
-        )
-
-        # Сортировка
-        sort_by = self.request.GET.get('sort', '-created_at')
-        if sort_by == 'popular':
-            queryset = queryset.annotate(likes_count=Count('likes')).order_by('-likes_count', '-created_at')
-        elif sort_by == 'commented':
-            queryset = queryset.annotate(comments_count=Count('comments')).order_by('-comments_count', '-created_at')
         else:
-            queryset = queryset.order_by(sort_by)
+            # Логика для основной галереи
+            queryset = Photo.objects.filter(is_public=True, is_active=True).annotate(
+                likes_count=Count('likes'),
+                comments_count=Count('comments')
+            )
 
-        return queryset.select_related('author', 'growlog').prefetch_related('likes', 'comments')
+            # Фильтрация по автору
+            if author:
+                User = get_user_model()
+                try:
+                    author_user = User.objects.get(username=author)
+                    queryset = queryset.filter(author=author_user)
+                except User.DoesNotExist:
+                    # Если пользователь не найден, возвращаем пустой результат
+                    queryset = queryset.none()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+            # Применяем фильтр для галереи
+            if filter_type == 'popular':
+                queryset = queryset.order_by('-likes_count', '-created_at')
+            elif filter_type == 'commented':
+                queryset = queryset.order_by('-comments_count', '-created_at')
+            elif filter_type == 'growlog':
+                queryset = queryset.filter(growlog__isnull=False).order_by('-created_at')
+            else:  # newest
+                queryset = queryset.order_by('-created_at')
 
-        context['author'] = self.author
+        if section == 'my_photos':
+            queryset = queryset.order_by('-created_at')
 
-        # Исправляем подсчет фотографий - используем базовый queryset без пагинации
-        base_queryset = Photo.objects.filter(
-            author=self.author,
-            is_public=True,
-            is_active=True
-        )
+        queryset = queryset.select_related('author', 'growlog').prefetch_related('likes', 'comments')
 
-        context['total_photos'] = base_queryset.count()
-        context['total_likes'] = base_queryset.aggregate(
-            total_likes=Count('likes')
-        )['total_likes'] or 0
-        context['current_sort'] = self.request.GET.get('sort', '-created_at')
+        # Пагинация
+        paginator = Paginator(queryset, 24)
+        try:
+            photos_page = paginator.page(page)
+        except:
+            photos_page = paginator.page(1)
 
-        # Добавляем информацию о лайках для текущего пользователя
-        if self.request.user.is_authenticated:
-            liked_photos = self.request.user.liked_photos.values_list('id', flat=True)
-            context['user_liked_photos'] = list(liked_photos)
-        else:
-            context['user_liked_photos'] = []
+        # Рендерим карточки фотографий
+        photos_html = render_to_string('gallery/partials/photo_cards.html', {
+            'photos': photos_page,
+            'user': request.user,
+            'page_type': section,  # передаем тип страницы
+            'current_filter': filter_type,  # передаем текущий фильтр
+        })
 
-        return context
+        # Рендерим пагинацию (если нужна)
+        pagination_html = ''
+        if photos_page.has_other_pages():
+            pagination_html = render_to_string('gallery/partials/pagination.html', {
+                'photos': photos_page,
+                'current_filter': filter_type,
+                'section': section
+            })
+
+        return JsonResponse({
+            'success': True,
+            'photos_html': photos_html,
+            'pagination_html': pagination_html,
+            'photos_count': photos_page.paginator.count
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 class PhotoCommentCreateView(LoginRequiredMixin, CreateView):
     """Создание комментария к фото"""
@@ -544,8 +611,14 @@ class CommentUpdateView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         comment = self.get_object()
-        if comment.author != request.user:
-            return HttpResponseForbidden("You can only edit your own comments")
+        # Проверяем, что пользователь имеет права модератора или администратора
+        # ВАЖНО: Даже суперпользователь не может редактировать комментарии напрямую
+        if request.user.is_superuser:
+            messages.error(request, _("У вас нет прав для редактирования комментариев напрямую. Используйте админку модераторов."))
+            return redirect('gallery:photo_detail', pk=comment.photo.pk)
+        if not (request.user.is_staff or request.user.groups.filter(name__in=['Moderators', 'Administrators']).exists()):
+            messages.error(request, _("У вас нет прав для редактирования комментариев."))
+            return redirect('gallery:photo_detail', pk=comment.photo.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -572,8 +645,14 @@ class CommentDeleteView(LoginRequiredMixin, DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         comment = self.get_object()
-        if comment.author != request.user:
-            return HttpResponseForbidden("You can only delete your own comments")
+        # Проверяем, что пользователь имеет права модератора или администратора
+        # ВАЖНО: Даже суперпользователь не может удалять комментарии напрямую
+        if request.user.is_superuser:
+            messages.error(request, _("У вас нет прав для удаления комментариев напрямую. Используйте админку модераторов."))
+            return redirect('gallery:photo_detail', pk=comment.photo.pk)
+        if not (request.user.is_staff or request.user.groups.filter(name__in=['Moderators', 'Administrators']).exists()):
+            messages.error(request, _("У вас нет прав для удаления комментариев."))
+            return redirect('gallery:photo_detail', pk=comment.photo.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):

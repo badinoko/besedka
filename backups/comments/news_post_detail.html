@@ -547,7 +547,7 @@
                         <small class="text-muted">(изменено)</small>
                         {% endif %}
                     </div>
-                    <div class="comment-content">{{ comment.text|linebreaks }}</div>
+                    <div class="comment-content">{{ comment.content|linebreaks }}</div>
                     <div class="comment-meta">
                         <span>{{ comment.created_at|timesince }} назад</span>
                         {% if user.is_authenticated %}
@@ -573,7 +573,7 @@
                         <small class="text-muted">(изменено)</small>
                         {% endif %}
                     </div>
-                    <div class="comment-content">{{ reply.text|linebreaks }}</div>
+                    <div class="comment-content">{{ reply.content|linebreaks }}</div>
                     <div class="comment-meta">
                         <span>{{ reply.created_at|timesince }} назад</span>
                         {% if user.is_authenticated %}

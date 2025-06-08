@@ -94,10 +94,13 @@
 
                 <!-- Информация и действия -->
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-3">
-                    <div class="text-muted">
-                        <i class="fas fa-user"></i> {% trans "Автор" %}:
-                        <a href="{% url 'gallery:author_photos' username=photo.author.username %}">{{ photo.author.display_name }}</a>
-                        <span class="mx-2">|</span>
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="fas fa-user"></i>
+                        <a href="{% url 'gallery:gallery' %}?author={{ photo.author.username }}" class="text-decoration-none text-muted">
+                            <span class="mx-2">{{ photo.author.display_name }}</span>
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center text-muted">
                         <i class="fas fa-calendar-alt"></i> {{ photo.created_at|naturalday }}
                     </div>
 
@@ -161,6 +164,10 @@
                     <form method="post" class="mb-4">
                         {% csrf_token %}
                         {{ comment_form|crispy }}
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <small>{% trans "Внимание! После публикации комментарий нельзя будет изменить или удалить. Только модераторы могут редактировать комментарии." %}</small>
+                        </div>
                         <button type="submit"
                                 class="btn btn-primary mt-2"
                                 style="min-height: 44px;">
@@ -185,13 +192,13 @@
                                 <div class="flex-grow-1">
                                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-2 gap-2">
                                         <h6 class="mb-0">
-                                            <a href="{% url 'gallery:author_photos' username=comment.author.username %}"
+                                            <a href="{% url 'gallery:gallery' %}?author={{ comment.author.username }}"
                                                class="text-decoration-none">{{ comment.author.display_name }}</a>
                                         </h6>
                                         <small class="text-muted">{{ comment.created_at|naturaltime }}</small>
                                     </div>
                                     <p class="mb-2">{{ comment.text|linebreaksbr }}</p>
-                                    {% if user.is_authenticated and comment.author == user %}
+                                    {% if user.is_staff and not user.is_superuser %}
                                         <div class="d-flex gap-2">
                                             <a href="{% url 'gallery:edit_comment' comment.pk %}"
                                                class="btn btn-sm btn-outline-secondary"
@@ -209,7 +216,7 @@
                             </div>
                         </div>
                     </div>
-                {% empty %}
+                                {% empty %}
                     <div class="text-center text-muted py-4">
                         <i class="fas fa-comments fa-2x mb-3"></i>
                         <p>{% trans "Комментариев пока нет. Будьте первым!" %}</p>
@@ -228,21 +235,18 @@
                      alt="{{ photo.author.display_name }}"
                      class="img-fluid rounded-circle mb-3"
                      style="width: 80px; height: 80px; object-fit: cover;">
-                <h5><a href="{% url 'gallery:author_photos' username=photo.author.username %}"
+                <h5><a href="{% url 'gallery:gallery' %}?author={{ photo.author.username }}"
                        class="text-decoration-none">{{ photo.author.display_name }}</a></h5>
                 <p class="text-muted small mb-3">
                     {% blocktrans with joined_date=photo.author.date_joined|date:"d.m.Y" %}Присоединился: {{ joined_date }}{% endblocktrans %}<br>
                     {% blocktrans count photos_count=photo.author.photos.count %}Всего {{ photos_count }} фото{% plural %}Всего {{ photos_count }} фото{% endblocktrans %}
                 </p>
-                <a href="{% url 'gallery:author_photos' username=photo.author.username %}"
+                <a href="{% url 'gallery:gallery' %}?author={{ photo.author.username }}"
                    class="btn btn-outline-primary"
                    style="min-height: 44px;">
                     <i class="fas fa-images"></i> {% trans "Все фото автора" %}
                 </a>
             </div>
-        </div>
-
-
         </div>
     </div>
     </div>
@@ -270,6 +274,12 @@ document.addEventListener('DOMContentLoaded', function() {
         likeBtn.addEventListener('click', function(e) {
             e.preventDefault();
 
+            // Если кнопка уже активна (лайк уже поставлен) - показываем сообщение
+            if (this.classList.contains('active')) {
+                showNotification('Вы уже поставили лайк этой фотографии', 'info');
+                return;
+            }
+
             const photoId = this.dataset.photoId;
             const url = this.dataset.url;
 
@@ -287,18 +297,62 @@ document.addEventListener('DOMContentLoaded', function() {
                     const likesCount = document.getElementById('likes-count');
                     likesCount.textContent = data.likes_count;
 
+                    // Для необратимых лайков - только добавляем класс
                     if (data.liked) {
                         this.classList.add('active');
-                    } else {
-                        this.classList.remove('active');
+                        // Показываем сообщение об успехе
+                        showNotification(data.message || 'Лайк засчитан! Спасибо за поддержку', 'success');
                     }
+                } else {
+                    // Показываем сообщение об ошибке или о том, что лайк уже поставлен
+                    showNotification(data.message || 'Произошла ошибка', 'info');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                showNotification('Произошла ошибка при обработке запроса', 'error');
             });
         });
     }
 });
+</script>
+
+<!-- Функция для уведомлений -->
+<script>
+function showNotification(message, type = 'info') {
+    // Определяем типы уведомлений
+    const alertTypes = {
+        success: 'alert-success',
+        error: 'alert-danger',
+        warning: 'alert-warning',
+        info: 'alert-info'
+    };
+
+    // Определяем иконки для разных типов
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+
+    // Создаем элемент уведомления
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert ${alertTypes[type] || 'alert-info'} alert-dismissible fade show position-fixed`;
+    messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);';
+    messageDiv.innerHTML = `
+        <i class="${icons[type] || 'fas fa-info-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(messageDiv);
+
+    // Автоматически скрываем через 4 секунды
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 4000);
+}
 </script>
 {% endblock %}

@@ -13,7 +13,9 @@ urlpatterns = [
     path('my-photos/', views.MyPhotosView.as_view(), name='my_photos'),
     path('upload/', views.PhotoUploadView.as_view(), name='upload'),
     path('photo/<int:pk>/', views.PhotoDetailView.as_view(), name='photo_detail'),
-    path('author/<str:username>/', views.AuthorPhotosView.as_view(), name='author_photos'),
+
+    # URL для фотографий автора теперь будет обрабатываться основным представлением с GET-параметром
+    # path('author/<str:username>/', views.AuthorPhotosView.as_view(), name='author_photos'),
 
     # Управление фото
     path('photo/<int:pk>/edit/', views.PhotoUpdateView.as_view(), name='photo_edit'),
@@ -27,6 +29,7 @@ urlpatterns = [
     # AJAX действия
     path('photo/<int:pk>/like/', views.toggle_like_photo, name='photo_like'),
     path('load-more/', views.load_more_photos, name='load_more'),
+    path('filter-gallery-ajax/', views.filter_gallery_ajax, name='filter_gallery_ajax'),
 
     # ТЕСТОВЫЕ ДАННЫЕ - только для разработки
     path('dev/create-test-data/', views.create_test_data_view, name='create_test_data'),

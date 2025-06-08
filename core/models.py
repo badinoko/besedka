@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django.core.validators import MinLengthValidator
 
 class TimeStampedModel(models.Model):
     """
@@ -21,6 +22,62 @@ class PublicModel(TimeStampedModel):
 
     class Meta:
         abstract = True
+
+class BaseComment(TimeStampedModel):
+    """
+    Базовая абстрактная модель для комментариев с поддержкой вложенности.
+    Все модели комментариев в проекте должны наследоваться от этой модели.
+    """
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name=_("Автор")
+    )
+    text = models.TextField(
+        _("Комментарий"),
+        validators=[MinLengthValidator(3)],
+        null=True,
+        blank=True,
+        default=None
+    )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='replies',
+        verbose_name=_("Родительский комментарий")
+    )
+    is_edited = models.BooleanField(
+        _("Отредактирован"),
+        default=False
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ['created_at']
+
+    def save(self, *args, **kwargs):
+        """
+        Отмечаем комментарий как отредактированный если изменяется текст
+        """
+        if self.pk:
+            original = self.__class__.objects.get(pk=self.pk)
+            if original.text != self.text:
+                self.is_edited = True
+        super().save(*args, **kwargs)
+
+    def get_replies(self):
+        """
+        Получение ответов на комментарий
+        """
+        return self.replies.all()
+
+    def get_replies_count(self):
+        """
+        Получение количества ответов на комментарий
+        """
+        return self.replies.count()
 
 class ActionLog(models.Model):
     """

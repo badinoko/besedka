@@ -354,305 +354,213 @@
 
 {% block content %}
 <div class="gallery-page">
-    <div class="hero-container">
+    <!-- ДИНАМИЧЕСКАЯ HERO-СЕКЦИЯ, СТРУКТУРА КАК В GROWLOGS -->
+    <div class="gallery-hero" data-aos="fade-up" data-aos-duration="500">
         <div class="container">
-            <!-- КОМПАКТНАЯ ГЕРОЙ СЕКЦИЯ КАК В ГРОУРЕПОРТАХ -->
-            <div class="gallery-hero" data-aos="fade-up" data-aos-duration="500">
-                <div class="container">
-                    <div class="hero-content text-center">
-                        <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">📸 Галерея сообщества</h1>
-                        <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200" data-aos-duration="500">Вдохновляйтесь работами других гроверов и делитесь своими достижениями</p>
-
-                        <!-- КОМПАКТНЫЙ КОНТЕЙНЕР: СЧЕТЧИКИ СЛЕВА, КНОПКИ СПРАВА -->
-                        <div class="hero-stats-and-actions" data-aos="fade-up" data-aos-delay="300" data-aos-duration="500">
+            <div class="hero-content text-center">
+                {% if page_type == 'my_photos' %}
+                    <!-- Hero для "Моих фотографий" -->
+                    <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">📸 Мои фотографии</h1>
+                    <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">Управляйте своими фотографиями и следите за статистикой</p>
+                    <div class="hero-stats-and-actions" data-aos="fade-up" data-aos-delay="300">
+                        <div class="hero-stats">
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="400"><span class="stat-number">{{ total_photos }}</span><span class="stat-label">Всего фото</span></div>
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="500"><span class="stat-number">{{ total_public_photos }}</span><span class="stat-label">Публичных</span></div>
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="600"><span class="stat-number">{{ total_private_photos }}</span><span class="stat-label">Приватных</span></div>
+                            <div class="stat-item" data-aos="zoom-in" data-aos-delay="700"><span class="stat-number">{{ total_likes }}</span><span class="stat-label">Лайков</span></div>
+                        </div>
+                        <div class="hero-actions">
+                            <a href="{% url 'gallery:upload' %}" class="hero-btn" data-aos="fade-in" data-aos-delay="800"><i class="fas fa-upload me-2"></i>Загрузить фото</a>
+                            <a href="{% url 'gallery:gallery' %}" class="hero-btn-secondary" data-aos="fade-in" data-aos-delay="850"><i class="fas fa-arrow-left me-2"></i>В галерею</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Hero для основной галереи -->
+                    {% if current_author %}
+                        <!-- Hero при фильтрации по автору -->
+                        <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">👤 Фото автора: {{ current_author.display_name }}</h1>
+                        <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">Все публичные фотографии пользователя {{ current_author.username }}</p>
+                        <div class="hero-stats-and-actions" data-aos="fade-up" data-aos-delay="300">
                             <div class="hero-stats">
-                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="400" data-aos-duration="300">
-                                    <span class="stat-number">{{ total_photos }}</span>
-                                    <span class="stat-label">Фотографий</span>
-                                </div>
-                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="500" data-aos-duration="300">
-                                    <span class="stat-number">{{ total_authors }}</span>
-                                    <span class="stat-label">Авторов</span>
-                                </div>
-                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="600" data-aos-duration="300">
-                                    <span class="stat-number">{{ total_likes }}</span>
-                                    <span class="stat-label">Лайков</span>
-                                </div>
+                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="400"><span class="stat-number">{{ total_photos }}</span><span class="stat-label">Фотографий</span></div>
+                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="500"><span class="stat-number">{{ total_likes }}</span><span class="stat-label">Лайков</span></div>
                             </div>
-
+                            <div class="hero-actions">
+                                <a href="{% url 'gallery:gallery' %}" class="hero-btn" data-aos="fade-in" data-aos-delay="800"><i class="fas fa-arrow-left me-2"></i>Вся галерея</a>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'gallery:upload' %}" class="hero-btn-secondary" data-aos="fade-in" data-aos-delay="850"><i class="fas fa-upload me-2"></i>Загрузить фото</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Hero для основной галереи -->
+                        <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">📸 Галерея сообщества</h1>
+                        <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">Вдохновляйтесь работами других гроверов и делитесь своими достижениями</p>
+                        <div class="hero-stats-and-actions" data-aos="fade-up" data-aos-delay="300">
+                            <div class="hero-stats">
+                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="400"><span class="stat-number">{{ total_photos }}</span><span class="stat-label">Фотографий</span></div>
+                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="500"><span class="stat-number">{{ total_authors }}</span><span class="stat-label">Авторов</span></div>
+                                <div class="stat-item" data-aos="zoom-in" data-aos-delay="600"><span class="stat-number">{{ total_likes }}</span><span class="stat-label">Лайков</span></div>
+                            </div>
                             {% if user.is_authenticated %}
                             <div class="hero-actions">
-                                <a href="{% url 'gallery:upload' %}" class="hero-btn" data-aos="fade-in" data-aos-delay="800" data-aos-duration="300">
-                                    <i class="fas fa-upload me-2"></i>Загрузить фото
-                                </a>
-                                <a href="{% url 'gallery:my_photos' %}" class="hero-btn-secondary" data-aos="fade-in" data-aos-delay="850" data-aos-duration="300">
-                                    <i class="fas fa-user-circle me-2"></i>Мои фото
-                                </a>
+                                <a href="{% url 'gallery:upload' %}" class="hero-btn" data-aos="fade-in" data-aos-delay="800"><i class="fas fa-upload me-2"></i>Загрузить фото</a>
+                                <a href="{% url 'gallery:my_photos' %}" class="hero-btn-secondary" data-aos="fade-in" data-aos-delay="850"><i class="fas fa-user-circle me-2"></i>Мои фото</a>
                             </div>
                             {% endif %}
                         </div>
-                    </div>
-                </div>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="content-container">
-        <div class="container">
-            <!-- ОТДЕЛЬНЫЕ КОМПАКТНЫЕ ФИЛЬТРЫ -->
-            <div class="gallery-filters" data-aos="fade-up" data-aos-delay="300">
+    <!-- ОСНОВНОЙ КОНТЕНТ ВНУТРИ СВОЕГО КОНТЕЙНЕРА -->
+    <div class="container">
+        <!-- Фильтры -->
+        {% if page_type == 'my_photos' %}
+             <div class="gallery-filters" data-aos="fade-up" data-aos-delay="100">
                 <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="newest">
-                        <i class="fas fa-clock"></i>
-                        Новые
-                    </button>
-                    <button class="filter-tab" data-filter="popular">
-                        <i class="fas fa-fire"></i>
-                        Популярные
-                    </button>
-                    <button class="filter-tab" data-filter="commented">
-                        <i class="fas fa-comments"></i>
-                        Обсуждаемые
-                    </button>
-                    <button class="filter-tab" data-filter="growlog">
-                        <i class="fas fa-seedling"></i>
-                        Гроу-репорты
-                    </button>
+                    <button class="filter-tab active" data-filter="all"><i class="fas fa-images"></i>Все мои фото</button>
+                    <button class="filter-tab" data-filter="public"><i class="fas fa-eye"></i>Публичные</button>
+                    <button class="filter-tab" data-filter="private"><i class="fas fa-eye-slash"></i>Приватные</button>
                 </div>
             </div>
-
-            {% if photos %}
-                <!-- Информация о результатах -->
-                <div class="results-info text-center mb-4" data-aos="fade-up">
-                    <span class="results-count">
-                        Показано {{ photos|length }}
-                        {% if is_paginated %}из {{ paginator.count }}{% endif %}
-                        фотографий
-                    </span>
-                    {% if request.GET.search %}
-                        <span class="search-query">по запросу "{{ request.GET.search }}"</span>
-                    {% endif %}
+        {% else %}
+            <div class="gallery-filters" data-aos="fade-up" data-aos-delay="300">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="newest"><i class="fas fa-clock"></i>Новые</button>
+                    <button class="filter-tab" data-filter="popular"><i class="fas fa-fire"></i>Популярные</button>
+                    <button class="filter-tab" data-filter="commented"><i class="fas fa-comments"></i>Обсуждаемые</button>
+                    <button class="filter-tab" data-filter="growlog"><i class="fas fa-seedling"></i>Гроу-репорты</button>
                 </div>
+            </div>
+        {% endif %}
 
-                <!-- Современная галерея -->
-                <div class="gallery-masonry">
-                    {% for photo in photos %}
-                    <div class="gallery-card" data-aos="fade-up">
-                        <div class="photo-container">
-                            <img src="{{ photo.image.url }}" class="photo-image" alt="{{ photo.title|default:'Фото из галереи' }}">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-header">
-                                <div class="author-info">
-                                    <img src="{{ photo.author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
-                                         alt="{{ photo.author.display_name }}" class="author-avatar">
-                                    <div class="author-details">
-                                        <a href="{% url 'gallery:author_photos' username=photo.author.username %}" class="author-name">
-                                            {{ photo.author.display_name }}
-                                        </a>
-                                        <div class="photo-date">{{ photo.created_at|date:"d.m.Y" }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="photo-title">{{ photo.title|default:"Без названия" }}</h5>
-                                {% if photo.description %}
-                                    <p class="photo-description">{{ photo.description }}</p>
-                                {% endif %}
-                            </div>
-                            <div class="card-footer">
-                                <div class="photo-stats">
-                                    <button class="like-btn" onclick="toggleLike({{ photo.pk }})"
-                                            {% if not user.is_authenticated %}disabled{% endif %}>
-                                        <i class="fas fa-heart"></i>
-                                        <span>{{ photo.likes.count }}</span>
-                                    </button>
-                                    <div class="comment-count">
-                                        <i class="fas fa-comment"></i>
-                                        <span>{{ photo.comments.count }}</span>
-                                    </div>
-                                    {% if photo.growlog %}
-                                    <div class="growlog-indicator">
-                                        <i class="fas fa-seedling"></i>
-                                        <span>Гроу</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="card-actions">
-                                    <a href="{% url 'gallery:photo_detail' photo.pk %}" class="view-btn">
-                                        <i class="fas fa-eye"></i>
-                                        Смотреть
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+        <!-- Контейнер для AJAX загрузки контента -->
+        <div id="gallery-content">
+            {% include 'gallery/partials/photo_cards.html' %}
+        </div>
 
-                <!-- Пагинация -->
-                {% if is_paginated %}
-                <nav aria-label="Пагинация галереи" data-aos="fade-up">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Первая</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Предыдущая</a>
-                            </li>
-                        {% endif %}
-
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-                        </li>
-
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Следующая</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Последняя</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-
-            {% else %}
-                <!-- Пустое состояние -->
-                <div class="empty-gallery" data-aos="fade-up">
-                    <div class="empty-icon">
-                        <i class="fas fa-camera-retro"></i>
-                    </div>
-                    <h3 class="empty-title">
-                        {% if request.GET.search %}
-                            Ничего не найдено
-                        {% else %}
-                            В галерее пока нет фотографий
-                        {% endif %}
-                    </h3>
-                    <p class="empty-text">
-                        {% if request.GET.search %}
-                            Попробуйте изменить поисковый запрос или сбросить фильтры
-                        {% else %}
-                            Станьте первым, кто поделится красивыми фотографиями!
-                        {% endif %}
-                    </p>
-                    {% if user.is_authenticated and not request.GET.search %}
-                        <a href="{% url 'gallery:upload' %}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-upload me-2"></i>
-                            Загрузить первое фото
-                        </a>
-                    {% endif %}
-                </div>
-            {% endif %}
+        <!-- Контейнер для AJAX пагинации -->
+        <div id="gallery-pagination">
+            {% include 'gallery/partials/pagination.html' with photos=page_obj current_filter=current_filter section=page_type %}
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/gallery_modern.js' %}?v=20250608050"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     AOS.init({
-        duration: 800,
-        easing: 'ease-out-cubic',
-        once: false,
-        offset: 100,
-        delay: 0,
-        mirror: false,
-        anchorPlacement: 'top-bottom'
+        duration: 600,
+        easing: 'ease-out',
+        once: true,
+        offset: 50
     });
 
-    // Функция лайка для фотографий
-    function toggleLike(photoId) {
-        {% if user.is_authenticated %}
-            const likeBtn = document.querySelector(`button[onclick*="${photoId}"]`);
-            const heartIcon = likeBtn.querySelector('.fas.fa-heart');
-            const likesElement = likeBtn.querySelector('span');
-
-            // Временно отключаем кнопку
-            likeBtn.disabled = true;
-
-            const url = `/gallery/photo/${photoId}/like/`;
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    likesElement.textContent = data.likes_count;
-                    if (data.liked) {
-                        heartIcon.style.color = '#e74c3c';
-                    } else {
-                        heartIcon.style.color = '#6c757d';
-                    }
-                }
-                likeBtn.disabled = false;
-            })
-            .catch(error => {
-                console.error('Error toggling like:', error);
-                likeBtn.disabled = false;
-            });
-        {% endif %}
-    }
-
-    // Фильтрация галереи без перезагрузки
+    // AJAX фильтрация галереи по эталону новостей
     document.addEventListener('DOMContentLoaded', function() {
         const filterTabs = document.querySelectorAll('.filter-tab');
-        const galleryCards = document.querySelectorAll('.gallery-card');
+        const galleryContent = document.getElementById('gallery-content');
+        const galleryPagination = document.getElementById('gallery-pagination');
 
+        let isLoading = false;
+
+        // Определяем тип страницы
+        const pageType = {% if page_type == 'my_photos' %}'my_photos'{% else %}'gallery'{% endif %};
+
+        // Обработка кликов по фильтрам
         filterTabs.forEach(tab => {
             tab.addEventListener('click', function() {
+                if (isLoading) return;
+
                 const filter = this.dataset.filter;
 
                 // Обновляем активный таб
                 filterTabs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
 
-                // Фильтруем карточки
-                galleryCards.forEach((card, index) => {
-                    const photoStats = card.querySelector('.photo-stats');
-                    const growlogIndicator = photoStats.querySelector('.growlog-indicator');
-                    const likesCount = parseInt(photoStats.querySelector('.like-btn span').textContent);
-                    const commentsCount = parseInt(photoStats.querySelector('.comment-count span').textContent);
-
-                    let shouldShow = true;
-
-                    switch(filter) {
-                        case 'popular':
-                            shouldShow = likesCount > 0;
-                            break;
-                        case 'commented':
-                            shouldShow = commentsCount > 0;
-                            break;
-                        case 'growlog':
-                            shouldShow = growlogIndicator !== null;
-                            break;
-                        case 'newest':
-                        default:
-                            shouldShow = true;
-                            break;
-                    }
-
-                    if (shouldShow) {
-                        card.style.display = 'flex';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+                // Загружаем контент
+                loadGalleryContent(filter, 1);
             });
         });
+
+        // Обработка кликов по пагинации
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('pagination-link')) {
+                e.preventDefault();
+                if (isLoading) return;
+
+                const page = e.target.dataset.page;
+                const filter = e.target.dataset.filter;
+
+                loadGalleryContent(filter, page);
+            }
+        });
+
+        // Функция загрузки контента
+        function loadGalleryContent(filter, page = 1) {
+            if (isLoading) return;
+
+            isLoading = true;
+
+            // Показываем индикатор загрузки
+            galleryContent.style.opacity = '0.5';
+            galleryPagination.style.opacity = '0.5';
+
+            const url = new URL('{% url "gallery:filter_gallery_ajax" %}', window.location.origin);
+            url.searchParams.set('filter', filter);
+            url.searchParams.set('page', page);
+            url.searchParams.set('section', pageType);
+
+            // Сохраняем параметр автора, если он есть
+            const currentAuthor = '{% if current_author %}{{ current_author.username }}{% endif %}';
+            if (currentAuthor) {
+                url.searchParams.set('author', currentAuthor);
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Обновляем контент
+                        galleryContent.innerHTML = data.photos_html;
+                        galleryPagination.innerHTML = data.pagination_html;
+
+                        // Плавно показываем контент
+                        galleryContent.style.opacity = '1';
+                        galleryPagination.style.opacity = '1';
+
+                        // Переинициализируем AOS для новых элементов
+                        AOS.refresh();
+
+                        // Прокрутка только если пользователь далеко от фильтров
+                        setTimeout(() => {
+                            const filtersElement = document.querySelector('.gallery-filters');
+                            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            const filtersTop = filtersElement.offsetTop - 100;
+
+                            // Прокручиваем ТОЛЬКО если пользователь далеко (больше 2 экранов) от фильтров
+                            if (currentScrollTop > filtersTop + 800) {
+                                window.scrollTo({
+                                    top: filtersTop,
+                                    behavior: 'smooth'
+                                });
+                            }
+                        }, 100);
+                    } else {
+                        console.error('Ошибка загрузки галереи:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка запроса:', error);
+                })
+                .finally(() => {
+                    isLoading = false;
+                });
+        }
     });
 </script>
 {% endblock %}

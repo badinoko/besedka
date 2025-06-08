@@ -1,0 +1,179 @@
+{% if growlogs %}
+    <!-- Информация о результатах -->
+    <div class="results-info text-center mb-4" data-aos="fade-up">
+        <span class="results-count">
+            Показано {{ growlogs|length }}
+            {% if is_paginated %}из {{ paginator.count }}{% endif %}
+            репортов
+        </span>
+        {% if search_query %}
+            <span class="search-query">по запросу "{{ search_query }}"</span>
+        {% endif %}
+    </div>
+
+    <!-- Список гроурепортов с анимациями -->
+    <div class="growlogs-container">
+        {% for growlog in growlogs %}
+        <div class="growlog-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+            <!-- Обёртка-ссылка для всей карточки -->
+            <a href="{% url 'growlogs:detail' growlog.pk %}" class="growlog-card-link">
+                <!-- Левая часть - фото -->
+                <div class="growlog-photo">
+                    {% if growlog.logo %}
+                        <img src="{{ growlog.logo.url }}" alt="{{ growlog.title }}">
+                    {% elif growlog.main_photo %}
+                        <img src="{{ growlog.main_photo.url }}" alt="{{ growlog.title }}">
+                    {% else %}
+                        <div class="growlog-photo-placeholder">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Средняя часть - основной контент -->
+                <div class="growlog-main-content">
+                    <!-- Заголовок и статус -->
+                    <div class="growlog-card-header">
+                        <h5 class="growlog-card-title">{{ growlog.title }}</h5>
+                        <div class="status-badges">
+                            <span class="status-badge {% if growlog.is_public %}public{% else %}private{% endif %}">
+                                {% if growlog.is_public %}
+                                    <i class="fas fa-globe-americas me-1"></i>Публичный
+                                {% else %}
+                                    <i class="fas fa-lock me-1"></i>Приватный
+                                {% endif %}
+                            </span>
+                            <span class="status-badge">{{ growlog.get_current_stage_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Метаинформация -->
+                    <div class="growlog-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-user"></i>
+                            <span class="meta-link">{{ growlog.grower.username }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ growlog.start_date|date:"d.m.Y" }}
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            День {{ growlog.current_day }}
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-eye"></i>
+                            {{ growlog.get_environment_display }}
+                        </div>
+                    </div>
+
+                    <!-- Описание -->
+                    <div class="growlog-description">
+                        {{ growlog.display_description }}
+                    </div>
+
+                    <!-- Информация о сорте -->
+                    {% if growlog.strain or growlog.strain_custom %}
+                    <div class="strain-info">
+                        <div class="strain-name">
+                            <i class="fas fa-seedling"></i>
+                            {% if growlog.strain %}
+                                {% with strain_info=growlog.get_strain_display %}
+                                    {% if strain_info.from_store and strain_info.url %}
+                                        {{ strain_info.name }}
+                                        {% if strain_info.seedbank %}
+                                            <span class="strain-seedbank">от {{ strain_info.seedbank }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        {{ strain_info.name }}
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                {{ growlog.strain_custom }}
+                                <small class="strain-custom">(произвольный сорт)</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Статистика в футере -->
+                    <div class="growlog-stats">
+                        <div class="stats-left">
+                            <button class="stat-item like-btn" data-growlog-id="{{ growlog.pk }}" title="Лайк">
+                                <i class="fas fa-heart"></i>
+                                <span id="likes-count-{{ growlog.pk }}">{{ growlog.likes.count }}</span>
+                            </button>
+                            <div class="stat-item">
+                                <i class="fas fa-eye"></i>
+                                <span class="stat-value">{{ growlog.views_count|default:0 }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-comment"></i>
+                                <span class="stat-value">{{ growlog.comments.count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая часть - параметры среды -->
+                <div class="growlog-params">
+                    <div class="params-title">Условия выращивания</div>
+
+                    {% if growlog.medium %}
+                    <div class="param-row">
+                        <span class="param-label">Субстрат</span>
+                        <span class="param-value">{{ growlog.medium|truncatewords:2 }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if growlog.lighting %}
+                    <div class="param-row">
+                        <span class="param-label">Освещение</span>
+                        <span class="param-value">{{ growlog.lighting|truncatewords:2 }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if growlog.container_size %}
+                    <div class="param-row">
+                        <span class="param-label">Горшок</span>
+                        <span class="param-value">{{ growlog.container_size }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if growlog.environment %}
+                    <div class="param-row">
+                        <span class="param-label">Среда</span>
+                        <span class="param-value">{{ growlog.get_environment_display }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+    <!-- Пустое состояние -->
+    <div class="empty-state">
+        <i class="fas fa-seedling"></i>
+        <h3>Гроурепортов пока нет</h3>
+        <p class="lead">
+            {% if search_query or current_stage or current_environment %}
+                По вашему запросу ничего не найдено. Попробуйте изменить фильтры.
+            {% else %}
+                Станьте первым, кто поделится своим опытом выращивания!
+            {% endif %}
+        </p>
+        {% if user.is_authenticated and not search_query %}
+            <a href="{% url 'growlogs:create' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle me-2"></i>
+                Создать первый репорт
+            </a>
+        {% elif not user.is_authenticated %}
+            <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Войти, чтобы создать репорт
+            </a>
+        {% endif %}
+    </div>
+{% endif %}

@@ -5,13 +5,16 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, F
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse, HttpResponseForbidden, Http404
-from django.db.models import Q, F
+from django.db.models import Q, F, Count
 from django.db import models
 from django.utils import timezone
 from datetime import date, timedelta
 import json
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
 
 from .models import GrowLog, GrowLogEntry, GrowLogComment, GrowLogEntryLike, GrowLogEntryComment
 from .forms import GrowLogCreateForm, GrowLogEntryForm, GrowLogCommentForm, GrowLogEntryCommentForm
@@ -30,7 +33,23 @@ class GrowLogListView(ListView):
         queryset = GrowLog.objects.filter(
             is_active=True,
             is_public=True
-        ).select_related('grower', 'strain').prefetch_related('likes', 'comments')
+        ).select_related('grower', 'strain').prefetch_related('likes', 'comments').annotate(
+            likes_count=Count('likes')
+        )
+
+        # ФИЛЬТРЫ ОТ ТАБОВ (НОВОЕ)
+        filter_by = self.request.GET.get('filter')
+        if filter_by == 'popular':
+            queryset = queryset.order_by('-likes_count', '-views_count', '-start_date')
+        elif filter_by == 'active':
+            # Исключаем стадии, которые считаются завершенными
+            finished_stages = ['harvest', 'drying', 'curing', 'finished']
+            queryset = queryset.exclude(current_stage__in=finished_stages).order_by('-start_date')
+        elif filter_by == 'finished':
+            finished_stages = ['harvest', 'drying', 'curing', 'finished']
+            queryset = queryset.filter(current_stage__in=finished_stages).order_by('-start_date')
+        else: # 'newest' и по умолчанию
+            queryset = queryset.order_by('-start_date')
 
         # Поиск
         search_query = self.request.GET.get('search')
@@ -51,33 +70,30 @@ class GrowLogListView(ListView):
         if environment:
             queryset = queryset.filter(environment=environment)
 
-        # Сортировка
-        sort_by = self.request.GET.get('sort_by', '-start_date')
-
-        if sort_by == '-start_date':
-            # Новые сначала по дате начала, потом по id для стабильности
-            queryset = queryset.order_by('-start_date', '-id')
-        elif sort_by == 'start_date':
-            # Старые сначала
-            queryset = queryset.order_by('start_date', 'id')
-        elif sort_by == '-views_count':
-            # Популярные
-            queryset = queryset.order_by('-views_count', '-start_date')
-        elif sort_by == 'title':
-            # По названию А-Я
-            queryset = queryset.order_by('title', '-start_date')
-        elif sort_by == '-title':
-            # По названию Я-А
-            queryset = queryset.order_by('-title', '-start_date')
-        elif sort_by == '-created_at':
-            # По дате создания (новые сначала)
-            queryset = queryset.order_by('-created_at', '-id')
-        elif sort_by == 'created_at':
-            # По дате создания (старые сначала)
-            queryset = queryset.order_by('created_at', 'id')
-        else:
-            # По умолчанию - новые по дате начала
-            queryset = queryset.order_by('-start_date', '-id')
+        # Сортировка из выпадающего списка (старая логика)
+        sort_by = self.request.GET.get('sort_by') # Убрал значение по умолчанию
+        if sort_by: # Применяем только если он есть
+            if sort_by == '-start_date':
+                # Новые сначала по дате начала, потом по id для стабильности
+                queryset = queryset.order_by('-start_date', '-id')
+            elif sort_by == 'start_date':
+                # Старые сначала
+                queryset = queryset.order_by('start_date', 'id')
+            elif sort_by == '-views_count':
+                # Популярные
+                queryset = queryset.order_by('-views_count', '-start_date')
+            elif sort_by == 'title':
+                # По названию А-Я
+                queryset = queryset.order_by('title', '-start_date')
+            elif sort_by == '-title':
+                # По названию Я-А
+                queryset = queryset.order_by('-title', '-start_date')
+            elif sort_by == '-created_at':
+                # По дате создания (новые сначала)
+                queryset = queryset.order_by('-created_at', '-id')
+            elif sort_by == 'created_at':
+                # По дате создания (старые сначала)
+                queryset = queryset.order_by('created_at', 'id')
 
         return queryset
 
@@ -99,12 +115,57 @@ class GrowLogListView(ListView):
             'current_stage': self.request.GET.get('stage', ''),
             'current_environment': self.request.GET.get('environment', ''),
             'current_sort': self.request.GET.get('sort_by', '-start_date'),
+            'current_filter': self.request.GET.get('filter', 'newest'), # Для активного таба
             # Статистика для hero-секции
             'total_reports': total_reports,
             'total_growers': total_growers,
             'total_days': total_days,
         })
         return context
+
+    def get(self, request, *args, **kwargs):
+        """Обрабатываем AJAX запросы"""
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            self.object_list = self.get_queryset()
+            context = self.get_context_data()
+            return render(request, 'growlogs/partials/growlog_cards.html', context)
+        return super().get(request, *args, **kwargs)
+
+def filter_growlogs_ajax(request):
+    """
+    AJAX обработчик для фильтрации и пагинации гроу-репортов.
+    Возвращает JSON с отрендеренным HTML для карточек и пагинации.
+    """
+    # Используем существующий view для получения отфильтрованного queryset
+    list_view = GrowLogListView()
+    list_view.request = request
+    queryset = list_view.get_queryset()
+
+    # Пагинация
+    paginator = Paginator(queryset, list_view.paginate_by)
+    page_number = request.GET.get('page', 1)
+    try:
+        page_obj = paginator.page(page_number)
+    except (EmptyPage, PageNotAnInteger):
+        page_obj = paginator.page(1)
+
+    # Собираем контекст для рендеринга
+    context = {
+        'growlogs': page_obj.object_list,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+        'current_filter': request.GET.get('filter', 'newest')
+    }
+
+    # Рендерим HTML для карточек и пагинации
+    posts_html = render_to_string('growlogs/partials/growlog_cards.html', context, request=request)
+    pagination_html = render_to_string('growlogs/partials/pagination.html', context, request=request)
+
+    return JsonResponse({
+        'success': True,
+        'posts_html': posts_html,
+        'pagination_html': pagination_html,
+    })
 
 class MyGrowLogsView(LoginRequiredMixin, ListView):
     """Мои гроу-логи"""

@@ -8,9 +8,9 @@ class CommentForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ['content']
+        fields = ['text']
         widgets = {
-            'content': forms.Textarea(attrs={
+            'text': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
                 'placeholder': 'Напишите ваш комментарий...',
@@ -18,12 +18,12 @@ class CommentForm(forms.ModelForm):
             })
         }
         labels = {
-            'content': 'Комментарий'
+            'text': 'Комментарий'
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['content'].validators.append(MinLengthValidator(3))
+        self.fields['text'].validators.append(MinLengthValidator(3))
 
 
 class PostForm(forms.ModelForm):

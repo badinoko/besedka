@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from core.models import PublicModel, TimeStampedModel, BaseComment
+from core.models import PublicModel, TimeStampedModel
 from django.conf import settings
 from magicbeans_store.models import Strain
 from django.urls import reverse
@@ -232,11 +232,13 @@ class GrowLogEntryPhoto(TimeStampedModel):
     def __str__(self):
         return f"Photo for {self.entry} - {self.title or 'Untitled'}"
 
-class GrowLogComment(BaseComment):
+class GrowLogComment(TimeStampedModel):
     """
-    Комментарии к гроу-логу с поддержкой вложенных комментариев
+    Комментарии к гроу-логу
     """
     growlog = models.ForeignKey(GrowLog, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='growlog_comments')
+    text = models.TextField(_("Comment"))
 
     class Meta:
         verbose_name = _("Grow Log Comment")
@@ -246,11 +248,13 @@ class GrowLogComment(BaseComment):
     def __str__(self):
         return f"Comment by {self.author.username} on {self.growlog.title}"
 
-class GrowLogEntryComment(BaseComment):
+class GrowLogEntryComment(TimeStampedModel):
     """
-    Комментарии к записям гроу-лога с поддержкой вложенных комментариев
+    Комментарии к записям гроу-лога
     """
     entry = models.ForeignKey(GrowLogEntry, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='growlog_entry_comments')
+    text = models.TextField(_("Comment"))
 
     class Meta:
         verbose_name = _("Entry Comment")
