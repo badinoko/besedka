@@ -470,30 +470,233 @@
     text-decoration: none;
     color: inherit;
     z-index: 1;
+}
+
+/* СТИЛИ ДЛЯ ВЕРТИКАЛЬНОГО СПИСКА ГРОУРЕПОРТОВ */
+.growlogs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.growlog-item {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.growlog-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.growlog-row {
+    display: flex;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    position: relative;
+}
+
+.growlog-icon {
+    flex: 0 0 100px;
+    height: 100px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(76,175,80,0.1), rgba(76,175,80,0.2));
+}
+
+.growlog-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.growlog-logo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #4CAF50;
+}
+
+.growlog-info {
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Стили для индикатора лайков (некликабельного) */
-.like-indicator {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #6c757d;
-    font-size: 0.85rem;
+.growlog-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
-.like-indicator .fa-heart {
-    color: #e74c3c;
+.growlog-title a {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
 
-/* Стили для других счетчиков */
-.comment-count,
-.growlog-indicator {
+.growlog-title a:hover {
+    color: #4CAF50;
+}
+
+.growlog-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.growlog-meta span {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0.3rem;
+}
+
+.growlog-excerpt {
+    margin-bottom: 1rem;
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.growlog-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.growlog-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
     color: #6c757d;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+}
+
+.growlog-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.view-btn {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+}
+
+.view-btn:hover {
+    background: linear-gradient(135deg, #2E7D32, #1B5E20);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.like-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.7rem;
+}
+
+.like-btn:hover, .like-btn.liked {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.growlog-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+}
+
+.badge-active {
+    background: #4CAF50;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.badge-completed {
+    background: #6f42c1;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .growlog-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .growlog-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+
+    .growlog-meta {
+        justify-content: center;
+    }
+
+    .growlog-title {
+        text-align: center;
+    }
+
+    .growlog-excerpt {
+        text-align: center;
+    }
+
+    .growlog-footer {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .growlog-badge {
+        position: static;
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+    }
 }
 

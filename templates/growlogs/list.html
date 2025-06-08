@@ -922,7 +922,7 @@
                 <!-- Современные фильтры в стиле галереи -->
         <div class="growlogs-filters" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
             <div class="filter-tabs">
-                <button class="filter-tab active" data-filter="newest">
+                <button class="filter-tab active" data-filter="new">
                     <i class="fas fa-clock"></i>
                     Новые
                 </button>
@@ -934,7 +934,7 @@
                     <i class="fas fa-seedling"></i>
                     Активные
                 </button>
-                <button class="filter-tab" data-filter="finished">
+                <button class="filter-tab" data-filter="completed">
                     <i class="fas fa-trophy"></i>
                     Завершенные
                 </button>
@@ -983,6 +983,7 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         <!-- Контейнер для AJAX загрузки контента -->
         <div id="growlogs-content">
             {% include 'growlogs/partials/growlog_cards_content.html' %}
@@ -992,6 +993,218 @@
         <div id="growlogs-pagination">
             {% include 'growlogs/partials/pagination.html' %}
         </div>
+=======
+        <!-- Результаты с количеством -->
+        <div class="results-header" data-aos="fade-up">
+            <h3 class="section-title">
+                Показано <span class="results-count">{{ growlogs.count }}</span> репортов
+            </h3>
+        </div>
+
+        {% if growlogs %}
+            <div class="growlogs-list">
+                {% for growlog in growlogs %}
+                <div class="growlog-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                    <!-- Обёртка-ссылка для всей карточки -->
+                    <a href="{% url 'growlogs:detail' growlog.pk %}" class="growlog-card-link">
+                        <!-- Левая часть - фото -->
+                        <div class="growlog-photo">
+                            {% if growlog.logo %}
+                                <img src="{{ growlog.logo.url }}" alt="{{ growlog.title }}">
+                            {% elif growlog.main_photo %}
+                                <img src="{{ growlog.main_photo.url }}" alt="{{ growlog.title }}">
+                            {% else %}
+                                <div class="growlog-photo-placeholder">
+                                    <i class="fas fa-seedling"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Средняя часть - основной контент -->
+                        <div class="growlog-main-content">
+                            <!-- Заголовок и статус -->
+                            <div class="growlog-card-header">
+                                <h5 class="growlog-card-title">{{ growlog.title }}</h5>
+                                <div class="status-badges">
+                                    <span class="status-badge {% if growlog.is_public %}public{% else %}private{% endif %}">
+                                        {% if growlog.is_public %}
+                                            <i class="fas fa-globe-americas me-1"></i>Публичный
+                                        {% else %}
+                                            <i class="fas fa-lock me-1"></i>Приватный
+                                        {% endif %}
+                                    </span>
+                                    <span class="status-badge">{{ growlog.get_current_stage_display }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Метаинформация -->
+                            <div class="growlog-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-user"></i>
+                                    <span class="meta-link">{{ growlog.grower.username }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ growlog.start_date|date:"d.m.Y" }}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    День {{ growlog.current_day }}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-eye"></i>
+                                    {{ growlog.get_environment_display }}
+                                </div>
+                            </div>
+
+                            <!-- Описание -->
+                            <div class="growlog-description">
+                                {{ growlog.display_description }}
+                            </div>
+
+                            <!-- Информация о сорте -->
+                            {% if growlog.strain or growlog.strain_custom %}
+                            <div class="strain-info">
+                                <div class="strain-name">
+                                    <i class="fas fa-seedling"></i>
+                                    {% if growlog.strain %}
+                                        {% with strain_info=growlog.get_strain_display %}
+                                            {% if strain_info.from_store and strain_info.url %}
+                                                {{ strain_info.name }}
+                                                {% if strain_info.seedbank %}
+                                                    <span class="strain-seedbank">от {{ strain_info.seedbank }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {{ strain_info.name }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        {{ growlog.strain_custom }}
+                                        <small class="strain-custom">(произвольный сорт)</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Статистика в футере -->
+                            <div class="growlog-stats">
+                                <div class="stats-left">
+                                    <button class="stat-item like-btn" data-growlog-id="{{ growlog.pk }}" title="Лайк">
+                                        <i class="fas fa-heart"></i>
+                                        <span id="likes-count-{{ growlog.pk }}">{{ growlog.likes.count }}</span>
+                                    </button>
+                                    <div class="stat-item">
+                                        <i class="fas fa-eye"></i>
+                                        <span class="stat-value">{{ growlog.views_count|default:0 }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="stat-value">{{ growlog.comments.count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Правая часть - параметры среды -->
+                        <div class="growlog-params">
+                            <div class="params-title">Условия выращивания</div>
+
+                            {% if growlog.medium %}
+                            <div class="param-row">
+                                <span class="param-label">Субстрат</span>
+                                <span class="param-value">{{ growlog.medium|truncatewords:2 }}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if growlog.lighting %}
+                            <div class="param-row">
+                                <span class="param-label">Освещение</span>
+                                <span class="param-value">{{ growlog.lighting|truncatewords:2 }}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if growlog.container_size %}
+                            <div class="param-row">
+                                <span class="param-label">Горшок</span>
+                                <span class="param-value">{{ growlog.container_size }}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if growlog.environment %}
+                            <div class="param-row">
+                                <span class="param-label">Среда</span>
+                                <span class="param-value">{{ growlog.get_environment_display }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Пагинация -->
+            {% if is_paginated %}
+            <nav aria-label="Пагинация гроурепортов" class="mt-4" data-aos="fade-up">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_stage %}&stage={{ current_stage }}{% endif %}{% if current_environment %}&environment={{ current_environment }}{% endif %}{% if current_sort %}&sort_by={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <!-- Пустое состояние -->
+            <div class="empty-state">
+                <i class="fas fa-seedling"></i>
+                <h3>Гроурепортов пока нет</h3>
+                <p class="lead">
+                    {% if search_query or current_stage or current_environment %}
+                        По вашему запросу ничего не найдено. Попробуйте изменить фильтры.
+                    {% else %}
+                        Станьте первым, кто поделится своим опытом выращивания!
+                    {% endif %}
+                </p>
+                {% if user.is_authenticated and not search_query %}
+                    <a href="{% url 'growlogs:create' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Создать первый репорт
+                    </a>
+                {% elif not user.is_authenticated %}
+                    <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Войти, чтобы создать репорт
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+>>>>>>> a6c3081e3d24a1c9d1be909e3df851f6c91a7df2
     </div>
 </div>
 {% endblock %}
@@ -1013,6 +1226,7 @@
 
         let isLoading = false;
 
+<<<<<<< HEAD
         function reinitializeEventListeners() {
             // Переинициализация лайков
             document.querySelectorAll('.like-btn').forEach(btn => {
@@ -1026,6 +1240,305 @@
                 });
             });
         }
+=======
+    // Обработчики кликов для лайков
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleLike(this.dataset.growlogId);
+        });
+    });
+
+    // Инициализация обработчиков пагинации
+    document.querySelectorAll('.pagination .page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.dataset.page;
+            const currentFilter = document.querySelector('.filter-tab.active').dataset.filter;
+            const url = `/growlogs/ajax/filter/?filter=${currentFilter}&page=${page}`;
+
+            // Получаем контейнеры
+            const growlogsContainer = document.querySelector('.growlogs-list');
+            const paginationContainer = document.querySelector('.pagination')?.parentElement;
+
+            // Показываем индикатор загрузки
+            if (growlogsContainer) {
+                growlogsContainer.style.opacity = '0.5';
+                growlogsContainer.style.pointerEvents = 'none';
+            }
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (growlogsContainer) {
+                        growlogsContainer.innerHTML = data.growlogs_html;
+                    }
+
+                    if (paginationContainer && data.pagination_html) {
+                        paginationContainer.innerHTML = data.pagination_html;
+
+                        // Переинициализируем обработчики для новой пагинации
+                        document.querySelectorAll('.pagination .page-link').forEach(newLink => {
+                            newLink.addEventListener('click', arguments.callee);
+                        });
+                    }
+
+                    // Инициализируем AOS и обработчики лайков
+                    AOS.refresh();
+
+                    document.querySelectorAll('.like-btn').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleLike(this.dataset.growlogId);
+                        });
+                    });
+
+                    // Обновляем URL
+                    history.pushState(
+                        {filter: currentFilter, page: page},
+                        `Гроурепорты - ${currentFilter} - Страница ${page}`,
+                        `/growlogs/?filter=${currentFilter}&page=${page}`
+                    );
+
+                    // Прокручиваем к началу гроурепортов
+                    const filtersElement = document.querySelector('.growlogs-filters');
+                    if (filtersElement) {
+                        window.scrollTo({
+                            top: filtersElement.offsetTop - 50,
+                            behavior: 'smooth'
+                        });
+                    }
+                } else {
+                    showMessage('Произошла ошибка при загрузке страницы', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при пагинации:', error);
+                showMessage('Произошла ошибка при обновлении', 'error');
+            })
+            .finally(() => {
+                if (growlogsContainer) {
+                    growlogsContainer.style.opacity = '1';
+                    growlogsContainer.style.pointerEvents = 'auto';
+                }
+            });
+        });
+    });
+
+    // AJAX фильтрация для кнопки "Найти"
+    const filterButton = document.getElementById('filterButton');
+    const searchInput = document.getElementById('searchInput');
+    const stageSelect = document.getElementById('stageSelect');
+    const environmentSelect = document.getElementById('environmentSelect');
+    const sortSelect = document.getElementById('sortSelect');
+
+    if (filterButton) {
+        filterButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            performFilter();
+        });
+
+        // Фильтрация при Enter в поле поиска
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performFilter();
+            }
+        });
+
+        // Автоматическая фильтрация при изменении селектов
+        [stageSelect, environmentSelect, sortSelect].forEach(select => {
+            select.addEventListener('change', performFilter);
+        });
+    }
+
+    function performFilter() {
+        const search = searchInput.value.trim();
+        const stage = stageSelect.value;
+        const environment = environmentSelect.value;
+        const sortBy = sortSelect.value;
+
+        // Строим URL с параметрами
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (stage) params.append('stage', stage);
+        if (environment) params.append('environment', environment);
+        if (sortBy) params.append('sort_by', sortBy);
+
+        const url = window.location.pathname + '?' + params.toString();
+
+        // УБИРАЕМ ПРИНУДИТЕЛЬНУЮ ПРОКРУТКУ - пусть пользователь сам скроллит
+        // Только обновляем URL и перезагружаем страницу
+
+        // AJAX запрос вместо перезагрузки страницы
+        loadGrowlogsFiltered(url);
+    }
+
+    // Функция AJAX загрузки отфильтрованных гроу-репортов
+    function loadGrowlogsFiltered(url) {
+        const growlogsContainer = document.querySelector('.growlogs-list');
+        const paginationContainer = document.querySelector('.pagination')?.parentElement;
+        const resultsInfo = document.querySelector('.results-info');
+        const emptyState = document.querySelector('.empty-state');
+
+        // Показываем индикатор загрузки
+        if (growlogsContainer) {
+            growlogsContainer.style.opacity = '0.5';
+            growlogsContainer.style.pointerEvents = 'none';
+        }
+
+        // Обновляем URL
+        window.history.pushState({ path: url }, '', url);
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Создаем временный элемент для парсинга ответа
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+
+            // Извлекаем новый контент
+            const newGrowlogsContainer = tempDiv.querySelector('.growlogs-list');
+            const newPagination = tempDiv.querySelector('.pagination')?.parentElement;
+            const newResultsInfo = tempDiv.querySelector('.results-info');
+            const newEmptyState = tempDiv.querySelector('.empty-state');
+
+            // Обновляем контент
+            if (newGrowlogsContainer && growlogsContainer) {
+                growlogsContainer.innerHTML = newGrowlogsContainer.innerHTML;
+            } else if (newEmptyState && !growlogsContainer) {
+                // Если нет результатов, показываем empty state
+                const contentArea = document.querySelector('.col-12');
+                if (contentArea) {
+                    if (growlogsContainer) growlogsContainer.remove();
+                    if (resultsInfo) resultsInfo.remove();
+                    if (paginationContainer) paginationContainer.remove();
+                    contentArea.appendChild(newEmptyState);
+                }
+            }
+
+            // Обновляем информацию о результатах
+            if (newResultsInfo && resultsInfo) {
+                resultsInfo.innerHTML = newResultsInfo.innerHTML;
+            } else if (newResultsInfo && !resultsInfo) {
+                const contentArea = document.querySelector('.col-12');
+                contentArea.insertBefore(newResultsInfo, contentArea.querySelector('.growlogs-list'));
+            }
+
+            // Обновляем пагинацию
+            if (newPagination && paginationContainer) {
+                paginationContainer.innerHTML = newPagination.innerHTML;
+            } else if (paginationContainer && !newPagination) {
+                paginationContainer.remove();
+            }
+
+            // Восстанавливаем состояние
+            if (growlogsContainer) {
+                growlogsContainer.style.opacity = '1';
+                growlogsContainer.style.pointerEvents = 'auto';
+            }
+
+            // Переинициализируем AOS для новых элементов
+                    AOS.refresh();
+
+                    // Переинициализируем обработчики лайков
+                    document.querySelectorAll('.like-btn').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleLike(this.dataset.growlogId);
+                        });
+                    });
+
+                    // Переинициализируем обработчики пагинации
+                    document.querySelectorAll('.pagination .page-link').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const page = this.dataset.page;
+                            const currentFilter = document.querySelector('.filter-tab.active').dataset.filter;
+                            const url = `/growlogs/ajax/filter/?filter=${currentFilter}&page=${page}`;
+
+                            // Делаем такой же AJAX запрос для пагинации
+                            if (growlogsContainer) {
+                                growlogsContainer.style.opacity = '0.5';
+                                growlogsContainer.style.pointerEvents = 'none';
+                            }
+
+                            fetch(url, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    if (growlogsContainer) {
+                                        growlogsContainer.innerHTML = data.growlogs_html;
+                                    }
+
+                                    if (paginationContainer && data.pagination_html) {
+                                        paginationContainer.innerHTML = data.pagination_html;
+
+                                        // Переинициализируем обработчики для новой пагинации
+                                        document.querySelectorAll('.pagination .page-link').forEach(newLink => {
+                                            newLink.addEventListener('click', arguments.callee);
+                                        });
+                                    }
+
+                                    // Снова инициализируем AOS и обработчики лайков
+                                    AOS.refresh();
+
+                                    document.querySelectorAll('.like-btn').forEach(btn => {
+                                        btn.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            toggleLike(this.dataset.growlogId);
+                                        });
+                                    });
+
+                                    // Обновляем URL
+                                    history.pushState(
+                                        {filter: currentFilter, page: page},
+                                        `Гроурепорты - ${currentFilter} - Страница ${page}`,
+                                        `/growlogs/?filter=${currentFilter}&page=${page}`
+                                    );
+
+                                    // Прокручиваем к началу гроурепортов
+                                    const filtersElement = document.querySelector('.growlogs-filters');
+                                    if (filtersElement) {
+                                        window.scrollTo({
+                                            top: filtersElement.offsetTop - 50,
+                                            behavior: 'smooth'
+                                        });
+                                    }
+                                } else {
+                                    showMessage('Произошла ошибка при загрузке страницы', 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка при пагинации:', error);
+                                showMessage('Произошла ошибка при обновлении', 'error');
+                            })
+                            .finally(() => {
+                                if (growlogsContainer) {
+                                    growlogsContainer.style.opacity = '1';
+                                    growlogsContainer.style.pointerEvents = 'auto';
+                                }
+                            });
+                        });
+                    });
+>>>>>>> a6c3081e3d24a1c9d1be909e3df851f6c91a7df2
 
         // Обработка кликов по фильтрам
         filterTabs.forEach(tab => {
@@ -1061,6 +1574,7 @@
             url.searchParams.set('filter', filter);
             url.searchParams.set('page', page);
 
+<<<<<<< HEAD
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -1081,6 +1595,85 @@
                     contentContainer.style.opacity = '1';
                 });
         }
+=======
+            // Получаем тип фильтра
+            const filter = this.dataset.filter;
+
+            // Формируем URL для AJAX запроса
+            const url = `/growlogs/ajax/filter/?filter=${filter}`;
+
+            // Получаем контейнеры для обновления
+            const growlogsContainer = document.querySelector('.growlogs-list');
+            const paginationContainer = document.querySelector('.pagination')?.parentElement;
+
+            // Показываем индикатор загрузки
+            if (growlogsContainer) {
+                growlogsContainer.style.opacity = '0.5';
+                growlogsContainer.style.pointerEvents = 'none';
+            }
+
+            // AJAX запрос для фильтрации
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем HTML контейнера с гроурепортами
+                    if (growlogsContainer) {
+                        growlogsContainer.innerHTML = data.growlogs_html;
+                    }
+
+                    // Обновляем пагинацию, если есть
+                    if (paginationContainer && data.pagination_html) {
+                        paginationContainer.innerHTML = data.pagination_html;
+                    } else if (paginationContainer) {
+                        paginationContainer.innerHTML = '';
+                    }
+
+                    // Обновляем счетчик результатов
+                    const resultsCount = document.querySelector('.results-count');
+                    if (resultsCount) {
+                        resultsCount.textContent = data.growlogs_count;
+                    }
+
+                    // Инициализируем AOS для новых элементов
+                    AOS.refresh();
+
+                    // Переинициализируем обработчики лайков
+                    document.querySelectorAll('.like-btn').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleLike(this.dataset.growlogId);
+                        });
+                    });
+
+                    // Обновляем URL в адресной строке без перезагрузки
+                    history.pushState(
+                        {filter: filter},
+                        `Гроурепорты - ${filter}`,
+                        `/growlogs/?filter=${filter}`
+                    );
+                } else {
+                    showMessage('Произошла ошибка при фильтрации', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при фильтрации:', error);
+                showMessage('Произошла ошибка при обновлении', 'error');
+            })
+            .finally(() => {
+                // Восстанавливаем нормальный вид контейнера
+                if (growlogsContainer) {
+                    growlogsContainer.style.opacity = '1';
+                    growlogsContainer.style.pointerEvents = 'auto';
+                }
+            });
+        });
+>>>>>>> a6c3081e3d24a1c9d1be909e3df851f6c91a7df2
     });
 
      // Глобальная функция лайков (оставляем, как есть)

@@ -1,0 +1,100 @@
+{% load i18n humanize static %}
+
+{% if growlogs %}
+    <div class="growlogs-list">
+        {% for growlog in growlogs %}
+            <div class="growlog-item" data-aos="fade-up" data-aos-delay="100">
+                <div class="growlog-row">
+                    <div class="growlog-icon">
+                        {% if growlog.logo %}
+                            <img src="{{ growlog.logo.url }}" alt="{{ growlog.title }}" class="growlog-logo">
+                        {% else %}
+                            <div class="growlog-logo-placeholder">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="growlog-info">
+                        <h3 class="growlog-title">
+                            <a href="{% url 'growlogs:detail' growlog.id %}">
+                                Гроу-репорт: {{ growlog.title }}
+                            </a>
+                        </h3>
+
+                        <div class="growlog-meta">
+                            <span class="growlog-author">
+                                <i class="fas fa-user"></i> {{ growlog.grower.username }}
+                            </span>
+                            <span class="growlog-date">
+                                <i class="fas fa-calendar"></i> День {{ growlog.current_day }}
+                            </span>
+                            {% if growlog.strain %}
+                                <span class="growlog-strain">
+                                    <i class="fas fa-cannabis"></i> {{ growlog.strain.name }}
+                                </span>
+                            {% elif growlog.strain_custom %}
+                                <span class="growlog-strain">
+                                    <i class="fas fa-cannabis"></i> {{ growlog.strain_custom }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="growlog-excerpt">
+                            {{ growlog.description|truncatewords:20 }}
+                        </div>
+
+                        <div class="growlog-footer">
+                            <div class="growlog-stats">
+                                <div class="stat-icon">
+                                    <i class="fas fa-eye"></i>
+                                    <span>{{ growlog.views_count }}</span>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-comment"></i>
+                                    <span>{{ growlog.comments.count }}</span>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-heart"></i>
+                                    <span id="likes-count-{{ growlog.id }}">{{ growlog.likes.count }}</span>
+                                </div>
+                            </div>
+
+                            <div class="growlog-actions">
+                                <a href="{% url 'growlogs:detail' growlog.id %}" class="action-btn view-btn">
+                                    <i class="fas fa-eye"></i> Смотреть
+                                </a>
+                                <button class="action-btn like-btn {% if user.is_authenticated and user in growlog.likes.all %}liked{% endif %}"
+                                        data-growlog-id="{{ growlog.id }}"
+                                        title="Поставить лайк">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="growlog-badge">
+                        {% if growlog.current_stage == 'harvest' %}
+                            <div class="badge-completed">
+                                <i class="fas fa-check-circle"></i> Завершен
+                            </div>
+                        {% else %}
+                            <div class="badge-active">
+                                <i class="fas fa-seedling"></i> Активен
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-seedling fa-4x mb-3"></i>
+        <h3>Гроурепорты не найдены</h3>
+        <p>По выбранным фильтрам не найдено гроурепортов</p>
+        <a href="{% url 'growlogs:list' %}" class="btn btn-outline-success mt-2">
+            <i class="fas fa-redo"></i> Сбросить фильтры
+        </a>
+    </div>
+{% endif %}

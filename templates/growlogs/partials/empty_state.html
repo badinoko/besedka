@@ -1,0 +1,12 @@
+<!-- Шаблон пустого состояния -->
+<div class="empty-state">
+    <i class="fas fa-seedling"></i>
+    <h3>Гроурепорты не найдены</h3>
+    <p class="lead">
+        По выбранным фильтрам не найдено гроурепортов. Попробуйте изменить параметры поиска.
+    </p>
+    <a href="{% url 'growlogs:list' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-redo-alt me-2"></i>
+        Сбросить фильтры
+    </a>
+</div>

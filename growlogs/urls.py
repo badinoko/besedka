@@ -24,6 +24,8 @@ urlpatterns = [
     path('<int:pk>/like/', views.toggle_like_growlog, name='toggle_like'),
     path('entry/<int:entry_id>/like/', views.toggle_entry_like, name='toggle_entry_like'),
     path('entry/<int:entry_id>/comment/', views.add_entry_comment, name='add_entry_comment'),
+    path('ajax/filter/', views.filter_growlogs_ajax, name='filter_growlogs_ajax'),
+    path('ajax/debug/', views.filter_debug, name='filter_debug'),
 
     # Комментарии
     path('<int:growlog_pk>/comment/', views.GrowLogCommentCreateView.as_view(), name='comment_create'),
