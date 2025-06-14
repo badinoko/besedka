@@ -1,4 +1,5 @@
 {% load static i18n %}
+{% load core_tags %}
 <!-- templates/includes/navigation.html -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid px-4">
@@ -17,8 +18,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#storeComingSoonModal">
-                        <i class="fas fa-store"></i> <i class="fas fa-tools text-danger position-absolute" style="font-size: 0.75rem; margin-left: -0.5rem; margin-top: -0.25rem;"></i> Магазин
+                    <a class="nav-link" href="{% url 'store:catalog' %}">
+                        <i class="fas fa-store"></i> {% trans "Магазин" %}
                     </a>
                 </li>
                 <li class="nav-item">
@@ -50,70 +51,8 @@
                     </a>
                 </li>
 
-                {% if user.is_authenticated %}
-                    <!-- Уведомления -->
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-with-counter" href="{% url 'users:notification_list' %}">
-                            <i class="fas fa-bell nav-icon"></i>
-                            <span class="nav-counter-badge notifications-badge rounded-pill" style="{% if unread_notifications_count == 0 %}display: none;{% else %}display: flex;{% endif %}">
-                                {{ unread_notifications_count|default:0 }}
-                                <span class="visually-hidden">{% translate "непрочитанных уведомлений" %}</span>
-                            </span>
-                        </a>
-                    </li>
+                {% user_info_badge %}
 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
-                           id="userDropdownGlobal" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-2"></i>
-                            <span>{{ user.username }}</span>
-                            {% if user_role_badge %}
-                                <span class="badge {{ user_role_badge.class }} ms-2">{{ user_role_badge.text }}</span>
-                            {% endif %}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdownGlobal">
-                            <!-- ЛИЧНЫЙ КАБИНЕТ -->
-                            {% for item in navigation_items %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ item.url }}">
-                                        <i class="fas {{ item.icon }} me-2"></i>{{ item.title }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-
-                            <!-- АДМИНИСТРАТИВНЫЕ ФУНКЦИИ -->
-                            {% if admin_navigation_items %}
-                                <li><hr class="dropdown-divider"></li>
-                                {% for item in admin_navigation_items %}
-                                    <li>
-                                        <a class="dropdown-item" href="{{ item.url }}">
-                                            <i class="fas {{ item.icon }} me-2"></i>{{ item.title }}
-                                            {% if item.type == 'admin_primary' %}
-                                                <span class="badge bg-primary ms-1">Основное</span>
-                                            {% elif item.type == 'admin_secondary' %}
-                                                <span class="badge bg-secondary ms-1">Доп.</span>
-                                            {% endif %}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            {% endif %}
-
-                            <!-- ВЫХОД -->
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{% url 'account_logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Выйти
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'account_login' %}">
-                            <i class="fas fa-sign-in-alt"></i> Войти
-                        </a>
-                    </li>
-                {% endif %}
             </ul>
         </div>
     </div>
@@ -122,39 +61,4 @@
 {# Гарантируем, что модальное окно выбора чата присутствует на каждой странице #}
 {% include 'includes/chat_modal.html' %}
 
-<!-- Модальное окно "Магазин" -->
-<div class="modal fade" id="storeComingSoonModal" tabindex="-1" aria-labelledby="storeComingSoonModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
-                <h5 class="modal-title fw-bold" id="storeComingSoonModalLabel">
-                    <i class="fas fa-tools text-danger me-2"></i>Магазин
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-            </div>
-            <div class="modal-body text-center py-5">
-                <div class="mb-4">
-                    <i class="fas fa-store text-primary display-1 mb-3"></i>
-                    <h3 class="text-primary mb-3">Готов к запуску!</h3>
-                    <p class="lead text-muted mb-4">
-                        Наш интернет-магазин семян полностью готов к работе.
-                        <br>Администрация проекта находится в поиске партнера - поставщика товаров.
-                    </p>
-                </div>
-
-                <div class="alert alert-info border-0 shadow-sm">
-                    <i class="fas fa-handshake me-2"></i>
-                    <strong>Ищем партнера!</strong>
-                    <br>
-                    <small>Если вас интересует ведение магазина на нашей платформе, <br>
-                    <a href="{% url 'account_signup' %}" class="text-decoration-none">зарегистрируйтесь</a> и свяжитесь с владельцем платформы через личные сообщения.</small>
-                </div>
-            </div>
-            <div class="modal-footer justify-content-center border-0">
-                <button type="button" class="btn btn-primary btn-lg px-4" data-bs-dismiss="modal">
-                    <i class="fas fa-check me-2"></i>ОК
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Модальное окно "Магазин" удалено после запуска каталога -->

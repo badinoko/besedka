@@ -19,6 +19,14 @@ class Photo(PublicModel):
     is_active = models.BooleanField(default=True, verbose_name="Активное")
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_photos', blank=True)
 
+    # Счётчик просмотров для системы кармы / аналитики
+    views_count = models.PositiveIntegerField("Просмотры", default=0)
+
+    # Обратная совместимость: некоторые части проекта обращаются к `views` напрямую.
+    @property
+    def views(self):
+        return self.views_count
+
     class Meta:
         verbose_name = _("Photo")
         verbose_name_plural = _("Photos")

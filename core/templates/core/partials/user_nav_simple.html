@@ -1,0 +1,45 @@
+{% if is_authenticated %}
+    <!-- Уведомления -->
+    <li class="nav-item">
+        <a class="nav-link nav-link-with-counter" href="{% url 'users:notification_list' %}">
+            <i class="fas fa-bell nav-icon"></i>
+            <span class="nav-counter-badge notifications-badge rounded-pill" style="{% if unread_notifications_count == 0 %}display: none;{% else %}display: flex;{% endif %}">
+                {{ unread_notifications_count|default:0 }}
+                <span class="visually-hidden">{% translate "непрочитанных уведомлений" %}</span>
+            </span>
+        </a>
+    </li>
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
+           id="userDropdownGlobal" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-2"></i>
+            <span>{{ user.username }}</span>
+            {% if user_role_badge %}
+                <span class="badge {{ user_role_badge.class }} ms-2">{{ user_role_badge.text }}</span>
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdownGlobal">
+            <!-- Динамические ссылки -->
+            <li><a class="dropdown-item" href="{% url 'users:profile' %}"><i class="fas fa-user me-2"></i>Профиль</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+            {% if admin_navigation_items %}
+                <li><hr class="dropdown-divider"></li>
+                {% for item in admin_navigation_items %}
+                    <li>
+                        <a class="dropdown-item" href="{{ item.url }}">
+                            {% if item.icon %}<i class="fas {{ item.icon }} me-2"></i>{% endif %}
+                            {{ item.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </li>
+{% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'account_login' %}">
+            <i class="fas fa-sign-in-alt"></i> Войти
+        </a>
+    </li>
+{% endif %}

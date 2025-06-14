@@ -1,0 +1,52 @@
+{# УНИФИЦИРОВАННАЯ HERO-СЕКЦИЯ ДЛЯ ДЕТАЛЬНЫХ СТРАНИЦ #}
+{# Параметры: #}
+{# - title: заголовок страницы #}
+{# - subtitle: подзаголовок (автор, дата, категория) #}
+{# - hero_class: CSS класс (news-hero, gallery-hero, growlogs-hero, store-hero) #}
+{# - stats: список статистики [{'value': N, 'label': 'лейбл', 'icon': 'fa-icon'}] #}
+{# - show_breadcrumbs: показывать ли хлебные крошки (по умолчанию True) #}
+
+<div class="{{ hero_class|default:'default-hero' }} p-4 mb-4 text-white" data-aos="fade-up" data-aos-duration="500">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">{{ title }}</h1>
+                {% if subtitle %}
+                <p class="hero-subtitle mb-0" data-aos="fade-up" data-aos-delay="200">
+                    {{ subtitle|safe }}
+                </p>
+                {% endif %}
+
+                {% if show_breadcrumbs|default:True %}
+                <div class="hero-breadcrumbs mt-2" data-aos="fade-up" data-aos-delay="250">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0" style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 0.5rem 1rem;">
+                            {% block breadcrumbs_content %}
+                            {# Переопределить в родительском шаблоне #}
+                            {% endblock %}
+                        </ol>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if stats %}
+            <div class="col-md-4 text-md-end">
+                <div class="hero-stats d-flex flex-wrap justify-content-md-end justify-content-center gap-2" data-aos="zoom-in" data-aos-delay="300">
+                    {% for stat in stats %}
+                    <div class="hero-stat text-center" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:400 }}">
+                        {% if stat.icon %}
+                        <div class="stat-icon mb-1">
+                            <i class="{{ stat.icon }}"></i>
+                        </div>
+                        {% endif %}
+                        <div class="stat-number js-{{ stat.css_class|default:'stat' }}-count">{{ stat.value }}</div>
+                        <div class="stat-label">{{ stat.label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

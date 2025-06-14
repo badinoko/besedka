@@ -607,22 +607,6 @@
         gap: 10px !important;
     }
 
-    body .growlog-detail-page .comment-item {
-        background: #f8f9fa !important;
-        border-radius: 15px !important;
-        padding: 20px !important;
-        margin-bottom: 15px !important;
-        border-left: 4px solid #007bff !important;
-        border: 1px solid #e9ecef !important;
-        transition: all 0.3s ease !important;
-    }
-
-    body .growlog-detail-page .comment-item:hover {
-        background: #e3f2fd !important;
-        border-left-color: #2196F3 !important;
-        transform: translateX(5px) !important;
-    }
-
     body .growlog-detail-page .comment-header {
         display: flex !important;
         justify-content: space-between !important;
@@ -647,7 +631,7 @@
         font-size: 1rem !important;
     }
 
-    /* Форма добавления комментария */
+    /* Форма добавления комментария (перемещена выше списка для консистентности с SSOT) */
     body .growlog-detail-page .comment-form {
         margin-top: 30px !important;
         padding-top: 25px !important;
@@ -821,37 +805,8 @@
 {% block content %}
 <div class="growlog-detail-page">
     <div class="container">
-        <!-- ===== ШАПКА РЕПОРТА В СТИЛЕ GROWDIARIES ===== -->
-        <div class="diary-header">
-            <h1 class="diary-title">{{ growlog.title }}</h1>
-            <div class="diary-meta-row">
-                <div class="meta-item">
-                    <i class="fas fa-user"></i>
-                    <span>{{ growlog.grower.username }}</span>
-                </div>
-                <div class="meta-item">
-                    <i class="fas fa-calendar"></i>
-                    <span>{{ growlog.created_at|date:"d.m.Y" }}</span>
-                </div>
-                <div class="meta-item">
-                    <i class="fas fa-seedling"></i>
-                    <span>{{ growlog.get_current_stage_display }}</span>
-                </div>
-                <div class="meta-item">
-                    <i class="fas fa-clock"></i>
-                    <span>День {{ growlog.current_day|default:"1" }}</span>
-                </div>
-                {% if growlog.is_public %}
-                    <span class="status-badge public">
-                        <i class="fas fa-globe"></i> Публичный
-                    </span>
-                {% else %}
-                    <span class="status-badge private">
-                        <i class="fas fa-lock"></i> Приватный
-                    </span>
-                {% endif %}
-            </div>
-        </div>
+        <!-- УНИФИЦИРОВАННАЯ HERO-СЕКЦИЯ -->
+        {% include 'includes/partials/unified_detail_hero.html' with title=growlog.title subtitle=growlog.grower.username|add:' • '|add:growlog.created_at|date:"d.m.Y"|add:' • '|add:growlog.get_current_stage_display|add:' • День '|add:growlog.current_day|default:"1" hero_class='growlogs-hero' stats=detail_hero_stats show_breadcrumbs=False %}
 
         <!-- ===== ОСНОВНАЯ ИНФОРМАЦИОННАЯ КАРТОЧКА ===== -->
         <div class="diary-main-card diary-card">
@@ -870,82 +825,30 @@
 
                 <!-- Информационная панель -->
                 <div class="diary-info-panel">
-                    <!-- Информация о сорте -->
-                    <div class="info-section">
-                        <div class="info-section-title">
-                            <i class="fas fa-cannabis"></i> Сорт
-                        </div>
-                        <div class="strain-name">{{ growlog.strain.name|default:growlog.strain_custom|default:"Не указан" }}</div>
-                        <div class="strain-details">
+                    <!-- Информация о сорте (реформатировано) -->
+                    <div class="info-section d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+                        <div class="flex-grow-1">
+                            <div class="mb-2">
+                                <small class="text-uppercase text-muted">Сорт</small><br>
+                                <a href="#" class="fw-bold fs-5 text-decoration-none" style="color:#2c3e50;">
+                                    {{ growlog.strain.name|default:growlog.strain_custom|default:"Не указан" }}
+                                </a>
+                            </div>
                             {% if growlog.strain and growlog.strain.seedbank %}
-                                <div class="strain-detail">
-                                    <span class="detail-label">Сидбанк:</span>
-                                    <span class="detail-value">{{ growlog.strain.seedbank.name }}</span>
-                                </div>
-                            {% endif %}
-                            {% if growlog.strain and growlog.strain.get_strain_type_display %}
-                                <div class="strain-detail">
-                                    <span class="detail-label">Тип:</span>
-                                    <span class="detail-value">{{ growlog.strain.get_strain_type_display }}</span>
-                                </div>
-                            {% endif %}
-                            {% if growlog.medium %}
-                                <div class="strain-detail">
-                                    <span class="detail-label">Субстрат:</span>
-                                    <span class="detail-value">{{ growlog.medium }}</span>
-                                </div>
+                            <div class="mt-2">
+                                <small class="text-uppercase text-muted">Сидбанк</small><br>
+                                <a href="#" class="fw-bold fs-6 text-decoration-none" style="color:#2c3e50;">
+                                    {{ growlog.strain.seedbank.name }}
+                                </a>
+                            </div>
                             {% endif %}
                         </div>
-                    </div>
 
-                    <!-- Информация об авторе -->
-                    <div class="info-section">
-                        <div class="info-section-title">
-                            <i class="fas fa-user-circle"></i> Автор
-                        </div>
-                        <div class="author-name">{{ growlog.grower.username }}</div>
-                        <div class="author-details">
-                            <div class="author-detail">
-                                <i class="fas fa-calendar-alt"></i>
-                                <span>Создан {{ growlog.created_at|date:"d.m.Y" }}</span>
-                            </div>
-                            <div class="author-detail">
-                                <i class="fas fa-seedling"></i>
-                                <span>{{ growlog.get_current_stage_display }}</span>
-                            </div>
-                            {% if growlog.end_date %}
-                                <div class="author-detail">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Завершен {{ growlog.end_date|date:"d.m.Y" }}</span>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Статистика -->
-                    <div class="info-section">
-                        <div class="info-section-title">
-                            <i class="fas fa-chart-bar"></i> Статистика
-                        </div>
-                        <div class="stats-grid diary-stats-grid">
-                            <div class="stat-item col-md-3 col-sm-6">
-                                <span class="stat-value">{{ growlog.entries.count }}</span>
-                                <span class="stat-label">Дни</span>
-                            </div>
-                            <div class="stat-item col-md-3 col-sm-6">
-                                <span class="stat-value">{{ growlog.likes.count }}</span>
-                                <span class="stat-label">Лайки</span>
-                            </div>
-                            <div class="stat-item col-md-3 col-sm-6">
-                                <span class="stat-value">{{ growlog.comments.count }}</span>
-                                <span class="stat-label">Комменты</span>
-                            </div>
-                            {% if growlog.yield_actual %}
-                                <div class="stat-item col-md-3 col-sm-6">
-                                    <span class="stat-value">{{ growlog.yield_actual }}г</span>
-                                    <span class="stat-label">Урожай</span>
-                                </div>
-                            {% endif %}
+                        <!-- Кнопка подробнее -->
+                        <div class="text-md-end text-center flex-shrink-0">
+                            <button class="hero-btn" style="border-radius:50px; padding:14px 38px;" data-bs-toggle="modal" data-bs-target="#growlogDetailsModal">
+                                <i class="fas fa-info-circle"></i> ПОДРОБНЕЕ
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -965,10 +868,8 @@
 
                 <div class="action-buttons">
                     {% if user == growlog.grower %}
-                        <a href="{% url 'growlogs:entry_create' growlog.id %}" class="btn-modern">
-                            <i class="fas fa-plus"></i> Добавить день
-                        </a>
-                        <a href="{% url 'growlogs:edit' growlog.id %}" class="btn-modern btn-secondary-modern">
+                        {# TODO: Создание записей будет реализовано позже #}
+                        <a href="{% url 'growlogs:update' growlog.id %}" class="btn-modern btn-secondary-modern">
                             <i class="fas fa-edit"></i> Редактировать
                         </a>
                     {% endif %}
@@ -1101,53 +1002,15 @@
 
         <!-- ===== КОММЕНТАРИИ ===== -->
         {% if growlog.is_public or user == growlog.grower %}
-            <div class="comments-section">
-                <h3 class="comments-title">
-                    <i class="fas fa-comments"></i>
-                    Комментарии ({{ growlog.comments.count }})
-                </h3>
-
-                {% if growlog.comments.exists %}
-                    {% for comment in growlog.comments.all %}
-                        <div class="comment-item">
-                            <div class="comment-header">
-                                <span class="comment-author">{{ comment.author.get_display_name }}</span>
-                                <span class="comment-date">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
-                            </div>
-                            <div class="comment-content">
-                                {{ comment.text|linebreaks }}
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-comment"></i>
-                        <h4>Пока нет комментариев</h4>
-                        <p>Будьте первым, кто оставит комментарий!</p>
-                    </div>
-                {% endif %}
-
-                <!-- Форма добавления комментария -->
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'growlogs:comment_create' growlog.pk %}" class="comment-form">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="comment-content" class="form-label fw-bold">Добавить комментарий:</label>
-                            <textarea name="text" id="comment-content" rows="4" class="form-control"
-                                      placeholder="Поделитесь своими мыслями о данном репорте..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn-modern">
-                            <i class="fas fa-paper-plane"></i> Отправить комментарий
-                        </button>
-                    </form>
-                {% else %}
-                    <div class="alert-modern alert-info-modern">
-                        <i class="fas fa-info-circle"></i>
-                        <a href="{% url 'account_login' %}">Войдите</a>, чтобы оставлять комментарии.
-                    </div>
-                {% endif %}
-            </div>
+            {% url 'growlogs:add_comment' growlog.pk as growlog_add_comment_url %}
+            {% include 'includes/partials/unified_comment_section.html' with comments_count=growlog.comments_count form_action=growlog_add_comment_url id_field=None object_id=growlog.id comment_type='growlog' placeholder='Поделитесь своими мыслями о данном репорте...' top_level_comments=top_level_comments has_more_comments=has_more_comments %}
         {% endif %}
+
+        {# Навигация между репортами и кнопка ко всем #}
+        {% url 'growlogs:list' as growlogs_list_url %}
+        {% with prev_url=None next_url=None list_url=growlogs_list_url %}
+            {% include 'includes/partials/unified_detail_footer.html' with list_url=list_url list_label='Все репорты' %}
+        {% endwith %}
 
         <!-- Приватная заглушка -->
         {% if not growlog.is_public and user != growlog.grower %}
@@ -1221,7 +1084,7 @@ function toggleDayLike(button) {
     });
 }
 
-// Плавная прокрутка к якорям
+// Плавная прокрутка к якорем
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -1258,4 +1121,79 @@ document.querySelectorAll('.day-card').forEach((card, index) => {
     observer.observe(card);
 });
 </script>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО С ДЕТАЛЯМИ РЕПОРТА ===== -->
+<div class="modal fade" id="growlogDetailsModal" tabindex="-1" aria-labelledby="growlogDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:linear-gradient(135deg,#667eea 0%, #764ba2 100%); color:#fff;">
+                <h5 class="modal-title mb-0" id="growlogDetailsLabel"><i class="fas fa-info-circle me-2"></i>Детали репорта</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background:#f8f9fa;">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <strong>Сорт:</strong> {{ growlog.strain.name|default:growlog.strain_custom|default:"Не указан" }}
+                    </div>
+                    {% if growlog.strain and growlog.strain.seedbank %}
+                        <div class="col-md-6">
+                            <strong>Сидбанк:</strong> {{ growlog.strain.seedbank.name }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.strain and growlog.strain.get_strain_type_display %}
+                        <div class="col-md-6">
+                            <strong>Тип:</strong> {{ growlog.strain.get_strain_type_display }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.medium %}
+                        <div class="col-md-6">
+                            <strong>Субстрат:</strong> {{ growlog.medium }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.fertilizers %}
+                        <div class="col-md-6">
+                            <strong>Удобрения:</strong> {{ growlog.fertilizers }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.lighting %}
+                        <div class="col-md-6">
+                            <strong>Освещение:</strong> {{ growlog.lighting }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.container_size %}
+                        <div class="col-md-6">
+                            <strong>Размер контейнера:</strong> {{ growlog.container_size }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.expected_yield %}
+                        <div class="col-md-6">
+                            <strong>Ожидаемый урожай:</strong> {{ growlog.expected_yield }} г
+                        </div>
+                    {% endif %}
+                    {% if growlog.setup_description %}
+                        <div class="col-12">
+                            <strong>Описание установки:</strong>
+                            <div class="alert alert-secondary mt-1" style="white-space:pre-wrap;">{{ growlog.setup_description }}</div>
+                        </div>
+                    {% endif %}
+                    {% if growlog.goals %}
+                        <div class="col-12">
+                            <strong>Цели:</strong>
+                            <div class="alert alert-secondary mt-1" style="white-space:pre-wrap;">{{ growlog.goals }}</div>
+                        </div>
+                    {% endif %}
+                    {% if growlog.additional_notes %}
+                        <div class="col-12">
+                            <strong>Дополнительные заметки:</strong>
+                            <p class="mt-1 mb-0">{{ growlog.additional_notes }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

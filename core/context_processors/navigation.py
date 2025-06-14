@@ -16,7 +16,7 @@ def navigation_context(request) -> Dict[str, Any]:
     Returns navigation-related data for all templates
     """
     try:
-        context = {
+        context: Dict[str, Any] = {
             'cart_items_count': 0,
             'unread_notifications_count': 0,
             'user_role': None,
@@ -152,7 +152,7 @@ def get_navigation_items(user):
         elif role == 'store_owner':
             items.append({'name': 'Управление магазином', 'url': '/store_owner_admin/', 'icon': 'store'})
         elif role == 'store_admin':
-            items.append({'name': 'Админка магазина', 'url': '/store_admin/', 'icon': 'package'})
+            items.append({'name': 'Админка магазина', 'url': '/store_admin_site/', 'icon': 'package'})
 
         return items
 
@@ -179,12 +179,15 @@ def get_admin_navigation_items(user):
     items = []
     if role == 'owner':
         items.append({'url': '/owner_admin/', 'icon': 'fa-crown', 'title': 'Админка владельца', 'type': 'admin_primary'})
-        items.append({'url': '/moderator_admin/', 'icon': 'fa-shield-alt', 'title': 'Админка модераторов', 'type': 'admin_secondary'})
+        # Владелец уже может войти в админку модераторов из своей админки,
+        # дублирующая ссылка не нужна (см. пользовательское требование).
+        # items.append({'url': '/moderator_admin/', 'icon': 'fa-shield-alt', 'title': 'Админка модераторов', 'type': 'admin_secondary'})
     elif role == 'admin':
         items.append({'url': '/moderator_admin/', 'icon': 'fa-shield-alt', 'title': 'Админка модераторов', 'type': 'admin_primary'})
     elif role == 'store_owner':
         items.append({'url': '/store_owner_admin/', 'icon': 'fa-store', 'title': 'Админка магазина', 'type': 'admin_primary'})
-        items.append({'url': '/store_admin/', 'icon': 'fa-box', 'title': 'Админка сотрудников', 'type': 'admin_secondary'})
+        items.append({'url': '/store_admin_site/', 'icon': 'fa-box', 'title': 'Админка сотрудников', 'type': 'admin_secondary'})
     elif role == 'store_admin':
-        items.append({'url': '/store_admin/', 'icon': 'fa-box', 'title': 'Админка магазина', 'type': 'admin_primary'})
+        items.append({'url': '/store_admin_site/', 'icon': 'fa-box', 'title': 'Админка магазина', 'type': 'admin_primary'})
+
     return items

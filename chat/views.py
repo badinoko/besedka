@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.views.generic import DetailView, CreateView, TemplateView
 from django.http import JsonResponse
 from django.views import View
 from django.contrib import messages
@@ -11,6 +11,8 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from .models import Room, Message, Thread, DiscussionRoom, Tag, GlobalChatRoom, VIPChatRoom
 from .forms import MessageForm, DiscussionRoomForm
+from django.db.models import Count
+from core.base_views import UnifiedListView
 
 User = get_user_model()
 
@@ -49,17 +51,80 @@ class ChatHomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class PrivateChatsView(LoginRequiredMixin, ListView):
-    """Список приватных чатов пользователя"""
-    template_name = 'chat/private_chats.html'
-    context_object_name = 'threads'
+class PrivateChatsView(LoginRequiredMixin, UnifiedListView):
+    """Унифицированный список приватных чатов пользователя"""
+
+    model = Thread
     paginate_by = 20
 
+    # Настройки единой hero-секции
+    section_title = "Личные чаты"
+    section_subtitle = "Ваши приватные разговоры с другими участниками"
+    section_hero_class = "chat-hero"
+    card_type = "chat"
+
     def get_queryset(self):
+        """Получить все приватные чаты текущего пользователя, отсортированные по дате изменения."""
         user = self.request.user
-        return Thread.objects.filter(
-            Q(user1=user) | Q(user2=user)
-        ).select_related('room', 'user1', 'user2').order_by('-room__modified')
+        return (
+            Thread.objects.filter(Q(user1=user) | Q(user2=user))
+            .select_related('room', 'user1', 'user2')
+            .order_by('-room__modified')
+        )
+
+    # --- HERO ---
+    def get_hero_stats(self):
+        user = self.request.user
+        qs = self.get_queryset()
+        unread_total = 0
+        for thread in qs:
+            unread_total += thread.room.unread_count(user)
+        return [
+            {'value': qs.count(), 'label': 'Всего чатов'},
+            {'value': unread_total, 'label': 'Непрочитанных'},
+        ]
+
+    def get_filter_list(self):
+        # Пока фильтров нет – возвращаем пустой список
+        return []
+
+    def get_unified_cards(self, page_obj):
+        """Преобразовать объекты Thread в формат унифицированных карточек."""
+        cards = []
+        current_user = self.request.user
+        for thread in page_obj:
+            partner = thread.get_partner(current_user)
+
+            # Аватар партнёра или плейсхолдер
+            if partner and getattr(partner, 'avatar', None):
+                avatar_url = partner.avatar.url
+            else:
+                avatar_url = '/static/images/default_avatar.svg'
+
+            # Последнее сообщение
+            last_msg = thread.room.latest_message()
+            last_msg_text = last_msg.content if last_msg else 'Еще нет сообщений'
+
+            unread_count = thread.room.unread_count(current_user)
+
+            cards.append({
+                'id': str(thread.id),
+                'type': 'chat',
+                'title': partner.username if partner else 'Неизвестный',
+                'description': last_msg_text[:120],
+                'image_url': avatar_url,
+                'detail_url': reverse_lazy('chat:private_thread', kwargs={'thread_id': thread.id}),
+                'author': {
+                    'name': partner.username if partner else 'Неизвестный',
+                    'avatar': avatar_url,
+                },
+                'stats': (
+                    [{'icon': 'fa-envelope', 'count': unread_count, 'css': 'unread'}]
+                    if unread_count else []
+                ),
+                'created_at': thread.room.modified,
+            })
+        return cards
 
 
 class PrivateThreadView(LoginRequiredMixin, DetailView):
@@ -121,15 +186,19 @@ class StartPrivateChatView(LoginRequiredMixin, View):
         return redirect('chat:private_thread', thread_id=thread.id)
 
 
-class DiscussionsView(LoginRequiredMixin, ListView):
-    """Список групповых обсуждений"""
+class DiscussionsView(LoginRequiredMixin, UnifiedListView):
+    """Унифицированный список групповых обсуждений"""
+
     model = DiscussionRoom
-    template_name = 'chat/discussions.html'
-    context_object_name = 'discussions'
     paginate_by = 20
 
+    section_title = "Групповые обсуждения"
+    section_subtitle = "Обсуждайте темы сообщества в открытых комнатах"
+    section_hero_class = "chat-hero"
+    card_type = "discussion"
+
     def dispatch(self, request, *args, **kwargs):
-        # ВРЕМЕННО ЗАБЛОКИРОВАНО: Функционал обсуждений в разработке
+        # Функционал обсуждений временно закрыт – используем общий чат
         messages.warning(request, _('Функционал групповых обсуждений временно недоступен. Используйте общий чат "Беседка".'))
         return redirect('chat:general')
 
@@ -148,12 +217,38 @@ class DiscussionsView(LoginRequiredMixin, ListView):
 
         return queryset.order_by('-modified')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['tags'] = Tag.objects.all()
-        context['search_query'] = self.request.GET.get('search', '')
-        context['selected_tag'] = self.request.GET.get('tag', '')
-        return context
+    def get_filter_list(self):
+        return []
+
+    def get_hero_stats(self):
+        qs = self.get_queryset()
+        return [
+            {'value': qs.count(), 'label': 'Всего обсуждений'},
+            {'value': qs.aggregate(total_members=Count('members'))['total_members'] or 0, 'label': 'Участников'},
+        ]
+
+    def get_unified_cards(self, page_obj):
+        cards = []
+        for discussion in page_obj:
+            owner = discussion.owner
+            avatar_url = owner.avatar.url if getattr(owner, 'avatar', None) else '/static/images/default_avatar.svg'
+            last_msg = discussion.room.latest_message()
+            last_msg_text = last_msg.content if last_msg else discussion.description[:120] if discussion.description else 'Нет сообщений'
+            cards.append({
+                'id': discussion.id,
+                'type': 'discussion',
+                'title': discussion.headline,
+                'description': last_msg_text[:120],
+                'image_url': avatar_url,
+                'detail_url': reverse_lazy('chat:discussion_detail', kwargs={'pk': discussion.pk}),
+                'author': {'name': owner.username, 'avatar': avatar_url},
+                'stats': [
+                    {'icon': 'fa-users', 'count': discussion.members.count(), 'css': 'members'},
+                    {'icon': 'fa-comment', 'count': discussion.room.room_messages.count(), 'css': 'messages'},
+                ],
+                'created_at': discussion.modified,
+            })
+        return cards
 
 
 class CreateDiscussionView(LoginRequiredMixin, CreateView):

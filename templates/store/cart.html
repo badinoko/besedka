@@ -27,117 +27,45 @@
         {% endif %}
     </div>
 
+    <!-- УНИФИЦИРОВАННЫЕ КАРТОЧКИ КОРЗИНЫ -->
+    {% include 'includes/partials/_unified_cart_wrapper.html' with unified_card_list=unified_card_list %}
+
     {% if cart_items %}
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th scope="col" style="width: 5%;">
-                        <input type="checkbox" class="form-check-input" id="select-all-checkbox" title="{% translate 'Выбрать все' %}">
-                    </th>
-                    <th scope="col" style="width: 15%;">{% translate "Товар" %}</th>
-                    <th scope="col" style="width: 35%;"></th>
-                    <th scope="col" class="text-center" style="width: 15%;">{% translate "Цена" %}</th>
-                    <th scope="col" class="text-center" style="width: 15%;">{% translate "Количество" %}</th>
-                    <th scope="col" class="text-end" style="width: 10%;">{% translate "Сумма" %}</th>
-                    <th scope="col" class="text-center" style="width: 5%;">{% translate "Действия" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart_items %}
-                <tr id="cart-item-{{ item.id }}" class="cart-item-row">
-                    <td>
-                        <input type="checkbox" class="form-check-input item-checkbox" data-item-id="{{ item.id }}" title="{% translate 'Выбрать для удаления' %}">
-                    </td>
-                    <td>
-                        <a href="{% url 'store:strain_detail' item.stock_item.strain.pk %}">
-                            <img src="{{ item.stock_item.strain.get_image_url }}" alt="{{ item.stock_item.strain.name }}" class="img-fluid rounded cart-item-image" style="max-height: 75px; width: auto; object-fit: cover;">
-                        </a>
-                    </td>
-                    <td>
-                        <a href="{% url 'store:strain_detail' item.stock_item.strain.pk %}" class="text-decoration-none text-dark fw-bold">{{ item.stock_item.strain.name }}</a>
-                        <small class="d-block text-muted">{{ item.stock_item.strain.seedbank.name }} - {{ item.stock_item.seeds_count }} {% translate "семян" %}</small>
-                    </td>
-                    <td class="text-center">
-                        <span class="fw-bold">{{ item.stock_item.price }} {% translate "руб." %}</span>
-                    </td>
-                    <td class="text-center">
-                        <!-- ЕДИНАЯ СИСТЕМА УПРАВЛЕНИЯ КОЛИЧЕСТВОМ -->
-                        <div class="quantity-control-group">
-                            <div class="input-group input-group-sm quantity-input-group">
-                                <button class="btn btn-outline-secondary quantity-btn" type="button"
-                                        data-action="decrease" data-item-id="{{ item.id }}"
-                                        title="{% translate 'Уменьшить количество' %}"
-                                        aria-label="{% translate 'Уменьшить количество' %}">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <input type="number" name="quantity" value="{{ item.quantity }}"
-                                       min="1" max="{{ item.stock_item.quantity|add:item.quantity }}"
-                                       class="form-control text-center quantity-input"
-                                       data-item-id="{{ item.id }}"
-                                       data-max-total="{{ item.stock_item.quantity|add:item.quantity }}"
-                                       data-current-stock="{{ item.stock_item.quantity }}"
-                                       aria-label="{% translate 'Количество' %}"
-                                       autocomplete="off">
-                                <button class="btn btn-outline-secondary quantity-btn" type="button"
-                                        data-action="increase" data-item-id="{{ item.id }}"
-                                        title="{% translate 'Увеличить количество' %}"
-                                        aria-label="{% translate 'Увеличить количество' %}">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted d-block mt-1 available-quantity">
-                                {% translate "Доступно:" %} {{ item.stock_item.quantity }}
-                            </small>
-                            <!-- Индикатор загрузки -->
-                            <div class="loading-indicator" style="display: none;">
-                                <small class="text-primary">
-                                    <i class="fas fa-spinner fa-spin"></i> {% translate "Обновление..." %}
-                                </small>
-                            </div>
+    <!-- Итоговая сумма и действия -->
+    <div class="cart-summary mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Выбор и удаление товаров -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="clear-selected-btn" style="display: none;">
+                        <i class="fas fa-trash"></i> {% translate "Удалить выбранные" %}
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" id="clear-all-btn">
+                        <i class="fas fa-trash-alt"></i> {% translate "Очистить корзину" %}
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <!-- Итоговая сумма -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{% translate "Итого" %}</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-4 fw-bold">{% translate "К оплате:" %}</span>
+                            <span class="fs-4 fw-bold text-success" id="cart-total-amount">{{ cart.get_total_amount }} {% translate "руб." %}</span>
                         </div>
-                    </td>
-                    <td class="text-end fw-bold item-total-cell" id="item-total-{{ item.id }}">
-                        {{ item.get_total }} {% translate "руб." %}
-                    </td>
-                    <td class="text-center">
-                        <button class="btn btn-outline-danger btn-sm remove-from-cart-btn"
-                                data-item-id="{{ item.id }}"
-                                title="{% translate 'Удалить из корзины' %}"
-                                aria-label="{% translate 'Удалить из корзины' %}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr class="table-secondary">
-                    <td colspan="5" class="text-end fw-bold fs-5">{% translate "Итого:" %}</td>
-                    <td class="text-end fw-bold fs-5" id="cart-total-amount">{{ cart.get_total_amount }} {% translate "руб." %}</td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <a href="{% url 'store:catalog' %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>{% translate "Продолжить покупки" %}
-        </a>
-        <a href="{% url 'store:checkout' %}" class="btn btn-success btn-lg">
-            {% translate "Оформить заказ" %} <i class="fas fa-arrow-right ms-2"></i>
-        </a>
-    </div>
-
-    {% else %}
-    <div class="alert alert-info text-center" role="alert">
-        <h4 class="alert-heading">{% translate "Ваша корзина пуста!" %}</h4>
-        <p>{% translate "Похоже, вы еще ничего не добавили в корзину. Перейдите в каталог, чтобы найти интересные товары." %}</p>
-        <hr>
-        <a href="{% url 'store:catalog' %}" class="btn btn-primary">
-            <i class="fas fa-shopping-cart me-2"></i>{% translate "Перейти в каталог" %}
-        </a>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'store:checkout' %}" class="btn btn-success btn-lg">
+                                {% translate "Оформить заказ" %} <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                            <a href="{% url 'store:catalog' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>{% translate "Продолжить покупки" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     {% endif %}
 </div>
@@ -184,51 +112,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Показ красивых уведомлений через глобальный контейнер
         showNotification(message, type = 'success') {
-            // Используем глобальный контейнер из base.html
-            const container = document.querySelector('.toast-container-custom');
-            if (!container) {
-                console.error('Toast container not found');
-                return;
-            }
-
-            const alertType = (type === 'error' || type === 'danger') ? 'alert-danger' :
-                              (type === 'warning') ? 'alert-warning' :
-                              (type === 'info') ? 'alert-info' : 'alert-success';
-
-            const iconClass = (type === 'error' || type === 'danger') ? 'fa-exclamation-triangle' :
-                              (type === 'warning') ? 'fa-exclamation-circle' :
-                              (type === 'info') ? 'fa-info-circle' : 'fa-check-circle';
-
-            const alertId = 'cart-alert-' + Date.now() + Math.random().toString(36).substr(2, 9);
-
-            const alertHTML = `
-                <div class="alert ${alertType} alert-dismissible fade show" role="alert" id="${alertId}">
-                    <i class="fas ${iconClass}"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-
-            container.insertAdjacentHTML('beforeend', alertHTML);
-
-            // Автоматически скрываем через 3 секунды
-            const alertElement = document.getElementById(alertId);
-            if (alertElement) {
-                setTimeout(() => {
-                    if (alertElement.parentNode) {
-                        alertElement.classList.add('fade-out');
-                        setTimeout(() => {
-                            if (alertElement.parentNode) {
-                                alertElement.remove();
-                            }
-                        }, 300);
-                    }
-                }, 3000);
-
-                // Обработчик для ручного закрытия
-                alertElement.addEventListener('closed.bs.alert', function () {
-                    alertElement.remove();
-                });
+            if (window.showNotification) {
+                window.showNotification(message, type);
+            } else {
+                console.log(`[${type}] ${message}`);
             }
         }
 

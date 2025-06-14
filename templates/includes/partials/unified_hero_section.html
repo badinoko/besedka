@@ -1,0 +1,60 @@
+{% comment %}
+    Универсальная Hero-секция для всех разделов.
+
+    Принимает следующий контекст в переменной `hero_data`:
+    - hero_data.section_hero_class: 'gallery-hero', 'news-hero', и т.д.
+    - hero_data.section_title: Главный заголовок H1.
+    - hero_data.section_subtitle: Подзаголовок P.
+    - hero_data.stats_list: Список словарей для счетчиков.
+    - hero_data.actions_list: Список словарей для кнопок.
+{% endcomment %}
+
+<section class="hero-section {{ hero_data.section_hero_class }} glass-effect" data-aos="fade-in" data-aos-duration="600">
+    <div class="container-fluid">
+        {# Заголовок и подзаголовок - всегда по центру сверху #}
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h1 data-aos="fade-up" data-aos-delay="100">{{ hero_data.section_title }}</h1>
+                <p class="lead" data-aos="fade-up" data-aos-delay="200">{{ hero_data.section_subtitle }}</p>
+            </div>
+        </div>
+
+        {# Контейнер для счетчиков (слева) и кнопок (справа) #}
+        <div class="row align-items-center">
+            {# Блок со счетчиками - слева #}
+            <div class="col-lg-6">
+                {% if hero_data.stats_list %}
+                    <div class="hero-stats d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
+                        {% for stat in hero_data.stats_list %}
+                            {% widthratio forloop.counter0 1 100 as delay_increment %}
+                            <div class="hero-stat" data-aos="zoom-in" data-aos-delay="{{ 300|add:delay_increment }}">
+                                <div class="hero-stat-value">{{ stat.value }}</div>
+                                <div class="hero-stat-label">{{ stat.label }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Блок с кнопками - справа #}
+            <div class="col-lg-6">
+                 {% if hero_data.actions_list %}
+                    <div class="hero-actions d-flex flex-wrap justify-content-center justify-content-lg-end gap-3">
+                        {% for action in hero_data.actions_list %}
+                             {% widthratio forloop.counter0 1 100 as delay_increment %}
+                            <a href="{{ action.url }}"
+                               {% if action.html_id %}id="{{ action.html_id }}"{% endif %}
+                               class="hero-btn {% if not action.is_primary %}hero-btn-secondary{% endif %}{% if action.css_class %} {{ action.css_class }}{% endif %}"
+                               {% if action.data_filter %}data-filter="{{ action.data_filter }}"{% endif %}
+                               data-aos="fade-left"
+                               data-aos-delay="{{ 600|add:delay_increment }}">
+                                {% if action.icon %}<i class="{{ action.icon }} me-2"></i>{% endif %}
+                                {{ action.label }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>

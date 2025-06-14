@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ hero_context.section_title }} | {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/unified_styles.css' %}?v=202506130100">
+    <link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=202506120400">
+    <link rel="stylesheet" href="{% static 'css/unified_cards.css' %}?v=202506130010">
+    <link rel="stylesheet" href="{% static 'css/unified_filters_and_hero.css' %}?v=202506120300">
+{% endblock %}
+
+{% block content %}
+<main id="main-content" class="pt-1">
+
+    {# CSRF token для AJAX #}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    {# ============================================= #}
+    {# 1. ЕДИНАЯ HERO-СЕКЦИЯ (ОБЯЗАТЕЛЬНАЯ)          #}
+    {# ============================================= #}
+    {% include 'includes/partials/unified_hero_section.html' with hero_data=hero_context %}
+
+    {# ============================================= #}
+    {# 2. ЕДИНЫЕ ФИЛЬТРЫ (ОБЯЗАТЕЛЬНЫЕ)              #}
+    {# ============================================= #}
+    <div class="container-fluid unified-filters glass-effect-filters">
+        {% include 'includes/partials/unified_filter_tabs.html' with filter_data=filter_context %}
+    </div>
+
+    {# ============================================= #}
+    {# 2.5. BULK-ОПЕРАЦИИ ДЛЯ УВЕДОМЛЕНИЙ (SSOT)     #}
+    {# ============================================= #}
+    {% if card_type == 'notification' %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="notifications-bulk-controls bg-light border rounded p-3 mb-3 d-flex align-items-center justify-content-between">
+                    <div class="bulk-select-controls">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                            <label class="form-check-label" for="selectAll">
+                                <strong>Выбрать все</strong>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="bulk-action-info">
+                        <small class="text-muted">Выберите уведомления для массовых операций</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ============================================= #}
+    {# 3. ОСНОВНОЙ КОНТЕНТ (УНИФИЦИРОВАННЫЙ)         #}
+    {# ============================================= #}
+    <div id="ajax-section-container"
+         class="ajax-section-container"
+         data-ajax-section
+         data-ajax-url="{{ ajax_url|default:request.path }}"
+         data-content-target="content-container"
+         data-pagination-target="pagination-container"
+         data-scroll-target="#content-container">
+
+        <div id="content-container">
+            {% include 'includes/partials/_unified_cards_wrapper.html' with unified_card_list=unified_card_list %}
+        </div>
+
+        <div id="pagination-container" class="mt-4">
+            {% if page_obj.has_other_pages %}
+                {% include 'includes/partials/_unified_pagination.html' with page_obj=page_obj current_filter=current_filter %}
+            {% endif %}
+        </div>
+    </div>
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://unpkg.com/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="" crossorigin="anonymous" defer></script>
+    <script src="https://unpkg.com/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="" crossorigin="anonymous" defer></script>
+    <script src="{% static 'js/unified_ajax_handler.js' %}?v=202506120400" defer></script>
+    <script src="{% static 'js/unified_animations.js' %}" defer></script>
+    {% if card_type == 'notification' %}
+        <script src="{% static 'js/notifications.js' %}?v=202506140300" defer></script>
+    {% endif %}
+{% endblock %}

@@ -52,7 +52,7 @@ class ChatClient {
             console.log('✅ WebSocket connected');
             this.updateConnectionStatus('connected');
             this.reconnectAttempts = 0;
-            this.showNotification('Подключено к чату', 'success');
+            window.showNotification('Подключено к чату', 'success');
 
             // Загружаем историю сообщений и онлайн пользователей
             this.fetchMessages();
@@ -75,14 +75,14 @@ class ChatClient {
                     this.connect();
                 }, this.reconnectDelay * this.reconnectAttempts);
             } else {
-                this.showNotification('Соединение потеряно', 'error');
+                window.showNotification('Соединение потеряно', 'error');
             }
         };
 
         this.socket.onerror = (error) => {
             console.error('❌ WebSocket error:', error);
             this.updateConnectionStatus('disconnected');
-            this.showNotification('Ошибка подключения', 'error');
+            window.showNotification('Ошибка подключения', 'error');
         };
     }
 
@@ -252,7 +252,7 @@ class ChatClient {
             input.value = '';
             this.stopTyping();
         } else if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-            this.showNotification('Нет соединения с сервером', 'error');
+            window.showNotification('Нет соединения с сервером', 'error');
         }
     }
 
@@ -377,17 +377,7 @@ class ChatClient {
         }
     }
 
-    showNotification(message, type = 'info') {
-        // Простая система уведомлений
-        console.log(`${type.toUpperCase()}: ${message}`);
-
-        // Можно добавить визуальные уведомления
-        if (type === 'error') {
-            // Показать красное уведомление
-        } else if (type === 'success') {
-            // Показать зеленое уведомление
-        }
-    }
+    // Удалено: используется глобальная система уведомлений window.showNotification
 
     escapeHtml(text) {
         const div = document.createElement('div');

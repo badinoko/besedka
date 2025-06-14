@@ -58,7 +58,7 @@ class StoreCatalogViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('is_paginated' in response.context)
         self.assertTrue(response.context['is_paginated'] is True)
-        self.assertEqual(len(response.context['strains']), 12) # CatalogView.paginate_by
+        self.assertEqual(len(response.context['strains']), 9) # CatalogView.paginate_by
 
         response_page2 = self.client.get(reverse('store:catalog') + '?page=2')
         self.assertEqual(response_page2.status_code, 200)

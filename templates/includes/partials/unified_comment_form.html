@@ -1,0 +1,27 @@
+{% load i18n %}
+<form id="comment-form" class="comment-form mb-4" action="{{ action_url }}" method="post" data-comment-type="{{ comment_type }}">
+    {% csrf_token %}
+    {# Доп. скрытые поля (object_id / post_id / photo_id / growlog_id) #}
+    {% if object_id_field and object_id %}
+        <input type="hidden" name="{{ object_id_field }}" value="{{ object_id }}">
+    {% endif %}
+    <input type="hidden" name="parent_id" value="">
+
+    <div class="mb-3">
+        <textarea name="text" rows="4" class="form-control" placeholder="{{ placeholder|default:_('Напишите ваш комментарий...') }}" required></textarea>
+    </div>
+
+    <div id="reply-info" class="text-muted mb-2" style="display:none;">
+        {% trans "Ответ на комментарий" %} <span id="reply-author"></span>
+        <button type="button" id="cancel-reply" class="btn btn-sm btn-outline-secondary ms-2">{% trans "Отменить" %}</button>
+    </div>
+
+    <div class="alert alert-warning mb-3 small">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {% trans "Внимание! После публикации комментарий нельзя будет изменить или удалить. Только модераторы могут редактировать комментарии." %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-paper-plane me-1"></i>{% trans "Отправить" %}
+    </button>
+</form>

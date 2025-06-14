@@ -1,0 +1,89 @@
+{% load static %}
+{% load i18n %}
+
+{# =============================================================== #}
+{# УНИФИЦИРОВАННАЯ КАРТОЧКА v4.0 - ДЛЯ UnifiedListView #}
+{# =============================================================== #}
+{# Работает с форматом данных из UnifiedListView.get_unified_cards() #}
+{# =============================================================== #}
+
+<div class="card unified-card h-100 {% if card_data.type == 'notification' %}notification-item clickable {% if card_data.is_read %}read{% else %}unread{% endif %}{% endif %}" data-card-type="{{ card_data.type }}" {% if card_data.type == 'notification' %}data-notification-id="{{ card_data.id }}" data-action-url="{{ card_data.detail_url }}" data-read="{{ card_data.is_read|yesno:'true,false' }}"{% endif %}>
+    {% if card_data.type != 'notification' %}
+    <a href="{{ card_data.detail_url }}" class="card-link-wrapper d-flex flex-column text-decoration-none h-100">
+    {% else %}
+    <div class="card-content d-flex flex-column h-100">
+    {% endif %}
+
+        {% if card_data.type == 'notification' %}
+            <!-- Чекбокс выбора -->
+            <div class="position-absolute top-0 start-0 p-2">
+                <input class="form-check-input notification-checkbox" type="checkbox" value="{{ card_data.id }}" data-notification-id="{{ card_data.id }}">
+            </div>
+
+            <!-- Бейдж для новых уведомлений -->
+            {% if not card_data.is_read %}
+            <span class="badge bg-warning position-absolute top-0 end-0 m-2">Новое</span>
+            {% endif %}
+        {% endif %}
+
+        <!-- Изображение -->
+        <div class="card-image-container">
+            <img src="{{ card_data.image_url }}" class="card-image" alt="{{ card_data.title|default:'Изображение' }}">
+        </div>
+
+        <!-- Тело карточки -->
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title text-dark">{{ card_data.title|default:'Без заголовка'|truncatechars:60 }}</h5>
+            <p class="card-text text-muted flex-grow-1">{{ card_data.description|striptags|default:'Без описания'|truncatechars:100 }}</p>
+
+            <!-- Автор и дата -->
+            <div class="card-meta mb-2">
+                <small class="text-muted">
+                    {{ card_data.author.name }}{% if card_data.created_at %} • {{ card_data.created_at|date:"d M Y" }}{% endif %}
+                </small>
+            </div>
+        </div>
+
+        <!-- Подвал со статистикой -->
+        <div class="card-footer bg-transparent border-0 p-0">
+            {% if card_data.type == 'notification' %}
+                <!-- Кнопки действий для уведомлений -->
+                <div class="notification-actions d-flex justify-content-between align-items-center p-2">
+                    <div class="action-buttons">
+                        {% if not card_data.is_read %}
+                        <button class="btn btn-sm btn-outline-primary mark-read-btn" data-notification-id="{{ card_data.id }}">
+                            <i class="fas fa-envelope-open"></i> Прочитано
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-notification-id="{{ card_data.id }}">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                </div>
+            {% else %}
+                <div class="unified-card-stats w-100 py-2">
+                    {% for stat in card_data.stats %}
+                        <div class="stat-item d-flex align-items-center {{ stat.css }}" style="gap:6px;">
+                            <i class="fas {{ stat.icon }}"></i>
+                            <span>{{ stat.count }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% if card_data.type != 'notification' %}
+    </a>
+    {% else %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Стили для аватара автора */
+.author-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+</style>

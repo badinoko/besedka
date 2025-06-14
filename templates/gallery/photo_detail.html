@@ -57,23 +57,8 @@
 {% block content %}
 <div class="photo-detail-page">
     <div class="container">
-        <!-- УНИФИЦИРОВАННАЯ MINI-HERO СЕКЦИЯ -->
-        <div class="photo-hero" data-aos="fade-up" data-aos-duration="600">
-            <div class="container">
-                <div class="hero-content">
-                    <h1 class="mb-0" style="font-size: 1.8rem; font-weight: 700;">
-                        📸 {{ photo.title|default:_("Фотография") }}
-                    </h1>
-                    <p class="mb-0 mt-2" style="opacity: 0.9;">
-                        <a href="{% url 'gallery:gallery' %}" class="text-white-50 text-decoration-none">
-                            <i class="fas fa-images me-1"></i>{% trans "Галерея" %}
-                        </a>
-                        <span class="mx-2">•</span>
-                        {% trans "Детальный просмотр" %}
-                    </p>
-                </div>
-            </div>
-        </div>
+        <!-- УНИФИЦИРОВАННАЯ HERO-СЕКЦИЯ -->
+        {% include 'includes/partials/unified_detail_hero.html' with title=photo.title|default:"Фотография" subtitle=photo.author.display_name|add:' • '|add:photo.created_at|naturalday hero_class='gallery-hero' stats=detail_hero_stats show_breadcrumbs=False %}
         <div class="row" data-aos="fade-up" data-aos-delay="100">
     <!-- Основная колонка с фото -->
     <div class="col-lg-8">
@@ -108,18 +93,16 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% if user.is_authenticated %}
                             <button id="like-photo-btn"
-                                    data-photo-id="{{ photo.pk }}"
-                                    data-url="{% url 'gallery:photo_like' pk=photo.pk %}"
-                                    class="btn btn-outline-danger {% if user_liked %}active{% endif %}"
-                                    style="min-width: 80px; min-height: 44px;">
-                                <i class="fas fa-heart"></i> <span id="likes-count">{{ likes_count }}</span>
+                                    data-url="{% url 'gallery:toggle_like' pk=photo.pk %}"
+                                    class="btn btn-outline-danger {% if user_liked %}active{% endif %}">
+                                <i class="fas fa-heart"></i>
+                                <span id="likes-count">{{ photo.likes.count }}</span>
                             </button>
                         {% else %}
-                            <span class="btn btn-outline-secondary"
-                                  style="min-width: 80px; min-height: 44px;"
-                                  title="Войдите для лайков">
+                            <span class="btn btn-outline-secondary" style="min-width: 80px; min-height: 44px;">
                                 <i class="fas fa-heart"></i> {{ likes_count }}
                             </span>
+                            <small class="w-100 d-block">Войдите для лайков</small>
                         {% endif %}
 
                         {% if user.is_authenticated and photo.author == user %}
@@ -129,7 +112,7 @@
                                 <i class="fas fa-edit"></i>
                                 <span class="d-none d-sm-inline">{% trans "Редактировать" %}</span>
                             </a>
-                            <a href="{% url 'gallery:photo_delete' photo.pk %}"
+                            <a href="{% url 'gallery:delete' photo.pk %}"
                                class="btn btn-outline-danger"
                                style="min-height: 44px;">
                                 <i class="fas fa-trash"></i>
@@ -155,75 +138,14 @@
         </div>
 
         <!-- Комментарии -->
-        <div class="card mt-4" data-aos="fade-up" data-aos-delay="200">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-comments"></i> {% trans "Комментарии" %} ({{ comments_count }})</h4>
-            </div>
-            <div class="card-body">
-                {% if user.is_authenticated %}
-                    <form method="post" class="mb-4">
-                        {% csrf_token %}
-                        {{ comment_form|crispy }}
-                        <div class="alert alert-warning mb-3">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <small>{% trans "Внимание! После публикации комментарий нельзя будет изменить или удалить. Только модераторы могут редактировать комментарии." %}</small>
-                        </div>
-                        <button type="submit"
-                                class="btn btn-primary mt-2"
-                                style="min-height: 44px;">
-                            <i class="fas fa-paper-plane"></i> {% trans "Отправить" %}
-                        </button>
-                    </form>
-                {% else %}
-                    <div class="alert alert-info">
-                        <a href="{% url 'account_login' %}?next={{ request.path }}">{% trans "Войдите" %}</a>,
-                        {% trans "чтобы оставить комментарий." %}
-                    </div>
-                {% endif %}
+        {% url 'gallery:add_comment' pk=photo.pk as photo_add_comment_url %}
+        {% include 'includes/partials/unified_comment_section.html' with comments_count=comments_count form_action=photo_add_comment_url id_field=None object_id=photo.id comment_type='photo' placeholder='Напишите ваш комментарий...' top_level_comments=top_level_comments has_more_comments=has_more_comments %}
 
-                {% for comment in comments %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start">
-                                <img src="{{ comment.author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
-                                     alt="{{ comment.author.display_name }}"
-                                     class="rounded-circle me-3"
-                                     style="width: 45px; height: 45px; object-fit: cover;">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-2 gap-2">
-                                        <h6 class="mb-0">
-                                            <a href="{% url 'gallery:gallery' %}?author={{ comment.author.username }}"
-                                               class="text-decoration-none">{{ comment.author.display_name }}</a>
-                                        </h6>
-                                        <small class="text-muted">{{ comment.created_at|naturaltime }}</small>
-                                    </div>
-                                    <p class="mb-2">{{ comment.text|linebreaksbr }}</p>
-                                    {% if user.is_staff and not user.is_superuser %}
-                                        <div class="d-flex gap-2">
-                                            <a href="{% url 'gallery:edit_comment' comment.pk %}"
-                                               class="btn btn-sm btn-outline-secondary"
-                                               style="min-height: 36px;">
-                                                <i class="fas fa-edit"></i> {% trans "Редактировать" %}
-                                            </a>
-                                            <a href="{% url 'gallery:delete_comment' comment.pk %}"
-                                               class="btn btn-sm btn-outline-danger"
-                                               style="min-height: 36px;">
-                                                <i class="fas fa-trash"></i> {% trans "Удалить" %}
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                                {% empty %}
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-comments fa-2x mb-3"></i>
-                        <p>{% trans "Комментариев пока нет. Будьте первым!" %}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+        {# Навигация между фото и кнопка в галерею #}
+        {% url 'gallery:gallery' as gallery_list_url %}
+        {% with prev_url=None next_url=None list_url=gallery_list_url %}
+            {% include 'includes/partials/unified_detail_footer.html' with list_url=list_url list_label='В галерею' %}
+        {% endwith %}
     </div>
 
     <!-- Боковая панель -->
@@ -320,39 +242,13 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Функция для уведомлений -->
 <script>
 function showNotification(message, type = 'info') {
-    // Определяем типы уведомлений
-    const alertTypes = {
-        success: 'alert-success',
-        error: 'alert-danger',
-        warning: 'alert-warning',
-        info: 'alert-info'
-    };
-
-    // Определяем иконки для разных типов
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        warning: 'fas fa-exclamation-triangle',
-        info: 'fas fa-info-circle'
-    };
-
-    // Создаем элемент уведомления
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `alert ${alertTypes[type] || 'alert-info'} alert-dismissible fade show position-fixed`;
-    messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);';
-    messageDiv.innerHTML = `
-        <i class="${icons[type] || 'fas fa-info-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(messageDiv);
-
-    // Автоматически скрываем через 4 секунды
-    setTimeout(() => {
-        if (messageDiv.parentNode) {
-            messageDiv.remove();
-        }
-    }, 4000);
+    if (window.showNotification) {
+        window.showNotification(message, type);
+    } else {
+        console.log(`[${type}] ${message}`);
+    }
 }
 </script>
+
+<!-- Локальный обработчик ответов больше не нужен: используем unified_comment.js -->
 {% endblock %}

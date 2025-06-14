@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse, Http404
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from .models import MaintenanceModeSetting
+from django.apps import apps
+from django.template.loader import render_to_string
+from django.views.decorators.http import require_GET
+from django.core.paginator import Paginator
+from django.views.generic import View
 
 # Create your views here.
 
@@ -90,6 +95,66 @@ def admin_selector(request):
     return render(request, 'admin/admin_selector.html', {
         'admin_panels': admin_panels,
         'title': _('Выбор административной панели')
+    })
+
+def get_view_class_from_section(section_name):
+    """
+    Возвращает класс View на основе имени секции.
+    Это центральный реестр, связывающий фронтенд и бэкенд.
+    """
+    if section_name == 'photo':
+        from gallery.views import GalleryView
+        return GalleryView
+    elif section_name == 'growlog':
+        from growlogs.views import GrowLogListView
+        return GrowLogListView
+    elif section_name == 'news':
+        from news.views import HomePageView
+        return HomePageView
+    # Добавьте сюда другие секции по мере необходимости
+    return None
+
+@require_GET
+def unified_list_ajax_filter(request, section_name):
+    """
+    ЕДИНЫЙ ГЛОБАЛЬНЫЙ AJAX-обработчик для всех списковых страниц.
+    Использует `section_name` для динамического выбора нужного View и его логики.
+    """
+    ViewClass = get_view_class_from_section(section_name)
+    if not ViewClass:
+        return JsonResponse({'error': f'Section "{section_name}" not found'}, status=404)
+
+    # Создаем экземпляр View, чтобы получить доступ к его методам
+    view_instance = ViewClass()
+    view_instance.request = request
+
+    # Получаем отфильтрованный и отсортированный queryset
+    queryset = view_instance.get_queryset()
+    queryset = view_instance.apply_filters(queryset) # Применяем фильтры из View
+
+    # Пагинация
+    paginator = Paginator(queryset, view_instance.paginate_by)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # Рендерим карточки и пагинацию в HTML
+    cards_html = render_to_string('includes/partials/_unified_cards_wrapper.html', {
+        'unified_card_list': view_instance.get_unified_cards(page_obj),
+        'request': request
+    })
+
+    pagination_html = ""
+    if page_obj.has_other_pages():
+        pagination_html = render_to_string('includes/partials/_unified_pagination.html', {
+            'page_obj': page_obj,
+            'current_filter': request.GET.get('filter', 'all')
+        })
+
+    return JsonResponse({
+        'success': True,
+        'cards_html': cards_html,
+        'pagination_html': pagination_html,
+        'posts_count': paginator.count
     })
 
 def maintenance_page_view(request, section_slug=None):

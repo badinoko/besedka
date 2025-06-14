@@ -31,11 +31,39 @@
 
                 <h5 class="mt-4">{% trans "Моя активность:" %}</h5>
                 {% if user_stats %}
-                <ul class="list-unstyled">
-                    <li><a href="{% url 'store:my_orders' %}">{% trans "Мои заказы:" %}</a> {{ user_stats.orders_count|default:0 }}</li>
-                    <li><a href="{% url 'growlogs:my_logs' %}">{% trans "Мои гроу-репорты:" %}</a> {{ user_stats.growlogs_count|default:0 }}</li>
-                    <li><a href="{% url 'gallery:my_photos' %}">{% trans "Мои фотографии:" %}</a> {{ user_stats.photos_count|default:0 }}</li>
-                </ul>
+                <!-- SSOT: Унифицированные карточки статистики -->
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card border-primary text-center">
+                            <div class="card-body">
+                                <i class="fas fa-shopping-cart fa-2x text-primary mb-2"></i>
+                                <h5 class="card-title">{{ user_stats.orders_count|default:0 }}</h5>
+                                <p class="card-text small text-muted">{% trans "Заказов" %}</p>
+                                <a href="{% url 'store:my_orders' %}" class="btn btn-outline-primary btn-sm">{% trans "Перейти" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success text-center">
+                            <div class="card-body">
+                                <i class="fas fa-seedling fa-2x text-success mb-2"></i>
+                                <h5 class="card-title">{{ user_stats.growlogs_count|default:0 }}</h5>
+                                <p class="card-text small text-muted">{% trans "Гроу-репортов" %}</p>
+                                <a href="{% url 'growlogs:my_logs' %}" class="btn btn-outline-success btn-sm">{% trans "Перейти" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info text-center">
+                            <div class="card-body">
+                                <i class="fas fa-images fa-2x text-info mb-2"></i>
+                                <h5 class="card-title">{{ user_stats.photos_count|default:0 }}</h5>
+                                <p class="card-text small text-muted">{% trans "Фотографий" %}</p>
+                                <a href="{% url 'gallery:my_photos' %}" class="btn btn-outline-info btn-sm">{% trans "Перейти" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% else %}
                     <p>{% trans "Информация о вашей активности пока недоступна." %}</p>
                 {% endif %}

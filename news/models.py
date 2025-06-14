@@ -164,6 +164,17 @@ class Post(models.Model):
     def get_dislikes_count(self):
         return self.reactions.filter(reaction_type='dislike').count()
 
+    @property
+    def likes(self):
+        """Обратная совместимость для шаблонов"""
+        return self.reactions.filter(reaction_type='like')
+
+    @property
+    def comments(self):
+        """Обратная совместимость для шаблонов"""
+        from news.models import Comment
+        return Comment.objects.filter(post=self)
+
 
 class Poll(models.Model):
     """Опросы для постов типа 'poll'"""

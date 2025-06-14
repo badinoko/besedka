@@ -970,22 +970,11 @@ class ModernChatClient {
     }
 
     showNotification(message, type = 'info') {
-        // Создаем toast уведомление
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type} alert-dismissible fade show`;
-        toast.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-        document.body.appendChild(toast);
-
-        // Автоудаление через 5 секунд
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 5000);
+        if (window.showNotification) {
+            window.showNotification(message, type);
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
     }
 
     playNotificationSound() {

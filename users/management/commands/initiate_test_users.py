@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from users.models import UserProfile
+from allauth.account.models import EmailAddress
 
 User = get_user_model()
 
@@ -8,12 +9,43 @@ class Command(BaseCommand):
     help = 'Creates or updates test users with predefined roles and credentials.'
 
     def handle(self, *args, **options):
+        # Унифицированные пользователи согласно BESEDKA_USER_SYSTEM.md (SSOT)
         users_data = [
-            {'username': 'owner_user', 'password': 'password123', 'email': 'owner@example.com', 'role': User.Role.OWNER, 'is_staff': True, 'is_superuser': True},
-            {'username': 'moderator_user', 'password': 'password123', 'email': 'moderator@example.com', 'role': User.Role.ADMIN, 'is_staff': True},
-            {'username': 'storeowner_user', 'password': 'password123', 'email': 'storeowner@example.com', 'role': User.Role.STORE_OWNER, 'is_staff': True},
-            {'username': 'storeadmin_user', 'password': 'password123', 'email': 'storeadmin@example.com', 'role': User.Role.STORE_ADMIN, 'is_staff': True},
-            {'username': 'regular_user', 'password': 'password123', 'email': 'user@example.com', 'role': User.Role.USER},
+            {
+                'username': 'owner',
+                'password': 'owner123secure',
+                'email': 'owner@besedka.com',
+                'role': User.Role.OWNER,
+                'is_staff': True,
+                'is_superuser': True,
+            },
+            {
+                'username': 'admin',
+                'password': 'admin123secure',
+                'email': 'admin@besedka.com',
+                'role': User.Role.ADMIN,
+                'is_staff': True,
+            },
+            {
+                'username': 'store_owner',
+                'password': 'storeowner123secure',
+                'email': 'store.owner@magicbeans.com',
+                'role': User.Role.STORE_OWNER,
+                'is_staff': True,
+            },
+            {
+                'username': 'store_admin',
+                'password': 'storeadmin123secure',
+                'email': 'store.admin@magicbeans.com',
+                'role': User.Role.STORE_ADMIN,
+                'is_staff': True,
+            },
+            {
+                'username': 'test_user',
+                'password': 'user123secure',
+                'email': 'test.user@besedka.com',
+                'role': User.Role.USER,
+            },
         ]
 
         self.stdout.write(self.style.SUCCESS('Initializing test users...'))
@@ -34,6 +66,15 @@ class Command(BaseCommand):
                     user.set_password(data['password'])
                     user.save()
                     UserProfile.objects.get_or_create(user=user) # Ensure profile exists
+                    # Создаём подтверждённый адрес электронной почты, чтобы Allauth не требовал верификации
+                    EmailAddress.objects.update_or_create(
+                        user=user,
+                        email=data['email'],
+                        defaults={
+                            'primary': True,
+                            'verified': True,
+                        },
+                    )
                     self.stdout.write(self.style.SUCCESS(f"User {data['username']} created with role {data['role']}."))
                 else:
                     # Update existing user details if needed, but be careful with password
@@ -45,6 +86,15 @@ class Command(BaseCommand):
                     user.set_password(data['password'])
                     user.save()
                     UserProfile.objects.get_or_create(user=user) # Ensure profile exists
+                    # Обновляем/создаём подтверждённый адрес электронной почты
+                    EmailAddress.objects.update_or_create(
+                        user=user,
+                        email=data['email'],
+                        defaults={
+                            'primary': True,
+                            'verified': True,
+                        },
+                    )
                     self.stdout.write(self.style.WARNING(f"User {data['username']} already exists. Email, role, staff status, and password updated."))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Error processing user {data['username']}: {e}"))

@@ -109,8 +109,12 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "users.context_processors.navigation_context",  # 🚀 Unified navigation context
+                "core.context_processors.navigation_context",  # 🚀 Unified navigation context
                 "magicbeans_store.context_processors.cart_item_count",
+            ],
+            "builtins": [
+                "django.templatetags.i18n",
+                "core.templatetags.translate_alias",  # 👈 Alias tag library to support `{% translate %}`
             ],
         },
     },
@@ -167,6 +171,9 @@ ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Разрешаем мгновенный логаут по GET (важно для автотестов и UX)
+ACCOUNT_LOGOUT_ON_GET = True
 
 # Django Guardian
 AUTHENTICATION_BACKENDS = (

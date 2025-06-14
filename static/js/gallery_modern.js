@@ -114,15 +114,15 @@ class ModernGallery {
 
                 // Показываем сообщение об успехе
                 if (data.message) {
-                    this.showNotification(data.message, 'success');
+                    window.showNotification(data.message, 'success');
                 }
             } else {
                 console.error('Like error:', data.error || data.message);
-                this.showNotification('Ошибка при обработке лайка', 'error');
+                window.showNotification('Ошибка при обработке лайка', 'error');
             }
         } catch (error) {
             console.error('Like request failed:', error);
-            this.showNotification('Ошибка сети. Попробуйте позже.', 'error');
+            window.showNotification('Ошибка сети. Попробуйте позже.', 'error');
         } finally {
             // Разблокируем кнопку
             setTimeout(() => {
@@ -383,55 +383,7 @@ class ModernGallery {
         return cookieValue;
     }
 
-    /**
-     * Показ уведомлений
-     */
-    showNotification(message, type = 'info') {
-        // Создаем контейнер для уведомлений если его нет
-        let container = document.querySelector('.notifications-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'notifications-container';
-            container.style.cssText = `
-                position: fixed;
-                top: 2rem;
-                right: 2rem;
-                z-index: 10000;
-                max-width: 400px;
-            `;
-            document.body.appendChild(container);
-        }
-
-        // Создаем уведомление
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.style.cssText = `
-            background: ${type === 'error' ? '#e74c3c' : '#4facfe'};
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        `;
-        notification.textContent = message;
-
-        container.appendChild(notification);
-
-        // Анимация появления
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 100);
-
-        // Автоматическое скрытие
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
-    }
+    // Удалено: используется глобальная система уведомлений window.showNotification
 
     /**
      * Обновление layout галереи

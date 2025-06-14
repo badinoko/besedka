@@ -1,0 +1,128 @@
+{% load static %}
+{% load i18n %}
+
+{# =============================================================== #}
+{# УНИФИЦИРОВАННАЯ КАРТОЧКА КОРЗИНЫ - ДЛЯ SSOT #}
+{# =============================================================== #}
+{# Работает с форматом данных из get_unified_cards() + cart данные #}
+{# =============================================================== #}
+
+<div class="row cart-item-row" id="cart-item-{{ item.cart_item_id }}" data-item-id="{{ item.cart_item_id }}">
+    <!-- Изображение товара -->
+    <div class="col-md-2">
+                <a href="{{ item.detail_url }}">
+            <img src="{{ item.image_url }}" alt="{{ item.title }}"
+                 class="img-fluid rounded cart-item-image"
+                 style="max-height: 120px; width: 100%; object-fit: cover;">
+        </a>
+    </div>
+
+    <!-- Информация о товаре -->
+    <div class="col-md-4">
+        <h6 class="mb-1">
+            <a href="{{ item.detail_url }}" class="text-decoration-none text-dark fw-bold">
+                {{ item.title }}
+            </a>
+        </h6>
+        <p class="text-muted mb-1 small">{{ item.description|striptags|truncatechars:80 }}</p>
+        <small class="text-muted">{{ item.author.name }}</small>
+    </div>
+
+    <!-- Цена -->
+    <div class="col-md-2 text-center">
+        <div class="fw-bold fs-5">{{ item.price }} {% translate "руб." %}</div>
+    </div>
+
+    <!-- Управление количеством -->
+    <div class="col-md-2">
+        <div class="quantity-control-group">
+            <div class="input-group input-group-sm">
+                <button class="btn btn-outline-secondary quantity-btn" type="button"
+                        data-action="decrease" data-item-id="{{ item.cart_item_id }}"
+                        title="{% translate 'Уменьшить количество' %}">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <input type="number" name="quantity" value="{{ item.cart_quantity }}"
+                       min="1" max="{{ item.available_stock|add:item.cart_quantity }}"
+                       class="form-control text-center quantity-input"
+                       data-item-id="{{ item.cart_item_id }}"
+                       data-max-total="{{ item.available_stock|add:item.cart_quantity }}"
+                       data-current-stock="{{ item.available_stock }}"
+                       autocomplete="off">
+                <button class="btn btn-outline-secondary quantity-btn" type="button"
+                        data-action="increase" data-item-id="{{ item.cart_item_id }}"
+                        title="{% translate 'Увеличить количество' %}">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <small class="text-muted d-block mt-1 available-quantity">
+                {% translate "Доступно:" %} {{ item.available_stock }}
+            </small>
+            <!-- Индикатор загрузки -->
+            <div class="loading-indicator" style="display: none;">
+                <small class="text-primary">
+                    <i class="fas fa-spinner fa-spin"></i> {% translate "Обновление..." %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Итоговая сумма -->
+    <div class="col-md-1 text-end">
+        <div class="fw-bold fs-5 item-total-cell" id="item-total-{{ item.cart_item_id }}">
+            {{ item.cart_total }} {% translate "руб." %}
+        </div>
+    </div>
+
+    <!-- Действия -->
+    <div class="col-md-1 text-center">
+        <button class="btn btn-outline-danger btn-sm remove-from-cart-btn"
+                data-item-id="{{ item.cart_item_id }}"
+                title="{% translate 'Удалить из корзины' %}">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+</div>
+
+<hr class="my-3">
+
+<style>
+.cart-item-row {
+    padding: 1rem 0;
+    align-items: center;
+}
+
+.cart-item-image {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.quantity-control-group {
+    position: relative;
+}
+
+.quantity-input-group {
+    max-width: 140px;
+}
+
+.available-quantity {
+    font-size: 0.75rem;
+}
+
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.removing-item {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+</style>

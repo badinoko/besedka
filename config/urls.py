@@ -3,13 +3,17 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path, include
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 from core.admin_site import store_owner_site, store_admin_site, owner_admin_site, moderator_admin_site
 from core.views import admin_selector, admin_redirect
+from core import ajax_views as core_ajax
 
 urlpatterns = [
+    # Перенаправление с главной на новостную ленту
+    path("", RedirectView.as_view(pattern_name="news:home", permanent=True), name="home"),
+
     # Главная страница - новостная лента
-    path("", include("news.urls", namespace="news")),
+    path("news/", include("news.urls", namespace="news")),
 
     # Статические страницы
     path("pages/", include(([
@@ -52,6 +56,8 @@ urlpatterns = [
 
     # API urls
     path("api/", include("config.api_router")),
+
+    path('ajax/comments/', core_ajax.load_comments, name='ajax_load_comments'),
 ]
 
 if settings.DEBUG:

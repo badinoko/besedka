@@ -4,6 +4,7 @@ from .views import (
     CartView, AddToCartView, UpdateCartView, RemoveFromCartView, # ApplyCouponToCartView, # Купоны отключены
     MyOrdersView, OrderDetailView
 )
+from .views.catalog import ajax_filter
 from .views.checkout import SecureCheckoutView, OrderSuccessView
 
 app_name = "store"
@@ -12,6 +13,9 @@ urlpatterns = [
     # Каталог
     path("", CatalogView.as_view(), name="catalog"),
     path("strain/<int:pk>/", StrainDetailView.as_view(), name="strain_detail"),
+
+    # AJAX фильтрация
+    path("ajax-filter/", ajax_filter, name="ajax_filter"),
 
     # Поиск
     path("search/", CatalogView.as_view(), name="search"),

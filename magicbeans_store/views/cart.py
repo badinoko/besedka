@@ -12,6 +12,7 @@ import logging
 from ..models import Cart, CartItem, StockItem, Coupon
 from ..forms import ApplyCouponForm
 from ..utils import get_cart
+from core.utils import get_unified_cards
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +24,27 @@ class CartView(TemplateView):
         context = super().get_context_data(**kwargs)
         cart, _ = get_cart(self.request)
         context['cart'] = cart
+
         if cart:
-            context['cart_items'] = cart.items.select_related('stock_item__strain', 'stock_item__strain__seedbank')
+            cart_items = cart.items.select_related('stock_item__strain', 'stock_item__strain__seedbank')
+            context['cart_items'] = cart_items
+
+            # SSOT: создаем unified карточки для товаров в корзине
+            # Преобразуем CartItem в объекты, подходящие для unified_card
+            cart_strains = [item.stock_item.strain for item in cart_items]
+            context['unified_card_list'] = get_unified_cards(cart_strains, 'store')
+
+            # Добавляем информацию о количестве в корзине к каждой карточке
+            for i, item in enumerate(cart_items):
+                if i < len(context['unified_card_list']):
+                    context['unified_card_list'][i]['cart_quantity'] = item.quantity
+                    context['unified_card_list'][i]['cart_item_id'] = item.id
+                    context['unified_card_list'][i]['cart_total'] = item.get_total()
+                    context['unified_card_list'][i]['available_stock'] = item.stock_item.quantity
         else:
             context['cart_items'] = []
+            context['unified_card_list'] = []
+
         context['apply_coupon_form'] = ApplyCouponForm()
 
         # Хлебные крошки

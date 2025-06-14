@@ -185,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest',
                 'Content-Type': 'application/json',
             },
         })
@@ -238,6 +239,40 @@ document.addEventListener('DOMContentLoaded', function() {
         markAllReadBtn.addEventListener('click', markAllAsRead);
     }
 
+    if (markSelectedReadBtn) {
+        markSelectedReadBtn.addEventListener('click', markSelectedAsRead);
+    }
+
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', deleteSelectedNotifications);
+    }
+
+    // Обработчик для чекбокса "Выбрать все"
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            notificationCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateBulkActionButtons();
+        });
+    }
+
+    // Обработчики для отдельных чекбоксов
+    notificationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateBulkActionButtons();
+
+            // Обновляем состояние "Выбрать все"
+            if (selectAllCheckbox) {
+                const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
+                const totalCount = notificationCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCount;
+                selectAllCheckbox.checked = checkedCount === totalCount && totalCount > 0;
+            }
+        });
+    });
+
     // Обработчик клика по кнопкам "Прочитано"
     document.addEventListener('click', function(e) {
         if (e.target.closest('.mark-read-btn')) {
@@ -245,6 +280,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const button = e.target.closest('.mark-read-btn');
             const notificationId = button.dataset.notificationId;
             markSingleNotificationRead(notificationId, button);
+        }
+    });
+
+    // Обработчик клика по кнопкам "Удалить"
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-btn')) {
+            e.stopPropagation(); // Останавливаем всплытие события
+            const button = e.target.closest('.delete-btn');
+            const notificationId = button.dataset.notificationId;
+            deleteSingleNotification(notificationId, button);
         }
     });
 

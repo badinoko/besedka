@@ -16,7 +16,7 @@
 
                     {% if object.image %}
                         <div class="text-center my-3">
-                            <img src="{{ object.image.thumbnail.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-height: 150px;">
+                            <img src="{{ object.image.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-height: 150px; max-width: 100%; object-fit: contain;">
                         </div>
                     {% endif %}
 

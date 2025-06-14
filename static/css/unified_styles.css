@@ -1,0 +1,261 @@
+/* =============================================================== */
+/* УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ ВСЕХ МОДУЛЕЙ ПРОЕКТА "БЕСЕДКА" */
+/* =============================================================== */
+/* Объединяет общие стили из: */
+/* - news_home.css (карточки новостей) */
+/* - custom.css (кнопки, навигация, хлебные крошки) */
+/* =============================================================== */
+
+/* =============================================================================
+   БАЗОВЫЕ СТИЛИ КНОПОК
+   ============================================================================= */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.btn-success {
+    background-color: #198754;
+    color: #ffffff;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+/* =============================================================================
+   ХЛЕБНЫЕ КРОШКИ
+   ============================================================================= */
+.breadcrumb {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+}
+
+.breadcrumb-item.active {
+    color: #6c757d;
+}
+
+/* =============================================================================
+   НАВИГАЦИЯ
+   ============================================================================= */
+.navbar-dark {
+    background-color: #343a40;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, .8);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #ffffff;
+}
+
+/* =============================================================================
+   АДМИН-ПАНЕЛЬ
+   ============================================================================= */
+.admin-button {
+    background-color: #ffc107;
+    color: #000000;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    display: inline-block;
+    text-decoration: none;
+    border-radius: 0.25rem;
+}
+
+.admin-button:hover {
+    background-color: #ffca2c;
+    color: #000000;
+    text-decoration: none;
+}
+
+/* =============================================================================
+   КАРТОЧКИ НОВОСТЕЙ
+   ============================================================================= */
+.news-hero {
+    /* Стили унаследованы из unified_hero_buttons.css */
+}
+
+.news-card {
+    /* Дополнительные стили для карточек новостей */
+    transition: all 0.3s ease;
+}
+
+.news-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* =============================================================================
+   УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ВСЕХ КАРТОЧЕК
+   ============================================================================= */
+.unified-card {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.unified-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.unified-card .card-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.unified-card .card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.unified-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+.unified-card-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.unified-card-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    pointer-events: none;
+    cursor: default;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Цветовая схема для статистики */
+.unified-card-stats .stat-item.likes {
+    color: #e74c3c;
+}
+
+.unified-card-stats .stat-item.likes .fa-heart {
+    color: #e74c3c;
+}
+
+.unified-card-stats .stat-item.comments {
+    color: #6c757d;
+}
+
+.unified-card-stats .stat-item.comments .fa-comment {
+    color: #6c757d;
+}
+
+.unified-card-stats .stat-item.views {
+    color: #28a745;
+}
+
+.unified-card-stats .stat-item.views .fa-eye {
+    color: #28a745;
+}
+
+/* =============================================================================
+   УНИВЕРСАЛЬНЫЕ АНИМАЦИИ
+   ============================================================================= */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* =============================================================================
+   АДАПТИВНОСТЬ
+   ============================================================================= */
+@media (max-width: 768px) {
+    .unified-card-stats {
+        gap: 10px;
+    }
+
+    .unified-card-stats .stat-item {
+        font-size: 0.8rem;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 576px) {
+    .unified-card .card-image {
+        height: 180px;
+    }
+}
+
+/* =============================================================================
+   КОММЕНТАРИИ (унифицированный стиль)
+   ============================================================================= */
+.comment {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.replies {
+    margin-left: 1.25rem;
+    border-left: 2px solid #e9ecef;
+    padding-left: 1rem;
+}
+
+.reply-btn.btn-outline-secondary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+.reply-btn.btn-outline-secondary:hover {
+    color: #ffffff;
+    background-color: #0d6efd;
+}
+
+/* =============================================================================
+   КОНЕЦ СЕКЦИИ КОММЕНТАРИЕВ
+   ============================================================================= */
+
+/* =============================================================================
+   COMMENT SECTION LAYOUT (единая точка)
+   ============================================================================= */
+.comment-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 3rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}

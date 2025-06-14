@@ -3,7 +3,6 @@ from django.conf import settings
 from django.urls import resolve
 from django.db.models import signals
 from django.utils.deprecation import MiddlewareMixin
-from .utils import log_view
 from magicbeans_store.models import Strain, StockItem
 from growlogs.models import GrowLog
 from gallery.models import Photo
@@ -335,9 +334,11 @@ EXCLUDED_URL_PREFIXES = [
     settings.MEDIA_URL,
     '/admin/',
     '/owner_admin/',
+    '/owner-admin/',  # дефисный вариант
     '/store_owner/',
     '/store_admin/',
     '/moderator_admin/',
+    '/moderator-admin/',  # дефисный вариант
     '/internal/core/maintenance/', # Путь к самой странице обслуживания
     '/__debug__/', # Django Debug Toolbar
     '/accounts/', # Страницы аутентификации Allauth

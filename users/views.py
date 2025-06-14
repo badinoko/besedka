@@ -19,6 +19,7 @@ from django.urls import reverse_lazy, reverse
 from django import forms
 from core.models import ActionLog
 from core.monitoring import PlatformMonitor
+from core.base_views import UnifiedListView
 
 # Получаем модель пользователя
 UserModel = get_user_model()
@@ -289,10 +290,44 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 
 user_detail_view = UserDetailView.as_view()
 
-class UserListView(LoginRequiredMixin, ListView):
+class UserListView(LoginRequiredMixin, UnifiedListView):
+    """Унифицированный список пользователей"""
     model = UserModel
-    slug_field = "username"
-    slug_url_arg = "username"
+    template_name = 'base_list_page.html'
+    context_object_name = 'users'
+    paginate_by = 12
+
+    card_type = 'user'
+    section_hero_class = 'users-hero'
+
+    # Переопределяем карты для пользователей
+    def get_unified_cards(self, page_obj):
+        cards = []
+        for user in page_obj:
+            avatar_url = user.avatar.url if getattr(user, 'avatar', None) else '/static/images/default_avatar.svg'
+            cards.append({
+                'id': user.id,
+                'type': 'user',
+                'title': user.username,
+                'description': user.bio[:120] if getattr(user, 'bio', '') else '',
+                'image_url': avatar_url,
+                'detail_url': reverse_lazy('users:detail', kwargs={'username': user.username}),
+                'author': {'name': user.username, 'avatar': avatar_url},
+                'stats': [
+                    {'icon': 'fa-image', 'count': getattr(user, 'photos_count', 0) if hasattr(user, 'photos_count') else 0, 'css': 'photos'},
+                    {'icon': 'fa-book', 'count': getattr(user, 'growlogs_count', 0) if hasattr(user, 'growlogs_count') else 0, 'css': 'growlogs'},
+                ],
+                'created_at': user.date_joined,
+            })
+        return cards
+
+    def get_filter_list(self):
+        return []
+
+    def get_hero_stats(self):
+        return [
+            {'value': self.model.objects.count(), 'label': 'Пользователей'},
+        ]
 
 user_list_view = UserListView.as_view()
 
@@ -369,35 +404,75 @@ class RoleManagementForm(forms.ModelForm):
 
 # ===== VIEWS ДЛЯ ЛИЧНОГО КАБИНЕТА =====
 
-class NotificationListView(LoginRequiredMixin, ListView):
+class NotificationListView(LoginRequiredMixin, UnifiedListView):
+    """Унифицированный список уведомлений"""
     model = Notification
-    template_name = 'users/notification_list.html'
+    template_name = 'base_list_page.html'
     context_object_name = 'notifications'
     paginate_by = 20
 
+    card_type = 'notification'
+    section_hero_class = 'notifications-hero'
+
     def get_queryset(self):
-        # Возвращаем все уведомления пользователя, отсортированные по дате
         return self.request.user.notifications.all().order_by('-created_at')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
+    def get_filter_list(self):
+        return []
 
-        # Получаем все уведомления пользователя
-        all_notifications = user.notifications.all()
+    def get_unified_cards(self, page_obj):
+        cards = []
+        for notif in page_obj:
+            sender_name = notif.sender.username if notif.sender else 'Система'
+            cards.append({
+                'id': notif.id,
+                'type': 'notification',
+                'title': notif.title or 'Уведомление',
+                'description': notif.message[:140] if notif.message else '',
+                'image_url': '/static/images/default_notification.svg',
+                'detail_url': reverse_lazy('users:notification_list'),
+                'author': {'name': sender_name, 'avatar': None},
+                'stats': [],
+                'created_at': notif.created_at,
+                'is_read': notif.is_read,
+            })
+        return cards
 
-        # Подсчитываем статистику
-        unread_count = all_notifications.filter(is_read=False).count()
-        total_count = all_notifications.count()
+    def get_hero_stats(self):
+        qs = self.get_queryset()
+        return [
+            {'value': qs.count(), 'label': 'Всего'},
+            {'value': qs.filter(is_read=False).count(), 'label': 'Непрочитано'},
+        ]
 
-        context.update({
-            'page_title': 'Уведомления',
-            'unread_count': unread_count,
-            'total_count': total_count,
-            'read_count': total_count - unread_count,
-        })
-
-        return context
+    def get_hero_actions(self):
+        """Кнопки bulk-действий для уведомлений"""
+        return [
+            {
+                'url': '#',
+                'label': 'Прочитать все',
+                'icon': 'fas fa-envelope-open-text',
+                'is_primary': True,
+                'css_class': '',
+                'html_id': 'markAllRead',
+            },
+            {
+                'url': '#',
+                'label': 'Прочитать выбранные',
+                'icon': 'fas fa-envelope-open',
+                'is_primary': False,
+                'css_class': '',
+                'html_id': 'markSelectedRead',
+            },
+            {
+                'url': '#',
+                'label': 'Удалить выбранные',
+                'icon': 'fas fa-trash',
+                'is_primary': False,
+                'css_class': 'btn-danger',
+                'html_id': 'deleteSelected',
+            },
+        ]
 
 notification_list_view = NotificationListView.as_view()
 

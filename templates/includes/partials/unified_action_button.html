@@ -1,0 +1,33 @@
+{# =============================================================== #}
+{# УНИВЕРСАЛЬНАЯ КНОПКА ДЕЙСТВИЙ #}
+{# =============================================================== #}
+{# ПАРАМЕТРЫ: #}
+{# - action_type: 'like', 'comment', 'share', 'favorite' #}
+{# - icon: иконка FontAwesome (например 'fa-heart') #}
+{# - count: количество (лайков, комментариев и т.д.) #}
+{# - is_active: активна ли кнопка (для лайков) #}
+{# - extra_classes: дополнительные CSS классы #}
+{# - data_attributes: словарь с data-атрибутами #}
+{# - clickable: true/false - кликабельная ли кнопка #}
+{# =============================================================== #}
+
+{% with action_type=action_type|default:'like' clickable=clickable|default:true %}
+{% if clickable %}
+    <button type="button"
+            class="btn btn-sm action-btn {{ action_type }}-btn {% if is_active %}active{% endif %} {{ extra_classes|default:'' }}"
+            {% for attr, value in data_attributes.items %}data-{{ attr }}="{{ value }}"{% endfor %}>
+        <i class="fas {{ icon|default:'fa-heart' }}"></i>
+        {% if count is not None %}
+            <span class="action-count">{{ count }}</span>
+        {% endif %}
+    </button>
+{% else %}
+    <!-- Некликабельный индикатор -->
+    <span class="stat-item {{ action_type }}-stat {{ extra_classes|default:'' }}">
+        <i class="fas {{ icon|default:'fa-heart' }}"></i>
+        {% if count is not None %}
+            <span class="action-count">{{ count }}</span>
+        {% endif %}
+    </span>
+{% endif %}
+{% endwith %}

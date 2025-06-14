@@ -1,1124 +1,288 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, FormView
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET, require_POST
 from django.contrib import messages
-from django.urls import reverse, reverse_lazy
-from django.http import JsonResponse, HttpResponseForbidden, Http404
-from django.db.models import Q, F, Count
-from django.db import models
-from django.utils import timezone
-from datetime import date, timedelta
-import json
-from django.views.decorators.http import require_POST, require_GET
-from django.views.decorators.csrf import csrf_exempt
-from django.template.loader import render_to_string
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse
+from django.db.models import Count
+from django.db.models import F
+from django.template.loader import render_to_string  # Для рендеринга HTML фрагментов в AJAX
 
-from .models import GrowLog, GrowLogEntry, GrowLogComment, GrowLogEntryLike, GrowLogEntryComment
-from .forms import GrowLogCreateForm, GrowLogEntryForm, GrowLogCommentForm, GrowLogEntryCommentForm
-from core.models import ActionLog
-from users.models import Notification
-from magicbeans_store.models import Strain, SeedBank
+from .models import GrowLog, GrowLogComment
+from .forms import GrowLogCreateForm as GrowLogForm, GrowLogCommentForm
+from core.base_views import UnifiedListView, unified_ajax_filter
+from core.constants import COMMENTS_PAGE_SIZE
+from core.utils import get_limited_top_level_comments, get_total_comments_count
 
-class GrowLogListView(ListView):
-    """Список всех публичных гроу-логов"""
+# ==========================================================================
+# 1. ОСНОВНОЙ КЛАСС ОТОБРАЖЕНИЯ ГРОУРЕПОРТОВ (УНИФИЦИРОВАН)
+# ==========================================================================
+class GrowLogListView(UnifiedListView):
+    """
+    Список гроу-репортов - УНИФИЦИРОВАННАЯ ВЕРСИЯ
+    """
     model = GrowLog
-    template_name = 'growlogs/list.html'
-    context_object_name = 'growlogs'
-    paginate_by = 12
+    template_name = 'base_list_page.html'
+    context_object_name = 'page_obj'
+    paginate_by = 9
+
+    # УНИФИЦИРОВАННЫЕ НАСТРОЙКИ
+    section_title = "Гроурепорты сообщества"
+    section_subtitle = "Делитесь опытом выращивания и изучайте техники других гроверов"
+    section_hero_class = "growlogs-hero"
+    card_type = "growlog"
 
     def get_queryset(self):
-        queryset = GrowLog.objects.filter(
-            is_active=True,
-            is_public=True
-        ).select_related('grower', 'strain').prefetch_related('likes', 'comments').annotate(
-            likes_count=Count('likes')
+        """Возвращает queryset с учётом фильтров.
+
+        Ранее метод возвращал только базовый список активных гроурепортов, не
+        учитывая выбранный фильтр («Популярные», «Обсуждаемые», «Мои
+        репорты»). Теперь результат обязательно пропускается через
+        self.apply_filters().
+        """
+
+        base_qs = (
+            GrowLog.objects.filter(is_active=True)
+            .select_related("grower", "strain")
         )
 
-        # ФИЛЬТРЫ ОТ ТАБОВ (НОВОЕ)
-        filter_by = self.request.GET.get('filter')
-        if filter_by == 'popular':
-            queryset = queryset.order_by('-likes_count', '-views_count', '-start_date')
-        elif filter_by == 'active':
-            # Исключаем стадии, которые считаются завершенными
-            finished_stages = ['harvest', 'drying', 'curing', 'finished']
-            queryset = queryset.exclude(current_stage__in=finished_stages).order_by('-start_date')
-        elif filter_by == 'finished':
-            finished_stages = ['harvest', 'drying', 'curing', 'finished']
-            queryset = queryset.filter(current_stage__in=finished_stages).order_by('-start_date')
-        else: # 'newest' и по умолчанию
-            queryset = queryset.order_by('-start_date')
+        return self.apply_filters(base_qs)
 
-        # Поиск
-        search_query = self.request.GET.get('search')
-        if search_query:
-            queryset = queryset.filter(
-                Q(title__icontains=search_query) |
-                Q(grower__username__icontains=search_query) |
-                Q(strain__name__icontains=search_query)
-            )
+    def apply_filters(self, queryset):
+        """Применяет фильтрацию для гроурепортов."""
+        filter_type = self.request.GET.get('filter', 'all')
 
-        # Фильтр по стадии
-        stage = self.request.GET.get('stage')
-        if stage:
-            queryset = queryset.filter(current_stage=stage)
-
-        # Фильтр по среде
-        environment = self.request.GET.get('environment')
-        if environment:
-            queryset = queryset.filter(environment=environment)
-
-        # Сортировка из выпадающего списка (старая логика)
-        sort_by = self.request.GET.get('sort_by') # Убрал значение по умолчанию
-        if sort_by: # Применяем только если он есть
-            if sort_by == '-start_date':
-                # Новые сначала по дате начала, потом по id для стабильности
-                queryset = queryset.order_by('-start_date', '-id')
-            elif sort_by == 'start_date':
-                # Старые сначала
-                queryset = queryset.order_by('start_date', 'id')
-            elif sort_by == '-views_count':
-                # Популярные
-                queryset = queryset.order_by('-views_count', '-start_date')
-            elif sort_by == 'title':
-                # По названию А-Я
-                queryset = queryset.order_by('title', '-start_date')
-            elif sort_by == '-title':
-                # По названию Я-А
-                queryset = queryset.order_by('-title', '-start_date')
-            elif sort_by == '-created_at':
-                # По дате создания (новые сначала)
-                queryset = queryset.order_by('-created_at', '-id')
-            elif sort_by == 'created_at':
-                # По дате создания (старые сначала)
-                queryset = queryset.order_by('created_at', 'id')
-
+        if filter_type == 'popular':
+            queryset = queryset.annotate(likes_count=Count('likes')).order_by('-likes_count', '-created_at')
+        elif filter_type == 'commented':
+            queryset = queryset.annotate(comments_count=Count('comments')).order_by('-comments_count', '-created_at')
+        elif filter_type == 'my_growlogs' and self.request.user.is_authenticated:
+            queryset = queryset.filter(grower=self.request.user).order_by('-created_at')
+        else: # all
+            queryset = queryset.order_by('-created_at')
         return queryset
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_hero_stats(self):
+        """Статистика для hero-секции"""
+        active_growlogs = GrowLog.objects.filter(is_active=True)
+        return [
+            {'value': active_growlogs.count(), 'label': 'Репортов'},
+            {'value': active_growlogs.values('grower').distinct().count(), 'label': 'Гроверов'},
+        ]
 
-        # Добавляем статистику для hero-секции
-        all_growlogs = GrowLog.objects.filter(is_active=True, is_public=True)
-        total_reports = all_growlogs.count()
-        total_growers = all_growlogs.values('grower').distinct().count()
-
-        # Считаем общее количество дней опыта
-        total_days = sum([growlog.current_day for growlog in all_growlogs])
-
-        context.update({
-            'stages': GrowLog.STAGE_CHOICES,
-            'environments': GrowLog.ENVIRONMENT_CHOICES,
-            'search_query': self.request.GET.get('search', ''),
-            'current_stage': self.request.GET.get('stage', ''),
-            'current_environment': self.request.GET.get('environment', ''),
-            'current_sort': self.request.GET.get('sort_by', '-start_date'),
-            'current_filter': self.request.GET.get('filter', 'newest'), # Для активного таба
-            # Статистика для hero-секции
-            'total_reports': total_reports,
-            'total_growers': total_growers,
-            'total_days': total_days,
-        })
-        return context
-
-    def get(self, request, *args, **kwargs):
-        """Обрабатываем AJAX запросы"""
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            self.object_list = self.get_queryset()
-            context = self.get_context_data()
-            return render(request, 'growlogs/partials/growlog_cards.html', context)
-        return super().get(request, *args, **kwargs)
-
-def filter_growlogs_ajax(request):
-    """
-    AJAX обработчик для фильтрации и пагинации гроу-репортов.
-    Возвращает JSON с отрендеренным HTML для карточек и пагинации.
-    """
-    # Используем существующий view для получения отфильтрованного queryset
-    list_view = GrowLogListView()
-    list_view.request = request
-    queryset = list_view.get_queryset()
-
-    # Пагинация
-    paginator = Paginator(queryset, list_view.paginate_by)
-    page_number = request.GET.get('page', 1)
-    try:
-        page_obj = paginator.page(page_number)
-    except (EmptyPage, PageNotAnInteger):
-        page_obj = paginator.page(1)
-
-    # Собираем контекст для рендеринга
-    context = {
-        'growlogs': page_obj.object_list,
-        'is_paginated': page_obj.has_other_pages(),
-        'page_obj': page_obj,
-        'current_filter': request.GET.get('filter', 'newest')
-    }
-
-    # Рендерим HTML для карточек и пагинации
-    posts_html = render_to_string('growlogs/partials/growlog_cards.html', context, request=request)
-    pagination_html = render_to_string('growlogs/partials/pagination.html', context, request=request)
-
-    return JsonResponse({
-        'success': True,
-        'posts_html': posts_html,
-        'pagination_html': pagination_html,
-    })
-
-class MyGrowLogsView(LoginRequiredMixin, ListView):
-    """Мои гроу-логи"""
-    model = GrowLog
-    template_name = 'growlogs/my_logs.html'
-    context_object_name = 'growlogs'
-    paginate_by = 10
-
-    def get_queryset(self):
-        return GrowLog.objects.filter(grower=self.request.user).select_related('strain')
-
-class GrowLogCreateView(LoginRequiredMixin, FormView):
-    """Создание гроу-репорта с пошаговым мастером"""
-    template_name = 'growlogs/create_wizard.html'
-    form_class = GrowLogCreateForm
-
-    # Определяем поля для каждого шага
-    STEP_FIELDS = {
-        1: ['title', 'strain_name', 'seedbank_name', 'start_date', 'logo', 'short_description'],
-        2: ['environment', 'medium', 'nutrients', 'lighting', 'container_size', 'setup_description'],
-        3: ['goals', 'notes', 'yield_expected', 'is_public']
-    }
-
-    def get_form_class(self):
-        """Возвращаем класс формы в зависимости от шага"""
-        current_step = self.get_current_step()
-        step_fields = self.get_step_fields(current_step)
-
-        # Создаем динамическую форму только с полями текущего шага
-        class StepForm(GrowLogCreateForm):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                # Оставляем только поля текущего шага (используем step_fields из замыкания)
-                for field_name in list(self.fields.keys()):
-                    if field_name not in step_fields:
-                        del self.fields[field_name]
-
-        return StepForm
-
-    def get_step_fields(self, step):
-        """Получаем поля для конкретного шага"""
-        return self.STEP_FIELDS.get(step, [])
-
-    def get_current_step(self):
-        """Получаем текущий шаг"""
-        return int(self.request.GET.get('step', 1))
-
-    def get_form_kwargs(self):
-        """Передаем сохраненные данные в форму"""
-        kwargs = super().get_form_kwargs()
-
-        # Если есть сохраненные данные, используем их как начальные
-        if 'growlog_wizard_data' in self.request.session:
-            saved_data = self.request.session['growlog_wizard_data']
-            kwargs['initial'] = kwargs.get('initial', {})
-            kwargs['initial'].update(saved_data)
-
-        return kwargs
-
-    def get(self, request, *args, **kwargs):
-        current_step = self.get_current_step()
-
-        # Проверяем валидность шага
-        if current_step < 1 or current_step > 3:
-            return redirect('growlogs:create')
-
-        # Инициализируем мастер создания
-        wizard_data = {
-            'current_step': current_step,
-            'steps': [
-                {'num': 1, 'title': 'Основная информация', 'icon': 'fa-info-circle', 'description': 'Название, сорт, даты и краткое описание'},
-                {'num': 2, 'title': 'Настройка grow', 'icon': 'fa-cogs', 'description': 'Среда, освещение, питание'},
-                {'num': 3, 'title': 'Цели и приватность', 'icon': 'fa-target', 'description': 'Планы, ожидания и настройки доступа'}
-            ],
-            'form': self.get_form()
-        }
-
-        # Если есть данные в сессии (для многошагового процесса)
-        if 'growlog_wizard_data' in request.session:
-            wizard_data['saved_data'] = request.session['growlog_wizard_data']
-
-        return render(request, self.template_name, wizard_data)
-
-    def post(self, request, *args, **kwargs):
-        current_step = self.get_current_step()
-        form = self.get_form()
-
-        if form.is_valid():
-            # Сохраняем данные в сессии
-            if 'growlog_wizard_data' not in request.session:
-                request.session['growlog_wizard_data'] = {}
-
-            # Обновляем данные текущего шага
-            for field, value in form.cleaned_data.items():
-                if field == 'logo':
-                    # Пропускаем логотип - обработаем отдельно
-                    continue
-                elif hasattr(value, 'strftime'):  # Даты
-                    request.session['growlog_wizard_data'][field] = value.isoformat()
-                elif isinstance(value, models.Model): # Сохраняем PK для объектов моделей
-                    request.session['growlog_wizard_data'][field] = value.pk
-                elif hasattr(value, 'quantize'):  # Decimal поля
-                    request.session['growlog_wizard_data'][field] = str(value)
-                else:
-                    request.session['growlog_wizard_data'][field] = value
-
-            # Обрабатываем файлы (логотип) - сохраняем временно
-            if 'logo' in request.FILES:
-                import tempfile
-                import os
-                import shutil
-
-                uploaded_file = request.FILES['logo']
-
-                # Создаем временную директорию если её нет
-                temp_dir = os.path.join(tempfile.gettempdir(), 'growlog_wizard')
-                os.makedirs(temp_dir, exist_ok=True)
-
-                # Создаем уникальное имя файла
-                import uuid
-                temp_filename = f"{uuid.uuid4()}_{uploaded_file.name}"
-                temp_path = os.path.join(temp_dir, temp_filename)
-
-                # Сохраняем файл временно
-                with open(temp_path, 'wb') as temp_file:
-                    for chunk in uploaded_file.chunks():
-                        temp_file.write(chunk)
-
-                # Сохраняем путь к временному файлу в сессии
-                request.session['growlog_wizard_logo_path'] = temp_path
-                request.session['growlog_wizard_logo_name'] = uploaded_file.name
-
-            request.session.modified = True
-
-            if current_step < 3:
-                # Переходим к следующему шагу
-                return redirect(f"{reverse('growlogs:create')}?step={current_step + 1}")
-            else:
-                # Финальный шаг - создаем grow log
-                return self.create_growlog(request)
+    def get_hero_actions(self):
+        """Кнопки действий для гроу-репортов"""
+        if self.request.user.is_authenticated:
+            return [
+                {'url': reverse_lazy('growlogs:create'), 'label': 'Создать репорт', 'is_primary': True, 'icon': 'fas fa-plus-circle'},
+            ]
         else:
-            # Если форма не валидна, показываем ошибки
-            wizard_data = {
-                'current_step': current_step,
-                'steps': [
-                    {'num': 1, 'title': 'Основная информация', 'icon': 'fa-info-circle', 'description': 'Название, сорт, даты и краткое описание'},
-                    {'num': 2, 'title': 'Настройка grow', 'icon': 'fa-cogs', 'description': 'Среда, освещение, питание'},
-                    {'num': 3, 'title': 'Цели и приватность', 'icon': 'fa-target', 'description': 'Планы, ожидания и настройки доступа'}
-                ],
-                'form': form
-            }
+            return []
 
-            if 'growlog_wizard_data' in request.session:
-                wizard_data['saved_data'] = request.session['growlog_wizard_data']
+    def get_filter_list(self):
+        """Фильтры для гроу-репортов"""
+        filter_list = [
+            {'id': 'all', 'label': 'Все репорты'},
+            {'id': 'popular', 'label': 'Популярные'},
+            {'id': 'commented', 'label': 'Обсуждаемые'},
+        ]
+        if self.request.user.is_authenticated:
+            filter_list.append({'id': 'my_growlogs', 'label': 'Мои репорты'})
+        return filter_list
 
-            return render(request, self.template_name, wizard_data)
+# ==========================================================================
+# 2. AJAX-ОБРАБОТЧИК ФИЛЬТРАЦИИ (НОВЫЙ, УНИФИЦИРОВАННЫЙ)
+# ==========================================================================
+@require_GET
+def ajax_filter(request):
+    """Унифицированный AJAX-обработчик для списка гроурепортов (SSOT)."""
+    return unified_ajax_filter(GrowLogListView)(request)
 
-    def create_growlog(self, request):
-        """Создание гроу-лога из данных мастера"""
-        try:
-            data = request.session.get('growlog_wizard_data', {})
-
-            # Преобразуем строковые значения обратно в нужные типы
-            if 'start_date' in data and isinstance(data['start_date'], str):
-                from datetime import datetime
-                data['start_date'] = datetime.fromisoformat(data['start_date']).date()
-
-            # Преобразуем Decimal поля
-            if 'yield_expected' in data and isinstance(data['yield_expected'], str):
-                from decimal import Decimal
-                try:
-                    data['yield_expected'] = Decimal(data['yield_expected'])
-                except:
-                    data['yield_expected'] = None
-
-            # Создаем объект
-            growlog = GrowLog.objects.create(
-                grower=request.user,
-                title=data.get('title', ''),
-                start_date=data.get('start_date'),
-                environment=data.get('environment', 'indoor'),
-                medium=data.get('medium', ''),
-                nutrients=data.get('nutrients', ''),
-                lighting=data.get('lighting', ''),
-                container_size=data.get('container_size', ''),
-                setup_description=data.get('setup_description', ''),
-                short_description=data.get('short_description', ''),
-                goals=data.get('goals', ''),
-                notes=data.get('notes', ''),
-                yield_expected=data.get('yield_expected'),
-                is_public=data.get('is_public', True)
-            )
-
-            # Обрабатываем сорт
-            strain_name = data.get('strain_name')
-            seedbank_name = data.get('seedbank_name')
-
-            if strain_name:
-                # Используем улучшенную логику поиска из формы
-                strain_name = strain_name.strip()
-                seedbank_name = seedbank_name.strip() if seedbank_name else None
-
-                # Ищем точное совпадение в магазине
-                strain = self._find_strain_in_store(strain_name, seedbank_name)
-
-                if strain:
-                    growlog.strain = strain
-                    growlog.strain_custom = ""
-                else:
-                    # Если не найден в магазине - сохраняем как произвольный сорт
-                    growlog.strain = None
-                    # Сохраняем нормализованное название (возможно с сидбанком)
-                    if seedbank_name:
-                        growlog.strain_custom = f"{strain_name} ({seedbank_name})"
-                    else:
-                        growlog.strain_custom = strain_name
-
-                growlog.save()
-
-            # Обрабатываем логотип, если он был загружен
-            if 'growlog_wizard_logo_path' in request.session:
-                import os
-                from django.core.files import File
-
-                temp_path = request.session['growlog_wizard_logo_path']
-                original_name = request.session.get('growlog_wizard_logo_name', 'logo.jpg')
-
-                if os.path.exists(temp_path):
-                    with open(temp_path, 'rb') as temp_file:
-                        growlog.logo.save(original_name, File(temp_file), save=True)
-
-                    # Удаляем временный файл
-                    try:
-                        os.remove(temp_path)
-                    except:
-                        pass  # Игнорируем ошибки удаления
-
-            # Создаем первую запись
-            GrowLogEntry.objects.create(
-                growlog=growlog,
-                day=1,
-                stage='germination',
-                activities='Grow log started! 🌱'
-            )
-
-            # Логируем действие
-            ActionLog.objects.create(
-                user=request.user,
-                action_type='growlog_created',
-                model_name='GrowLog',
-                object_id=growlog.pk,
-                object_repr=str(growlog),
-                details=f'Created grow log: {growlog.title}'
-            )
-
-            # Очищаем сессию
-            if 'growlog_wizard_data' in request.session:
-                del request.session['growlog_wizard_data']
-            if 'growlog_wizard_logo_path' in request.session:
-                # Удаляем временный файл если еще не удален
-                temp_path = request.session['growlog_wizard_logo_path']
-                try:
-                    if os.path.exists(temp_path):
-                        os.remove(temp_path)
-                except:
-                    pass
-                del request.session['growlog_wizard_logo_path']
-            if 'growlog_wizard_logo_name' in request.session:
-                del request.session['growlog_wizard_logo_name']
-
-            messages.success(request, f'Grow log "{growlog.title}" успешно создан!')
-            return redirect('growlogs:detail', pk=growlog.pk)
-
-        except Exception as e:
-            messages.error(request, f'Ошибка при создании grow log: {str(e)}')
-            # Также очищаем сессию при ошибке
-            if 'growlog_wizard_data' in request.session:
-                del request.session['growlog_wizard_data']
-            if 'growlog_wizard_logo_path' in request.session:
-                temp_path = request.session['growlog_wizard_logo_path']
-                try:
-                    if os.path.exists(temp_path):
-                        os.remove(temp_path)
-                except:
-                    pass
-                del request.session['growlog_wizard_logo_path']
-            if 'growlog_wizard_logo_name' in request.session:
-                del request.session['growlog_wizard_logo_name']
-            return redirect('growlogs:create')
-
-    def _find_strain_in_store(self, strain_name, seedbank_name):
-        """
-        Ищем сорт в магазине с улучшенной логикой сопоставления:
-        1. Если указан сидбанк - ищем точное совпадение по сорту И сидбанку
-        2. Если сидбанк не указан - НЕ автоматически связываем, чтобы избежать ошибок
-        3. Автокоррекция регистра для нормализации данных
-        """
-        if not strain_name:
-            return None
-
-        # Если указан сидбанк - ищем строгое совпадение
-        if seedbank_name:
-            # Сначала ищем сидбанк
-            seedbank = SeedBank.objects.filter(
-                name__iexact=seedbank_name
-            ).first()
-
-            if seedbank:
-                # Ищем сорт у конкретного сидбанка
-                strain = Strain.objects.filter(
-                    name__iexact=strain_name,
-                    seedbank=seedbank,
-                    is_active=True
-                ).first()
-                return strain
-            else:
-                # Сидбанк не найден - не связываем
-                return None
-        else:
-            # Сидбанк не указан - проверяем, есть ли уникальный сорт
-            strains = Strain.objects.filter(
-                name__iexact=strain_name,
-                is_active=True
-            )
-
-            # Если есть ровно ОДИН сорт с таким названием - связываем
-            if strains.count() == 1:
-                return strains.first()
-            elif strains.count() > 1:
-                # Есть несколько сортов с одинаковым названием - НЕ связываем автоматически
-                # Требуем указания сидбанка для точности
-                return None
-            else:
-                # Сорт не найден
-                return None
+# ==========================================================================
+# 3. VIEWS ДЛЯ КОНКРЕТНОГО ГРОУРЕПОРТА И ДЕЙСТВИЙ
+# ==========================================================================
 
 class GrowLogDetailView(DetailView):
-    """Детальный просмотр с таймлайном"""
     model = GrowLog
-    template_name = 'growlogs/detail_new.html'
+    template_name = 'growlogs/detail.html'
     context_object_name = 'growlog'
 
-    def dispatch(self, request, *args, **kwargs):
-        """Проверяем доступ для гостей"""
-        # Получаем объект чтобы проверить его публичность
-        try:
-            growlog = self.get_object()
-        except:
-            raise Http404("Гроурепорт не найден")
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comment_form'] = GrowLogCommentForm()
+        if self.request.user.is_authenticated:
+            context['user_liked'] = self.object.likes.filter(pk=self.request.user.pk).exists()
+        else:
+            context['user_liked'] = False
 
-        # Если гроурепорт приватный и пользователь не авторизован - показываем приглашение
-        if not growlog.is_public and not request.user.is_authenticated:
-            from django.shortcuts import render
+        # Получаем ограниченный набор комментариев верхнего уровня с учётом вложенных
+        selected, displayed_blocks, total_root = get_limited_top_level_comments(
+            self.object,
+            comment_relation="comments",
+            block_limit=COMMENTS_PAGE_SIZE,
+        )
 
-            return render(request, 'growlogs/guest_access_denied.html', {
-                'growlog': growlog,
-                'section_name': 'приватный гроурепорт',
-                'action_description': 'просматривать приватные гроурепорты'
-            })
+        context['top_level_comments'] = selected
 
-        return super().dispatch(request, *args, **kwargs)
+        # Полное количество комментариев (включая ответы) для счётчиков в интерфейсе
+        total_comments = get_total_comments_count(self.object)
+        context['comments_count'] = total_comments
+        setattr(self.object, 'comments_count', total_comments)
 
-    def get_object(self):
-        obj = super().get_object()
+        # Показываем кнопку «Показать ещё», только если остались невыведенные КОРНЕВЫЕ комментарии.
+        context['has_more_comments'] = total_root > len(selected)
 
-        # Проверяем доступ для авторизованных пользователей
-        if not obj.is_public and obj.grower != self.request.user:
-            raise Http404("Гроурепорт не найден")
+        # Для совместимости со старым кодом (если где-то используется)
+        context['comments'] = context['top_level_comments']
 
-        # Увеличиваем счетчик просмотров (но не для автора и гостей)
-        if self.request.user.is_authenticated and self.request.user != obj.grower:
+        # Статистика для унифицированной hero-секции
+        context['detail_hero_stats'] = [
+            {'value': self.object.entries.count(), 'label': 'дней', 'css_class': 'days'},
+            {'value': self.object.likes.count(), 'label': 'лайков', 'css_class': 'likes'},
+            {'value': total_comments, 'label': 'комментариев', 'css_class': 'comments'},
+        ]
+
+        return context
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        # Инкрементируем счётчик просмотров только один раз за сессию
+        viewed_key = f"viewed_growlog_{obj.pk}"
+        if not self.request.session.get(viewed_key, False) and self.request.user != obj.grower:
             GrowLog.objects.filter(pk=obj.pk).update(views_count=F('views_count') + 1)
-
+            obj.refresh_from_db(fields=['views_count'])
+            self.request.session[viewed_key] = True
         return obj
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Формируем таймлайн
-        entries = self.object.entries.all().order_by('day').prefetch_related('entry_photos', 'comments', 'likes')
-        timeline = []
-
-        for entry in entries:
-            timeline.append({
-                'id': entry.id,
-                'day': entry.day,
-                'date': entry.created_at,
-                'stage': entry.stage,
-                'stage_display': entry.get_stage_display(),
-                'photos': entry.entry_photos.all(),
-                'activities': entry.activities,
-                'environmental_data': {
-                    'temperature': entry.temperature,
-                    'humidity': entry.humidity,
-                    'ph': entry.ph,
-                    'ec': entry.ec
-                },
-                'plant_data': {
-                    'height': entry.height,
-                    'width': entry.width,
-                    'water_amount': entry.water_amount,
-                    'nutrients_used': entry.nutrients_used
-                },
-                'likes_count': entry.likes.count(),
-                'comments_count': entry.comments.count(),
-                'comments': entry.comments.all()[:5],  # Показываем первые 5 комментариев
-            })
-
-        context['timeline'] = timeline
-
-        # Получаем последние параметры среды для боковой панели
-        latest_entry = self.object.entries.filter(
-            models.Q(temperature__isnull=False) |
-            models.Q(humidity__isnull=False) |
-            models.Q(ph__isnull=False) |
-            models.Q(ec__isnull=False)
-        ).order_by('-day').first()
-
-        if latest_entry:
-            context['latest_environment'] = {
-                'temperature': latest_entry.temperature,
-                'humidity': latest_entry.humidity,
-                'ph': latest_entry.ph,
-                'ec': latest_entry.ec,
-                'day': latest_entry.day,
-                'date': latest_entry.created_at
-            }
-        else:
-            context['latest_environment'] = None
-
-        # Статистика
-        context['stats'] = {
-            'total_days': self.object.current_day,
-            'total_entries': self.object.entries.count(),
-            'current_stage': self.object.get_current_stage_display(),
-            'environment': self.object.get_environment_display(),
-        }
-
-        # Лайки
-        context['likes_count'] = self.object.likes.count()
-        context['user_liked'] = self.object.likes.filter(id=self.request.user.id).exists() if self.request.user.is_authenticated else False
-
-        # Комментарии
-        context['comments'] = self.object.comments.all().order_by('created_at')
-        context['comment_form'] = GrowLogCommentForm()
-
-        # Права доступа
-        context['can_edit'] = (
-            self.request.user.is_authenticated and
-            self.request.user == self.object.grower
-        )
-
-        return context
-
-class GrowLogEntryCreateView(LoginRequiredMixin, CreateView):
-    """Добавление новой записи в гроу-лог"""
-    model = GrowLogEntry
-    form_class = GrowLogEntryForm
-    template_name = 'growlogs/add_entry.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        self.growlog = get_object_or_404(GrowLog, pk=kwargs['growlog_pk'])
-
-        # Проверяем права
-        if self.growlog.grower != request.user:
-            return HttpResponseForbidden("You can only add entries to your own grow logs")
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['growlog'] = self.growlog
-        return kwargs
+class GrowLogCreateView(LoginRequiredMixin, CreateView):
+    model = GrowLog
+    form_class = GrowLogForm
+    template_name = 'growlogs/form.html'
+    success_url = reverse_lazy('growlogs:list')
 
     def form_valid(self, form):
-        form.instance.growlog = self.growlog
-
-        # Автоматически определяем день
-        last_entry = self.growlog.entries.order_by('-day').first()
-        if last_entry:
-            form.instance.day = last_entry.day + 1
-        else:
-            form.instance.day = 1
-
-        response = super().form_valid(form)
-
-        # Обновляем текущую стадию grow log
-        self.growlog.current_stage = form.instance.stage
-        self.growlog.save(update_fields=['current_stage'])
-
-        messages.success(self.request, f'Запись для дня {form.instance.day} добавлена!')
-        return response
-
-    def get_success_url(self):
-        return reverse('growlogs:detail', kwargs={'pk': self.growlog.pk})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['growlog'] = self.growlog
-        return context
-
-@login_required
-def toggle_like_growlog(request, pk):
-    """НЕОБРАТИМЫЙ лайк гроу-лога (для системы кармы и рейтинга)"""
-    growlog = get_object_or_404(GrowLog, pk=pk)
-    user = request.user
-
-    # Проверяем, уже лайкнул ли пользователь
-    if user in growlog.likes.all():
-        return JsonResponse({
-            'success': False,
-            'liked': True,
-            'action': 'already_liked',
-            'likes_count': growlog.likes.count(),
-            'message': 'Вы уже поставили лайк этому репорту'
-        })
-
-    # Добавляем лайк (необратимо)
-    growlog.likes.add(user)
-    action_taken = "liked"
-
-    ActionLog.objects.create(
-        user=user,
-        action_type='growlog_liked',
-        model_name='GrowLog',
-        object_id=growlog.pk,
-        object_repr=str(growlog),
-        details=f'User liked growlog: {growlog.title}'
-    )
-
-    # Уведомление автору (если не сам себе лайк)
-    if growlog.grower != user:
-        Notification.objects.create(
-            recipient=growlog.grower,
-            sender=user,
-            notification_type='like',
-            title='Новый лайк!',
-            message=f'{user.username} лайкнул ваш гроу-лог "{growlog.title}"',
-            content_object=growlog
-        )
-
-    return JsonResponse({
-        'success': True,
-        'liked': True,
-        'action': action_taken,
-        'likes_count': growlog.likes.count(),
-        'message': 'Лайк засчитан! Спасибо за поддержку'
-    })
-
-class GrowLogCommentCreateView(LoginRequiredMixin, CreateView):
-    """Добавление комментария к гроу-логу"""
-    model = GrowLogComment
-    form_class = GrowLogCommentForm
-    # template_name = 'growlogs/detail.html' # Комментарий добавляется на странице детализации
-
-    def dispatch(self, request, *args, **kwargs):
-        self.growlog = get_object_or_404(GrowLog, pk=self.kwargs.get('growlog_pk'))
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        comment = form.save(commit=False)
-        comment.author = self.request.user
-        comment.growlog = self.growlog
-        comment.save()
-
-        ActionLog.objects.create(
-            user=self.request.user,
-            action_type='comment_added_growlog',
-            model_name='GrowLogComment',
-            object_id=comment.pk,
-            object_repr=str(comment),
-            details=f'Comment added to growlog: {self.growlog.title}'
-        )
-
-        # Уведомление автору гроу-лога
-        if self.growlog.grower != self.request.user:
-            Notification.objects.create(
-                recipient=self.growlog.grower,
-                sender=self.request.user,
-                notification_type='comment',
-                title='Новый комментарий к вашему гроу-логу!',
-                message=f'{self.request.user.username} прокомментировал ваш гроу-лог "{self.growlog.title}"',
-                content_object=self.growlog
-            )
-
-        messages.success(self.request, 'Комментарий успешно добавлен.')
-        return redirect('growlogs:detail', pk=self.growlog.pk)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['growlog'] = self.growlog
-        return context
-
-    def get_success_url(self):
-        return reverse('growlogs:detail', kwargs={'pk': self.growlog.pk})
-
-# TODO: GrowLogUpdateView, GrowLogDeleteView, GrowLogEntryUpdateView, GrowLogEntryDeleteView
-# TODO: GrowLogCommentUpdateView, GrowLogCommentDeleteView
-
-@login_required
-@require_POST
-def toggle_entry_like(request, entry_id):
-    """НЕОБРАТИМЫЙ лайк записи гроу-лога (для системы кармы и рейтинга)"""
-    try:
-        entry = get_object_or_404(GrowLogEntry, id=entry_id)
-
-        # Проверяем права доступа
-        if not entry.growlog.is_public and entry.growlog.grower != request.user:
-            return JsonResponse({'status': 'error', 'message': 'Access denied'}, status=403)
-
-        like, created = GrowLogEntryLike.objects.get_or_create(
-            entry=entry,
-            user=request.user
-        )
-
-        if not created:
-            # Лайк уже существует - нельзя отозвать
-            return JsonResponse({
-                'status': 'error',
-                'action': 'already_liked',
-                'likes_count': entry.likes.count(),
-                'message': 'Вы уже поставили лайк этой записи'
-            })
-
-        # Лайк успешно добавлен
-        likes_count = entry.likes.count()
-
-        return JsonResponse({
-            'status': 'ok',
-            'action': 'liked',
-            'likes_count': likes_count,
-            'message': 'Лайк засчитан! Спасибо за поддержку'
-        })
-
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-@login_required
-@require_POST
-def add_entry_comment(request, entry_id):
-    """AJAX добавление комментария к записи"""
-    try:
-        entry = get_object_or_404(GrowLogEntry, id=entry_id)
-
-        # Проверяем, что growlog публичный или пользователь - автор
-        if not entry.growlog.is_public and entry.growlog.grower != request.user:
-            return JsonResponse({'success': False, 'error': 'No access'}, status=403)
-
-        # Обрабатываем JSON данные
-        if request.content_type == 'application/json':
-            data = json.loads(request.body)
-            text = data.get('text', '').strip()
-        else:
-            text = request.POST.get('text', '').strip()
-
-        if not text:
-            return JsonResponse({'success': False, 'error': 'Comment text is required'})
-
-        comment = GrowLogEntryComment.objects.create(
-            entry=entry,
-            author=request.user,
-            text=text
-        )
-
-        # Создаем уведомление для автора grow log (если это не он сам)
-        if entry.growlog.grower != request.user:
-            try:
-                Notification.objects.create(
-                    recipient=entry.growlog.grower,
-                    sender=request.user,
-                    title="Новый комментарий к записи",
-                    message=f"{request.user.username} прокомментировал день {entry.day} в вашем grow log '{entry.growlog.title}'",
-                    notification_type='comment',
-                    content_object=entry.growlog
-                )
-            except:
-                # Если модель Notification не импортирована или не существует, пропускаем уведомление
-                pass
-
-        return JsonResponse({
-            'success': True,
-            'comment': {
-                'author': comment.author.username,
-                'text': comment.text,
-                'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M')
-            },
-            'comments_count': entry.comments.count()
-        })
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        form.instance.grower = self.request.user
+        messages.success(self.request, "Гроу-репорт успешно создан!")
+        return super().form_valid(form)
 
 class GrowLogUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование гроу-репорта"""
     model = GrowLog
-    form_class = GrowLogCreateForm
-    template_name = 'growlogs/edit_growlog.html'
+    form_class = GrowLogForm
+    template_name = 'growlogs/form.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        # Проверяем права
-        if self.object.grower != request.user:
-            return HttpResponseForbidden("Вы можете редактировать только свои гроу-репорты")
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_initial(self):
-        """Заполняем форму текущими данными"""
-        initial = super().get_initial()
-
-        # Заполняем поля сорта и сидбанка
-        if self.object.strain:
-            initial['strain_name'] = self.object.strain.name
-            if self.object.strain.seedbank:
-                initial['seedbank_name'] = self.object.strain.seedbank.name
-        elif self.object.strain_custom:
-            # Парсим произвольный сорт
-            if '(' in self.object.strain_custom and ')' in self.object.strain_custom:
-                parts = self.object.strain_custom.rsplit('(', 1)
-                initial['strain_name'] = parts[0].strip()
-                initial['seedbank_name'] = parts[1].replace(')', '').strip()
-            else:
-                initial['strain_name'] = self.object.strain_custom
-
-        return initial
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-
-        # Обрабатываем изменение сорта
-        strain_name = form.cleaned_data.get('strain_name')
-        seedbank_name = form.cleaned_data.get('seedbank_name')
-
-        if strain_name:
-            strain = form._find_strain_in_store(strain_name.strip(), seedbank_name.strip() if seedbank_name else None)
-
-            if strain:
-                self.object.strain = strain
-                self.object.strain_custom = ""
-            else:
-                self.object.strain = None
-                if seedbank_name:
-                    self.object.strain_custom = f"{strain_name.strip()} ({seedbank_name.strip()})"
-                else:
-                    self.object.strain_custom = strain_name.strip()
-
-            self.object.save()
-
-        # Логируем изменение
-        ActionLog.objects.create(
-            user=self.request.user,
-            action_type='growlog_updated',
-            model_name='GrowLog',
-            object_id=self.object.pk,
-            object_repr=str(self.object),
-            details=f'Updated grow log: {self.object.title}'
-        )
-
-        messages.success(self.request, 'Гроу-репорт успешно обновлен!')
-        return response
+    def get_queryset(self):
+        # Только владелец может редактировать свой репорт
+        if self.request.user.is_authenticated:
+            return GrowLog.objects.filter(grower=self.request.user)
+        return GrowLog.objects.none()
 
     def get_success_url(self):
-        return reverse('growlogs:detail', kwargs={'pk': self.object.pk})
+        messages.success(self.request, "Гроу-репорт обновлен.")
+        return reverse_lazy('growlogs:detail', kwargs={'pk': self.object.pk})
 
-class GrowLogEntryUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование записи гроу-репорта"""
-    model = GrowLogEntry
-    form_class = GrowLogEntryForm
-    template_name = 'growlogs/edit_entry.html'
+class GrowLogDeleteView(LoginRequiredMixin, DeleteView):
+    model = GrowLog
+    template_name = 'growlogs/delete_confirm.html'
+    success_url = reverse_lazy('growlogs:list')
 
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        # Проверяем права
-        if self.object.growlog.grower != request.user:
-            return HttpResponseForbidden("Вы можете редактировать только записи своих гроу-репортов")
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['growlog'] = self.object.growlog
-        return kwargs
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return GrowLog.objects.filter(grower=self.request.user)
+        return GrowLog.objects.none()
 
     def form_valid(self, form):
-        response = super().form_valid(form)
+        messages.success(self.request, "Гроу-репорт удален.")
+        return super().form_valid(form)
 
-        # Обновляем текущую стадию гроу-репорта на основе записи
-        growlog = self.object.growlog
-        growlog.current_stage = self.object.stage
-        growlog.save()
+@login_required
+@require_POST
+def toggle_like_growlog(request, pk):
+    """
+    AJAX-обработчик для лайков. Лайк НЕОБРАТИМ согласно BESEDKA_UI_STANDARDS.md.
+    """
+    growlog = get_object_or_404(GrowLog, pk=pk)
 
-        # Логируем изменение
-        ActionLog.objects.create(
-            user=self.request.user,
-            action_type='growlog_entry_updated',
-            model_name='GrowLogEntry',
-            object_id=self.object.pk,
-            object_repr=str(self.object),
-            details=f'Updated entry for day {self.object.day} in grow log: {growlog.title}'
-        )
+    # Добавляем лайк, если его еще нет.
+    if not growlog.likes.filter(pk=request.user.pk).exists():
+        growlog.likes.add(request.user)
 
-        messages.success(self.request, f'Запись "День {self.object.day}" успешно обновлена!')
-        return response
+    return JsonResponse({'success': True, 'liked': True, 'count': growlog.likes.count()})
 
-    def get_success_url(self):
-        return reverse('growlogs:detail', kwargs={'pk': self.object.growlog.pk})
+@login_required
+@require_POST
+def add_growlog_comment(request, pk):
+    """AJAX-обработчик для добавления комментариев к гроурепорту."""
+    growlog = get_object_or_404(GrowLog, pk=pk)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['growlog'] = self.object.growlog
-        return context
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        form = GrowLogCommentForm(request.POST)
+        parent_id = request.POST.get('parent_id')
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.growlog = growlog
+            comment.author = request.user
 
-@require_GET
-def filter_growlogs_ajax(request):
-    """AJAX-обработчик для фильтрации гроурепортов"""
-    try:
-        filter_type = request.GET.get('filter', 'all')
-        page = request.GET.get('page', 1)
+            # Обрабатываем вложенные комментарии
+            if parent_id:
+                try:
+                    parent_comment = GrowLogComment.objects.get(pk=parent_id, growlog=growlog)
 
-        # Базовый queryset публичных гроурепортов
-        queryset = GrowLog.objects.filter(
-            is_active=True,
-            is_public=True
-        ).select_related('grower', 'strain').prefetch_related('likes', 'comments')
+                    # Ограничиваем глубину вложенности до 3 уровней (два предка максимум у родительского комментария)
+                    if parent_comment.parent is not None and parent_comment.parent.parent is not None:
+                        pass  # Превышен лимит – игнорируем parent, оставляем топ-уровнем
+                    else:
+                        comment.parent = parent_comment
+                except GrowLogComment.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': 'Родительский комментарий не найден.'}, status=404)
 
-        # Применяем фильтрацию
-        if filter_type == 'new':
-            # Новые сначала по дате начала
-            queryset = queryset.order_by('-start_date', '-id')
-        elif filter_type == 'popular':
-            # Популярные по просмотрам
-            queryset = queryset.order_by('-views_count', '-start_date')
-        elif filter_type == 'active':
-            # Активные (не завершенные)
-            queryset = queryset.exclude(current_stage='harvest').order_by('-start_date')
-        elif filter_type == 'completed':
-            # Завершенные (на стадии сбора урожая)
-            queryset = queryset.filter(current_stage='harvest').order_by('-start_date')
-        else:
-            # По умолчанию - новые сначала
-            queryset = queryset.order_by('-start_date', '-id')
+            comment.save()
 
-        # Пагинация
-        paginator = Paginator(queryset, 12)  # По 12 репортов на страницу как в оригинальном представлении
-        try:
-            growlogs_page = paginator.page(page)
-        except:
-            growlogs_page = paginator.page(1)
-
-        # Рендерим HTML с карточками гроурепортов - используем тот же шаблон, что и в списке
-        growlogs_html = ""
-        for growlog in growlogs_page:
-            growlog_card_html = render_to_string('growlogs/partials/growlog_card.html', {
-                'growlog': growlog,
-                'user': request.user
-            })
-            growlogs_html += growlog_card_html
-
-        # Если нет результатов, показываем пустое состояние
-        if not growlogs_html:
-            growlogs_html = render_to_string('growlogs/partials/empty_state.html')
-
-        # Рендерим пагинацию
-        pagination_html = ''
-        if growlogs_page.has_other_pages():
-            pagination_html = render_to_string('growlogs/partials/pagination.html', {
-                'page_obj': growlogs_page,
-                'is_paginated': True,
-                'current_filter': filter_type
-            })
-
-        return JsonResponse({
-            'success': True,
-            'growlogs_html': growlogs_html,
-            'pagination_html': pagination_html,
-            'growlogs_count': growlogs_page.paginator.count
-        })
-
-    except Exception as e:
-        import traceback
-        error_traceback = traceback.format_exc()
-        return JsonResponse({
-            'error': str(e),
-            'traceback': error_traceback
-        }, status=500)
-
-@require_GET
-def filter_debug(request):
-    """Отладочное представление для проверки фильтрации гроурепортов"""
-    from django.http import HttpResponse
-    import json
-
-    try:
-        filter_type = request.GET.get('filter', 'all')
-
-        # Базовый queryset публичных гроурепортов
-        queryset = GrowLog.objects.filter(
-            is_active=True,
-            is_public=True
-        ).select_related('grower', 'strain')
-
-        # Информация о шаблонах
-        import os
-        templates_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'templates', 'growlogs', 'partials')
-        templates_list = os.listdir(templates_dir) if os.path.exists(templates_dir) else []
-
-        # Проверка доступа к шаблонам
-        from django.template.loader import get_template
-        template_statuses = {}
-        for template_name in ['growlog_cards.html', 'pagination.html']:
-            try:
-                get_template(f'growlogs/partials/{template_name}')
-                template_statuses[template_name] = 'OK'
-            except Exception as e:
-                template_statuses[template_name] = str(e)
-
-        # Результаты для отображения
-        debug_info = {
-            'filter_type': filter_type,
-            'growlogs_count': queryset.count(),
-            'growlogs_data': [
+            # После сохранения рендерим обновлённый список комментариев с тем же контекстом,
+            # чтобы вернуть свежий HTML без вызова QuerySet в шаблоне.
+            comments_html = render_to_string(
+                'includes/partials/unified_comments_list.html',
                 {
-                    'id': gl.id,
-                    'title': gl.title,
-                    'grower': gl.grower.username,
-                    'stage': gl.current_stage,
-                    'public': gl.is_public,
-                    'active': gl.is_active
-                }
-                for gl in queryset[:5]  # Первые 5 для отладки
-            ],
-            'templates_dir': templates_dir,
-            'templates_list': templates_list,
-            'template_statuses': template_statuses,
-            'user_authenticated': request.user.is_authenticated,
-            'user': str(request.user)
-        }
+                    'growlog': growlog,
+                    'top_level_comments': growlog.comments.filter(parent__isnull=True)
+                                                     .select_related('author')
+                                                     .prefetch_related('replies__author')
+                                                     .order_by('-created_at'),
+                },
+                request=request
+            )
 
-        # Возвращаем JSON с отладочной информацией
-        return HttpResponse(
-            json.dumps(debug_info, indent=4, default=str),
-            content_type='application/json'
-        )
+            return JsonResponse({
+                'success': True,
+                'comments_html': comments_html,
+                'comment_id': comment.id,
+                'comments_count': get_total_comments_count(growlog),
+            })
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
-    except Exception as e:
-        import traceback
-        error_info = {
-            'error': str(e),
-            'traceback': traceback.format_exc()
-        }
-        return HttpResponse(
-            json.dumps(error_info, indent=4),
-            content_type='application/json',
-            status=500
-        )
+    # Fallback на обычный POST без AJAX – редиректим
+    form = GrowLogCommentForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.growlog = growlog
+        comment.author = request.user
+
+        parent_id = request.POST.get('parent_id')
+        if parent_id:
+            try:
+                parent_comment = GrowLogComment.objects.get(pk=parent_id, growlog=growlog)
+                # Ограничиваем глубину вложенности до 3 уровней (два предка максимум у родительского комментария)
+                if parent_comment.parent is not None and parent_comment.parent.parent is not None:
+                    pass  # Превышен лимит – игнорируем parent, оставляем топ-уровнем
+                else:
+                    comment.parent = parent_comment
+            except GrowLogComment.DoesNotExist:
+                pass
+
+        comment.save()
+        messages.success(request, "Комментарий успешно добавлен.")
+    else:
+        messages.error(request, "Ошибка при добавлении комментария.")
+    return redirect(growlog.get_absolute_url())

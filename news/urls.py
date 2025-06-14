@@ -1,29 +1,41 @@
 from django.urls import path
-from . import views
+from .views import (
+    HomePageView,
+    PostDetailView,
+    CategoryPostListView,
+    TagPostListView,
+    search_posts,
+    add_reaction,
+    toggle_reaction,
+    toggle_comment_reaction,
+    add_comment,
+    vote_in_poll,
+    ajax_filter,
+)
 
 app_name = 'news'
 
 urlpatterns = [
     # Главная страница (новостная лента)
-    path('', views.HomePageView.as_view(), name='home'),
+    path('', HomePageView.as_view(), name='home'),
 
     # Детальная страница поста
-    path('post/<slug:slug>/', views.PostDetailView.as_view(), name='post_detail'),
+    path('post/<slug:slug>/', PostDetailView.as_view(), name='post_detail'),
 
     # Посты по категории
-    path('category/<slug:slug>/', views.CategoryPostListView.as_view(), name='category_posts'),
+    path('category/<slug:slug>/', CategoryPostListView.as_view(), name='category_posts'),
 
     # Посты по тегу
-    path('tag/<slug:slug>/', views.TagPostListView.as_view(), name='tag_posts'),
-
-    # AJAX-эндпоинты
-    path('ajax/reaction/', views.add_reaction, name='add_reaction'),
-    path('ajax/toggle-reaction/', views.toggle_reaction, name='toggle_reaction'),
-    path('ajax/toggle-comment-reaction/', views.toggle_comment_reaction, name='toggle_comment_reaction'),
-    path('ajax/add-comment/', views.add_comment, name='add_comment'),
-    path('ajax/poll-vote/', views.vote_in_poll, name='vote_in_poll'),
-    path('ajax/filter-news/', views.filter_news_ajax, name='filter_news_ajax'),
+    path('tag/<slug:slug>/', TagPostListView.as_view(), name='tag_posts'),
 
     # Поиск
-    path('search/', views.search_posts, name='search'),
+    path('search/', search_posts, name='search_posts'),
+
+    # AJAX
+    path('ajax/add-reaction/', add_reaction, name='add_reaction'),
+    path('ajax/toggle-reaction/', toggle_reaction, name='toggle_reaction'),
+    path('ajax/toggle-comment-reaction/', toggle_comment_reaction, name='toggle_comment_reaction'),
+    path('ajax/add-comment/', add_comment, name='add_comment'),
+    path('ajax/vote/', vote_in_poll, name='vote_in_poll'),
+    path('ajax/filter/', ajax_filter, name='ajax_filter'),
 ]

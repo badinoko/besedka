@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, F
+from django.db.models import Q, Count, F, Prefetch, Sum
 from django.utils import timezone
 from django.contrib import messages
 from django.urls import reverse
@@ -15,20 +15,45 @@ import json
 
 from .models import Post, Category, Tag, Comment, Reaction, Poll, PollChoice, PollVote, PostView
 from .forms import CommentForm
+from core.view_mixins import UnifiedCardMixin
+from core.base_views import UnifiedListView
+from core.constants import COMMENTS_PAGE_SIZE
+from core.utils import get_limited_top_level_comments, get_total_comments_count, get_unified_cards
 
 
-class HomePageView(ListView):
+class HomePageView(UnifiedListView):
     """Главная страница - новостная лента"""
     model = Post
-    template_name = 'news/home.html'
+    template_name = 'base_list_page.html'
     context_object_name = 'posts'
-    paginate_by = 10
+    paginate_by = 9
+
+    # УНИФИЦИРОВАННЫЕ НАСТРОЙКИ
+    section_title = "Новости Сообщества"
+    section_subtitle = "Самые свежие статьи, события и обновления платформы \"Беседка\""
+    section_hero_class = "news-hero"
+    card_type = "news"
+    ajax_url_name = "news:ajax_filter"
 
     def get_queryset(self):
-        # Получаем только опубликованные посты
-        queryset = Post.published.select_related('author', 'category').prefetch_related('tags')
+        # Базовый queryset - только опубликованные посты
+        # ПРАВИЛЬНАЯ предзагрузка для избежания N+1 запросов
+        queryset = Post.published.select_related('author', 'category').prefetch_related(
+            'tags',
+            'reactions',  # Загружаем все реакции
+            Prefetch(
+                'comments',
+                queryset=Comment.objects.filter(parent__isnull=True) # Только корневые комментарии
+            )
+        )
+        # Применяем фильтры
+        return self.apply_filters(queryset)
 
-        # Фильтрация по GET параметрам
+    def apply_filters(self, queryset):
+        """
+        Переопределяем логику фильтрации, т.к. базовая в UnifiedListView
+        не умеет работать с моделью Reaction.
+        """
         filter_type = self.request.GET.get('filter', 'all')
 
         if filter_type == 'articles':
@@ -36,15 +61,76 @@ class HomePageView(ListView):
         elif filter_type == 'polls':
             queryset = queryset.filter(post_type='poll')
         elif filter_type == 'videos':
-            queryset = queryset.filter(post_type='video')
+            queryset = queryset.filter(post_type='video_link')
         elif filter_type == 'pinned':
             queryset = queryset.filter(is_pinned=True)
 
-        # Сначала закрепленные, потом обычные по дате
-        return queryset.order_by('-is_pinned', '-published_at')
+        # Сортировка
+        sort_by = self.request.GET.get('sort', 'newest')
+        if sort_by == 'popular':
+            # ПРАВИЛЬНАЯ аннотация для подсчета лайков из реакций
+            queryset = queryset.annotate(
+                likes_count=Count('reactions', filter=Q(reactions__reaction_type='like')),
+                comments_count_val=Count('comments')
+            ).annotate(
+                popularity=F('likes_count') + F('comments_count_val')
+            ).order_by('-popularity', '-published_at')
+        elif sort_by == 'commented':
+            queryset = queryset.annotate(
+                comments_count_val=Count('comments')
+            ).order_by('-comments_count_val', '-published_at')
+        else: # newest
+            queryset = queryset.order_by('-is_pinned', '-published_at')
+
+        return queryset
+
+    def get_hero_stats(self):
+        """Статистика для hero-секции новостей"""
+        total_posts = Post.published.count()
+        total_views = Post.published.aggregate(total=Sum('views_count'))['total'] or 0
+        total_comments = Comment.objects.filter(post__status='published').count()
+
+        return [
+            {'value': total_posts, 'label': 'Публикаций'},
+            {'value': total_views, 'label': 'Просмотров'},
+            {'value': total_comments, 'label': 'Комментариев'},
+        ]
+
+    def get_hero_actions(self):
+        """В новостях нет кнопок действий"""
+        return []
+
+    def get_filter_list(self):
+        """Фильтры для новостей"""
+        return [
+            {'id': 'all', 'label': 'Все Статьи'},
+            {'id': 'articles', 'label': 'Статьи'},
+            {'id': 'polls', 'label': 'Опросы'},
+            {'id': 'videos', 'label': 'Видео'},
+            {'id': 'pinned', 'label': 'Закрепленные'},
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        current_filter = self.request.GET.get('filter', 'all')
+        current_sort = self.request.GET.get('sort', 'newest')
+
+        # Формирование контекста для УНИФИЦИРОВАННОГО шаблона hero-секции
+        context['hero_context'] = {
+            'section_title': self.section_title,
+            'section_subtitle': self.section_subtitle,
+            'section_hero_class': self.section_hero_class,
+            'stats_list': self.get_hero_stats(),
+            'actions_list': self.get_hero_actions()
+        }
+
+        # Контекст для УНИФИЦИРОВАННЫХ фильтров
+        context['filter_context'] = {
+            'filter_list': self.get_filter_list(),
+            'current_filter': current_filter,
+            'current_sort': current_sort,
+            'base_url': reverse('news:home'), # URL для построения ссылок фильтров
+        }
 
         # Добавляем категории для навигации
         context['categories'] = Category.objects.annotate(
@@ -62,11 +148,11 @@ class HomePageView(ListView):
             posts_count=Count('post', filter=Q(post__status='published'))
         ).filter(posts_count__gt=0).count()
         context['total_views'] = Post.published.aggregate(
-            total=Count('post_views')
+            total=Sum('views_count')
         )['total'] or 0
 
-        # Текущий фильтр
-        context['current_filter'] = self.request.GET.get('filter', 'all')
+        # UnifiedListView ожидает 'page_obj', а мы используем 'posts'. Сделаем псевдоним.
+        context['page_obj'] = context['posts']
 
         return context
 
@@ -77,11 +163,15 @@ class PostDetailView(DetailView):
     template_name = 'news/post_detail.html'
     context_object_name = 'post'
     slug_field = 'slug'
-    slug_url_kwarg = 'slug'
+    slug_url_arg = 'slug'
 
     def get_queryset(self):
-        # Показываем только опубликованные посты
-        return Post.published.select_related('author', 'category').prefetch_related('tags')
+        # Показываем только опубликованные посты c предзагрузкой
+        return Post.published.select_related('author', 'category').prefetch_related(
+            'tags',
+            'reactions',
+            Prefetch('comments', queryset=Comment.objects.select_related('author').prefetch_related('reactions'))
+        )
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -112,8 +202,9 @@ class PostDetailView(DetailView):
                 ip_address=ip_address,
                 session_key=session_key
             )
-            # Увеличиваем счетчик
-            Post.objects.filter(id=post.id).update(views_count=F('views_count') + 1)
+            # Инкрементируем счётчик просмотров в модели Post
+            Post.objects.filter(pk=post.pk).update(views_count=F('views_count') + 1)
+            post.refresh_from_db(fields=['views_count'])
 
     def get_client_ip(self):
         """Получает IP-адрес клиента"""
@@ -128,9 +219,23 @@ class PostDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         post = self.object
 
-        # Комментарии
-        comments = Comment.objects.filter(post=post, parent=None).select_related('author').order_by('created_at')
-        context['comments'] = comments
+        selected, displayed_blocks, total_root = get_limited_top_level_comments(
+            post,
+            comment_relation="comments",
+            block_limit=COMMENTS_PAGE_SIZE,
+        )
+
+        context['top_level_comments'] = selected
+        total_comments = get_total_comments_count(post)
+        # Добавляем в контекст и динамически на объект для использования в шаблоне
+        context['comments_count'] = total_comments
+        setattr(post, 'comments_count', total_comments)
+        context['has_more_comments'] = total_root > len(selected)
+
+        # Передаём в контекст переменные, как и в других детальных страницах,
+        # чтобы унифицированный партиал comments_list работал без шаблонных вычислений
+        context['comments'] = context['top_level_comments']
+
         context['comment_form'] = CommentForm()
 
         # Реакции
@@ -154,6 +259,13 @@ class PostDetailView(DetailView):
 
         # Похожие посты
         context['related_posts'] = self.get_related_posts(post)
+
+        # Статистика для унифицированной hero-секции
+        context['detail_hero_stats'] = [
+            {'value': post.views_count or 0, 'label': 'просмотров', 'css_class': 'views'},
+            {'value': context['comments_count'], 'label': 'комментариев', 'css_class': 'comments'},
+            {'value': post.reactions.count(), 'label': 'лайков', 'css_class': 'likes'},
+        ]
 
         return context
 
@@ -186,52 +298,148 @@ class PostDetailView(DetailView):
             parent_id = request.POST.get('parent_id')
             if parent_id:
                 try:
-                    parent_comment = Comment.objects.get(id=parent_id, post=self.object)
+                    parent_comment = get_object_or_404(Comment, id=parent_id, post=self.object)
+
+                    # Ограничиваем глубину вложенности до 3 уровней
+                    # Разрешаем ответы, если глубина родительского комментария < 2 (т.е. максимум 2 уровня)
+                    # Если у parent_comment уже есть parent и у того тоже есть parent (уровень 2), запрещаем дальнейшие ответы
+                    if parent_comment.parent is not None and parent_comment.parent.parent is not None:
+                        return JsonResponse({'status': 'error', 'message': 'Достигнут максимальный уровень вложенности комментариев.'}, status=400)
+
                     comment.parent = parent_comment
                 except Comment.DoesNotExist:
-                    pass
+                    return JsonResponse({'status': 'error', 'message': 'Родительский комментарий не найден'}, status=404)
 
             comment.save()
-            messages.success(request, 'Комментарий добавлен!')
 
-            return redirect(self.object.get_absolute_url() + '#comments')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # AJAX запрос – не добавляем сообщения Django 'messages'.
+                comments_html = render_to_string(
+                    'includes/partials/unified_comments_list.html',
+                    {
+                        'top_level_comments': (
+                            self.object.comments.filter(parent__isnull=True)
+                            .select_related('author')
+                            .prefetch_related('replies__author')
+                            .order_by('-created_at')
+                        ),
+                    },
+                    request=request
+                )
+
+                return JsonResponse({
+                    'success': True,
+                    'comments_html': comments_html,
+                    'comment_id': comment.id,
+                    'parent_id': parent_id,
+                    'comments_count': get_total_comments_count(self.object),
+                })
+            else:
+                messages.success(request, 'Комментарий добавлен!')
+                return redirect(self.object.get_absolute_url() + '#comments')
         else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': 'Ошибка валидации формы.', 'errors': form.errors}, status=400)
+
             messages.error(request, 'Ошибка при добавлении комментария.')
 
         return self.get(request, *args, **kwargs)
 
 
-class CategoryPostListView(ListView):
-    """Список постов по категории"""
+class CategoryPostListView(UnifiedListView):
+    """Унифицированный список постов конкретной категории"""
     model = Post
-    template_name = 'news/category_posts.html'
+    # Используем единый шаблон для всех списковых страниц
+    template_name = 'base_list_page.html'
     context_object_name = 'posts'
-    paginate_by = 10
+    paginate_by = 9  # Единый размер страницы
+
+    # УНИФИЦИРОВАННЫЕ НАСТРОЙКИ HERO/КАРТОЧЕК
+    card_type = 'news'
+    section_hero_class = 'news-hero'
 
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
-        return Post.published.filter(category=self.category).select_related('author', 'category').prefetch_related('tags')
+        return (
+            Post.published
+                .filter(category=self.category)
+                .select_related('author', 'category')
+                .prefetch_related('tags')
+        )
+
+    # Переопределяем фильтры – для конкретной категории они не нужны
+    def get_filter_list(self):
+        return []
+
+    def get_hero_stats(self):
+        posts_count = Post.published.filter(category=self.category).count()
+        views_total = Post.published.filter(category=self.category).aggregate(total=Sum('views_count'))['total'] or 0
+        comments_total = Comment.objects.filter(post__category=self.category, post__status='published').count()
+        return [
+            {'value': posts_count, 'label': 'Постов'},
+            {'value': views_total, 'label': 'Просмотров'},
+            {'value': comments_total, 'label': 'Комментариев'},
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['category'] = self.category
+
+        # Динамически обновляем заголовки hero-секции
+        context['hero_context']['section_title'] = f"Категория: {self.category.name}"
+        context['hero_context']['section_subtitle'] = (
+            getattr(self.category, 'description', '') or f"Все посты из категории {self.category.name}"
+        )
+
+        # UnifiedListView формирует page_obj, но используем alias для обратной совместимости
+        context['page_obj'] = context.get('page_obj') or context.get('posts')
+
         return context
 
 
-class TagPostListView(ListView):
-    """Список постов по тегу"""
+class TagPostListView(UnifiedListView):
+    """Унифицированный список постов по тегу"""
     model = Post
-    template_name = 'news/tag_posts.html'
+    template_name = 'base_list_page.html'
     context_object_name = 'posts'
-    paginate_by = 10
+    paginate_by = 9
+
+    card_type = 'news'
+    section_hero_class = 'news-hero'
 
     def get_queryset(self):
         self.tag = get_object_or_404(Tag, slug=self.kwargs['slug'])
-        return Post.published.filter(tags=self.tag).select_related('author', 'category').prefetch_related('tags')
+        return (
+            Post.published
+                .filter(tags=self.tag)
+                .select_related('author', 'category')
+                .prefetch_related('tags')
+        )
+
+    def get_filter_list(self):
+        return []
+
+    def get_hero_stats(self):
+        posts_count = Post.published.filter(tags=self.tag).count()
+        views_total = (
+            Post.published.filter(tags=self.tag).aggregate(total=Sum('views_count'))['total'] or 0
+        )
+        comments_total = Comment.objects.filter(post__tags=self.tag, post__status='published').count()
+        return [
+            {'value': posts_count, 'label': 'Постов'},
+            {'value': views_total, 'label': 'Просмотров'},
+            {'value': comments_total, 'label': 'Комментариев'},
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tag'] = self.tag
+
+        context['hero_context']['section_title'] = f"Тег: #{self.tag.name}"
+        context['hero_context']['section_subtitle'] = (
+            f"Все посты с тегом #{self.tag.name}"
+        )
+
+        context['page_obj'] = context.get('page_obj') or context.get('posts')
+
         return context
 
 
@@ -403,104 +611,71 @@ def toggle_comment_reaction(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@require_GET
-def filter_news_ajax(request):
-    """AJAX-обработчик для фильтрации новостей"""
-    try:
-        filter_type = request.GET.get('filter', 'all')
-        page = request.GET.get('page', 1)
-
-        # Базовый queryset
-        queryset = Post.published.select_related('author', 'category').prefetch_related('tags')
-
-        # Применяем фильтр
-        if filter_type == 'articles':
-            queryset = queryset.filter(post_type='article')
-        elif filter_type == 'polls':
-            queryset = queryset.filter(post_type='poll')
-        elif filter_type == 'videos':
-            queryset = queryset.filter(post_type='video')
-        elif filter_type == 'pinned':
-            queryset = queryset.filter(is_pinned=True)
-
-        # Сортировка
-        queryset = queryset.order_by('-is_pinned', '-published_at')
-
-        # Пагинация
-        paginator = Paginator(queryset, 10)
-        try:
-            posts_page = paginator.page(page)
-        except:
-            posts_page = paginator.page(1)
-
-        # Рендерим только карточки новостей
-        posts_html = render_to_string('news/partials/news_cards.html', {
-            'posts': posts_page,
-            'user': request.user
-        })
-
-        # Рендерим пагинацию
-        pagination_html = render_to_string('news/partials/pagination.html', {
-            'posts': posts_page,
-            'current_filter': filter_type
-        }) if posts_page.has_other_pages() else ''
-
-        return JsonResponse({
-            'success': True,
-            'posts_html': posts_html,
-            'pagination_html': pagination_html,
-            'posts_count': posts_page.paginator.count
-        })
-
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
 @login_required
 @require_POST
 def add_comment(request):
-    """AJAX-обработчик для добавления комментариев"""
-    try:
-        data = json.loads(request.body)
-        post_id = data.get('post_id')
-        text = data.get('content', '').strip()  # Оставляем 'content' в запросе для обратной совместимости с фронтендом
-        parent_id = data.get('parent_id')
+    """
+    Обрабатывает AJAX-запросы на добавление комментариев к посту.
+    Теперь возвращает полный HTML списка комментариев через
+    универсальный партиал `includes/partials/unified_comments_list.html`,
+    чтобы сохранялись все интерактивные элементы (кнопка «Ответить» и др.).
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Требуется авторизация'}, status=401)
 
-        if not post_id or not text:
-            return JsonResponse({'error': 'Не указаны обязательные поля'}, status=400)
+    form = CommentForm(request.POST)
+    post_id = request.POST.get('post_id')
+    parent_id = request.POST.get('parent_id')
 
-        post = get_object_or_404(Post, id=post_id)
+    if not post_id:
+        return JsonResponse({'status': 'error', 'message': 'Отсутствует ID поста.'}, status=400)
 
-        # Создаем комментарий
-        comment = Comment.objects.create(
-            post=post,
-            author=request.user,
-            text=text
-        )
+    if form.is_valid():
+        post = get_object_or_404(Post, id=post_id, status='published')
 
-        # Если это ответ на комментарий
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.author = request.user
+
         if parent_id:
             try:
-                parent_comment = Comment.objects.get(id=parent_id, post=post)
-                comment.parent = parent_comment
-                comment.save()
-            except Comment.DoesNotExist:
-                pass
+                parent_comment = get_object_or_404(Comment, id=parent_id, post=post)
 
-        # Рендерим новый комментарий
-        comment_html = render_to_string('news/partials/comment.html', {
-            'comment': comment,
-            'user': request.user
-        })
+                # Ограничиваем глубину вложенности до 3 уровней
+                # Разрешаем ответы, если глубина родительского комментария < 2 (т.е. максимум 2 уровня)
+                # Если у parent_comment уже есть parent и у того тоже есть parent (уровень 2), запрещаем дальнейшие ответы
+                if parent_comment.parent is not None and parent_comment.parent.parent is not None:
+                    return JsonResponse({'status': 'error', 'message': 'Достигнут максимальный уровень вложенности комментариев.'}, status=400)
+
+                comment.parent = parent_comment
+            except Comment.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Родительский комментарий не найден'}, status=404)
+
+        comment.save()
+
+        # Рендерим ПОЛНЫЙ список top-level комментариев, чтобы кнопки «Ответить»
+        # и другие интерактивные элементы присутствовали у всех комментариев.
+        comments_html = render_to_string(
+            'includes/partials/unified_comments_list.html',
+            {
+                'post': post,
+                'top_level_comments': post.comments.filter(parent__isnull=True)
+                                              .select_related('author')
+                                              .prefetch_related('replies__author')
+                                              .order_by('-created_at'),
+            },
+            request=request
+        )
 
         return JsonResponse({
             'success': True,
-            'comment_html': comment_html,
-            'comment_id': comment.id
+            'comments_html': comments_html,
+            'comment_id': comment.id,
+            'comments_count': get_total_comments_count(post),
         })
 
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    # Если форма невалидна
+    return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
 
 @login_required
@@ -557,30 +732,35 @@ def vote_in_poll(request):
 
 @require_GET
 def search_posts(request):
-    """Поиск по постам"""
+    """Поиск по постам - УНИФИЦИРОВАННЫЙ через SSOT"""
     query = request.GET.get('q', '').strip()
-    results = []
+    results = Post.objects.none()
 
-    if query and len(query) >= 2:
+    if query and len(query) >= 3:
         # Поиск по заголовку, контенту и тегам
-        posts = Post.published.filter(
+        results = Post.published.filter(
             Q(title__icontains=query) |
             Q(content__icontains=query) |
             Q(excerpt__icontains=query) |
             Q(tags__name__icontains=query)
         ).distinct().select_related('author', 'category')[:20]
 
-        results = posts
+    # SSOT: используем get_unified_cards для формирования карточек
+    unified_card_list = get_unified_cards(results, 'news') if results else []
 
     context = {
         'query': query,
         'results': results,
-        'results_count': len(results)
+        'results_count': len(results),
+        'unified_card_list': unified_card_list,
     }
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # AJAX запрос - возвращаем только результаты
-        results_html = render_to_string('news/partials/search_results.html', context)
+        # AJAX запрос - возвращаем unified карточки
+        results_html = render_to_string('includes/partials/_unified_cards_wrapper.html', {
+            'unified_card_list': unified_card_list,
+            'empty_message': 'По вашему запросу ничего не найдено. Попробуйте изменить поисковый запрос.',
+        })
         return JsonResponse({
             'success': True,
             'results_html': results_html,
@@ -588,4 +768,14 @@ def search_posts(request):
         })
 
     # Обычный запрос - полная страница
-    return render(request, 'news/search.html', context)
+    return render(request, 'news/search_results.html', context)
+
+
+@require_GET
+def ajax_filter(request):
+    """
+    Унифицированный AJAX-обработчик новостей.
+    Использует core.base_views.unified_ajax_filter для полного соответствия SSOT.
+    """
+    from core.base_views import unified_ajax_filter  # локальный импорт, чтобы избежать циклов
+    return unified_ajax_filter(HomePageView)(request)
