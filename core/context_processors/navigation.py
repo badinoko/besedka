@@ -17,7 +17,6 @@ def navigation_context(request) -> Dict[str, Any]:
     """
     try:
         context: Dict[str, Any] = {
-            'cart_items_count': 0,
             'unread_notifications_count': 0,
             'user_role': None,
             'user_role_badge': None,
@@ -31,9 +30,6 @@ def navigation_context(request) -> Dict[str, Any]:
             user = request.user
             context['user_role'] = get_user_role(user)
             context['admin_panel_access'] = has_admin_access(user)
-
-            # Cart count for authenticated users
-            context['cart_items_count'] = get_cart_count(request)
 
             # Notifications count
             context['unread_notifications_count'] = get_notifications_count(user)
@@ -50,7 +46,6 @@ def navigation_context(request) -> Dict[str, Any]:
         logger.error(f"Error in navigation context processor: {e}")
         # Return empty context on error to prevent page crashes
         return {
-            'cart_items_count': 0,
             'unread_notifications_count': 0,
             'user_role': None,
             'user_role_badge': None,
@@ -94,25 +89,6 @@ def has_admin_access(user):
 
     role = get_user_role(user)
     return role in ['owner', 'admin', 'store_owner', 'store_admin']
-
-
-def get_cart_count(request):
-    """Get shopping cart items count"""
-    try:
-        # Check session cart
-        cart = request.session.get('cart', {})
-        if cart:
-            return sum(item.get('quantity', 0) for item in cart.values())
-
-        # For authenticated users, could also check database cart
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            # TODO: Implement database cart lookup if needed
-            pass
-
-        return 0
-    except Exception as e:
-        logger.warning(f"Error getting cart count: {e}")
-        return 0
 
 
 def get_notifications_count(user):

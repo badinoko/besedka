@@ -1,181 +1,189 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Элементы
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const notificationCheckboxes = document.querySelectorAll('.notification-checkbox');
-    const markSelectedReadBtn = document.getElementById('markSelectedRead');
-    const deleteSelectedBtn = document.getElementById('deleteSelected');
-    const markAllReadBtn = document.getElementById('markAllRead');
-    const filterTabs = document.querySelectorAll('.filter-tab');
-    const notificationCards = document.querySelectorAll('.notification-item');
+    console.log('🔔 Notifications JS loaded for tiles design');
 
-    // Функция обновления счетчиков
+    // Элементы интерфейса
+    const selectAllCheckbox = document.getElementById('select-all');
+    const markSelectedReadBtn = document.getElementById('mark-selected-read');
+    const markAllReadBtn = document.getElementById('mark-all-read');
+    const deleteSelectedBtn = document.getElementById('delete-selected');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    // Функция обновления счетчиков (ИСПРАВЛЕНО - используем только серверные данные)
     function updateAllCounters(serverUnreadCount = null, serverTotalCount = null) {
-        console.log('[DEBUG] updateAllCounters called with:', {
+        console.log('🔢 Обновление счетчиков:', {
             serverUnreadCount: serverUnreadCount,
             serverTotalCount: serverTotalCount
         });
 
-        // Считаем только ВИДИМЫЕ карточки (не скрытые фильтрами)
-        const visibleCards = document.querySelectorAll('.notification-item:not([style*="display: none"])');
-        const visibleUnreadCards = document.querySelectorAll('.notification-item.unread:not([style*="display: none"])');
+        // ВАЖНО: Используем ТОЛЬКО серверные данные, не считаем плитки на странице
+        // так как на странице может быть только часть уведомлений (пагинация)
 
-        const unreadOnPage = visibleUnreadCards.length;
-        const totalOnPage = visibleCards.length;
-
-        console.log('[DEBUG] Page counts:', {
-            visibleCards: totalOnPage,
-            visibleUnreadCards: unreadOnPage
-        });
-
-        // 🔔 СЧЕТЧИК В ШАПКЕ - НЕПРОЧИТАННЫЕ УВЕДОМЛЕНИЯ
-        const currentUnreadForBadge = serverUnreadCount !== null ? serverUnreadCount : unreadOnPage;
-        console.log('[DEBUG] Badge update - currentUnreadForBadge:', currentUnreadForBadge);
-
-        // Обновляем счетчик в навигации
-        updateNotificationBadge(currentUnreadForBadge);
-
-        // 📊 СЧЕТЧИКИ НА СТРАНИЦЕ
-        const unreadCountElement = document.getElementById('unread-count');
-        const allCountElement = document.getElementById('all-count');
-        const totalCountDisplay = document.getElementById('total-count-display');
-
-        if (unreadCountElement) {
-            unreadCountElement.textContent = serverUnreadCount !== null ? serverUnreadCount : unreadOnPage;
+        // Обновляем счетчик в навигации (ТОЛЬКО серверные данные)
+        if (serverUnreadCount !== null) {
+            updateNotificationBadge(serverUnreadCount);
         }
 
-        if (allCountElement) {
-            allCountElement.textContent = serverTotalCount !== null ? serverTotalCount : totalOnPage;
+        // Обновляем счетчики в hero секции (ТОЛЬКО серверные данные)
+        const totalStat = document.querySelector('.hero-stat-value'); // Первый - "Всего"
+        const unreadStat = document.querySelectorAll('.hero-stat-value')[1]; // Второй - "Непрочитанных"
+        const systemStat = document.querySelectorAll('.hero-stat-value')[2]; // Третий - "Системных"
+
+        if (totalStat && serverTotalCount !== null) {
+            totalStat.textContent = serverTotalCount;
+        }
+        if (unreadStat && serverUnreadCount !== null) {
+            unreadStat.textContent = serverUnreadCount;
         }
 
-        if (totalCountDisplay) {
-            totalCountDisplay.textContent = serverTotalCount !== null ? serverTotalCount : totalOnPage;
-        }
-
-        console.log('[DEBUG] Updated page counters:', {
-            unread: serverUnreadCount !== null ? serverUnreadCount : unreadOnPage,
-            total: serverTotalCount !== null ? serverTotalCount : totalOnPage
+        console.log('📊 Обновлены счетчики hero:', {
+            total: serverTotalCount,
+            unread: serverUnreadCount
         });
     }
 
-    // Функция обновления счетчика в навигации
+    // Функция обновления состояния кнопок массовых действий
+    function updateBulkActionButtons() {
+        const selectedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
+        const selectedCount = selectedCheckboxes.length;
+
+        if (markSelectedReadBtn) {
+            markSelectedReadBtn.disabled = selectedCount === 0;
+        }
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.disabled = selectedCount === 0;
+        }
+
+        if (selectedCountSpan) {
+            if (selectedCount === 0) {
+                selectedCountSpan.textContent = 'Выберите уведомления для массовых операций';
+            } else {
+                selectedCountSpan.textContent = `Выбрано: ${selectedCount} уведомлений`;
+            }
+        }
+    }
+
+    // Функция обновления счетчика в навигации (ТОЧНЫЙ селектор)
     function updateNotificationBadge(count) {
-        console.log('[DEBUG] updateNotificationBadge called with count:', count);
+        // Ищем ТОЛЬКО badge уведомлений по точному классу
+        const notificationBadges = document.querySelectorAll('.notifications-badge');
 
-        // Ищем счетчик в шапке
-        let badge = document.querySelector('.nav-counter-badge.notifications-badge');
-        if (!badge) {
-            badge = document.querySelector('.notifications-badge');
-        }
-        if (!badge) {
-            badge = document.querySelector('[class*="notifications-badge"]');
-        }
-
-        console.log('[DEBUG] Badge element found:', badge);
-
-        if (badge) {
+        notificationBadges.forEach(badge => {
             if (count > 0) {
                 badge.textContent = count;
                 badge.style.display = 'flex';
-                console.log('[DEBUG] Badge updated - showing count:', count);
             } else {
                 badge.style.display = 'none';
-                console.log('[DEBUG] Badge hidden - count is 0');
             }
-        } else {
-            console.warn('[DEBUG] Badge element not found');
-        }
+        });
+
+        console.log('🔔 Обновлен бейдж уведомлений:', count, 'найдено badges:', notificationBadges.length);
     }
 
-    // Функция показа уведомлений (Toast)
-    function showToast(message, type = 'success') {
-        const toastContainer = document.querySelector('.toast-container');
-        const toastId = 'toast-' + Date.now();
-
-        const toastHtml = `
-            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
+    // Функция показа уведомлений
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
 
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        document.body.appendChild(notification);
 
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement, {
-            autohide: true,
-            delay: 3000
-        });
-
-        toast.show();
-
-        // Удаляем элемент после скрытия
-        toastElement.addEventListener('hidden.bs.toast', function() {
-            toastElement.remove();
-        });
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
     }
 
     // Функция пометки одного уведомления как прочитанного
-    function markSingleNotificationRead(notificationId, buttonElement = null, cardElement = null, callback = null) {
-        console.log('[DEBUG] markSingleNotificationRead called:', {
-            notificationId,
-            hasButton: !!buttonElement,
-            hasCard: !!cardElement,
-            hasCallback: !!callback
-        });
+    function markNotificationRead(notificationId, tileElement = null, callback = null) {
+        console.log('📖 Помечаем как прочитанное:', notificationId);
 
         fetch(`/users/cabinet/notifications/${notificationId}/mark-read/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                 'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
             },
         })
         .then(response => response.json())
         .then(data => {
-            console.log('[DEBUG] markSingleNotificationRead response:', data);
-
             if (data.success) {
-                // Обновляем визуальное состояние карточки
-                const card = cardElement || document.querySelector(`[data-notification-id="${notificationId}"]`);
-                if (card) {
-                    card.classList.remove('unread');
-                    card.classList.add('read');
-                    card.dataset.read = 'true';
+                const tile = tileElement || document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (tile) {
+                    tile.classList.remove('unread');
+                    tile.classList.add('read');
 
-                    // Удаляем бейдж "Новое"
-                    const newBadge = card.querySelector('.badge.bg-warning');
+                    // Убираем бейдж "Новое"
+                    const newBadge = tile.querySelector('.badge.bg-primary');
                     if (newBadge) {
                         newBadge.remove();
                     }
                 }
 
-                // Скрываем кнопку "Прочитано"
-                if (buttonElement) {
-                    buttonElement.style.display = 'none';
-                }
-
-                // Обновляем счетчики
                 updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
 
-                // Выполняем callback, если есть
                 if (callback) {
                     callback();
                 } else {
-                    showToast('Уведомление помечено как прочитанное', 'success');
+                    showNotification('✅ Уведомление помечено как прочитанное', 'success');
                 }
             } else {
-                showToast('Ошибка при пометке уведомления', 'error');
+                showNotification('❌ Ошибка при пометке уведомления', 'error');
             }
         })
         .catch(error => {
-            console.error('[DEBUG] Error in markSingleNotificationRead:', error);
-            showToast('Ошибка при пометке уведомления', 'error');
+            console.error('❌ Ошибка в markNotificationRead:', error);
+            showNotification('❌ Ошибка при пометке уведомления', 'error');
+        });
+    }
+
+    // Функция удаления уведомления
+    function deleteNotification(notificationId, tileElement = null) {
+        console.log('🗑️ Удаляем уведомление:', notificationId);
+
+        fetch(`/users/cabinet/notifications/delete/${notificationId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tile = tileElement || document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (tile) {
+                    tile.style.transition = 'all 0.3s ease';
+                    tile.style.opacity = '0';
+                    tile.style.transform = 'translateX(100%)';
+
+                    setTimeout(() => {
+                        tile.remove();
+                        updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
+                        updateBulkActionButtons();
+                    }, 300);
+                }
+
+                showNotification('✅ Уведомление удалено', 'success');
+            } else {
+                showNotification('❌ Ошибка при удалении уведомления', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Ошибка в deleteNotification:', error);
+            showNotification('❌ Ошибка при удалении уведомления', 'error');
         });
     }
 
@@ -186,507 +194,372 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                 'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
             },
         })
         .then(response => response.json())
         .then(data => {
-            console.log('[DEBUG] markAllAsRead response:', data);
-
             if (data.success) {
-                // Обновляем все уведомления на странице
-                document.querySelectorAll('.notification-item').forEach(item => {
-                    item.classList.remove('unread');
-                    item.classList.add('read');
-                    item.dataset.read = 'true';
+                document.querySelectorAll('.notification-tile.unread').forEach(tile => {
+                    tile.classList.remove('unread');
+                    tile.classList.add('read');
 
-                    // Удаляем бейджи "Новое"
-                    const newBadge = item.querySelector('.badge.bg-warning');
-                    if (newBadge) {
-                        newBadge.remove();
-                    }
-
-                    // Скрываем кнопки "Прочитано"
-                    const readBtn = item.querySelector('.mark-read-btn');
-                    if (readBtn) {
-                        readBtn.style.display = 'none';
+                    const markReadBtn = tile.querySelector('.mark-read-btn');
+                    if (markReadBtn) {
+                        markReadBtn.style.display = 'none';
                     }
                 });
 
-                // ИСПРАВЛЕНИЕ: Используем правильные ключи ответа
-                const unreadCount = data.unread_count || data.unread_notifications_count || 0;
-                const totalCount = data.total_count || data.total_notifications_count || 0;
-
-                // Обновляем счетчик в навигации
-                updateNotificationBadge(unreadCount);
-
-                // Обновляем счетчики на странице
-                updateAllCounters(unreadCount, totalCount);
-
-                showToast(data.message || 'Все уведомления помечены как прочитанные', 'success');
+                updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
+                showNotification(data.message || 'Все уведомления помечены как прочитанные', 'success');
             } else {
-                showToast('Ошибка при пометке уведомлений', 'error');
+                showNotification('Ошибка при пометке уведомлений', 'error');
             }
         })
         .catch(error => {
-            console.error('Ошибка при отметке всех уведомлений как прочитанных:', error);
-            showToast('Ошибка при пометке уведомлений', 'error');
+            console.error('[DEBUG] Error in markAllAsRead:', error);
+            showNotification('Ошибка при пометке уведомлений', 'error');
         });
     }
 
-    // Обработчики событий
+    // ОБРАБОТЧИКИ СОБЫТИЙ
+
+    // Клик по плитке уведомления (переход по ссылке)
+    document.addEventListener('click', function(e) {
+        const tile = e.target.closest('.notification-tile');
+        if (!tile) return;
+
+        // Игнорируем клики по чекбоксам и кнопкам действий
+        if (e.target.closest('.notification-checkbox') ||
+            e.target.closest('.notification-actions') ||
+            e.target.closest('input[type="checkbox"]')) {
+            return;
+        }
+
+        const notificationId = tile.dataset.notificationId;
+        const actionUrl = tile.dataset.actionUrl;
+
+        console.log('🖱️ Клик по плитке:', { notificationId, actionUrl });
+
+        // Помечаем как прочитанное если не прочитано
+        if (tile.classList.contains('unread')) {
+            markNotificationRead(notificationId, tile, () => {
+                if (actionUrl && actionUrl !== '#' && actionUrl !== 'None' && actionUrl !== '') {
+                    console.log('🔗 Переходим по ссылке:', actionUrl);
+                    window.location.href = actionUrl;
+                }
+            });
+        } else if (actionUrl && actionUrl !== '#' && actionUrl !== 'None' && actionUrl !== '') {
+            console.log('🔗 Переходим по ссылке:', actionUrl);
+            window.location.href = actionUrl;
+        }
+    });
+
+    // Кнопки "Перейти" в плитках
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.notification-go-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const btn = e.target.closest('.notification-go-btn');
+            const url = btn.dataset.url;
+            const tile = btn.closest('.notification-tile');
+            const notificationId = tile.dataset.notificationId;
+
+            console.log('🔗 Кнопка "Перейти":', { url, notificationId });
+
+            // Помечаем как прочитанное и переходим
+            if (tile.classList.contains('unread')) {
+                markNotificationRead(notificationId, tile, () => {
+                    if (url && url !== '#' && url !== 'None' && url !== '') {
+                        window.location.href = url;
+                    }
+                });
+            } else if (url && url !== '#' && url !== 'None' && url !== '') {
+                window.location.href = url;
+            }
+        }
+    });
+
+    // Кнопки удаления в плитках
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.notification-delete-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const btn = e.target.closest('.notification-delete-btn');
+            const notificationId = btn.dataset.id;
+            const tile = btn.closest('.notification-tile');
+
+            deleteNotification(notificationId, tile);
+        }
+    });
+
+    // Чекбокс "Выбрать все"
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.notification-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateBulkActionButtons();
+        });
+    }
+
+    // Индивидуальные чекбоксы
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('notification-checkbox')) {
+            updateBulkActionButtons();
+
+            // Обновляем состояние "Выбрать все"
+            if (selectAllCheckbox) {
+                const allCheckboxes = document.querySelectorAll('.notification-checkbox');
+                const checkedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
+                selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
+            }
+        }
+    });
+
+    // Кнопки массовых действий
+    if (markSelectedReadBtn) {
+        markSelectedReadBtn.addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
+            const notificationIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+
+            if (notificationIds.length === 0) {
+                showNotification('⚠️ Выберите уведомления для пометки', 'warning');
+                return;
+            }
+
+            console.log('📖 Помечаем выбранные как прочитанные:', notificationIds);
+
+            fetch('/users/cabinet/notifications/read-multiple/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ notification_ids: notificationIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    notificationIds.forEach(id => {
+                        const tile = document.querySelector(`[data-notification-id="${id}"]`);
+                        if (tile) {
+                            tile.classList.remove('unread');
+                            tile.classList.add('read');
+
+                            // Убираем бейдж "Новое"
+                            const newBadge = tile.querySelector('.badge.bg-primary');
+                            if (newBadge) {
+                                newBadge.remove();
+                            }
+
+                            // Снимаем выделение
+                            const checkbox = tile.querySelector('.notification-checkbox');
+                            if (checkbox) {
+                                checkbox.checked = false;
+                            }
+                        }
+                    });
+
+                    updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
+                    updateBulkActionButtons();
+
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.checked = false;
+                    }
+
+                    showNotification(data.message || '✅ Выбранные уведомления помечены как прочитанные', 'success');
+                } else {
+                    showNotification('❌ Ошибка при пометке уведомлений', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка в markSelectedAsRead:', error);
+                showNotification('❌ Ошибка при пометке уведомлений', 'error');
+            });
+        });
+    }
+
     if (markAllReadBtn) {
         markAllReadBtn.addEventListener('click', markAllAsRead);
     }
 
-    if (markSelectedReadBtn) {
-        markSelectedReadBtn.addEventListener('click', markSelectedAsRead);
-    }
-
-    if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', deleteSelectedNotifications);
-    }
-
-    // Обработчик для чекбокса "Выбрать все"
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const isChecked = this.checked;
-            notificationCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            updateBulkActionButtons();
-        });
-    }
-
-    // Обработчики для отдельных чекбоксов
-    notificationCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateBulkActionButtons();
-
-            // Обновляем состояние "Выбрать все"
-            if (selectAllCheckbox) {
-                const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
-                const totalCount = notificationCheckboxes.length;
-                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCount;
-                selectAllCheckbox.checked = checkedCount === totalCount && totalCount > 0;
-            }
-        });
-    });
-
-    // Обработчик клика по кнопкам "Прочитано"
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.mark-read-btn')) {
-            e.stopPropagation(); // Останавливаем всплытие события
-            const button = e.target.closest('.mark-read-btn');
-            const notificationId = button.dataset.notificationId;
-            markSingleNotificationRead(notificationId, button);
-        }
-    });
-
-    // Обработчик клика по кнопкам "Удалить"
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-btn')) {
-            e.stopPropagation(); // Останавливаем всплытие события
-            const button = e.target.closest('.delete-btn');
-            const notificationId = button.dataset.notificationId;
-            deleteSingleNotification(notificationId, button);
-        }
-    });
-
-    // УМНАЯ КЛИКАБЕЛЬНОСТЬ УВЕДОМЛЕНИЙ
-    document.querySelectorAll('.notification-item.clickable').forEach(card => {
-        card.addEventListener('click', function(e) {
-            // Исключаем клики по интерактивным элементам внутри карточки
-            if (e.target.closest('.notification-checkbox, .btn, a, button, input')) {
-                console.log('[DEBUG] Click ignored - clicked on interactive element:', e.target);
-                return;
-            }
-
-            const notificationId = this.dataset.notificationId;
-            const actionUrl = this.dataset.actionUrl;
-            const isRead = this.dataset.read === 'true';
-
-            console.log('[DEBUG] Card clicked:', {
-                notificationId,
-                actionUrl,
-                isRead,
-                hasActionUrl: actionUrl && actionUrl !== 'None' && actionUrl !== '#'
-            });
-
-            // Добавляем визуальную обратную связь
-            this.classList.add('clicking');
-            setTimeout(() => {
-                this.classList.remove('clicking');
-            }, 150);
-
-            if (!isRead) {
-                // Если не прочитано, сначала помечаем как прочитанное
-                console.log('[DEBUG] Marking notification as read before action');
-                markSingleNotificationRead(notificationId, null, this, () => {
-                    // После успешной пометки как прочитанное, выполняем переход
-                    if (actionUrl && actionUrl !== 'None' && actionUrl !== '#') {
-                        console.log('[DEBUG] Redirecting to:', actionUrl);
-                        window.location.href = actionUrl;
-                    } else {
-                        console.log('[DEBUG] No action URL, just marked as read');
-                        showToast('Уведомление помечено как прочитанное', 'success');
-                    }
-                });
-            } else {
-                // Если уже прочитано и есть actionUrl, просто переходим
-                if (actionUrl && actionUrl !== 'None' && actionUrl !== '#') {
-                    console.log('[DEBUG] Already read, redirecting to:', actionUrl);
-                    window.location.href = actionUrl;
-                } else {
-                    console.log('[DEBUG] Already read, no action URL');
-                    showToast('Уведомление уже прочитано', 'info');
-                }
-            }
-        });
-
-        // Добавляем hover эффект для лучшей обратной связи
-        card.addEventListener('mouseenter', function() {
-            if (this.classList.contains('clickable')) {
-                this.style.cursor = 'pointer';
-            }
-        });
-    });
-
-    // ФУНКЦИЯ УДАЛЕНИЯ ОДНОГО УВЕДОМЛЕНИЯ
-    function deleteSingleNotification(notificationId, buttonElement = null) {
-        console.log('[DEBUG] deleteSingleNotification called:', notificationId);
-
-        fetch(`/users/cabinet/notifications/delete/${notificationId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('[DEBUG] deleteSingleNotification response:', data);
-
-            if (data.success) {
-                // Удаляем карточку из DOM
-                const card = document.querySelector(`[data-notification-id="${notificationId}"]`);
-                if (card) {
-                    card.style.transition = 'all 0.3s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateX(-100%)';
-
-                    setTimeout(() => {
-                        card.remove();
-                        // Обновляем счетчики после удаления
-                        updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
-
-                        // Проверяем, остались ли уведомления
-                        const remainingNotifications = document.querySelectorAll('.notification-item');
-                        if (remainingNotifications.length === 0) {
-                            location.reload(); // Перезагружаем страницу для показа пустого состояния
-                        }
-                    }, 300);
-                }
-
-                showToast('Уведомление удалено', 'success');
-            } else {
-                showToast('Ошибка при удалении уведомления', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('[DEBUG] Error in deleteSingleNotification:', error);
-            showToast('Ошибка при удалении уведомления', 'error');
-        });
-    }
-
-    // ФУНКЦИЯ УДАЛЕНИЯ ВЫБРАННЫХ УВЕДОМЛЕНИЙ
-    function deleteSelectedNotifications() {
-        const selectedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
-        const notificationIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.notificationId);
-
-        if (notificationIds.length === 0) {
-            showToast('Выберите уведомления для удаления', 'error');
-            return;
-        }
-
-        console.log('[DEBUG] deleteSelectedNotifications called:', notificationIds);
-
-        fetch('/users/cabinet/notifications/delete-multiple/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                notification_ids: notificationIds
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('[DEBUG] deleteSelectedNotifications response:', data);
-
-            if (data.success) {
-                // Удаляем карточки из DOM
-                notificationIds.forEach(id => {
-                    const card = document.querySelector(`[data-notification-id="${id}"]`);
-                    if (card) {
-                        card.style.transition = 'all 0.3s ease';
-                        card.style.opacity = '0';
-                        card.style.transform = 'translateX(-100%)';
-
-                        setTimeout(() => {
-                            card.remove();
-                        }, 300);
-                    }
-                });
-
-                // Обновляем счетчики
-                setTimeout(() => {
-                    updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
-
-                    // Проверяем, остались ли уведомления
-                    const remainingNotifications = document.querySelectorAll('.notification-item');
-                    if (remainingNotifications.length === 0) {
-                        location.reload(); // Перезагружаем страницу для показа пустого состояния
-                    }
-                }, 300);
-
-                // Сбрасываем выбор
-                selectAllCheckbox.checked = false;
-                updateBulkActionButtons();
-
-                showToast(`Удалено уведомлений: ${data.deleted_count}`, 'success');
-            } else {
-                showToast('Ошибка при удалении уведомлений', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('[DEBUG] Error in deleteSelectedNotifications:', error);
-            showToast('Ошибка при удалении уведомлений', 'error');
-        });
-    }
-
-    // ФУНКЦИЯ ПОМЕТКИ ВЫБРАННЫХ КАК ПРОЧИТАННЫХ
-    function markSelectedAsRead() {
-        const selectedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
-        const notificationIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.notificationId);
-
-        if (notificationIds.length === 0) {
-            showToast('Выберите уведомления для пометки', 'error');
-            return;
-        }
-
-        console.log('[DEBUG] markSelectedAsRead called:', notificationIds);
-
-        fetch('/users/cabinet/notifications/read-multiple/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                notification_ids: notificationIds
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('[DEBUG] markSelectedAsRead response:', data);
-
-            if (data.success) {
-                // Обновляем визуальное состояние карточек
-                notificationIds.forEach(id => {
-                    const card = document.querySelector(`[data-notification-id="${id}"]`);
-                    if (card) {
-                        card.classList.remove('unread');
-                        card.classList.add('read');
-                        card.dataset.read = 'true';
-
-                        // Удаляем бейдж "Новое"
-                        const newBadge = card.querySelector('.badge.bg-warning');
-                        if (newBadge) {
-                            newBadge.remove();
-                        }
-
-                        // Скрываем кнопку "Прочитано"
-                        const readBtn = card.querySelector('.mark-read-btn');
-                        if (readBtn) {
-                            readBtn.style.display = 'none';
-                        }
-                    }
-                });
-
-                // Обновляем счетчики
-                updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
-
-                // Сбрасываем выбор
-                selectAllCheckbox.checked = false;
-                updateBulkActionButtons();
-
-                showToast(`Помечено как прочитанные: ${data.updated_count} уведомлений`, 'success');
-            } else {
-                showToast('Ошибка при пометке уведомлений', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('[DEBUG] Error in markSelectedAsRead:', error);
-            showToast('Ошибка при пометке уведомлений', 'error');
-        });
-    }
-
-    // ФУНКЦИЯ ОБНОВЛЕНИЯ СОСТОЯНИЯ КНОПОК МАССОВЫХ ДЕЙСТВИЙ
-    function updateBulkActionButtons() {
-        const selectedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
-        const hasSelected = selectedCheckboxes.length > 0;
-
-        if (markSelectedReadBtn) {
-            markSelectedReadBtn.disabled = !hasSelected;
-        }
-        if (deleteSelectedBtn) {
-            deleteSelectedBtn.disabled = !hasSelected;
-        }
-    }
-
-    // ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ КНОПОК УДАЛЕНИЯ
-    document.addEventListener('click', function(e) {
-        // Удаление одного уведомления
-        if (e.target.closest('.delete-single-btn')) {
-            e.stopPropagation(); // Останавливаем всплытие события
-            const button = e.target.closest('.delete-single-btn');
-            const notificationId = button.dataset.notificationId;
-
-            // Показываем модальное окно подтверждения
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            document.getElementById('deleteModalText').textContent = 'Вы уверены, что хотите удалить это уведомление?';
-
-            // Устанавливаем обработчик подтверждения
-            const confirmBtn = document.getElementById('confirmDelete');
-            confirmBtn.onclick = function() {
-                deleteSingleNotification(notificationId, button);
-                modal.hide();
-            };
-
-            modal.show();
-        }
-    });
-
-    // ОБРАБОТЧИКИ ДЛЯ МАССОВЫХ ДЕЙСТВИЙ
     if (deleteSelectedBtn) {
         deleteSelectedBtn.addEventListener('click', function() {
-            const selectedCount = document.querySelectorAll('.notification-checkbox:checked').length;
-            if (selectedCount === 0) {
-                showToast('Выберите уведомления для удаления', 'error');
+            const selectedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
+            const notificationIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+
+            if (notificationIds.length === 0) {
+                showNotification('⚠️ Выберите уведомления для удаления', 'warning');
                 return;
             }
 
-            // Показываем модальное окно подтверждения
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            document.getElementById('deleteModalText').textContent = `Вы уверены, что хотите удалить ${selectedCount} уведомлений?`;
+            // Убран confirm по требованию пользователя - браузерный диалог заменен красивыми уведомлениями
 
-            // Устанавливаем обработчик подтверждения
-            const confirmBtn = document.getElementById('confirmDelete');
-            confirmBtn.onclick = function() {
-                deleteSelectedNotifications();
-                modal.hide();
-            };
+            console.log('🗑️ Удаляем выбранные:', notificationIds);
 
-            modal.show();
-        });
-    }
+            fetch('/users/cabinet/notifications/delete-multiple/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ notification_ids: notificationIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    notificationIds.forEach(id => {
+                        const tile = document.querySelector(`[data-notification-id="${id}"]`);
+                        if (tile) {
+                            tile.style.transition = 'all 0.3s ease';
+                            tile.style.opacity = '0';
+                            tile.style.transform = 'translateX(100%)';
 
-    if (markSelectedReadBtn) {
-        markSelectedReadBtn.addEventListener('click', markSelectedAsRead);
-    }
+                            setTimeout(() => {
+                                tile.remove();
+                            }, 300);
+                        }
+                    });
 
-    // ОБРАБОТЧИКИ ДЛЯ ЧЕКБОКСОВ
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.notification-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
+                    setTimeout(() => {
+                        // ИСПРАВЛЕНО: используем серверные данные вместо подсчета плиток
+                        updateAllCounters(data.unread_notifications_count, data.total_notifications_count);
+                        updateBulkActionButtons();
+
+                        if (selectAllCheckbox) {
+                            selectAllCheckbox.checked = false;
+                        }
+                    }, 350); // Увеличена задержка для завершения анимации
+
+                    showNotification(data.message || '✅ Выбранные уведомления удалены', 'success');
+                } else {
+                    showNotification('❌ Ошибка при удалении уведомлений', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка в deleteSelected:', error);
+                showNotification('❌ Ошибка при удалении уведомлений', 'error');
             });
-            updateBulkActionButtons();
         });
     }
 
-    // Обработчик для отдельных чекбоксов
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('notification-checkbox')) {
-            e.stopPropagation(); // Останавливаем всплытие события
-            updateBulkActionButtons();
+    // Обработчик кликов по плиткам уведомлений
+    document.addEventListener('click', function(e) {
+        const tile = e.target.closest('.notification-tile');
+        if (tile && !e.target.closest('.notification-checkbox') && !e.target.closest('button')) {
+            const notificationId = tile.dataset.notificationId;
+            const actionUrl = tile.dataset.actionUrl;
 
-            // Обновляем состояние "Выбрать все"
-            const allCheckboxes = document.querySelectorAll('.notification-checkbox');
-            const checkedCheckboxes = document.querySelectorAll('.notification-checkbox:checked');
-
-            if (selectAllCheckbox) {
-                selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
-                selectAllCheckbox.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
+            // Помечаем как прочитанное при клике
+            if (tile.classList.contains('unread')) {
+                markNotificationRead(notificationId, tile, function() {
+                    // После пометки как прочитанное переходим по ссылке, если есть
+                    if (actionUrl && actionUrl !== '#' && actionUrl !== '') {
+                        window.open(actionUrl, '_blank');
+                    }
+                });
+            } else {
+                // Если уже прочитанное, просто переходим по ссылке
+                if (actionUrl && actionUrl !== '#' && actionUrl !== '') {
+                    window.open(actionUrl, '_blank');
+                }
             }
         }
     });
 
-    // Обработчик кликов по чекбоксам для предотвращения клика по карточке
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('notification-checkbox')) {
-            e.stopPropagation(); // Останавливаем всплытие события
-        }
-    });
+    // Инициализация при загрузке страницы
+    updateBulkActionButtons();
 
-    // Обработчик кликов по всем кнопкам и ссылкам в карточках для предотвращения клика по карточке
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.notification-actions .btn, .notification-actions a')) {
-            e.stopPropagation(); // Останавливаем всплытие события
-        }
-    });
+    // ========= ДОБАВЛЯЕМ ФИЛЬТРАЦИЮ УВЕДОМЛЕНИЙ =========
+    const filterButtons = document.querySelectorAll('.hero-filter-btn');
 
-    // ФИЛЬТРЫ УВЕДОМЛЕНИЙ
-    if (filterTabs.length > 0) {
-        filterTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Убираем активный класс со всех вкладок
-                filterTabs.forEach(t => t.classList.remove('active'));
-                // Добавляем активный класс к текущей вкладке
-                this.classList.add('active');
+    // Функция фильтрации плиток
+    function filterNotifications(filterType) {
+        const tiles = document.querySelectorAll('.notification-tile');
 
-                const filter = this.dataset.filter;
-                console.log('[DEBUG] Filter applied:', filter);
+        tiles.forEach(tile => {
+            let shouldShow = true;
 
-                // Фильтруем уведомления
-                notificationCards.forEach(card => {
-                    let shouldShow = true;
+            switch (filterType) {
+                case 'all':
+                    shouldShow = true;
+                    break;
+                case 'unread':
+                    shouldShow = tile.classList.contains('unread');
+                    break;
+                case 'system':
+                    shouldShow = tile.querySelector('.notification-icon.system') !== null;
+                    break;
+                case 'personal':
+                    // Личные - все уведомления, кроме системных
+                    shouldShow = tile.querySelector('.notification-icon.system') === null;
+                    break;
+                case 'order':
+                    shouldShow = tile.querySelector('.notification-icon.order') !== null;
+                    break;
+                default:
+                    shouldShow = true;
+            }
 
-                    switch (filter) {
-                        case 'all':
-                            shouldShow = true;
-                            break;
-                        case 'unread':
-                            shouldShow = card.dataset.read === 'false';
-                            break;
-                        case 'system':
-                            shouldShow = card.dataset.type === 'system';
-                            break;
-                        case 'social':
-                            shouldShow = card.dataset.type === 'social';
-                            break;
-                        case 'orders':
-                            shouldShow = card.dataset.type === 'order';
-                            break;
-                        default:
-                            shouldShow = true;
-                    }
-
-                    card.style.display = shouldShow ? 'block' : 'none';
-                });
-
-                // Обновляем счетчики после фильтрации
-                updateAllCounters();
-            });
+            if (shouldShow) {
+                tile.style.display = 'flex';
+                tile.style.animation = 'fadeIn 0.3s ease';
+            } else {
+                tile.style.display = 'none';
+            }
         });
+
+        // Обновляем состояние кнопок фильтров
+        filterButtons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-filter="${filterType}"]`).classList.add('active');
+
+        console.log(`🔍 Применен фильтр: ${filterType}`);
     }
 
-    // Инициализация счетчиков при загрузке страницы
-    updateAllCounters();
+    // Обработчики для кнопок фильтров
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filterType = this.dataset.filter;
+            filterNotifications(filterType);
+        });
+    });
+
+    console.log('✅ Notifications JS полностью инициализирован');
 });
+
+// Глобальные функции
+window.markNotificationRead = function(notificationId) {
+    const tile = document.querySelector(`[data-notification-id="${notificationId}"]`);
+
+    fetch(`/users/cabinet/notifications/${notificationId}/mark-read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && tile) {
+            tile.classList.remove('unread');
+            tile.classList.add('read');
+
+            const badge = document.querySelector('.notifications-badge');
+            if (badge && data.unread_notifications_count !== undefined) {
+                if (data.unread_notifications_count > 0) {
+                    badge.textContent = data.unread_notifications_count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+    });
+};

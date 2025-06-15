@@ -764,6 +764,19 @@ class Notification(models.Model):
         # По умолчанию запрещаем
         return False
 
+    def get_notification_type_display_verbose(self):
+        """Возвращает подробное описание типа уведомления"""
+        type_descriptions = {
+            'like': 'Лайк',
+            'comment': 'Комментарий',
+            'follow': 'Подписка',
+            'mention': 'Упоминание',
+            'system': 'Системное',
+            'order': 'Заказ',
+            'chat_message': 'Сообщение в чате',
+        }
+        return type_descriptions.get(self.notification_type, self.get_notification_type_display())
+
 class UserProfile(models.Model):
     """
     Расширенная информация профиля пользователя.

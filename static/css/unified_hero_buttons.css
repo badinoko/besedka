@@ -231,6 +231,73 @@
     padding: 0.5rem !important;
 }
 
+/* === УНИФИЦИРОВАННЫЕ КНОПКИ ФИЛЬТРОВ (SSOT) === */
+.hero-filter-btn {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    color: #495057 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 2px !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.hero-filter-btn:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    color: #212529 !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--section-primary, #007bff) 0%, var(--section-secondary, #0056b3) 100%) !important;
+    border-color: var(--section-primary, #007bff) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3) !important;
+}
+
+.hero-filter-btn.active:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4) !important;
+}
+
+/* Цветовые схемы для активных фильтров по разделам */
+.gallery-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--gallery-primary) 0%, var(--gallery-secondary) 100%) !important;
+    border-color: var(--gallery-primary) !important;
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3) !important;
+}
+
+.growlogs-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--growlogs-primary) 0%, var(--growlogs-secondary) 100%) !important;
+    border-color: var(--growlogs-primary) !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+}
+
+.news-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--news-primary) 0%, var(--news-secondary) 100%) !important;
+    border-color: var(--news-primary) !important;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3) !important;
+}
+
+.store-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--store-primary) 0%, var(--store-secondary) 100%) !important;
+    border-color: var(--store-primary) !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+}
+
 /* 🚀 HERO-КНОПКИ - ФИНАЛЬНАЯ ВЕРСИЯ */
 
 /* === 1. ОБЩИЕ СТИЛИ (ДЛЯ ОБЕИХ КНОПОК) === */

@@ -23,8 +23,8 @@ class UnifiedListView(ListView):
     Обеспечивает 100% одинаковое поведение всех разделов
     """
     template_name = 'base_list_page.html'  # ЕДИНЫЙ ШАБЛОН
-    context_object_name = 'page_obj'
-    paginate_by = 9
+    context_object_name = 'object_list'  # НЕ КОНФЛИКТУЕТ С page_obj ДЛЯ ПАГИНАЦИИ
+    paginate_by = 9  # КАРТОЧКИ ВСЕГДА 3x3 = 9 ШТУК
 
     # ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ДЛЯ ПЕРЕОПРЕДЕЛЕНИЯ В НАСЛЕДНИКАХ
     section_title = "Заголовок секции"
@@ -127,6 +127,29 @@ class UnifiedListView(ListView):
                     author_name = 'Seedbank'
 
                 description = getattr(item, 'description', '')
+            elif self.card_type == 'notification':
+                # Карточки уведомлений
+                image_url = '/static/images/placeholders/notification_placeholder.jpg'
+
+                # Определяем иконку по типу уведомления
+                notification_icons = {
+                    'system': 'fa-cog',
+                    'like': 'fa-heart',
+                    'comment': 'fa-comment',
+                    'follow': 'fa-user-plus',
+                    'mention': 'fa-at',
+                    'order': 'fa-shopping-cart',
+                    'chat_message': 'fa-comments',
+                    'message': 'fa-bell'
+                }
+                icon = notification_icons.get(getattr(item, 'notification_type', ''), 'fa-bell')
+
+                stats = [
+                    {'icon': icon, 'count': getattr(item, 'get_notification_type_display_verbose', lambda: 'Уведомление')(), 'css': 'notification-type'}
+                ]
+
+                author_name = 'Система'
+                description = getattr(item, 'message', '')
             else:
                 image_url = '/static/images/placeholders/default_placeholder.jpg'
                 stats = []
@@ -153,6 +176,13 @@ class UnifiedListView(ListView):
         context = super().get_context_data(**kwargs)
         current_filter = self.request.GET.get('filter', 'all')
 
+        # ВАЖНО: Django автоматически создает page_obj при пагинации ListView
+        # page_obj ДОЛЖЕН создаваться автоматически при установке paginate_by
+        page_obj = context.get('page_obj')
+
+        # УДАЛЕНА НЕПРАВИЛЬНАЯ ЛОГИКА ЗАМЕНЫ page_obj НА object_list
+        # Если page_obj не создался, это ОШИБКА КОНФИГУРАЦИИ, не пытаемся исправлять
+
         # УНИФИЦИРОВАННЫЙ КОНТЕКСТ HERO-СЕКЦИИ
         context['hero_context'] = {
             'section_title': self.section_title,
@@ -171,7 +201,11 @@ class UnifiedListView(ListView):
         context['current_filter'] = current_filter
 
         # УНИФИЦИРОВАННЫЕ КАРТОЧКИ
-        context['unified_card_list'] = self.get_unified_cards(context['page_obj'])
+        # Используем page_obj для карточек (объекты текущей страницы)
+        if page_obj:
+            context['unified_card_list'] = self.get_unified_cards(page_obj)
+        else:
+            context['unified_card_list'] = []
 
         # AJAX URL для JS-обработчика
         ajax_url = None
@@ -180,7 +214,7 @@ class UnifiedListView(ListView):
                 ajax_url = reverse(self.ajax_url_name)
             except NoReverseMatch:
                 ajax_url = None
-        if not ajax_url:
+        if not ajax_url and self.model:
             try:
                 ajax_url = reverse(f"{self.model._meta.app_label}:ajax_filter")
             except NoReverseMatch:

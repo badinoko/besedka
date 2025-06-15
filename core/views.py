@@ -111,6 +111,9 @@ def get_view_class_from_section(section_name):
     elif section_name == 'news':
         from news.views import HomePageView
         return HomePageView
+    elif section_name == 'notifications':
+        from users.views import NotificationListView
+        return NotificationListView
     # Добавьте сюда другие секции по мере необходимости
     return None
 

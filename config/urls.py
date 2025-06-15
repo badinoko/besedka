@@ -9,10 +9,10 @@ from core.views import admin_selector, admin_redirect
 from core import ajax_views as core_ajax
 
 urlpatterns = [
-    # Перенаправление с главной на новостную ленту
-    path("", RedirectView.as_view(pattern_name="news:home", permanent=True), name="home"),
+    # Главная страница (плейсхолдер). Позднее будет заменена полноценным представлением.
+    path("", TemplateView.as_view(template_name="home/home_placeholder.html"), name="home"),
 
-    # Главная страница - новостная лента
+    # Новостная лента
     path("news/", include("news.urls", namespace="news")),
 
     # Статические страницы

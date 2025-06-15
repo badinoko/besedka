@@ -23,7 +23,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_GET, require_POST
 from core.view_mixins import UnifiedCardMixin
 from core.base_views import UnifiedListView, unified_ajax_filter
-from core.constants import COMMENTS_PAGE_SIZE
+from core.constants import COMMENTS_PAGE_SIZE, UNIFIED_PAGE_SIZE
 from core.utils import get_limited_top_level_comments, get_total_comments_count
 
 User = get_user_model()
@@ -75,8 +75,8 @@ class GalleryView(UnifiedListView):
     """
     model = Photo
     template_name = 'base_list_page.html'
-    context_object_name = 'page_obj'
-    paginate_by = 9
+    # context_object_name наследуется из базового класса
+    paginate_by = UNIFIED_PAGE_SIZE
 
     # УНИФИЦИРОВАННЫЕ НАСТРОЙКИ
     section_title = "Галерея сообщества"

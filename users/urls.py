@@ -1,7 +1,9 @@
 from django.urls import path
 from . import views
+from core.base_views import unified_ajax_filter
 from . import admin_views
 from .views_owner_platform import ManageStoreOwnerView
+from core.views import unified_list_ajax_filter
 
 app_name = "users"
 
@@ -19,6 +21,7 @@ urlpatterns = [
     path("cabinet/edit/", views.edit_profile_view, name="edit_profile"),  # Редактирование профиля
     path("cabinet/password/", views.change_password_view, name="change_password"),  # Смена пароля
     path("cabinet/notifications/", views.notification_list_view, name="notification_list"), # Список уведомлений
+    path("cabinet/notifications/ajax/", views.notification_ajax_filter, name="notification_ajax"), # AJAX фильтрация уведомлений
     path("cabinet/notifications/<int:notification_id>/mark-read/", views.mark_notification_read, name="mark_notification_read"), # Пометить как прочитанное
     path("cabinet/notifications/read-all/", views.mark_all_notifications_read, name="mark_all_notifications_read"), # Пометить все как прочитанные
     path("cabinet/notifications/read-multiple/", views.mark_multiple_notifications_read, name="mark_multiple_notifications_read"), # Пометить выбранные как прочитанные

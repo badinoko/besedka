@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
 import hashlib
 import hmac
 import time
@@ -20,6 +21,7 @@ from django import forms
 from core.models import ActionLog
 from core.monitoring import PlatformMonitor
 from core.base_views import UnifiedListView
+from core.constants import UNIFIED_PAGE_SIZE
 
 # Получаем модель пользователя
 UserModel = get_user_model()
@@ -404,75 +406,71 @@ class RoleManagementForm(forms.ModelForm):
 
 # ===== VIEWS ДЛЯ ЛИЧНОГО КАБИНЕТА =====
 
-class NotificationListView(LoginRequiredMixin, UnifiedListView):
-    """Унифицированный список уведомлений"""
+class NotificationListView(LoginRequiredMixin, ListView):
+    """Список уведомлений в виде плиток (СПЕЦИАЛЬНЫЙ ДИЗАЙН)"""
     model = Notification
-    template_name = 'base_list_page.html'
+    template_name = 'users/notifications_list.html'  # СОБСТВЕННЫЙ ШАБЛОН С ПЛИТКАМИ
     context_object_name = 'notifications'
-    paginate_by = 20
-
-    card_type = 'notification'
-    section_hero_class = 'notifications-hero'
+    paginate_by = 20  # 20 плиток уведомлений
 
     def get_queryset(self):
-        return self.request.user.notifications.all().order_by('-created_at')
+        """Базовый queryset с применением фильтров"""
+        queryset = self.request.user.notifications.all().order_by('-created_at')
+        return self.apply_filters(queryset)
 
-    def get_filter_list(self):
-        return []
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    def get_unified_cards(self, page_obj):
-        cards = []
-        for notif in page_obj:
-            sender_name = notif.sender.username if notif.sender else 'Система'
-            cards.append({
-                'id': notif.id,
-                'type': 'notification',
-                'title': notif.title or 'Уведомление',
-                'description': notif.message[:140] if notif.message else '',
-                'image_url': '/static/images/default_notification.svg',
-                'detail_url': reverse_lazy('users:notification_list'),
-                'author': {'name': sender_name, 'avatar': None},
-                'stats': [],
-                'created_at': notif.created_at,
-                'is_read': notif.is_read,
-            })
-        return cards
+        # Пагинация уже обработана в ListView, используем готовый page_obj
+        # context['page_obj'] и context['notifications'] уже установлены в ListView
 
-    def get_hero_stats(self):
-        qs = self.get_queryset()
-        return [
-            {'value': qs.count(), 'label': 'Всего'},
-            {'value': qs.filter(is_read=False).count(), 'label': 'Непрочитано'},
-        ]
+        # Статистика для hero-секции
+        total_notifications = self.request.user.notifications.count()
+        unread_notifications = self.request.user.notifications.filter(is_read=False).count()
+        system_notifications = self.request.user.notifications.filter(notification_type='system').count()
 
-    def get_hero_actions(self):
-        """Кнопки bulk-действий для уведомлений"""
-        return [
-            {
-                'url': '#',
-                'label': 'Прочитать все',
-                'icon': 'fas fa-envelope-open-text',
-                'is_primary': True,
-                'css_class': '',
-                'html_id': 'markAllRead',
-            },
-            {
-                'url': '#',
-                'label': 'Прочитать выбранные',
-                'icon': 'fas fa-envelope-open',
-                'is_primary': False,
-                'css_class': '',
-                'html_id': 'markSelectedRead',
-            },
-            {
-                'url': '#',
-                'label': 'Удалить выбранные',
-                'icon': 'fas fa-trash',
-                'is_primary': False,
-                'css_class': 'btn-danger',
-                'html_id': 'deleteSelected',
-            },
-        ]
+        context['hero_context'] = {
+            'section_title': 'Уведомления',
+            'section_subtitle': 'Важные сообщения и обновления',
+            'section_icon': 'fas fa-bell',
+            'stats_list': [
+                {'icon': 'fa-bell', 'count': total_notifications, 'label': 'Всего'},
+                {'icon': 'fa-envelope', 'count': unread_notifications, 'label': 'Непрочитанных'},
+                {'icon': 'fa-cog', 'count': system_notifications, 'label': 'Системных'},
+            ]
+        }
+
+        # Фильтры
+        context['filter_context'] = {
+            'current_filter': self.request.GET.get('filter', 'all'),
+            'filter_list': [
+                {'key': 'all', 'label': 'Все', 'icon': 'fa-list'},
+                {'key': 'unread', 'label': 'Непрочитанные', 'icon': 'fa-envelope'},
+                {'key': 'system', 'label': 'Системные', 'icon': 'fa-cog'},
+                {'key': 'personal', 'label': 'Личные', 'icon': 'fa-user'},
+                {'key': 'orders', 'label': 'Заказы', 'icon': 'fa-shopping-cart'},
+            ]
+        }
+
+        return context
+
+    def apply_filters(self, queryset):
+        """Применяет фильтры уведомлений"""
+        filter_type = self.request.GET.get('filter', 'all')
+
+        if filter_type == 'unread':
+            return queryset.filter(is_read=False)
+        elif filter_type == 'system':
+            return queryset.filter(notification_type='system')
+        elif filter_type == 'personal':
+            # Личные уведомления - исключаем системные, чат и заказы (у заказов отдельная кнопка)
+            return queryset.exclude(notification_type__in=['system', 'chat_message', 'order'])
+        elif filter_type == 'orders':
+            return queryset.filter(notification_type='order')
+
+        return queryset
+
+
 
 notification_list_view = NotificationListView.as_view()
 
@@ -601,11 +599,12 @@ def delete_multiple_notifications(request):
 
 @login_required
 def delete_notification(request, notification_id):
-    """Удаляет отдельное уведомление (AJAX)"""
+    """Удаляет одно уведомление"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
 
     try:
+        # Проверяем, что уведомление принадлежит текущему пользователю
         notification = get_object_or_404(
             Notification,
             id=notification_id,
@@ -615,16 +614,25 @@ def delete_notification(request, notification_id):
         notification.delete()
 
         unread_notifications_count = request.user.notifications.filter(is_read=False).count()
-        total_notifications_count = request.user.notifications.count() # Новый общий счетчик
-        return JsonResponse({
-            'success': True,
-            'message': 'Уведомление удалено',
-            'unread_notifications_count': unread_notifications_count,
-            'total_notifications_count': total_notifications_count # Добавлено в ответ
-        })
+        total_notifications_count = request.user.notifications.count()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Уведомление удалено',
+                'unread_notifications_count': unread_notifications_count,
+                'total_notifications_count': total_notifications_count
+            })
+        else:
+            messages.success(request, '✅ Уведомление удалено')
+            return redirect('users:notification_list')
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'error': str(e)}, status=500)
+        else:
+            messages.error(request, f'❌ Ошибка при удалении: {str(e)}')
+            return redirect('users:notification_list')
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     # template_name = 'users/profile.html' # Будет определен в get_template_names
@@ -799,3 +807,59 @@ def change_user_role_view(request, user_id):
     }
 
     return render(request, 'users/change_role.html', context)
+
+@login_required
+def notification_ajax_filter(request):
+    """AJAX обработчик для фильтрации уведомлений"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+
+    try:
+        # Создаем экземпляр view для обработки фильтрации
+        view = NotificationListView()
+        view.request = request
+        view.kwargs = {}
+
+        # Получаем отфильтрованный queryset
+        queryset = view.get_queryset()
+
+        # Применяем пагинацию
+        from django.core.paginator import Paginator
+        paginator = Paginator(queryset, 20)  # 20 плиток уведомлений
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+
+        # Рендерим только список уведомлений (ПЛИТКИ)
+        from django.template.loader import render_to_string
+        notifications_html = render_to_string(
+            'users/partials/notifications_tiles.html',
+            {
+                'notifications': page_obj,
+                'page_obj': page_obj,
+                'request': request,
+                'current_filter': request.GET.get('filter', 'all')
+            }
+        )
+
+        # Рендерим пагинацию
+        pagination_html = ''
+        if page_obj.has_other_pages():
+            pagination_html = render_to_string(
+                'includes/partials/_unified_pagination.html',
+                {
+                    'page_obj': page_obj,
+                    'current_filter': request.GET.get('filter', 'all')
+                }
+            )
+
+        return JsonResponse({
+            'success': True,
+            'notifications_html': notifications_html,
+            'pagination_html': pagination_html,
+            'total_count': paginator.count,
+            'current_page': page_obj.number,
+            'total_pages': paginator.num_pages,
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

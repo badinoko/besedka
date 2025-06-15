@@ -9,6 +9,7 @@ from django.views.decorators.http import require_GET
 from ..models import Strain, SeedBank, StockItem
 from ..forms import StrainFilterForm, AddToCartForm
 from core.base_views import UnifiedListView, unified_ajax_filter
+from core.constants import UNIFIED_PAGE_SIZE
 
 # ==========================================================================
 # AJAX-ФИЛЬТР МАГАЗИНА (УНИФИЦИРОВАННАЯ РЕАЛИЗАЦИЯ)
@@ -27,7 +28,7 @@ class CatalogView(UnifiedListView):
     model = Strain
     template_name = 'base_list_page.html'
     card_type = 'store'
-    paginate_by = 9
+    paginate_by = UNIFIED_PAGE_SIZE
     ajax_url_name = 'store:ajax_filter'
 
     section_title = "🌱 Magic Beans Store"

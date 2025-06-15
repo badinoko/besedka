@@ -17,7 +17,7 @@ from .models import Post, Category, Tag, Comment, Reaction, Poll, PollChoice, Po
 from .forms import CommentForm
 from core.view_mixins import UnifiedCardMixin
 from core.base_views import UnifiedListView
-from core.constants import COMMENTS_PAGE_SIZE
+from core.constants import COMMENTS_PAGE_SIZE, UNIFIED_PAGE_SIZE
 from core.utils import get_limited_top_level_comments, get_total_comments_count, get_unified_cards
 
 
@@ -25,8 +25,8 @@ class HomePageView(UnifiedListView):
     """Главная страница - новостная лента"""
     model = Post
     template_name = 'base_list_page.html'
-    context_object_name = 'posts'
-    paginate_by = 9
+    # context_object_name наследуется из базового класса
+    paginate_by = UNIFIED_PAGE_SIZE
 
     # УНИФИЦИРОВАННЫЕ НАСТРОЙКИ
     section_title = "Новости Сообщества"
@@ -151,8 +151,8 @@ class HomePageView(UnifiedListView):
             total=Sum('views_count')
         )['total'] or 0
 
-        # UnifiedListView ожидает 'page_obj', а мы используем 'posts'. Сделаем псевдоним.
-        context['page_obj'] = context['posts']
+        # page_obj создается автоматически Django ListView при установке paginate_by
+        # НЕ ПЕРЕЗАПИСЫВАЕМ его на object_list!
 
         return context
 
@@ -351,8 +351,8 @@ class CategoryPostListView(UnifiedListView):
     model = Post
     # Используем единый шаблон для всех списковых страниц
     template_name = 'base_list_page.html'
-    context_object_name = 'posts'
-    paginate_by = 9  # Единый размер страницы
+    # context_object_name наследуется из базового класса
+    paginate_by = UNIFIED_PAGE_SIZE  # Единый размер страницы
 
     # УНИФИЦИРОВАННЫЕ НАСТРОЙКИ HERO/КАРТОЧЕК
     card_type = 'news'
@@ -390,8 +390,8 @@ class CategoryPostListView(UnifiedListView):
             getattr(self.category, 'description', '') or f"Все посты из категории {self.category.name}"
         )
 
-        # UnifiedListView формирует page_obj, но используем alias для обратной совместимости
-        context['page_obj'] = context.get('page_obj') or context.get('posts')
+        # page_obj создается автоматически Django ListView
+        # НЕ перезаписываем его!
 
         return context
 
@@ -400,8 +400,8 @@ class TagPostListView(UnifiedListView):
     """Унифицированный список постов по тегу"""
     model = Post
     template_name = 'base_list_page.html'
-    context_object_name = 'posts'
-    paginate_by = 9
+    # context_object_name наследуется из базового класса
+    paginate_by = UNIFIED_PAGE_SIZE
 
     card_type = 'news'
     section_hero_class = 'news-hero'
@@ -438,7 +438,8 @@ class TagPostListView(UnifiedListView):
             f"Все посты с тегом #{self.tag.name}"
         )
 
-        context['page_obj'] = context.get('page_obj') or context.get('posts')
+        # page_obj создается автоматически Django ListView
+        # НЕ перезаписываем его!
 
         return context
 

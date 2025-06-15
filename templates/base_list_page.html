@@ -69,7 +69,7 @@
             {% include 'includes/partials/_unified_cards_wrapper.html' with unified_card_list=unified_card_list %}
         </div>
 
-        <div id="pagination-container" class="mt-4">
+                <div id="pagination-container" class="mt-4">
             {% if page_obj.has_other_pages %}
                 {% include 'includes/partials/_unified_pagination.html' with page_obj=page_obj current_filter=current_filter %}
             {% endif %}
