@@ -47,7 +47,6 @@ class GrowLog(PublicModel):
     short_description = models.CharField("Краткое описание", max_length=500, blank=True,
                                        help_text="Краткое описание для карточки")
     goals = models.TextField("Цели", blank=True)
-    notes = models.TextField("Дополнительные заметки", blank=True)
 
     # Статистика
     current_stage = models.CharField("Текущая стадия", max_length=20, choices=STAGE_CHOICES, default='germination')

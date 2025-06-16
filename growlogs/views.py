@@ -51,8 +51,10 @@ class GrowLogListView(UnifiedListView):
         return self.apply_filters(base_qs)
 
     def apply_filters(self, queryset):
-        """Применяет фильтрацию для гроурепортов."""
-        filter_type = self.request.GET.get('filter', 'all')
+        """
+        Унификация: фильтр по умолчанию — 'newest'.
+        """
+        filter_type = self.request.GET.get('filter', 'newest')
 
         if filter_type == 'popular':
             queryset = queryset.annotate(likes_count=Count('likes')).order_by('-likes_count', '-created_at')
@@ -60,7 +62,7 @@ class GrowLogListView(UnifiedListView):
             queryset = queryset.annotate(comments_count=Count('comments')).order_by('-comments_count', '-created_at')
         elif filter_type == 'my_growlogs' and self.request.user.is_authenticated:
             queryset = queryset.filter(grower=self.request.user).order_by('-created_at')
-        else: # all
+        else: # newest
             queryset = queryset.order_by('-created_at')
         return queryset
 
@@ -82,9 +84,9 @@ class GrowLogListView(UnifiedListView):
             return []
 
     def get_filter_list(self):
-        """Фильтры для гроу-репортов"""
+        """Фильтры для гроу-репортов (унификация: первая кнопка — 'newest')"""
         filter_list = [
-            {'id': 'all', 'label': 'Все репорты'},
+            {'id': 'newest', 'label': 'Все репорты'},
             {'id': 'popular', 'label': 'Популярные'},
             {'id': 'commented', 'label': 'Обсуждаемые'},
         ]

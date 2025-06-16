@@ -109,7 +109,7 @@ class CatalogView(UnifiedListView):
         return context
 
     def get_filter_list(self):
-        """Унифицированные AJAX-фильтры каталога (соответствуют стандартам SSOT)"""
+        """Унифицированные AJAX-фильтры каталога (первая кнопка — 'newest')"""
         return [
             {'id': 'newest', 'label': 'Новые'},
             {'id': 'popular', 'label': 'Популярные'},

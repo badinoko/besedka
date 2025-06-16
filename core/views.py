@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse, Http404
 from django.utils.translation import gettext_lazy as _
@@ -6,9 +6,11 @@ from django.urls import reverse
 from .models import MaintenanceModeSetting
 from django.apps import apps
 from django.template.loader import render_to_string
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from django.core.paginator import Paginator
 from django.views.generic import View
+from django.contrib.contenttypes.models import ContentType
+import json
 
 # Create your views here.
 
@@ -233,3 +235,109 @@ def maintenance_page_view(request, section_slug=None):
         'title': maintenance_setting.title
     }
     return render(request, 'core/maintenance_page.html', context)
+
+@login_required
+@require_POST
+def unified_like_api(request):
+    """
+    Унифицированный API для лайков всех типов объектов.
+    Поддерживает:
+    - Галерея: Photo с ManyToManyField likes
+    - Гроурепорты: GrowLog с ManyToManyField likes (необратимо)
+    - Новости: Post с системой Reaction
+    ✅ ДОБАВЛЕНО: Проверка авторства - автор не может лайкнуть свой контент
+    """
+    try:
+        data = json.loads(request.body)
+        object_type = data.get('object_type')  # 'photo', 'growlog', 'post'
+        object_id = data.get('object_id')
+        action = data.get('action', 'toggle')  # 'toggle', 'like', 'unlike'
+
+        if not object_type or not object_id:
+            return JsonResponse({'error': 'Отсутствуют обязательные параметры'}, status=400)
+
+        # Определяем модель и объект
+        model_map = {
+            'photo': 'gallery.Photo',
+            'growlog': 'growlogs.GrowLog',
+            'post': 'news.Post'
+        }
+
+        if object_type not in model_map:
+            return JsonResponse({'error': 'Неподдерживаемый тип объекта'}, status=400)
+
+        model_path = model_map[object_type]
+        app_label, model_name = model_path.split('.')
+        Model = apps.get_model(app_label, model_name)
+        obj = get_object_or_404(Model, pk=object_id)
+
+        # ✅ НОВОЕ: Проверка авторства - автор не может лайкнуть свой контент
+        is_author = False
+        if hasattr(obj, 'author') and obj.author == request.user:
+            is_author = True
+        elif hasattr(obj, 'user') and obj.user == request.user:
+            is_author = True
+        elif hasattr(obj, 'owner') and obj.owner == request.user:
+            is_author = True
+
+        if is_author:
+            return JsonResponse({
+                'success': True,
+                'action': 'cannot_like_own',
+                'likes_count': getattr(obj, 'likes', obj.__class__.objects.none()).count() if hasattr(obj, 'likes') else 0,
+                'user_liked': False,
+                'object_type': object_type,
+                'object_id': object_id,
+                'message': 'Нельзя лайкнуть собственный контент'
+            })
+
+        # Обработка по типу объекта
+        if object_type in ['photo', 'growlog']:
+            # Простая система ManyToManyField likes
+            user_liked = obj.likes.filter(id=request.user.id).exists()
+
+            # ВСЕ лайки теперь необратимые (photo, growlog)
+            if not user_liked:
+                obj.likes.add(request.user)
+                action_performed = 'liked'
+            else:
+                action_performed = 'already_liked'
+
+            likes_count = obj.likes.count()
+            user_liked_after = obj.likes.filter(id=request.user.id).exists()
+
+        elif object_type == 'post':
+            # Система Reaction для новостей
+            from news.models import Reaction
+
+            reaction_type = data.get('reaction_type', 'like')
+            if reaction_type not in dict(Reaction.REACTION_TYPES):
+                return JsonResponse({'error': 'Неверный тип реакции'}, status=400)
+
+            existing_reaction = Reaction.objects.filter(post=obj, user=request.user).first()
+
+            if existing_reaction:
+                # Реакция уже есть - лайки необратимы
+                action_performed = 'already_liked'
+            else:
+                # Добавляем новую реакцию
+                Reaction.objects.create(post=obj, user=request.user, reaction_type=reaction_type)
+                action_performed = 'liked'
+
+            # Подсчитываем лайки (только тип 'like')
+            likes_count = Reaction.objects.filter(post=obj, reaction_type='like').count()
+            user_liked_after = Reaction.objects.filter(post=obj, user=request.user, reaction_type='like').exists()
+
+        return JsonResponse({
+            'success': True,
+            'action': action_performed,
+            'likes_count': likes_count,
+            'user_liked': user_liked_after,
+            'object_type': object_type,
+            'object_id': object_id
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Неверный формат JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

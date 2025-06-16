@@ -174,14 +174,16 @@ class UnifiedListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        current_filter = self.request.GET.get('filter', 'all')
+        filter_list = self.get_filter_list()
+        # Унификация: если filter не передан, берем id первой кнопки фильтра
+        current_filter = self.request.GET.get('filter')
+        if not current_filter and filter_list:
+            current_filter = filter_list[0]['id']
+        else:
+            current_filter = current_filter or 'newest'
 
         # ВАЖНО: Django автоматически создает page_obj при пагинации ListView
-        # page_obj ДОЛЖЕН создаваться автоматически при установке paginate_by
         page_obj = context.get('page_obj')
-
-        # УДАЛЕНА НЕПРАВИЛЬНАЯ ЛОГИКА ЗАМЕНЫ page_obj НА object_list
-        # Если page_obj не создался, это ОШИБКА КОНФИГУРАЦИИ, не пытаемся исправлять
 
         # УНИФИЦИРОВАННЫЙ КОНТЕКСТ HERO-СЕКЦИИ
         context['hero_context'] = {
@@ -193,15 +195,12 @@ class UnifiedListView(ListView):
         }
 
         # УНИФИЦИРОВАННЫЙ КОНТЕКСТ ФИЛЬТРОВ
-        filter_list = self.get_filter_list()
         for filter_item in filter_list:
             filter_item['is_active'] = filter_item['id'] == current_filter
-
         context['filter_context'] = {'filter_list': filter_list}
         context['current_filter'] = current_filter
 
         # УНИФИЦИРОВАННЫЕ КАРТОЧКИ
-        # Используем page_obj для карточек (объекты текущей страницы)
         if page_obj:
             context['unified_card_list'] = self.get_unified_cards(page_obj)
         else:
@@ -220,11 +219,7 @@ class UnifiedListView(ListView):
             except NoReverseMatch:
                 ajax_url = None
         context['ajax_url'] = ajax_url or ''
-
-        # AJAX URL (БОЛЬШЕ НЕ ИСПОЛЬЗУЕТСЯ ПРЯМО)
-        # URL теперь строится в шаблоне с использованием card_type
         context['card_type'] = self.card_type
-
         return context
 
     def apply_filters(self, queryset):

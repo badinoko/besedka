@@ -360,23 +360,10 @@
             </div>
             {% endif %}
 
-            <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (КАК В ГАЛЕРЕЕ) -->
-            {% if user.is_authenticated %}
-            <div class="reaction-buttons my-3">
-                <button class="reaction-btn d-flex align-items-center gap-2 p-2 border-0 bg-transparent"
-                        data-reaction="like"
-                        data-post-id="{{ post.id }}"
-                        {% if user_reaction %}style="opacity: 0.6; pointer-events: none;"{% endif %}>
-                    <i class="fas fa-heart" style="color: #e74c3c; font-size: 1.2rem;"></i>
-                    <span class="count text-muted">{{ reactions_summary.like|default:0 }}</span>
-                    {% if user_reaction %}
-                    <small class="text-muted ms-2">(уже поставлен)</small>
-                    {% else %}
-                    <small class="text-muted ms-2">Нравится</small>
-                    {% endif %}
-                </button>
+            <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (SSOT) -->
+            <div class="reaction-section my-3">
+                {% include 'includes/partials/unified_like_button.html' with object_type='post' object_id=post.id likes_count=post.reactions.count user_liked=user_liked size='md' style='button' show_count=True %}
             </div>
-            {% endif %}
 
             <!-- ПОДЕЛИТЬСЯ -->
             <div class="d-flex justify-content-between align-items-center my-4">

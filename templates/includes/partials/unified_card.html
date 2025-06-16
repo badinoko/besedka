@@ -63,8 +63,18 @@
             {% else %}
                 <div class="unified-card-stats w-100 py-2">
                     {% for stat in card_data.stats %}
-                        <div class="stat-item d-flex align-items-center {{ stat.css }}" style="gap:6px;">
-                            <i class="fas {{ stat.icon }}"></i>
+                        <div class="stat-item d-flex align-items-center {{ stat.css }}" style="gap:6px; pointer-events: none;">
+                            {% if stat.css == 'likes' %}
+                                <svg class="like-icon liked" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="color: #dc3545;">
+                                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            {% elif stat.css == 'comments' %}
+                                <i class="fas fa-comment" style="color: #0d6efd;"></i>
+                            {% elif stat.css == 'views' %}
+                                <i class="fas fa-eye" style="color: #198754;"></i>
+                            {% else %}
+                                <i class="fas fa-tag"></i>
+                            {% endif %}
                             <span>{{ stat.count }}</span>
                         </div>
                     {% endfor %}

@@ -101,9 +101,9 @@ class HomePageView(UnifiedListView):
         return []
 
     def get_filter_list(self):
-        """Фильтры для новостей"""
+        """Фильтры для новостей (унификация: первая кнопка — 'newest')"""
         return [
-            {'id': 'all', 'label': 'Все Статьи'},
+            {'id': 'newest', 'label': 'Все Статьи'},
             {'id': 'articles', 'label': 'Статьи'},
             {'id': 'polls', 'label': 'Опросы'},
             {'id': 'videos', 'label': 'Видео'},
@@ -112,10 +112,7 @@ class HomePageView(UnifiedListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        current_filter = self.request.GET.get('filter', 'all')
-        current_sort = self.request.GET.get('sort', 'newest')
-
-        # Формирование контекста для УНИФИЦИРОВАННОГО шаблона hero-секции
+        # hero_context оставляем, filter_context убираем (используется базовый)
         context['hero_context'] = {
             'section_title': self.section_title,
             'section_subtitle': self.section_subtitle,
@@ -123,26 +120,13 @@ class HomePageView(UnifiedListView):
             'stats_list': self.get_hero_stats(),
             'actions_list': self.get_hero_actions()
         }
-
-        # Контекст для УНИФИЦИРОВАННЫХ фильтров
-        context['filter_context'] = {
-            'filter_list': self.get_filter_list(),
-            'current_filter': current_filter,
-            'current_sort': current_sort,
-            'base_url': reverse('news:home'), # URL для построения ссылок фильтров
-        }
-
-        # Добавляем категории для навигации
+        # Категории и теги оставляем
         context['categories'] = Category.objects.annotate(
             posts_count=Count('post', filter=Q(post__status='published'))
         ).filter(posts_count__gt=0)
-
-        # Добавляем популярные теги
         context['popular_tags'] = Tag.objects.annotate(
             posts_count=Count('post', filter=Q(post__status='published'))
         ).filter(posts_count__gt=0).order_by('-posts_count')[:10]
-
-        # Статистика для hero-секции
         context['total_posts'] = Post.published.count()
         context['total_categories'] = Category.objects.annotate(
             posts_count=Count('post', filter=Q(post__status='published'))
@@ -150,10 +134,6 @@ class HomePageView(UnifiedListView):
         context['total_views'] = Post.published.aggregate(
             total=Sum('views_count')
         )['total'] or 0
-
-        # page_obj создается автоматически Django ListView при установке paginate_by
-        # НЕ ПЕРЕЗАПИСЫВАЕМ его на object_list!
-
         return context
 
 
@@ -245,6 +225,8 @@ class PostDetailView(DetailView):
         if self.request.user.is_authenticated:
             user_reaction = Reaction.objects.filter(post=post, user=self.request.user).first()
             context['user_reaction'] = user_reaction.reaction_type if user_reaction else None
+            # Для унифицированной системы лайков
+            context['user_liked'] = user_reaction is not None and user_reaction.reaction_type == 'like'
 
         # Для опросов
         if post.post_type == 'poll' and hasattr(post, 'poll'):

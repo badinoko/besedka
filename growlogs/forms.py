@@ -40,7 +40,7 @@ class GrowLogCreateForm(forms.ModelForm):
         fields = [
             'title', 'logo', 'strain_name', 'seedbank_name', 'start_date', 'environment', 'medium',
             'nutrients', 'lighting', 'container_size', 'setup_description',
-            'short_description', 'goals', 'notes', 'yield_expected', 'is_public'
+            'short_description', 'goals', 'yield_expected', 'is_public'
         ]
         widgets = {
             'title': forms.TextInput(attrs={
@@ -92,11 +92,6 @@ class GrowLogCreateForm(forms.ModelForm):
                 'class': 'form-control',
                 'rows': 3,
                 'placeholder': 'Какие цели вы ставите перед собой в этом grow?'
-            }),
-            'notes': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Дополнительные заметки...'
             }),
             'yield_expected': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -461,7 +456,7 @@ class GrowLogWizardForm(forms.ModelForm):
         fields = [
             'title', 'strain', 'start_date', 'environment', 'medium',
             'nutrients', 'lighting', 'container_size', 'setup_description',
-            'goals', 'notes', 'yield_expected', 'is_public'
+            'goals', 'yield_expected', 'is_public'
         ]
         widgets = {
             'title': forms.TextInput(attrs={

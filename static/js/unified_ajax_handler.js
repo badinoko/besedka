@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 try {
                     const urlObj = new URL(url, window.location.origin);
                     // FORM THE CANONICAL BASE PATH (с завершающим "/")
-                    let basePath = ajaxUrl.replace(/\/ajax\/filter\/?$/, '');
+                    let basePath = window.location.pathname.replace(/\/ajax\/(filter|search)\/?$/, '');
                     // Убеждаемся, что путь оканчивается на "/" для предотвращения 301 редиректов Django
                     if (!basePath.endsWith('/')) {
                         basePath += '/';

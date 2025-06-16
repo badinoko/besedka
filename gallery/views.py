@@ -161,7 +161,7 @@ class GalleryView(UnifiedListView):
             ]
 
     def get_filter_list(self):
-        """Фильтры для галереи"""
+        """Фильтры для галереи (унификация: первая кнопка — 'newest')"""
         return [
             {'id': 'newest', 'label': 'Новые'},
             {'id': 'popular', 'label': 'Популярные'},

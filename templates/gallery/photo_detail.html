@@ -91,19 +91,8 @@
 
                     <!-- УВЕЛИЧЕННЫЕ КНОПКИ ДЛЯ МОБИЛЬНЫХ -->
                     <div class="d-flex flex-wrap gap-2">
-                        {% if user.is_authenticated %}
-                            <button id="like-photo-btn"
-                                    data-url="{% url 'gallery:toggle_like' pk=photo.pk %}"
-                                    class="btn btn-outline-danger {% if user_liked %}active{% endif %}">
-                                <i class="fas fa-heart"></i>
-                                <span id="likes-count">{{ photo.likes.count }}</span>
-                            </button>
-                        {% else %}
-                            <span class="btn btn-outline-secondary" style="min-width: 80px; min-height: 44px;">
-                                <i class="fas fa-heart"></i> {{ likes_count }}
-                            </span>
-                            <small class="w-100 d-block">Войдите для лайков</small>
-                        {% endif %}
+                        <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (SSOT) -->
+                        {% include 'includes/partials/unified_like_button.html' with object_type='photo' object_id=photo.id likes_count=photo.likes.count user_liked=user_liked size='md' style='button' show_count=True %}
 
                         {% if user.is_authenticated and photo.author == user %}
                             <a href="{% url 'gallery:photo_edit' photo.pk %}"
@@ -180,74 +169,16 @@
 <!-- AOS Animation -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-<!-- JavaScript для лайков -->
+<!-- Инициализация AOS анимаций -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация AOS
     AOS.init({
         duration: 600,
         easing: 'ease-out',
         once: true,
         offset: 50
     });
-
-    const likeBtn = document.getElementById('like-photo-btn');
-    if (likeBtn) {
-        likeBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            // Если кнопка уже активна (лайк уже поставлен) - показываем сообщение
-            if (this.classList.contains('active')) {
-                showNotification('Вы уже поставили лайк этой фотографии', 'info');
-                return;
-            }
-
-            const photoId = this.dataset.photoId;
-            const url = this.dataset.url;
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const likesCount = document.getElementById('likes-count');
-                    likesCount.textContent = data.likes_count;
-
-                    // Для необратимых лайков - только добавляем класс
-                    if (data.liked) {
-                        this.classList.add('active');
-                        // Показываем сообщение об успехе
-                        showNotification(data.message || 'Лайк засчитан! Спасибо за поддержку', 'success');
-                    }
-                } else {
-                    // Показываем сообщение об ошибке или о том, что лайк уже поставлен
-                    showNotification(data.message || 'Произошла ошибка', 'info');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Произошла ошибка при обработке запроса', 'error');
-            });
-        });
-    }
 });
-</script>
-
-<!-- Функция для уведомлений -->
-<script>
-function showNotification(message, type = 'info') {
-    if (window.showNotification) {
-        window.showNotification(message, type);
-    } else {
-        console.log(`[${type}] ${message}`);
-    }
-}
 </script>
 
 <!-- Локальный обработчик ответов больше не нужен: используем unified_comment.js -->

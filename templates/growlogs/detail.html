@@ -875,13 +875,8 @@
                     {% endif %}
 
                     {% if growlog.is_public or user == growlog.grower %}
-                        <!-- Кнопка лайка для аутентифицированных пользователей -->
-                        <button class="btn-modern btn-like like-btn {% if user in growlog.likes.all %}liked{% endif %}"
-                                data-growlog-id="{{ growlog.id }}"
-                                onclick="toggleLike(this)">
-                            <i class="fas fa-heart"></i>
-                            <span class="like-count">{{ growlog.likes.count }}</span>
-                        </button>
+                        <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (только иконка, необратимо) -->
+                        {% include 'includes/partials/unified_like_button.html' with object_type='growlog' object_id=growlog.id user_liked=user_liked %}
                     {% endif %}
                 </div>
             </div>
@@ -1024,65 +1019,8 @@
 
 <!-- ===== СКРИПТЫ ===== -->
 <script>
-// AJAX для лайков репорта
-function toggleLike(button) {
-    const growlogId = button.dataset.growlogId;
-    const likeCountSpan = button.querySelector('.like-count');
-
-    fetch(`/growlogs/${growlogId}/like/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            likeCountSpan.textContent = data.likes_count;
-            button.classList.toggle('liked', data.liked);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Ошибка!',
-            text: 'Не удалось обновить лайк',
-            icon: 'error',
-            confirmButtonText: 'ОК'
-        });
-    });
-}
-
-// AJAX для лайков дней
-function toggleDayLike(button) {
-    const dayId = button.dataset.dayId;
-    const likeCountSpan = button.querySelector('.like-count');
-
-    fetch(`/growlogs/day/${dayId}/like/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            likeCountSpan.textContent = data.likes_count;
-            button.classList.toggle('liked', data.liked);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Ошибка!',
-            text: 'Не удалось обновить лайк',
-            icon: 'error',
-            confirmButtonText: 'ОК'
-        });
-    });
-}
+// ПРИМЕЧАНИЕ: Лайки гроурепортов теперь обрабатываются унифицированной системой (unified_like_handler.js)
+// Старые функции toggleLike() и toggleDayLike() удалены в пользу SSOT архитектуры
 
 // Плавная прокрутка к якорем
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
