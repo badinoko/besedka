@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.addEventListener('click', function(event) {
         const target = event.target;
 
-        // Handle filter clicks
+        // Handle filter clicks (обработка .filter-tab-link)
         if (target.matches('.filter-tab-link') || target.closest('.filter-tab-link')) {
             event.preventDefault();
             const link = target.closest('.filter-tab-link');
@@ -116,6 +116,29 @@ document.addEventListener('DOMContentLoaded', function () {
             link.classList.add('active');
 
             fetchContent(newUrl);
+        }
+
+        // Handle hero-btn clicks with data-filter (НОВОЕ: обработка кнопок hero)
+        if ((target.matches('.hero-btn') || target.closest('.hero-btn')) && (target.dataset.filter || target.closest('.hero-btn')?.dataset.filter)) {
+            event.preventDefault();
+            const button = target.closest('.hero-btn');
+            const filterId = button.dataset.filter;
+
+            // Проверяем, что это действительно фильтр, а не обычная ссылка
+            if (filterId && button.getAttribute('href') === 'javascript:void(0);') {
+                const newUrl = `${ajaxUrl}?filter=${encodeURIComponent(filterId)}`;
+
+                // Обновляем активное состояние фильтров (если есть)
+                document.querySelectorAll('.filter-tab-link').forEach(el => el.classList.remove('active'));
+
+                // Пытаемся найти соответствующий фильтр и активировать его
+                const correspondingFilter = document.querySelector(`.filter-tab-link[data-filter="${filterId}"]`);
+                if (correspondingFilter) {
+                    correspondingFilter.classList.add('active');
+                }
+
+                fetchContent(newUrl);
+            }
         }
 
         // Handle pagination clicks

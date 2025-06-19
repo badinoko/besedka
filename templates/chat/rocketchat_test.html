@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket.Chat Test - Беседка</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f8f9fa;
+            padding-top: 180px; /* Увеличено место для диагностики */
+        }
+
+        /* Навигация Беседки */
+        .navbar {
+            position: fixed;
+            top: 0;
+            z-index: 1040;
+        }
+
+        .test-header {
+            background: linear-gradient(135deg, #ff6b6b, #e74c3c);
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            text-align: center;
+            position: fixed;
+            top: 56px; /* Под навигацией */
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            border-bottom: 2px solid #c0392b;
+        }
+
+        .test-info {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 3px;
+        }
+
+        /* Диагностическая панель */
+        .diagnostic-panel {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            position: fixed;
+            top: 110px;
+            left: 0;
+            right: 0;
+            z-index: 1020;
+            font-size: 13px;
+        }
+
+        .diagnostic-panel .btn {
+            font-size: 12px;
+            padding: 4px 12px;
+            margin: 2px;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 180px);
+            position: relative;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 0 10px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px;
+            display: none;
+        }
+
+        /* Стили для тестовой навигации */
+        .test-nav-active {
+            background-color: rgba(255, 107, 107, 0.1) !important;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация Беседки (МИНИМАЛЬНАЯ ВЕРСИЯ) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-home"></i> Беседка
+            </a>
+            <button class="navbar-toggler" type="button">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse show">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-newspaper"></i> Новости
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-store"></i> Магазин
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-seedling"></i> Гроурепорты
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-images"></i> Галерея
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link test-nav-active" href="#">
+                            <i class="fas fa-comments"></i> Чат (ТЕСТ)
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'chat:general' %}">
+                            <i class="fas fa-arrow-left"></i> Основной чат
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="test-header">
+        🚀 ТЕСТОВАЯ СТРАНИЦА МИГРАЦИИ - Интеграция Rocket.Chat в проект "Беседка"
+        <div class="test-info">
+            Изолированная среда тестирования | URL: {{ rocketchat_url }}
+        </div>
+    </div>
+
+    <!-- Диагностическая панель -->
+    <div class="diagnostic-panel">
+        <strong>🔍 Диагностика Rocket.Chat:</strong>
+        <span id="status">Проверка подключения...</span>
+        <div class="mt-2">
+            <button class="btn btn-primary btn-sm" onclick="testConnection()">
+                <i class="fas fa-refresh"></i> Проверить соединение
+            </button>
+            <button class="btn btn-warning btn-sm" onclick="openDirect()">
+                <i class="fas fa-external-link-alt"></i> Открыть напрямую
+            </button>
+            <button class="btn btn-info btn-sm" onclick="reloadIframe()">
+                <i class="fas fa-sync"></i> Перезагрузить
+            </button>
+        </div>
+    </div>
+
+    <div class="iframe-container">
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-spin"></i> Загрузка Rocket.Chat...<br>
+            <small>Если загрузка не завершается, возможно iframe заблокирован</small>
+        </div>
+        <iframe
+            id="rocketframe"
+            src="{{ rocketchat_url }}"
+            allow="camera; microphone; clipboard-write; fullscreen"
+            allowfullscreen
+            onload="handleIframeLoad()"
+            onerror="handleIframeError()">
+        </iframe>
+    </div>
+
+    <div class="error-message" id="error-message">
+        <h5><i class="fas fa-exclamation-triangle"></i> Проблема с загрузкой</h5>
+        <p>Rocket.Chat не может загрузиться в iframe. Это происходит из-за настроек безопасности X-Frame-Options.</p>
+        <p><strong>Решение:</strong> Зайдите в <a href="{{ rocketchat_url }}" target="_blank">Rocket.Chat напрямую</a> и настройте разрешение iframe в Administration → Settings → General.</p>
+    </div>
+
+    <script>
+        let connectionStatus = 'unknown';
+
+        // Проверка соединения с Rocket.Chat
+        async function testConnection() {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка...';
+
+            try {
+                const response = await fetch('{{ rocketchat_url }}', {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                statusEl.innerHTML = '<span style="color: green;"><i class="fas fa-check"></i> Rocket.Chat доступен</span>';
+                connectionStatus = 'available';
+            } catch (error) {
+                statusEl.innerHTML = '<span style="color: red;"><i class="fas fa-times"></i> Ошибка соединения</span>';
+                connectionStatus = 'error';
+            }
+        }
+
+        // Открытие в новой вкладке
+        function openDirect() {
+            window.open('{{ rocketchat_url }}', '_blank');
+        }
+
+        // Перезагрузка iframe
+        function reloadIframe() {
+            const iframe = document.getElementById('rocketframe');
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            iframe.src = iframe.src;
+        }
+
+        // Обработка загрузки iframe
+        function handleIframeLoad() {
+            console.log('🚀 Iframe loaded successfully');
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('status').innerHTML = '<span style="color: green;"><i class="fas fa-check"></i> Iframe загружен</span>';
+        }
+
+        // Обработка ошибки iframe
+        function handleIframeError() {
+            console.log('❌ Iframe failed to load');
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('status').innerHTML = '<span style="color: red;"><i class="fas fa-times"></i> Ошибка загрузки iframe</span>';
+        }
+
+        // Таймер для определения зависания
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            if (loading.style.display !== 'none') {
+                handleIframeError();
+            }
+        }, 10000); // 10 секунд таймаут
+
+        // Инициализация
+        window.addEventListener('load', function() {
+            console.log('🚀 Rocket.Chat Test Page loaded with Besedka Navigation');
+            console.log('Target URL:', '{{ rocketchat_url }}');
+            testConnection();
+        });
+
+        // Убираем функциональность из ссылок для изоляции
+        document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+            if (!link.href.includes('chat:general')) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Navigation disabled in test mode');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

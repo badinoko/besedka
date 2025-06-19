@@ -1,0 +1,93 @@
+On branch feature/rocketchat-migration
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .cursor/rules/besedka_project_rule.mdc
+	modified:   .cursor/rules/besedka_user_rule.mdc
+	modified:   BESEDKA_MASTER_DOCUMENTATION.md
+	modified:   BESEDKA_UI_STANDARDS.md
+	modified:   BESEDKA_USER_SYSTEM.md
+	modified:   CHANGELOG.md
+	modified:   api/urls.py
+	modified:   api/views.py
+	modified:   chat/consumers.py
+	modified:   chat/models.py
+	modified:   chat/views.py
+	modified:   config/settings/base.py
+	modified:   config/urls.py
+	modified:   core/base_views.py
+	modified:   core/notification_service.py
+	modified:   core/templates/core/partials/user_nav_simple.html
+	modified:   core/views.py
+	modified:   docker-compose.local.yml
+	modified:   gallery/views.py
+	modified:   requirements/base.txt
+	modified:   scripts/create_all_users.py
+	modified:   static/css/chat_styles.css
+	modified:   static/js/chat_client.js
+	modified:   static/js/unified_ajax_handler.js
+	modified:   templates/base.html
+	deleted:    templates/chat/chat.html
+	deleted:    templates/chat/chat_ajax.html
+	deleted:    templates/chat/chat_beautiful.html
+	deleted:    templates/chat/chat_demo.html
+	deleted:    templates/chat/chat_demo_public.html
+	deleted:    templates/chat/chat_home.html
+	deleted:    templates/chat/chat_modern.html
+	deleted:    templates/chat/chat_placeholder.html
+	deleted:    templates/chat/chat_room.html
+	deleted:    templates/chat/chat_simple.html
+	deleted:    templates/chat/discussions.html
+	modified:   templates/chat/general_chat.html
+	deleted:    templates/chat/moderation.html
+	deleted:    templates/chat/private_chats.html
+	deleted:    templates/chat/room.html
+	modified:   templates/chat/vip_chat.html
+	modified:   templates/includes/partials/unified_comment.html
+	modified:   templates/news/post_detail.html
+	modified:   templates/users/cabinet_base.html
+	modified:   templates/users/cabinet_moderator.html
+	modified:   templates/users/cabinet_owner.html
+	modified:   templates/users/cabinet_store_admin.html
+	modified:   templates/users/cabinet_store_owner.html
+	modified:   templates/users/cabinet_user.html
+	modified:   templates/users/profile.html
+	modified:   users/admin.py
+	modified:   users/management/commands/create_unified_users.py
+	modified:   users/management/commands/initiate_test_users.py
+	modified:   users/migrations/0003_update_user_roles.py
+	modified:   users/models.py
+	modified:   users/views.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	CHAT_LAYOUT_REORGANIZATION_REPORT.md
+	CHAT_NAVIGATION_FIX_REPORT.md
+	CHAT_REFACTOR_LOG.md
+	CHAT_REFACTOR_PLAN.md
+	GLOBAL_REFACTOR_PLAN (DON'T DELETE)
+	backup_postgres.sql
+	chat/management/commands/create_test_messages.py
+	chat/migrations/0003_chatreaction.py
+	chat/urls.py.backup
+	chat/views.py.backup
+	cookies.txt
+	core/management/commands/create_rocket_oauth_app.py
+	core/management/commands/sync_rc_channels.py
+	core/management/commands/sync_rc_roles.py
+	docs/ANALYSIS_REPORT.md
+	docs/ROCKETCHAT_MIGRATION_PLAN_V3.md
+	docs/ROCKETCHAT_MIGRATION_PROGRESS.md
+	docs/chat_git_status_before_migration.txt
+	pdf_extract.txt
+	scripts/create_test_chat_messages.py
+	static/css/rc_overrides.css
+	static/js/rc_embed.js
+	"static/webfonts/\320\234\320\270\321\200\320\276\321\201\320\273\320\260\320\262 Bold.ttf"
+	"static/webfonts/\320\234\320\270\321\200\320\276\321\201\320\273\320\260\320\262 Regular.ttf"
+	templates/chat_backup_20250617_233130/
+	users/migrations/0011_add_role_icon.py
+	users/migrations/0012_rename_admin_to_moderator.py
+	"\320\237\320\265\321\200\320\265\321\205\320\276\320\264 \320\275\320\260 RocketChat_ \320\277\320\273\320\260\320\275 \320\270\320\275\321\202\320\265\320\263\321\200\320\260\321\206\320\270\320\270_.pdf"
+
+no changes added to commit (use "git add" and/or "git commit -a")

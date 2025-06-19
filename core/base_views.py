@@ -66,7 +66,7 @@ class UnifiedListView(ListView):
                     {'icon': 'fa-comment', 'count': get_total_comments_count(item), 'css': 'comments'},
                     {'icon': 'fa-eye', 'count': getattr(item, 'views', 0) or getattr(item, 'views_count', 0) or 0, 'css': 'views'},
                 ]
-                author_name = item.author.username if hasattr(item, 'author') and item.author else 'Аноним'
+                author_name = f"{item.author.get_role_icon} {item.author.display_name}" if hasattr(item, 'author') and item.author else 'Аноним'
                 description = getattr(item, 'excerpt', '') or getattr(item, 'content', '')
             elif self.card_type == 'photo':
                 image_url = getattr(item, 'image', None)
@@ -79,7 +79,7 @@ class UnifiedListView(ListView):
                     {'icon': 'fa-comment', 'count': get_total_comments_count(item), 'css': 'comments'},
                     {'icon': 'fa-eye', 'count': getattr(item, 'views', 0) or getattr(item, 'views_count', 0) or 0, 'css': 'views'},
                 ]
-                author_name = item.author.username if hasattr(item, 'author') and item.author else 'Аноним'
+                author_name = f"{item.author.get_role_icon} {item.author.display_name}" if hasattr(item, 'author') and item.author else 'Аноним'
                 description = getattr(item, 'description', '')
             elif self.card_type == 'growlog':
                 image_url = getattr(item, 'main_photo', None) or getattr(item, 'image', None) or getattr(item, 'logo', None)
@@ -92,15 +92,11 @@ class UnifiedListView(ListView):
                     {'icon': 'fa-comment', 'count': get_total_comments_count(item), 'css': 'comments'},
                     {'icon': 'fa-eye', 'count': getattr(item, 'views', 0) or getattr(item, 'views_count', 0) or 0, 'css': 'views'},
                 ]
-                author_name = getattr(item, 'grower', None)
-                if author_name and hasattr(author_name, 'username'):
-                    author_name = author_name.username
+                author_obj = getattr(item, 'grower', None) or getattr(item, 'user', None)
+                if author_obj and hasattr(author_obj, 'display_name'):
+                    author_name = f"{author_obj.get_role_icon} {author_obj.display_name}"
                 else:
-                    author_name = getattr(item, 'user', None)
-                    if author_name and hasattr(author_name, 'username'):
-                        author_name = author_name.username
-                    else:
-                        author_name = 'Аноним'
+                    author_name = 'Аноним'
                 description = getattr(item, 'setup_description', '') or getattr(item, 'short_description', '')
             elif self.card_type == 'store':
                 # Карточки товаров (сортов семян)

@@ -231,6 +231,14 @@ class Message(models.Model):
     def __str__(self):
         return f"{self.author.username}: {self.content[:50]}..."
 
+    def likes_count(self):
+        """Количество лайков для сообщения"""
+        return self.reactions.filter(reaction_type='like').count()
+
+    def dislikes_count(self):
+        """Количество дизлайков для сообщения"""
+        return self.reactions.filter(reaction_type='dislike').count()
+
 
 class ThreadManager(models.Manager):
     """Менеджер для приватных чатов"""
@@ -739,3 +747,41 @@ class VIPChatMembership(models.Model):
         self.accepted_at = timezone.now()
         self.is_active = True
         self.save()
+
+
+class ChatReaction(models.Model):
+    """Неотзывные реакции (Like / Dislike) на сообщения чата."""
+
+    REACTION_CHOICES = [
+        ('like', '👍 Like'),
+        ('dislike', '👎 Dislike'),
+    ]
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name='reactions',
+        verbose_name=_('Сообщение')
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name=_('Пользователь')
+    )
+    reaction_type = models.CharField(
+        max_length=7,
+        choices=REACTION_CHOICES,
+        verbose_name=_('Тип реакции')
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Создано'))
+
+    class Meta:
+        verbose_name = _('Реакция сообщения')
+        verbose_name_plural = _('Реакции сообщений')
+        unique_together = ('message', 'user')  # Однократная, безотзывная реакция
+        indexes = [
+            models.Index(fields=['message', 'reaction_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} {self.get_reaction_type_display()} msg#{self.message_id}"

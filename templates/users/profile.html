@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block title %}Личный кабинет - {{ user.username }}{% endblock %}
+{% block title %}Личный кабинет - {{ user.display_name }}{% endblock %}
 
 {% block breadcrumbs %}
     <li class="breadcrumb-item active" aria-current="page">Личный кабинет</li>
@@ -251,7 +251,7 @@
 
             <div class="profile-details">
                 <h1 class="profile-name">
-                    {{ user.name|default:user.username }}
+                    {{ user.display_name }}
                     {% if user_role_badge %}
                         <span class="badge {{ user_role_badge.class }} role-badge">{{ user_role_badge.text }}</span>
                     {% endif %}
@@ -376,7 +376,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <strong>Имя пользователя:</strong><br>
-                            <span class="text-muted">{{ user.username }}</span>
+                            <span class="text-muted">{{ user.display_name }}</span>
                         </div>
                         <div class="col-md-6">
                             <strong>Роль:</strong><br>

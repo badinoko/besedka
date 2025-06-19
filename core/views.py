@@ -26,7 +26,7 @@ def admin_redirect(request):
         return HttpResponseForbidden(_("У вас нет доступа к административной панели."))
 
     # Владелец платформы и админы платформы → админка владельца
-    if user.role in ['owner', 'admin']:
+    if user.role in ['owner', 'moderator']:
         return redirect('/owner_admin/')
 
     # Superuser без роли идет в стандартную админку
@@ -71,7 +71,7 @@ def admin_selector(request):
         })
 
     # Админка владельца платформы
-    if request.user.is_superuser or getattr(request.user, 'role', None) in ['owner', 'admin']:
+    if request.user.is_superuser or getattr(request.user, 'role', None) in ['owner', 'moderator']:
         admin_panels.append({
             'name': _('Управление платформой Беседка'),
             'url': '/owner_admin/',
@@ -81,7 +81,7 @@ def admin_selector(request):
         })
 
     # Админка магазина
-    if request.user.is_superuser or getattr(request.user, 'role', None) in ['owner', 'admin', 'store_owner', 'store_admin']:
+    if request.user.is_superuser or getattr(request.user, 'role', None) in ['owner', 'moderator', 'store_owner', 'store_admin']:
         admin_panels.append({
                             'name': _('Управление магазином'),
             'url': '/store_admin_site/',

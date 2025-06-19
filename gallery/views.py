@@ -153,7 +153,7 @@ class GalleryView(UnifiedListView):
         if self.request.user.is_authenticated:
             return [
                 {'url': reverse_lazy('gallery:upload'), 'label': 'Загрузить фото', 'is_primary': True, 'icon': 'fas fa-camera'},
-                {'url': 'javascript:void(0);', 'label': 'Мои фото', 'is_primary': False, 'icon': 'fas fa-user', 'data_filter': 'my_photos', 'css_class': 'filter-tab-link'},
+                {'url': 'javascript:void(0);', 'label': 'Мои фото', 'is_primary': False, 'icon': 'fas fa-user', 'data_filter': 'my_photos'},
             ]
         else:
             return [

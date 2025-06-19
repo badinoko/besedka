@@ -1,14 +1,14 @@
 services:
   postgres:
     image: postgres:13
-    environment:
-      POSTGRES_DB: magic_beans_db
-      POSTGRES_USER: magic_beans_user
-      POSTGRES_PASSWORD: magic_beans_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=besedka
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
   redis:
     image: redis:6

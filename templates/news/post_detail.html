@@ -257,7 +257,7 @@
                         <div class="d-flex align-items-center">
                             <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
                             <div>
-                                <h6 class="mb-0">{{ post.author.username }}</h6>
+                                <h6 class="mb-0">{{ post.author.display_name }}</h6>
                                 <small class="text-muted">{{ post.published_at|date:"d.m.Y в H:i" }}</small>
                             </div>
                         </div>
@@ -407,7 +407,7 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <i class="fas fa-user-circle fa-4x text-primary mb-3"></i>
-                    <h5 class="card-title">{{ post.author.username }}</h5>
+                    <h5 class="card-title">{{ post.author.display_name }}</h5>
                     <p class="text-muted">Автор статьи</p>
                     {% if post.author.profile_extra %}
                     <p class="small">{{ post.author.profile_extra.bio|truncatewords:20 }}</p>

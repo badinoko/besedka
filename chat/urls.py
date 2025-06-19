@@ -30,4 +30,9 @@ urlpatterns = [
     path('ajax/send-message/', views.SendMessageAjaxView.as_view(), name='send_message_ajax'),
     path('ajax/mark-read/', views.MarkMessagesReadAjaxView.as_view(), name='mark_read_ajax'),
     path('ajax/load-messages/', views.LoadMessagesAjaxView.as_view(), name='load_messages_ajax'),
+
+    # 🚀 ROCKET.CHAT МИГРАЦИЯ - Изолированная тестовая страница
+    path('test/', views.RocketChatTestView.as_view(), name='rocketchat_test'),
+    path('oauth/', views.RocketChatOAuthView.as_view(), name='rocketchat_oauth'),
+    path('integrated/', views.RocketChatIntegratedView.as_view(), name='rocketchat_integrated'),
 ]

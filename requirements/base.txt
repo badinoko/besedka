@@ -36,3 +36,6 @@ django-guardian==3.0.0
 django-colorfield==0.14.0
 channels==4.0.0
 channels_redis==4.2.0
+
+# OAuth2 provider for Rocket.Chat SSO
+django-oauth-toolkit==2.4.0  # https://github.com/jazzband/django-oauth-toolkit

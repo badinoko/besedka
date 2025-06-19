@@ -11,6 +11,7 @@ class ChatClient {
         this.reconnectDelay = 1000;
         this.isTyping = false;
         this.typingTimer = null;
+        this.userReactedMessages = new Set(); // track messages reacted by current user to block double reaction
 
         this.init();
     }
@@ -106,6 +107,9 @@ class ChatClient {
             case 'user_left':
                 this.handleUserLeft(data.user);
                 break;
+            case 'reaction_update':
+                this.applyReactionUpdate(data);
+                break;
             default:
                 console.log('Unknown message type:', data.type);
         }
@@ -157,31 +161,82 @@ class ChatClient {
 
     createMessageElement(message) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${message.is_own ? 'own-message' : 'other-message'}`;
+        messageDiv.classList.add('message');
+        if (message.is_own) {
+            messageDiv.classList.add('own-message');
+        } else {
+            messageDiv.classList.add('other-message');
+        }
 
+        // Базовые data-атрибуты для систем ответов и реакций
+        messageDiv.setAttribute('data-message-id', message.id);
+        messageDiv.setAttribute('data-author', message.author_name);
+        if (message.author_role) {
+            messageDiv.setAttribute('data-author-role', message.author_role);
+        }
+
+        // Время в формате HH:MM, локализовано под RU
         const timeString = new Date(message.created).toLocaleTimeString('ru-RU', {
             hour: '2-digit',
             minute: '2-digit'
         });
 
-        if (message.is_own) {
-            messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    <div class="message-content">${this.escapeHtml(message.content)}</div>
-                    <div class="message-time">${timeString}</div>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <div class="message-header">
-                    <strong>${this.escapeHtml(message.author_name)}</strong>
-                    <span class="text-muted">${timeString}</span>
-                </div>
-                <div class="message-bubble">
-                    <div class="message-content">${this.escapeHtml(message.content)}</div>
-                </div>
-            `;
+        // Защита от отсутствующих полей в полезной нагрузке
+        const roleIcon = message.author_role_icon || '👤';
+        const likes = typeof message.likes_count !== 'undefined' ? message.likes_count : 0;
+        const dislikes = typeof message.dislikes_count !== 'undefined' ? message.dislikes_count : 0;
+
+        // Если сообщение является ответом – готовим цитату
+        let quoteSection = '';
+        let quoteNavButton = '';
+        if (message.reply_to) {
+            const replyAuthor = this.escapeHtml(message.reply_to.author_name || '');
+            const replySnippet = this.escapeHtml(message.reply_to.content_snippet || '');
+            quoteSection = `
+                <div class="quoted-message">
+                    <div class="quote-author">@${replyAuthor}</div>
+                    <div class="quote-text">${replySnippet}</div>
+                </div>`;
+            quoteNavButton = `
+                <button class="quote-nav-btn" data-target-message="${message.reply_to.id}" title="Перейти к исходному сообщению">
+                    <i class="fas fa-arrow-up"></i>
+                </button>`;
+            messageDiv.classList.add('reply-message');
         }
+
+        if (message.is_reply_to_me) {
+            messageDiv.classList.add('has-reply-to-me');
+        }
+
+        // Build reaction HTML snippet for header (inline)
+        const reactionsInHeader = `
+            <div class="message-reactions">
+                <button class="reaction-btn like-btn" data-message-id="${message.id}" data-action="like" title="Нравится">
+                    <i class="fas fa-thumbs-up"></i>
+                    <div class="reaction-count">${likes}</div>
+                </button>
+                <button class="reaction-btn dislike-btn" data-message-id="${message.id}" data-action="dislike" title="Не нравится">
+                    <i class="fas fa-thumbs-down"></i>
+                    <div class="reaction-count">${dislikes}</div>
+                </button>
+            </div>`;
+
+        // Основная разметка единого шаблона сообщения
+        messageDiv.innerHTML = `
+            <div class="message-bubble">
+                <div class="message-header">
+                    <div class="message-meta">
+                        <span class="message-author"><span class="role-icon">${roleIcon}</span>${this.escapeHtml(message.author_name)}</span>
+                        <span class="message-time">${timeString}</span>
+                    </div>
+                    ${reactionsInHeader}
+                </div>
+                <div class="message-content-area">
+                    ${quoteSection}
+                    <div class="message-content">${this.escapeHtml(message.content)}</div>
+                </div>
+                ${quoteNavButton}
+            </div>`;
 
         return messageDiv;
     }
@@ -219,7 +274,10 @@ class ChatClient {
             userElement.className = 'online-user';
             userElement.innerHTML = `
                 <div class="status-dot"></div>
-                <span class="user-name">${this.escapeHtml(user.display_name || user.username)}</span>
+                <span class="user-name">
+                    <span class="role-icon">${user.role_icon || '👤'}</span>
+                    ${this.escapeHtml(user.display_name || user.username)}
+                </span>
             `;
             usersList.appendChild(userElement);
         });
@@ -343,6 +401,63 @@ class ChatClient {
             });
         }
 
+        // Делегирование кликов на кнопки реакций
+        const messagesContainer = document.getElementById('chat-messages');
+        if (messagesContainer) {
+            messagesContainer.addEventListener('click', (e) => {
+                const btn = e.target.closest('.reaction-btn');
+                if (btn && !btn.classList.contains('disabled')) {
+                    const messageId = btn.getAttribute('data-message-id');
+                    const action = btn.getAttribute('data-action');
+                    // Предотвращаем повторную реакцию
+                    if (this.userReactedMessages.has(messageId)) return;
+
+                    // Отправляем на сервер
+                    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+                        this.socket.send(JSON.stringify({
+                            type: 'reaction',
+                            reaction: action,
+                            message_id: messageId
+                        }));
+                        this.userReactedMessages.add(messageId);
+                        // Помечаем нажатую кнопку активной (цвет) и блокируем повторный клик
+                        btn.classList.add('active');
+                        btn.classList.add('disabled');
+
+                        // Делаем противоположную кнопку некликабельной (disabled), но не active
+                        const otherBtnSelector = action === 'like' ? '.dislike-btn' : '.like-btn';
+                        const otherBtn = btn.parentElement.parentElement.querySelector(otherBtnSelector);
+                        if (otherBtn) {
+                            otherBtn.classList.add('disabled');
+                        }
+                    }
+                }
+
+                // Обработка клика по кнопке перехода к цитате
+                const quoteBtn = e.target.closest('.quote-nav-btn');
+                if (quoteBtn) {
+                    const targetId = quoteBtn.getAttribute('data-target-message');
+                    const targetEl = document.querySelector(`.message[data-message-id="${targetId}"]`);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetEl.classList.add('reply-highlighted');
+                        setTimeout(() => targetEl.classList.remove('reply-highlighted'), 2000);
+                    }
+                }
+            });
+        }
+
+        // Снятие красной рамки при клике на сообщение, адресованное мне
+        const messagesArea = document.getElementById('chat-messages');
+        if (messagesArea) {
+            messagesArea.addEventListener('click', (e) => {
+                const msgEl = e.target.closest('.message.has-reply-to-me');
+                if (msgEl) {
+                    msgEl.classList.remove('has-reply-to-me');
+                }
+            });
+        }
+
         // Дополнительные обработчики событий могут быть добавлены здесь
         // Например, для обработки видимости страницы
         document.addEventListener('visibilitychange', () => {
@@ -390,6 +505,18 @@ class ChatClient {
             this.socket.close(1000, 'User disconnect');
             this.socket = null;
         }
+    }
+
+    /**
+     * Применить обновление счетчиков реакций, пришедшее с сервера
+     */
+    applyReactionUpdate({ message_id, likes, dislikes }) {
+        const messageEl = document.querySelector(`.message[data-message-id="${message_id}"]`);
+        if (!messageEl) return;
+        const likeCountEl = messageEl.querySelector('.like-btn .reaction-count');
+        const dislikeCountEl = messageEl.querySelector('.dislike-btn .reaction-count');
+        if (likeCountEl) likeCountEl.textContent = likes;
+        if (dislikeCountEl) dislikeCountEl.textContent = dislikes;
     }
 }
 

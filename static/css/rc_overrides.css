@@ -1,0 +1,16 @@
+/* Rocket.Chat embedded iframe overrides matching SSOT styles */
+#rocketchat-container {
+  position: fixed;
+  top: 60px; /* nav height */
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  background: var(--bs-body-bg, #fff);
+}
+
+#rocketchat-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}

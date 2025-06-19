@@ -26,6 +26,7 @@
     <!-- ИСПОЛЬЗУЕМ НОВЫЙ УНИФИЦИРОВАННЫЙ ЗАГОЛОВОК -->
     {# {% include 'includes/unified_header.html' %} #}
 
+    {% block main_container %}
     <main class="container py-4 content-container">
         {% if messages %}
         <div class="messages">
@@ -41,12 +42,15 @@
         {% block content %}
         {% endblock %}
     </main>
+    {% endblock %}
 
+    {% block footer %}
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container text-center">
             <span class="text-muted">© {% now "Y" %} Беседка. Все права защищены.</span>
         </div>
     </footer>
+    {% endblock %}
 
     <!-- Модальное окно выбора чата - теперь для всех -->
     {% include 'includes/chat_modal.html' %}

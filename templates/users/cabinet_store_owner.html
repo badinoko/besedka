@@ -17,7 +17,7 @@
         <h4><i class="fas fa-store"></i> {% trans "Панель владельца магазина" %}</h4>
     </div>
     <div class="card-body">
-        <p>{% blocktrans %}Добро пожаловать, {{ user.username }}! Это ваша панель управления магазином.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}Добро пожаловать, {{ user.display_name }}! Это ваша панель управления магазином.{% endblocktrans %}</p>
 
         <h5>{% trans "Ключевая статистика магазина:" %}</h5>
         {% if store_stats %}

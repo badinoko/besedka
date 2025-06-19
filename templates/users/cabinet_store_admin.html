@@ -17,7 +17,7 @@
         <h4><i class="fas fa-tasks"></i> {% trans "Панель администратора магазина" %}</h4>
     </div>
     <div class="card-body">
-        <p>{% blocktrans %}Добро пожаловать, {{ user.username }}! Это ваша оперативная панель.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}Добро пожаловать, {{ user.display_name }}! Это ваша оперативная панель.{% endblocktrans %}</p>
 
         <h5>{% trans "Информация по заказам:" %}</h5>
         {% if store_stats %}

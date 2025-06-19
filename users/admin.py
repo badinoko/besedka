@@ -27,12 +27,12 @@ class BanRecordInline(admin.TabularInline):
     can_delete = False
 
     def has_add_permission(self, request, obj=None):
-        # Только владелец платформы и администраторы могут добавлять баны
-        return request.user.is_superuser or request.user.role in ('owner', 'admin')
+        # Только владелец платформы и модераторы могут добавлять баны
+        return request.user.is_superuser or request.user.role in ('owner', 'moderator')
 
     def has_change_permission(self, request, obj=None):
-        # Только владелец платформы и администраторы могут изменять баны
-        return request.user.is_superuser or request.user.role in ('owner', 'admin')
+        # Только владелец платформы и модераторы могут изменять баны
+        return request.user.is_superuser or request.user.role in ('owner', 'moderator')
 
 class SimpleRoleForm(forms.ModelForm):
     """Простая форма для назначения ролей пользователям"""
@@ -62,7 +62,7 @@ class SimpleRoleForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             # Устанавливаем чекбоксы на основе текущей роли
-            self.fields['is_platform_admin'].initial = (self.instance.role == 'admin')
+            self.fields['is_platform_admin'].initial = (self.instance.role == 'moderator')
             self.fields['is_store_owner'].initial = (self.instance.role == 'store_owner')
             self.fields['is_store_admin'].initial = (self.instance.role == 'store_admin')
 
@@ -89,7 +89,7 @@ class SimpleRoleForm(forms.ModelForm):
 
         # Определяем роль на основе чекбоксов
         if self.cleaned_data.get('is_platform_admin'):
-            user.role = 'admin'
+            user.role = 'moderator'
             user.is_staff = True
         elif self.cleaned_data.get('is_store_owner'):
             user.role = 'store_owner'
@@ -271,14 +271,14 @@ class BanRecordAdmin(admin.ModelAdmin, ModeratorAdminMixin):
         return qs
 
     def has_add_permission(self, request):
-        # Владелец платформы и администраторы могут добавлять баны
-        return request.user.role in ('owner', 'admin')
+        # Владелец платформы и модераторы могут добавлять баны
+        return request.user.role in ('owner', 'moderator')
 
     def has_change_permission(self, request, obj=None):
-        # Владелец платформы и администраторы могут изменять баны
+        # Владелец платформы и модераторы могут изменять баны
         if request.user.role == 'owner':
             return True  # Владелец может изменять любые баны
-        if request.user.role == 'admin':
+        if request.user.role == 'moderator':
             # Админ может изменять любые баны, НО НЕ МОЖЕТ снять бан с себя
             if obj and obj.user == request.user and obj.banned_by != request.user:
                 return False  # Админ не может снять с себя бан, который наложил owner
@@ -286,11 +286,11 @@ class BanRecordAdmin(admin.ModelAdmin, ModeratorAdminMixin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        # Владелец и админы платформы могут удалять баны
-        # Но админ не может удалить бан, который на него наложил owner
+        # Владелец и модераторы платформы могут удалять баны
+        # Но модератор не может удалить бан, который на него наложил owner
         if request.user.role == 'owner':
             return True
-        if request.user.role == 'admin':
+        if request.user.role == 'moderator':
             if obj and obj.user == request.user and obj.banned_by != request.user:
                 return False  # Админ не может удалить свой бан от owner
             return True

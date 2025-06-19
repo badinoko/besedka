@@ -15,7 +15,7 @@ class User(AbstractUser):
 
     class Role(TextChoices):
         OWNER = "owner", _("Владелец платформы")
-        ADMIN = "admin", _("Администратор платформы")
+        MODERATOR = "moderator", _("Модератор платформы")
         STORE_OWNER = "store_owner", _("Владелец магазина")
         STORE_ADMIN = "store_admin", _("Администратор магазина")
         USER = "user", _("Пользователь")
@@ -38,6 +38,15 @@ class User(AbstractUser):
         max_length=20,
         choices=Role.choices,
         default=Role.USER,
+    )
+
+    # Персональный значок (для обычных пользователей)
+    role_icon = models.CharField(
+        _("Персональный значок"),
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text=_("Персональный эмодзи-значок для обычных пользователей")
     )
 
     # Telegram ID - числовой идентификатор от Telegram
@@ -245,7 +254,7 @@ class User(AbstractUser):
 
     def is_platform_admin(self) -> bool:
         """Проверяет, является ли пользователь администратором платформы."""
-        return self.role == self.Role.ADMIN
+        return self.role == self.Role.MODERATOR
 
     def is_store_owner(self) -> bool:
         """Проверяет, является ли пользователь владельцем магазина."""
@@ -268,14 +277,14 @@ class User(AbstractUser):
         Проверяет, имеет ли пользователь доступ к VIP-чату.
         Доступ разрешен для Владельца платформы и Администратора платформы.
         """
-        return self.role in [self.Role.OWNER, self.Role.ADMIN]
+        return self.role in [self.Role.OWNER, self.Role.MODERATOR]
 
     @property
     def has_admin_access(self) -> bool:
         """Проверяет, имеет ли пользователь доступ к какой-либо админке."""
         return self.role in [
             self.Role.OWNER,
-            self.Role.ADMIN,
+            self.Role.MODERATOR,
             self.Role.STORE_OWNER,
             self.Role.STORE_ADMIN,
         ]
@@ -326,7 +335,35 @@ class User(AbstractUser):
     @property
     def display_name(self):
         """Возвращает отображаемое имя."""
-        return self.name or self.username
+        if self.name:
+            return self.name
+        elif self.username and self.username != f"user_{self.id}":
+            return self.username
+        else:
+            return f"User{self.id}"
+
+    @property
+    def get_role_icon(self):
+        """Возвращает значок роли или персональный значок."""
+        # Системные значки ролей (приоритет)
+        role_icons = {
+            'owner': '👑',
+            'moderator': '🛡️',
+            'store_owner': '🏪',
+            'store_admin': '📦',
+            'user': '👤'
+        }
+
+        # Если есть персональный значок и роль = user
+        if self.role == 'user' and self.role_icon:
+            return self.role_icon
+
+        return role_icons.get(self.role, '👤')
+
+    @property
+    def display_name_with_icon(self):
+        """Возвращает отображаемое имя со значком роли."""
+        return f"{self.get_role_icon} {self.display_name}"
 
     @property
     def short_bio(self):
@@ -357,7 +394,7 @@ class User(AbstractUser):
         """Возвращает читаемое название роли."""
         role_dict = {
             'owner': 'Владелец платформы',
-            'admin': 'Администратор платформы',
+            'moderator': 'Модератор платформы',
             'store_owner': 'Владелец магазина',
             'store_admin': 'Администратор магазина',
             'user': 'Пользователь',
@@ -735,23 +772,23 @@ class Notification(models.Model):
         if notification_type == cls.NotificationType.LIKE:
             # Лайки доступны только аутентифицированным пользователям
             # Гости не могут лайкать, значит и уведомления о лайках не нужны
-            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+            return user.role in ['user', 'moderator', 'owner', 'store_owner', 'store_admin']
 
         elif notification_type == cls.NotificationType.COMMENT:
             # Комментарии доступны только аутентифицированным пользователям
-            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+            return user.role in ['user', 'moderator', 'owner', 'store_owner', 'store_admin']
 
         elif notification_type == cls.NotificationType.FOLLOW:
             # Подписки доступны только аутентифицированным пользователям
-            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+            return user.role in ['user', 'moderator', 'owner', 'store_owner', 'store_admin']
 
         elif notification_type == cls.NotificationType.MENTION:
             # Упоминания в чате - только для тех, кто имеет доступ к чату
-            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+            return user.role in ['user', 'moderator', 'owner', 'store_owner', 'store_admin']
 
         elif notification_type == cls.NotificationType.CHAT_MESSAGE:
             # Сообщения в чате - только для тех, кто имеет доступ к чату
-            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+            return user.role in ['user', 'moderator', 'owner', 'store_owner', 'store_admin']
 
         elif notification_type == cls.NotificationType.ORDER:
             # Уведомления о заказах могут получать все (включая гостей)
@@ -759,7 +796,7 @@ class Notification(models.Model):
 
         elif notification_type == cls.NotificationType.SYSTEM:
             # Системные уведомления - только для аутентифицированных пользователей
-            return user.role in ['user', 'admin', 'owner', 'store_owner', 'store_admin']
+            return user.role in ['user', 'moderator', 'owner', 'store_owner', 'store_admin']
 
         # По умолчанию запрещаем
         return False

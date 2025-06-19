@@ -21,7 +21,7 @@ class NotificationService:
             notification_type: Тип уведомления (system, security, etc.)
             exclude_user: Исключить этого пользователя из рассылки
         """
-        admin_roles = ['owner', 'admin', 'store_owner', 'store_admin']
+        admin_roles = ['owner', 'moderator', 'store_owner', 'store_admin']
         admin_users = User.objects.filter(
             role__in=admin_roles,
             is_active=True
@@ -83,7 +83,7 @@ class NotificationService:
         """
         Отправляет уведомление только администраторам платформы (владелец + модераторы).
         """
-        platform_admin_roles = ['owner', 'admin']
+        platform_admin_roles = ['owner', 'moderator']
         platform_admins = User.objects.filter(
             role__in=platform_admin_roles,
             is_active=True

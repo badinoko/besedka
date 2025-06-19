@@ -242,6 +242,43 @@ class PaymentMethodsView(generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
 
+class RocketOAuthExchangeView(APIView):
+    """Endpoint for Rocket.Chat SSO OAuth token exchange.\n    Returns JWT access token and userId accepted by Rocket.Chat Custom OAuth."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+        return Response({
+            "accessToken": str(access_token),
+            "userId": user.id,
+            "token_type": "Bearer",
+            "expires_in": access_token.lifetime.total_seconds(),
+        })
+
+
+class RocketChatIdentityView(APIView):
+    """
+    Identity endpoint для Rocket.Chat Custom OAuth
+    Возвращает информацию о пользователе для создания/авторизации в Rocket.Chat
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": str(user.id),
+            "username": user.username,
+            "email": user.email if user.email else f"{user.username}@besedka.local",
+            "name": getattr(user, 'name', user.username),
+            "role": user.role,
+            "avatar": getattr(user, 'avatar_url', ''),
+            "verified": True,
+            "active": True
+        })
+
+
 class PromotionsView(generics.ListAPIView):
     """
     Список активных промоакций

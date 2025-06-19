@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 'username': 'admin',
                 'password': 'admin123secure',
                 'email': 'admin@besedka.com',
-                'role': User.Role.ADMIN,
+                'role': User.Role.MODERATOR,
                 'is_staff': True,
             },
             {

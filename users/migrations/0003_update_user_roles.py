@@ -5,17 +5,17 @@ def update_roles(apps, schema_editor):
     Обновляет роли пользователей в соответствии с новой системой ролей.
     """
     User = apps.get_model('users', 'User')
-    
+
     # Обновление прав администраторов
     for user in User.objects.filter(is_superuser=True):
         user.role = 'owner'
         user.save()
-    
-    # Установка роли 'admin' для всех staff пользователей, которые не имеют роли
+
+        # Установка роли 'moderator' для всех staff пользователей, которые не имеют роли
     for user in User.objects.filter(is_staff=True, role=''):
-        user.role = 'admin'
+        user.role = 'moderator'
         user.save()
-    
+
     # Гарантируем, что все администраторы магазина имеют флаг is_staff
     for user in User.objects.filter(role__in=['store_owner', 'store_admin']):
         user.is_staff = True
@@ -29,4 +29,4 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(update_roles, migrations.RunPython.noop),
-    ] 
+    ]

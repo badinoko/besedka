@@ -17,7 +17,7 @@
         <h4><i class="fas fa-tachometer-alt"></i> {% trans "Панель владельца платформы" %}</h4>
     </div>
     <div class="card-body">
-        <p>{% blocktrans %}Добро пожаловать, {{ user.username }}! Это ваша панель управления платформой.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}Добро пожаловать, {{ user.display_name }}! Это ваша панель управления платформой.{% endblocktrans %}</p>
 
         <h5>{% trans "Ключевая статистика платформы:" %}</h5>
         {% if platform_stats %}

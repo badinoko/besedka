@@ -29,7 +29,7 @@ USERS = [
         'username': 'admin',
         'password': 'admin123secure',
         'email': 'admin@besedka.com',
-        'role': 'admin',
+        'role': 'moderator',
         'is_staff': True,
         'is_superuser': False
     },
@@ -91,7 +91,7 @@ def create_users():
     print(f"\n📊 Всего пользователей в системе: {total_users}")
 
     # Проверяем ключевые роли
-    for role in ['owner', 'admin', 'store_owner', 'store_admin']:
+    for role in ['owner', 'moderator', 'store_owner', 'store_admin']:
         count = User.objects.filter(role=role).count()
         status = "✅" if count == 1 else "⚠️"
         print(f"{status} Роль '{role}': {count} пользователей")

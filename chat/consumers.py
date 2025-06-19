@@ -9,7 +9,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from channels.db import database_sync_to_async
 
-from .models import Room, Message, Thread, DiscussionRoom, GlobalChatRoom, VIPChatRoom
+from .models import Room, Message, Thread, DiscussionRoom, GlobalChatRoom, VIPChatRoom, ChatReaction
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -52,6 +52,8 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.handle_fetch_messages(data)
             elif message_type == 'fetch_online_users':
                 self.handle_fetch_online_users(data)
+            elif message_type == 'reaction':
+                self.handle_reaction(data)
 
         except json.JSONDecodeError:
             logger.error(f"Invalid JSON received: {text_data}")
@@ -61,11 +63,13 @@ class BaseChatConsumer(WebsocketConsumer):
     def handle_message(self, data):
         """Обработка обычного сообщения"""
         content = data.get('message', '').strip()
+        reply_to_id = data.get('reply_to_id')
+
         if not content:
             return
 
         # Создаем сообщение
-        message = self.create_message(content)
+        message = self.create_message(content, reply_to_id)
 
         # Отправляем сообщение всем в группе
         async_to_sync(self.channel_layer.group_send)(
@@ -109,7 +113,49 @@ class BaseChatConsumer(WebsocketConsumer):
             'count': len(online_users)
         }))
 
-    def create_message(self, content):
+    def handle_reaction(self, data):
+        """Обработка реакции на сообщение"""
+        reaction = data.get('reaction', '')
+        message_id = data.get('message_id', '')
+
+        if not reaction or not message_id:
+            return
+
+        try:
+            from .models import ChatReaction  # Локальный импорт, чтобы избежать циклов
+
+            message = get_object_or_404(Message, id=message_id)
+
+            # Проверяем, ставил ли пользователь уже реакцию на это сообщение
+            existing = ChatReaction.objects.filter(message=message, user=self.user).first()
+            if existing:
+                # Реакция уже существует ‑ ничего не делаем (реакции безотзывные)
+                return
+
+            # Создаем новую реакцию (like / dislike)
+            if reaction not in dict(ChatReaction.REACTION_CHOICES):
+                return
+
+            ChatReaction.objects.create(message=message, user=self.user, reaction_type=reaction)
+
+            # Подсчитываем новые значения
+            likes = message.likes_count()
+            dislikes = message.dislikes_count()
+
+            # Рассылаем обновление всем участникам комнаты
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'reaction_update',
+                    'message_id': message_id,
+                    'likes': likes,
+                    'dislikes': dislikes,
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error handling reaction: {e}")
+
+    def create_message(self, content, reply_to_id=None):
         """Создание сообщения - переопределяется в наследниках"""
         raise NotImplementedError
 
@@ -126,10 +172,21 @@ class BaseChatConsumer(WebsocketConsumer):
         return {
             'id': message.id,
             'author': message.author.username,
-            'author_name': message.author.get_full_name() or message.author.username,
+            'author_name': message.author.display_name,
+            'author_role': message.author.role if hasattr(message.author, 'role') else 'user',
+            'author_role_icon': message.author.get_role_icon if hasattr(message.author, 'get_role_icon') else '👤',
+            'author_display_name_with_icon': message.author.display_name_with_icon if hasattr(message.author, 'display_name_with_icon') else f"👤 {message.author.display_name}",
             'content': message.content,
             'created': message.created.isoformat(),
-            'is_own': message.author == self.user
+            'is_own': message.author == self.user,
+            'likes_count': message.likes_count(),
+            'dislikes_count': message.dislikes_count(),
+            'reply_to': {
+                'id': message.reply_to.id,
+                'author_name': message.reply_to.author.display_name if message.reply_to else None,
+                'content_snippet': message.reply_to.content[:120] if message.reply_to else None,
+            } if message.reply_to else None,
+            'is_reply_to_me': bool(message.reply_to and message.reply_to.author == self.user),
         }
 
     def user_to_json(self, user):
@@ -137,9 +194,12 @@ class BaseChatConsumer(WebsocketConsumer):
         return {
             'id': user.id,
             'username': user.username,
-            'display_name': user.get_full_name() or user.username,
-            'is_staff': user.is_staff,
-            'is_superuser': user.is_superuser,
+            'display_name': user.display_name,
+            'role': user.role if hasattr(user, 'role') else 'user',
+            'role_icon': user.get_role_icon if hasattr(user, 'get_role_icon') else '👤',
+            'display_name_with_icon': user.display_name_with_icon if hasattr(user, 'display_name_with_icon') else f"👤 {user.display_name}",
+            'is_staff': user.is_staff if hasattr(user, 'is_staff') else False,
+            'is_superuser': user.is_superuser if hasattr(user, 'is_superuser') else False,
         }
 
     # WebSocket event handlers
@@ -174,6 +234,15 @@ class BaseChatConsumer(WebsocketConsumer):
                 'type': 'user_left',
                 'user': event['user']
             }))
+
+    def reaction_update(self, event):
+        """Отправка клиенту обновленных счетчиков реакции"""
+        self.send(text_data=json.dumps({
+            'type': 'reaction_update',
+            'message_id': event['message_id'],
+            'likes': event['likes'],
+            'dislikes': event['dislikes'],
+        }))
 
 
 class GeneralChatConsumer(BaseChatConsumer):
@@ -223,12 +292,13 @@ class GeneralChatConsumer(BaseChatConsumer):
 
         super().disconnect(close_code)
 
-    def create_message(self, content):
+    def create_message(self, content, reply_to_id=None):
         """Создание сообщения в общем чате"""
         return Message.objects.create(
             author=self.user,
             room=self.room,
-            content=content
+            content=content,
+            reply_to_id=reply_to_id
         )
 
     def get_messages(self, page=1):
@@ -273,12 +343,13 @@ class PrivateChatConsumer(BaseChatConsumer):
             except Thread.DoesNotExist:
                 self.close()
 
-    def create_message(self, content):
+    def create_message(self, content, reply_to_id=None):
         """Создание сообщения в приватном чате"""
         return Message.objects.create(
             author=self.user,
             room=self.room,
-            content=content
+            content=content,
+            reply_to_id=reply_to_id
         )
 
     def get_messages(self, page=1):
@@ -343,12 +414,13 @@ class DiscussionChatConsumer(BaseChatConsumer):
 
         super().disconnect(close_code)
 
-    def create_message(self, content):
+    def create_message(self, content, reply_to_id=None):
         """Создание сообщения в чате обсуждения"""
         return Message.objects.create(
             author=self.user,
             room=self.room,
-            content=content
+            content=content,
+            reply_to_id=reply_to_id
         )
 
     def get_messages(self, page=1):
@@ -420,12 +492,13 @@ class VIPChatConsumer(BaseChatConsumer):
 
         super().disconnect(close_code)
 
-    def create_message(self, content):
+    def create_message(self, content, reply_to_id=None):
         """Создание сообщения в VIP чате"""
         return Message.objects.create(
             author=self.user,
             room=self.room,
-            content=content
+            content=content,
+            reply_to_id=reply_to_id
         )
 
     def get_messages(self, page=1):

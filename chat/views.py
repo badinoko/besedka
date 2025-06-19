@@ -19,7 +19,8 @@ User = get_user_model()
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
     """Главная страница чата - перенаправляет на общий чат"""
-    template_name = 'chat/chat_home.html'
+    # Используем единый шаблон общего чата как безопасный fallback (старый chat_home удалён)
+    template_name = 'chat/general_chat.html'
 
     def dispatch(self, request, *args, **kwargs):
         # Перенаправляем сразу на общий чат, убирая промежуточную страницу
@@ -130,7 +131,8 @@ class PrivateChatsView(LoginRequiredMixin, UnifiedListView):
 class PrivateThreadView(LoginRequiredMixin, DetailView):
     """Детальный вид приватного чата"""
     model = Thread
-    template_name = 'chat/private_thread.html'
+    # Удалённый шаблон private_thread.html заменён на общий шаблон чата для предотвращения 500 ошибок
+    template_name = 'chat/general_chat.html'
     context_object_name = 'thread'
     pk_url_kwarg = 'thread_id'
 
@@ -255,7 +257,8 @@ class CreateDiscussionView(LoginRequiredMixin, CreateView):
     """Создание нового группового обсуждения"""
     model = DiscussionRoom
     form_class = DiscussionRoomForm
-    template_name = 'chat/create_discussion.html'
+    # Fallback на единый шаблон чата; специализированный шаблон будет создан позднее при рефакторинге обсуждений
+    template_name = 'chat/general_chat.html'
     success_url = reverse_lazy('chat:discussions')
 
     def dispatch(self, request, *args, **kwargs):
@@ -280,7 +283,8 @@ class CreateDiscussionView(LoginRequiredMixin, CreateView):
 class DiscussionDetailView(LoginRequiredMixin, DetailView):
     """Детальный вид группового обсуждения"""
     model = DiscussionRoom
-    template_name = 'chat/discussion_detail.html'
+    # Временный fallback до полной переработки обсуждений
+    template_name = 'chat/general_chat.html'
     context_object_name = 'discussion'
 
     def get_context_data(self, **kwargs):
@@ -310,7 +314,8 @@ class DiscussionDetailView(LoginRequiredMixin, DetailView):
 class RoomView(LoginRequiredMixin, DetailView):
     """Общий вид комнаты (для WebSocket подключений)"""
     model = Room
-    template_name = 'chat/room.html'
+    # Унифицированный шаблон комнаты заменён на общий шаблон чата
+    template_name = 'chat/general_chat.html'
     context_object_name = 'room'
     pk_url_kwarg = 'room_id'
 
@@ -493,8 +498,8 @@ class GeneralChatView(LoginRequiredMixin, TemplateView):
         online_users = global_chat.room.connected_clients.all()[:20]
 
         # Получаем общее количество сообщений и пользователей для статистики
-        total_messages = Message.objects.filter(room=global_chat.room).count()
-        total_users = User.objects.filter(is_active=True).count()
+        total_general_messages = Message.objects.filter(room=global_chat.room).count()
+        total_general_users = User.objects.filter(is_active=True).count()
 
         # ДАННЫЕ ДЛЯ УНИФИЦИРОВАННОГО ЗАГОЛОВКА
         user = self.request.user
@@ -520,8 +525,8 @@ class GeneralChatView(LoginRequiredMixin, TemplateView):
             'chat_messages': chat_messages,
             'online_count': online_count,
             'online_users': online_users,
-            'total_messages': total_messages,
-            'total_users': total_users,
+            'total_general_messages': total_general_messages,
+            'total_general_users': total_general_users,
             # Данные для унифицированного заголовка
             'header_theme': 'chat',
             'header_title': 'Чат Беседка',
@@ -574,6 +579,10 @@ class VIPChatView(LoginRequiredMixin, TemplateView):
         # Получаем пользователей онлайн
         online_users = room.connected_clients.all()
 
+        # СТАТИСТИКА ДЛЯ VIP ЧАТА
+        total_vip_messages = Message.objects.filter(room=room).count()
+        total_vip_users = vip_members.count()
+
         # ДАННЫЕ ДЛЯ УНИФИЦИРОВАННОГО ЗАГОЛОВКА
         # Метаданные для заголовка
         header_meta = [
@@ -595,10 +604,131 @@ class VIPChatView(LoginRequiredMixin, TemplateView):
             'vip_members': vip_members,
             'online_users': online_users,
             'online_count': online_users.count(),
+            'total_vip_messages': total_vip_messages,
+            'total_vip_users': total_vip_users,
             # Данные для унифицированного заголовка
             'header_theme': 'vip',
             'header_title': 'VIP Беседка',
             'header_icon': 'fa-crown',
             'header_meta': header_meta,
         })
+        return context
+
+
+# 🚀 ROCKET.CHAT МИГРАЦИЯ - ИЗОЛИРОВАННАЯ ТЕСТОВАЯ СТРАНИЦА
+
+class RocketChatTestView(TemplateView):
+    """Изолированный view для тестирования Rocket.Chat"""
+    template_name = 'chat/rocketchat_test.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rocketchat_url'] = 'http://127.0.0.1:3000'
+        return context
+
+
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.shortcuts import redirect
+from django.urls import reverse
+from urllib.parse import urlencode
+from django.http import HttpResponseRedirect
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+@method_decorator(login_required, name='dispatch')
+class RocketChatOAuthView(View):
+    """
+    Кастомный OAuth view для Rocket.Chat.
+    Автоматически одобряет OAuth запросы для залогиненных пользователей.
+    """
+
+    def get(self, request, *args, **kwargs):
+        """Автоматически создаем authorization code и редиректим"""
+        client_id = request.GET.get('client_id')
+        redirect_uri = request.GET.get('redirect_uri')
+        response_type = request.GET.get('response_type')
+        scope = request.GET.get('scope', 'read')
+        state = request.GET.get('state', '')
+
+        # Проверяем что это запрос от Rocket.Chat
+        if client_id != 'BesedkaRocketChat2025':
+            # Для других клиентов используем стандартный OAuth view
+            from oauth2_provider.views import AuthorizationView
+            return AuthorizationView.as_view()(request, *args, **kwargs)
+
+        logger.info(f"RocketChat OAuth request from {request.user.username}")
+
+        # Импортируем необходимые модели
+        from oauth2_provider.models import Application, Grant
+        from django.utils import timezone
+        from datetime import timedelta
+        import secrets
+
+        try:
+            # Получаем приложение
+            application = Application.objects.get(client_id=client_id)
+
+            # Создаем authorization grant (код авторизации)
+            code = secrets.token_urlsafe(30)
+
+            grant = Grant.objects.create(
+                user=request.user,
+                application=application,
+                code=code,
+                expires=timezone.now() + timedelta(seconds=60),
+                redirect_uri=redirect_uri,
+                scope=scope
+            )
+
+            logger.info(f"Created authorization code for {request.user.username}: {code[:10]}...")
+
+            # Формируем URL для редиректа с кодом
+            params = {
+                'code': code,
+                'state': state
+            }
+
+            # Парсим redirect_uri и добавляем параметры
+            if '?' in redirect_uri:
+                full_redirect_url = f"{redirect_uri}&{urlencode(params)}"
+            else:
+                full_redirect_url = f"{redirect_uri}?{urlencode(params)}"
+
+            logger.info(f"Redirecting to: {full_redirect_url}")
+
+            return HttpResponseRedirect(full_redirect_url)
+
+        except Application.DoesNotExist:
+            logger.error(f"OAuth application not found: {client_id}")
+            # Если приложение не найдено, используем стандартный view
+            from oauth2_provider.views import AuthorizationView
+            return AuthorizationView.as_view()(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"OAuth auto-auth error: {str(e)}")
+            # При ошибке используем стандартный view
+            from oauth2_provider.views import AuthorizationView
+            return AuthorizationView.as_view()(request, *args, **kwargs)
+
+# В конец файла chat/views.py добавьте:
+
+class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
+    """Интегрированный view для Rocket.Chat с кнопками переключения каналов"""
+    template_name = 'chat/rocketchat_integrated.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rocketchat_url'] = 'http://127.0.0.1:3000'
+
+        # Проверяем VIP доступ
+        user = self.request.user
+        context['user_has_vip_access'] = (
+            user.is_staff or
+            user.role == 'owner' or
+            hasattr(user, 'vip_memberships') and
+            user.vip_memberships.filter(is_active=True).exists()
+        )
+
         return context

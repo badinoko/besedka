@@ -2,11 +2,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView, RedirectView
 from core.admin_site import store_owner_site, store_admin_site, owner_admin_site, moderator_admin_site
 from core.views import admin_selector, admin_redirect
 from core import ajax_views as core_ajax
+from oauth2_provider import urls as oauth2_urls
+import chat.views
 
 urlpatterns = [
     # Главная страница (плейсхолдер). Позднее будет заменена полноценным представлением.
@@ -38,6 +40,12 @@ urlpatterns = [
     # User management
     path("users/", include("users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+
+    # Custom OAuth2 authorization for Rocket.Chat
+    re_path(r'^o/authorize/$', chat.views.RocketChatOAuthView.as_view(), name='oauth2_provider:authorize'),
+
+    # OAuth2 Provider endpoints (остальные эндпоинты)
+    path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
 
     # Store
     path("store/", include("magicbeans_store.urls", namespace="store")),

@@ -14,6 +14,8 @@ v1_patterns = [
     path('auth/telegram/', views.TelegramAuthView.as_view(), name='telegram_auth'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/profile/', views.user_profile, name='user_profile'),
+    path('auth/rocket/', views.RocketOAuthExchangeView.as_view(), name='rocket_oauth'),
+    path('auth/rocket/identity/', views.RocketChatIdentityView.as_view(), name='rocket_identity'),
 
     # Каталог
     path('catalog/seedbanks/', views.SeedBankListView.as_view(), name='seedbanks'),

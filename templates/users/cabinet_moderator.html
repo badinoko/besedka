@@ -17,7 +17,7 @@
         <h4><i class="fas fa-shield-alt"></i> {% trans "Панель модератора" %}</h4>
     </div>
     <div class="card-body">
-        <p>{% blocktrans %}Добро пожаловать, {{ user.username }}! Это ваша панель для модерации контента.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}Добро пожаловать, {{ user.display_name }}! Это ваша панель для модерации контента.{% endblocktrans %}</p>
 
         <h5>{% trans "Статистика модерации:" %}</h5>
         {% if platform_stats %} {# Используем общую статистику, так как модераторские данные там есть #}

@@ -124,7 +124,7 @@ def unban_request_view(request):
 
             # Отправка уведомления администраторам
             try:
-                admins = UserModel.objects.filter(role__in=['owner', 'admin'], is_active=True)
+                admins = UserModel.objects.filter(role__in=['owner', 'moderator'], is_active=True)
                 admin_emails = [admin.email for admin in admins if admin.email]
 
                 subject = _('Новый запрос на разбан')
@@ -390,7 +390,7 @@ class RoleManagementForm(forms.ModelForm):
             # Владелец платформы может назначать и увольнять админов платформы
             choices = [
                 ('user', '👤 Обычный пользователь'),
-                ('admin', '🎭 Администратор платформы'),
+                ('moderator', '🎭 Модератор платформы'),
             ]
         elif current_user and current_user.role == 'store_owner':
             # Владелец магазина может назначать и увольнять админов магазина
@@ -655,7 +655,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         if user.role == 'owner':
             return ['users/cabinet_owner.html']
-        elif user.role == 'admin': # Модератор платформы
+        elif user.role == 'moderator': # Модератор платформы
             return ['users/cabinet_moderator.html']
         elif user.role == 'store_owner':
             return ['users/cabinet_store_owner.html']
@@ -674,7 +674,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         context['recent_activity'] = self.get_recent_activity()
 
         # Статистика для специфических ролей
-        if user.role == 'owner' or user.role == 'admin':
+        if user.role == 'owner' or user.role == 'moderator':
             context['platform_stats'] = PlatformMonitor.get_platform_stats()
 
         if user.role == 'store_owner' or user.role == 'store_admin':
@@ -732,9 +732,9 @@ def manage_admins_view(request):
     # Определяем кого можем управлять
     if user.role == 'owner':
         # Владелец платформы управляет админами платформы
-        managed_users = UserModel.objects.filter(role__in=['admin', 'user']).exclude(pk=user.pk)
+        managed_users = UserModel.objects.filter(role__in=['moderator', 'user']).exclude(pk=user.pk)
         title = "Управление администраторами платформы"
-        can_promote_to = 'admin'
+        can_promote_to = 'moderator'
     else:  # store_owner
         # Владелец магазина управляет админами магазина
         managed_users = UserModel.objects.filter(role__in=['store_admin', 'user']).exclude(pk=user.pk)
@@ -759,7 +759,7 @@ def change_user_role_view(request, user_id):
     # Проверяем права доступа
     if current_user.role == 'owner':
         # Владелец платформы может управлять админами платформы
-        if target_user.role not in ['admin', 'user']:
+        if target_user.role not in ['moderator', 'user']:
             messages.error(request, '❌ Вы не можете изменить роль этого пользователя!')
             return redirect('users:manage_admins')
     elif current_user.role == 'store_owner':
@@ -779,7 +779,7 @@ def change_user_role_view(request, user_id):
 
             # Сохраняем изменения
             target_user.role = new_role
-            target_user.is_staff = new_role in ['admin', 'store_owner', 'store_admin']
+            target_user.is_staff = new_role in ['moderator', 'store_owner', 'store_admin']
             target_user.save()
 
             # Определяем действие

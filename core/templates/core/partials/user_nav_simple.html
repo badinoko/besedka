@@ -13,8 +13,7 @@
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
            id="userDropdownGlobal" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-user-circle me-2"></i>
-            <span>{{ user.username }}</span>
+            <span>{{ user.get_role_icon }} {{ user.display_name }}</span>
             {% if user_role_badge %}
                 <span class="badge {{ user_role_badge.class }} ms-2">{{ user_role_badge.text }}</span>
             {% endif %}

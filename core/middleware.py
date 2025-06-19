@@ -416,3 +416,24 @@ class MaintenanceModeMiddleware(MiddlewareMixin):
             return None
 
         return None
+
+
+class DisableCSRFForOAuth(MiddlewareMixin):
+    """
+    Отключает CSRF проверку для OAuth эндпоинтов.
+    Необходимо для работы кросс-доменных OAuth запросов из Rocket.Chat.
+    """
+
+    def process_view(self, request, callback, callback_args, callback_kwargs):
+        # Отключаем CSRF для всех OAuth путей
+        if request.path.startswith('/o/'):
+            setattr(request, '_dont_enforce_csrf_checks', True)
+
+        # Также отключаем CSRF для логина если это часть OAuth flow
+        # Проверяем наличие OAuth параметров в next URL
+        if request.path == '/accounts/login/' and request.method == 'POST':
+            next_url = request.GET.get('next', '') or request.POST.get('next', '')
+            if '/o/authorize/' in next_url and 'BesedkaRocketChat2025' in next_url:
+                setattr(request, '_dont_enforce_csrf_checks', True)
+
+        return None

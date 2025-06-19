@@ -52,6 +52,7 @@ THIRD_PARTY_APPS = [
     "import_export",  # Django Import-Export
     "guardian",       # Django Guardian для тонких прав доступа
     "channels",       # Django Channels для WebSocket (чат)
+    "oauth2_provider",  # Django OAuth Toolkit для Rocket.Chat SSO
     # "django_private_chat2.apps.DjangoPrivateChat2Config",  # Готовый чат - временно отключен
     # "admin_charts",   # Django Admin Charts - временно отключаем пока не решим проблему
 ]
@@ -83,8 +84,10 @@ MIDDLEWARE = [
     "core.middleware.ForcePasswordChangeMiddleware",  # <--- ДОБАВЛЕНО
     "core.middleware.RequestUserMiddleware",  # Middleware for tracking request user
     "core.middleware.ActionLogMiddleware",  # Middleware for logging user actions
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",  # OAuth2 для Rocket.Chat SSO
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "core.middleware.DisableCSRFForOAuth",  # Отключаем CSRF для OAuth запросов
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -319,3 +322,92 @@ SPECTACULAR_SETTINGS = {
 # ------------------------------------------------------------------------------
 API_VERSION = 'v1'
 API_TELEGRAM_BOT_TOKEN = env("API_TELEGRAM_BOT_TOKEN", default="")  # Отдельный токен для API
+
+# OAuth2 Provider (Rocket.Chat SSO)
+# ------------------------------------------------------------------------------
+OAUTH2_PROVIDER = {
+    "ACCESS_TOKEN_EXPIRE_SECONDS": 36000,
+    "AUTHORIZATION_CODE_EXPIRE_SECONDS": 300,
+    "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
+    "SCOPES": {
+        "rocketchat": "Access Rocket.Chat via OAuth2",
+    },
+}
+
+# Rocket.Chat Security Settings
+# ------------------------------------------------------------------------------
+# CSP настройки для iframe Rocket.Chat
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Разрешаем iframe для Rocket.Chat
+
+# CSRF для OAuth редиректов из Rocket.Chat
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8001",
+    "http://localhost:8001",
+]
+
+# Отключаем проверку CSRF referer для локальной разработки
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+
+# В production включить HSTS
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# CSP для Rocket.Chat iframe
+CSP_DEFAULT_SRC = ["'self'"]
+CSP_SCRIPT_SRC = ["'self'", "'unsafe-inline'"]  # 'unsafe-inline' для allauth
+CSP_STYLE_SRC = ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"]
+CSP_FONT_SRC = ["'self'", "https://fonts.gstatic.com"]
+CSP_IMG_SRC = ["'self'", "data:"]
+CSP_FRAME_SRC = ["'self'", "http://127.0.0.1:3000"]  # Rocket.Chat iframe
+CSP_CONNECT_SRC = ["'self'", "ws://127.0.0.1:8001", "wss://127.0.0.1:8001"]  # WebSocket для Daphne
+
+# Rocket.Chat Environment Variables
+# ------------------------------------------------------------------------------
+ROCKETCHAT_API_URL = env("ROCKETCHAT_API_URL", default="http://127.0.0.1:3000")
+ROCKETCHAT_ADMIN_TOKEN = env("ROCKETCHAT_ADMIN_TOKEN", default="")
+ROCKETCHAT_ADMIN_USER_ID = env("ROCKETCHAT_ADMIN_USER_ID", default="")
+
+# Django Allauth
+# ------------------------------------------------------------------------------
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8001",
+    "http://localhost:8001",
+]
+
+# SECURITY
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-ssl-redirect
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=False)
+# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-secure
+CSRF_COOKIE_SECURE = True
+# https://docs.djangoproject.com/en/dev/topics/security/#ssl-https
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
+# TODO: set this to 60 seconds first and then to 518400 after confirming the site works
+SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=0)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload
+SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
+# https://docs.djangoproject.com/en/dev/ref/middleware/#x-content-type-options-nosniff
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
+
+# Content Security Policy
+CSP_FRAME_SRC = ["'self'", "http://127.0.0.1:3000"]  # Rocket.Chat iframe
+CSP_DEFAULT_SRC = ["'self'"]
+
+# Rocket.Chat
+ROCKETCHAT_API_URL = env("ROCKETCHAT_API_URL", default="http://127.0.0.1:3000")
+
+# Your stuff...
+# ------------------------------------------------------------------------------

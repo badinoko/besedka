@@ -5,14 +5,14 @@
     <div class="d-flex align-items-center gap-2">
         <img src="{{ comment.author.profile.avatar.url|default:'/static/images/default_avatar.svg' }}" class="rounded-circle" style="width:36px;height:36px;object-fit:cover" alt="avatar">
         <div class="d-flex flex-column">
-            <span class="comment-author fw-bold">{{ comment.author.get_display_name|default:comment.author.username }}</span>
+            <span class="comment-author fw-bold">{{ comment.author.get_role_icon }} {{ comment.author.display_name }}</span>
             <small class="comment-date text-muted">{{ comment.created_at|naturaltime }}</small>
         </div>
     </div>
     <div class="comment-content">{{ comment.text|linebreaks }}</div>
     <div class="comment-actions d-flex gap-3 mt-1">
         {% if user.is_authenticated and current_level < 2 %}
-        <button type="button" class="reply-btn btn btn-sm btn-outline-secondary" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.get_display_name|default:comment.author.username }}">
+        <button type="button" class="reply-btn btn btn-sm btn-outline-secondary" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.display_name }}">
             <i class="fas fa-reply me-1"></i>{% trans "Ответить" %}
         </button>
         {% endif %}
