@@ -40,6 +40,8 @@ services:
       mongod --replSet rs0 --oplogSize 128 --bind_ip_all
     volumes:
       - mongo_data:/data/db
+    ports:
+      - "27017:27017"  # Публикуем порт для прямого доступа к MongoDB
     restart: unless-stopped
 
   mongo-init-replica:
@@ -50,7 +52,7 @@ services:
       bash -c "until mongosh --host mongo:27017 --eval 'rs.initiate()' ; do sleep 5 ; done"
 
   rocketchat:
-    image: rocketchat/rocket.chat:latest
+    image: rocketchat/rocket.chat:7.7.1
     depends_on:
       - mongo-init-replica
     ports:

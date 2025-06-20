@@ -1,7 +1,7 @@
 ---
-description:
+description: Правила для AI-ассистента проекта «Беседка» (Фаза миграции на Rocket.Chat)
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 # Правила для AI-ассистента проекта "Беседка" (Фаза Миграции на Rocket.Chat)
 
@@ -13,7 +13,6 @@ alwaysApply: true
   **Ключевые документы для изучения:**
   - `docs/ROCKETCHAT_MIGRATION_PROMPT.md` (исходный план - слишком агрессивный)
   - `docs/ROCKETCHAT_RECOVERY_PLAN.md` (план восстановления с правильным подходом)
-  - `docs/ANALYSIS_REPORT.md` (анализ причин провала)
   - `BESEDKA_MASTER_DOCUMENTATION.md`
   - `BESEDKA_UI_STANDARDS.md`
   - `BESEDKA_USER_SYSTEM.md`
@@ -79,3 +78,4 @@ alwaysApply: true
 - Тщательно протестирована и работает стабильно.
 - Безопасна и готова к масштабированию.
 - Сопровождается подробным отчетом о завершении миграции.
+

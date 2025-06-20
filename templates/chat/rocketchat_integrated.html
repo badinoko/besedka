@@ -158,6 +158,166 @@
             font-size: 1rem;
         }
 
+        /* Приветственное окно */
+        .welcome-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .welcome-modal {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 580px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 3px solid #1a1a2e;
+            animation: welcomeSlideIn 0.5s ease-out;
+        }
+
+        @keyframes welcomeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .welcome-channel-info {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .channel-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .channel-title {
+            color: #1a1a2e;
+            margin: 0.5rem 0;
+            font-weight: 700;
+            font-size: 2.2rem;
+            line-height: 1.2;
+        }
+
+        .channel-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .welcome-message {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .welcome-message p {
+            margin-bottom: 0.8rem;
+        }
+
+        .welcome-actions {
+            margin-bottom: 1rem;
+        }
+
+        .welcome-close-btn {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
+        }
+
+        .welcome-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 26, 46, 0.4);
+        }
+
+        .welcome-footer {
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .countdown {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        /* Мобильная адаптация для приветственного окна */
+        @media (max-width: 768px) {
+            .welcome-modal {
+                padding: 1.5rem;
+                max-width: 95%;
+                border-radius: 15px;
+            }
+
+            .channel-icon {
+                font-size: 3rem;
+            }
+
+            .channel-title {
+                font-size: 1.5rem;
+            }
+
+            .channel-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .welcome-message {
+                font-size: 0.95rem;
+            }
+
+            .welcome-close-btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-modal {
+                padding: 1.2rem;
+                max-width: 98%;
+            }
+
+            .channel-icon {
+                font-size: 2.5rem;
+            }
+
+            .channel-title {
+                font-size: 1.3rem;
+            }
+
+            .welcome-message {
+                font-size: 0.9rem;
+            }
+        }
+
         /* Мобильная адаптация */
         @media (max-width: 768px) {
             .chat-nav {
@@ -220,6 +380,30 @@
 
     <!-- Контейнер чата -->
     <div class="chat-container">
+        <!-- Приветственное окно -->
+        <div class="welcome-overlay" id="welcomeOverlay">
+            <div class="welcome-modal">
+                <div class="welcome-channel-info">
+                    <div class="channel-icon" id="welcomeChannelIcon">👥</div>
+                    <h2 class="channel-title" id="welcomeChannelTitle">Чат Беседка</h2>
+                </div>
+                <div class="welcome-message">
+                    <p><strong>🌿 Добро пожаловать!</strong></p>
+                    <p>Общайтесь корректно и уважительно с участниками.</p>
+                    <p><strong>⚠️ Модерация активна!</strong></p>
+                    <p>За нарушения возможны ограничения.</p>
+                </div>
+                <div class="welcome-actions">
+                    <button class="welcome-close-btn" onclick="hideWelcomeModal()">
+                        Начать общение
+                    </button>
+                </div>
+                <div class="welcome-footer">
+                    <span>Окно автоматически исчезнет через <span class="countdown" id="countdown">10</span> секунд</span>
+                </div>
+            </div>
+        </div>
+
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-spinner"></div>
             <div class="loading-text">Подключение к чату...</div>
@@ -244,8 +428,79 @@
     <script>
         const iframe = document.getElementById('rocketChatFrame');
         const loadingOverlay = document.getElementById('loadingOverlay');
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
         const currentUser = '{{ user.username }}';
         const csrfToken = '{{ csrf_token }}';
+
+        // Информация о каналах
+        const channelInfo = {
+            'general': {
+                icon: '👥',
+                title: 'Чат Беседка'
+            },
+            'vip': {
+                icon: '👑',
+                title: 'VIP Беседка'
+            },
+            'moderators': {
+                icon: '🛡️',
+                title: 'Модераторы'
+            }
+        };
+
+        let countdownInterval;
+        let hideTimeout;
+
+        // Функция скрытия приветственного окна
+        function hideWelcomeModal() {
+            // Очищаем таймеры
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (hideTimeout) clearTimeout(hideTimeout);
+
+            if (welcomeOverlay) {
+                welcomeOverlay.style.opacity = '0';
+                welcomeOverlay.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    welcomeOverlay.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // Функция обновления приветственного окна для канала
+        function updateWelcomeModal(channelName) {
+            const info = channelInfo[channelName] || channelInfo['general'];
+            const iconElement = document.getElementById('welcomeChannelIcon');
+            const titleElement = document.getElementById('welcomeChannelTitle');
+            const countdownElement = document.getElementById('countdown');
+
+            if (iconElement) iconElement.textContent = info.icon;
+            if (titleElement) titleElement.textContent = info.title;
+
+            // Показываем приветственное окно
+            if (welcomeOverlay) {
+                welcomeOverlay.style.display = 'flex';
+                welcomeOverlay.style.opacity = '1';
+
+                // Запускаем обратный отсчет
+                let seconds = 10;
+                if (countdownElement) countdownElement.textContent = seconds;
+
+                countdownInterval = setInterval(() => {
+                    seconds--;
+                    if (countdownElement) countdownElement.textContent = seconds;
+
+                    if (seconds <= 0) {
+                        clearInterval(countdownInterval);
+                        hideWelcomeModal();
+                    }
+                }, 1000);
+
+                // Автоматическое скрытие через 10 секунд (резервная защита)
+                hideTimeout = setTimeout(() => {
+                    hideWelcomeModal();
+                }, 10000);
+            }
+        }
 
         // Функция переключения каналов
         function switchChannel(channelName) {
@@ -258,11 +513,74 @@
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
 
-            // Переключаем канал в iframe
-            iframe.src = `{{ rocketchat_url }}/channel/${channelName}?layout=embedded`;
+            // Обновляем приветственное окно для нового канала
+            updateWelcomeModal(channelName);
+
+            // Пытаемся переключить канал через postMessage (более плавно)
+            try {
+                iframe.contentWindow.postMessage({
+                    type: 'navigate',
+                    channel: channelName
+                }, '{{ rocketchat_url }}');
+            } catch (e) {
+                // Fallback: прямое изменение src
+                iframe.src = `{{ rocketchat_url }}/channel/${channelName}?layout=embedded`;
+            }
         }
 
-        // Обработка загрузки iframe
+
+
+        // API авторизация при загрузке страницы
+        async function authenticateRocketChat() {
+            try {
+                const response = await fetch('/chat/api/auth/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        username: currentUser
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Пользователь успешно аутентифицирован:', data.user);
+                } else {
+                    console.error('Ошибка аутентификации:', data.error);
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+            }
+        }
+
+        // Скрытие приветственного окна при клике на фон
+        if (welcomeOverlay) {
+            welcomeOverlay.addEventListener('click', function(event) {
+                // Скрываем только при клике на фон, не на само модальное окно
+                if (event.target === welcomeOverlay) {
+                    hideWelcomeModal();
+                }
+            });
+        }
+
+        // Инициализация приветственного окна при загрузке
+        window.addEventListener('load', () => {
+            // Показываем приветственное окно для текущего канала (по умолчанию general)
+            updateWelcomeModal('general');
+
+            // Запускаем авторизацию
+            setTimeout(authenticateRocketChat, 1000);
+        });
+
+        // Подавление предупреждений браузера при навигации в iframe
+        window.addEventListener('beforeunload', function(e) {
+            // Подавляем стандартное предупреждение браузера
+            delete e['returnValue'];
+        });
+
+        // Отключение предупреждений о небезопасных операциях
         iframe.onload = function() {
             // Скрываем индикатор загрузки
             setTimeout(() => {
@@ -279,39 +597,6 @@
                 console.log('Cannot inject CSS due to CORS');
             }
         };
-
-        // API авторизация при загрузке страницы
-        async function authenticateRocketChat() {
-            try {
-                const response = await fetch('/api/chat/auth/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({
-                        username: currentUser
-                    })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    // Передаем токен в iframe через postMessage
-                    iframe.contentWindow.postMessage({
-                        type: 'auth',
-                        token: data.authToken,
-                        userId: data.userId
-                    }, '{{ rocketchat_url }}');
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
-            }
-        }
-
-        // Запускаем авторизацию после загрузки
-        window.addEventListener('load', () => {
-            setTimeout(authenticateRocketChat, 1000);
-        });
 
         // Обработка изменения размера окна (для мобильных)
         let vh = window.innerHeight * 0.01;

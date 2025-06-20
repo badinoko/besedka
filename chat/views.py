@@ -18,13 +18,12 @@ User = get_user_model()
 
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
-    """Главная страница чата - перенаправляет на общий чат"""
-    # Используем единый шаблон общего чата как безопасный fallback (старый chat_home удалён)
-    template_name = 'chat/general_chat.html'
+    """Главная страница чата - перенаправляет на интегрированный Rocket.Chat"""
 
     def dispatch(self, request, *args, **kwargs):
-        # Перенаправляем сразу на общий чат, убирая промежуточную страницу
-        return redirect('chat:general')
+        # Перенаправляем на новую интегрированную страницу Rocket.Chat
+        messages.info(request, '🚀 Добро пожаловать в новый чат на базе Rocket.Chat!')
+        return redirect('chat:rocketchat_integrated')
 
     def get_context_data(self, **kwargs):
         # Этот метод больше не используется, так как мы перенаправляем
@@ -477,8 +476,12 @@ class LoadMessagesAjaxView(LoginRequiredMixin, View):
 
 
 class GeneralChatView(LoginRequiredMixin, TemplateView):
-    """Общий чат для всех пользователей"""
-    template_name = 'chat/general_chat.html'
+    """Общий чат - перенаправляет на интегрированный Rocket.Chat"""
+
+    def dispatch(self, request, *args, **kwargs):
+        # Перенаправляем на новую интегрированную страницу Rocket.Chat
+        messages.info(request, '🚀 Общий чат теперь работает на Rocket.Chat!')
+        return redirect('chat:rocketchat_integrated')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -537,82 +540,27 @@ class GeneralChatView(LoginRequiredMixin, TemplateView):
 
 
 class VIPChatView(LoginRequiredMixin, TemplateView):
-    """VIP-чат только по приглашениям"""
-    template_name = 'chat/vip_chat.html'
+    """VIP-чат - перенаправляет на интегрированный Rocket.Chat"""
 
     def dispatch(self, request, *args, **kwargs):
-        """Проверяем доступ к VIP-чату"""
+        """Проверяем доступ к VIP-чату и перенаправляем"""
         user = request.user
 
-        try:
-            self.vip_chat = VIPChatRoom.objects.get(is_active=True)
-        except VIPChatRoom.DoesNotExist:
-            messages.error(request, _('VIP-чат не найден'))
-            return redirect('chat:home')
-
-        # Проверяем права доступа
-        if not self.vip_chat.can_access(user):
-            messages.error(request, _('У вас нет доступа к VIP-чату'))
-            return redirect('chat:home')
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        room = self.vip_chat.room
-
-        # Получаем последние сообщения
-        chat_messages = room.get_messages().select_related('author')[:50]
-
-        # Отмечаем сообщения как прочитанные
-        room.unread_messages(user).update(unread=False)
-
-        # Подключаем пользователя к комнате
-        room.connect(user)
-
-        # Получаем участников VIP-чата
-        vip_members = self.vip_chat.members.filter(
-            vipchatmembership__is_active=True
+        # Проверяем VIP доступ
+        user_has_vip_access = (
+            user.is_staff or
+            user.role == 'owner' or
+            hasattr(user, 'vip_memberships') and
+            user.vip_memberships.filter(is_active=True).exists()
         )
 
-        # Получаем пользователей онлайн
-        online_users = room.connected_clients.all()
+        if not user_has_vip_access:
+            messages.error(request, '❌ У вас нет доступа к VIP-чату')
+            return redirect('chat:rocketchat_integrated')
 
-        # СТАТИСТИКА ДЛЯ VIP ЧАТА
-        total_vip_messages = Message.objects.filter(room=room).count()
-        total_vip_users = vip_members.count()
-
-        # ДАННЫЕ ДЛЯ УНИФИЦИРОВАННОГО ЗАГОЛОВКА
-        # Метаданные для заголовка
-        header_meta = [
-            {
-                'icon': 'fa-users',
-                'text': f'Онлайн: {online_users.count()}'
-            },
-            {
-                'icon': 'fa-lock',
-                'text': 'Приватный чат'
-            }
-        ]
-
-        context.update({
-            'vip_chat': self.vip_chat,
-            'room': room,
-            'chat_messages': chat_messages,
-            'message_form': MessageForm(),
-            'vip_members': vip_members,
-            'online_users': online_users,
-            'online_count': online_users.count(),
-            'total_vip_messages': total_vip_messages,
-            'total_vip_users': total_vip_users,
-            # Данные для унифицированного заголовка
-            'header_theme': 'vip',
-            'header_title': 'VIP Беседка',
-            'header_icon': 'fa-crown',
-            'header_meta': header_meta,
-        })
-        return context
+        # Перенаправляем на интегрированную страницу с сообщением о VIP доступе
+        messages.success(request, '👑 Добро пожаловать в VIP-чат на Rocket.Chat!')
+        return redirect('chat:rocketchat_integrated')
 
 
 # 🚀 ROCKET.CHAT МИГРАЦИЯ - ИЗОЛИРОВАННАЯ ТЕСТОВАЯ СТРАНИЦА
@@ -722,13 +670,56 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['rocketchat_url'] = 'http://127.0.0.1:3000'
 
-        # Проверяем VIP доступ
+        # Проверяем доступ к VIP чату
         user = self.request.user
-        context['user_has_vip_access'] = (
-            user.is_staff or
-            user.role == 'owner' or
-            hasattr(user, 'vip_memberships') and
-            user.vip_memberships.filter(is_active=True).exists()
-        )
+        context['user_has_vip_access'] = user.role in ['owner', 'moderator'] or hasattr(user, 'vip_access')
 
         return context
+
+
+class RocketChatAuthAPIView(LoginRequiredMixin, View):
+    """API для аутентификации пользователей в Rocket.Chat"""
+
+    def post(self, request):
+        """Обработка POST запроса для аутентификации"""
+        try:
+            user = request.user
+
+            # Возвращаем информацию о пользователе для Rocket.Chat
+            return JsonResponse({
+                'success': True,
+                'user': {
+                    'username': user.username,
+                    'email': user.email,
+                    'role': user.role,
+                    'is_staff': user.is_staff,
+                    'display_name': user.get_full_name() or user.username
+                },
+                'message': 'User authenticated successfully'
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+    def get(self, request):
+        """Обработка GET запроса для проверки статуса аутентификации"""
+        try:
+            user = request.user
+
+            return JsonResponse({
+                'authenticated': True,
+                'user': {
+                    'username': user.username,
+                    'role': user.role,
+                    'is_staff': user.is_staff
+                }
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'authenticated': False,
+                'error': str(e)
+            }, status=500)

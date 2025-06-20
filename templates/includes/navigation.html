@@ -33,7 +33,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#chatSelectionModal">
+                    <a class="nav-link" href="{% url 'chat:rocketchat_integrated' %}">
                         <i class="fas fa-comments"></i> {% trans "Чат" %}
                     </a>
                 </li>
@@ -58,7 +58,7 @@
     </div>
 </nav>
 
-{# Гарантируем, что модальное окно выбора чата присутствует на каждой странице #}
-{% include 'includes/chat_modal.html' %}
+{# ЗАКОММЕНТИРОВАНО ПО ПРОСЬБЕ ПОЛЬЗОВАТЕЛЯ - модальное окно сохранено для будущего #}
+{# {% include 'includes/chat_modal.html' %} #}
 
 <!-- Модальное окно "Магазин" удалено после запуска каталога -->

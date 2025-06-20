@@ -62,6 +62,9 @@ urlpatterns = [
     # Chat - ru-RU.dj-chat_1.0
     path("chat/", include("chat.urls", namespace="chat")),
 
+    # HOTFIX: Альтернативный маршрут для API чата (исправление ошибки 404)
+    path("api/chat/auth/", chat.views.RocketChatAuthAPIView.as_view(), name="chat_auth_api_alternative"),
+
     # API urls
     path("api/", include("config.api_router")),
 
