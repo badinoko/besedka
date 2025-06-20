@@ -1,7 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
+name: besedka_user_rule
+description: Правила для AI-ассистента проекта «Беседка» (Фаза миграции на Rocket.Chat)
 ---
 # Правила для AI-ассистента проекта "Беседка" (Фаза Миграции на Rocket.Chat)
 

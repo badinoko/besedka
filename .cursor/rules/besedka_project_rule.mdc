@@ -1,7 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
+name: besedka_project_rule
+description: Правила проекта «Беседка» (модернизация, миграция на Rocket.Chat)
 ---
 # Правила проекта "Беседка" (Версия 6.0 - Миграция на Rocket.Chat)
 
