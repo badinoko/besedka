@@ -80,7 +80,9 @@ python scripts/magic_restart.py
 
 ---
 
-## 🔐 OAuth «Besedka» (Custom provider в Rocket.Chat)
+## 🔐 OAuth «Besedka» (ЕДИНСТВЕННЫЙ ИСТОЧНИК ПРАВДЫ)
+
+⚠️ **ВАЖНО:** Используйте ТОЛЬКО файл `ROCKET_CHAT_FINAL_SETTINGS.md`!
 
 | Параметр              | Значение                                               |
 |-----------------------|--------------------------------------------------------|
