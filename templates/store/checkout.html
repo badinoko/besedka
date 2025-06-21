@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% translate "Оформление заказа" %} - Magic Beans{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'news:home' %}">{% translate "Главная" %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'store:catalog' %}">{% translate "Каталог" %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'store:cart_detail' %}">{% translate "Корзина" %}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% translate "Оформление заказа" %}</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">{% translate "Оформление заказа" %}</h1>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="post" id="checkout-form">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </form>
+                </div>
+            </div>
+            <!-- Кнопка вынесена за пределы карточки -->
+            <div class="d-grid gap-2 mb-4">
+                <button type="submit" form="checkout-form" class="btn btn-success btn-lg">
+                    <i class="fas fa-credit-card me-2"></i>{% translate "Подтвердить и оплатить" %}
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">{% translate "Ваш заказ" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if cart and cart.items.exists %}
+                        <ul class="list-group list-group-flush">
+                            {% for item in cart.items.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small>{{ item.stock_item.strain.name }} ({{ item.stock_item.seeds_count }} {% translate "семян" %}) x {{ item.quantity }}</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ item.get_total }} {% translate "руб." %}</span>
+                            </li>
+                            {% endfor %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                                {% translate "Подытог:" %}
+                                <span>{{ cart.subtotal_amount|floatformat:2 }} {% translate "руб." %}</span>
+                            </li>
+                            {% if cart.applied_coupon %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center text-success">
+                                {% blocktrans with code=cart.applied_coupon.code %}Скидка ({{ code }}):{% endblocktrans %}
+                                <span>-{{ cart.discount_amount|floatformat:2 }} {% translate "руб." %}</span>
+                            </li>
+                            {% endif %}
+                            <!-- Стоимость доставки будет добавлена динамически через JavaScript -->
+                            <li class="list-group-item d-flex justify-content-between align-items-center fw-bold fs-5">
+                                {% translate "Итого к оплате:" %}
+                                <span id="checkout-total-amount">{{ cart.get_total_amount|floatformat:2 }} {% translate "руб." %}</span>
+                            </li>
+                        </ul>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {% translate "Стоимость доставки будет добавлена после выбора способа доставки" %}
+                            </small>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">{% translate "Нет товаров для оформления." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const shippingMethodRadios = document.querySelectorAll('input[name="shipping_method"]');
+    const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
+    const cartSubtotal = parseFloat("{{ cart.subtotal_amount|default:0|escapejs }}");
+    const cartDiscount = parseFloat("{{ cart.discount_amount|default:0|escapejs }}");
+    const checkoutTotalAmountElement = document.getElementById('checkout-total-amount');
+
+    // Получаем данные о стоимости доставки из Django
+    const shippingCosts = {
+        {% for method in shipping_methods %}
+        '{{ method.id }}': parseFloat('{{ method.price|escapejs }}'),
+        {% endfor %}
+    };
+
+    function updateTotal() {
+        let shippingCost = 0;
+
+        // Находим выбранный способ доставки
+        const selectedShippingMethod = document.querySelector('input[name="shipping_method"]:checked');
+        if (selectedShippingMethod) {
+            shippingCost = shippingCosts[selectedShippingMethod.value] || 0;
+        }
+
+        let finalTotal = cartSubtotal - cartDiscount + shippingCost;
+        if (finalTotal < 0) finalTotal = 0;
+
+        if (checkoutTotalAmountElement) {
+            checkoutTotalAmountElement.textContent = `${(finalTotal).toFixed(2)} {% translate "руб." %}`;
+        }
+
+        // Обновляем отображение стоимости доставки
+        updateShippingCostDisplay(shippingCost);
+    }
+
+    function updateShippingCostDisplay(shippingCost) {
+        // Ищем или создаем элемент для отображения стоимости доставки
+        let shippingCostElement = document.getElementById('shipping-cost-display');
+        const orderSummary = document.querySelector('.list-group');
+
+        if (shippingCost > 0) {
+            if (!shippingCostElement && orderSummary) {
+                // Создаем элемент для отображения стоимости доставки
+                const totalElement = orderSummary.querySelector('.fw-bold.fs-5').parentElement;
+                shippingCostElement = document.createElement('li');
+                shippingCostElement.className = 'list-group-item d-flex justify-content-between align-items-center';
+                shippingCostElement.id = 'shipping-cost-display';
+                orderSummary.insertBefore(shippingCostElement, totalElement);
+            }
+            if (shippingCostElement) {
+                shippingCostElement.innerHTML = `{% translate "Доставка:" %} <span>${shippingCost.toFixed(2)} {% translate "руб." %}</span>`;
+            }
+        } else {
+            // Убираем элемент, если доставка бесплатная или не выбрана
+            if (shippingCostElement) {
+                shippingCostElement.remove();
+            }
+        }
+    }
+
+    // Добавляем обработчики событий
+    shippingMethodRadios.forEach(radio => {
+        radio.addEventListener('change', updateTotal);
+    });
+
+    // Инициализируем расчет при загрузке страницы
+    updateTotal();
+});
+</script>
+{% endblock %}

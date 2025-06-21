@@ -1,0 +1,42 @@
+{% extends "users/cabinet_base.html" %}
+{% load i18n %}
+
+{% block cabinet_main_content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-user-cog"></i> {% trans "Управление профилем" %}</h4>
+    </div>
+    <div class="card-body">
+        <a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2"><i class="fas fa-edit"></i> {% trans "Редактировать профиль" %}</a>
+        <a href="{% url 'users:change_password' %}" class="btn btn-secondary"><i class="fas fa-key"></i> {% trans "Сменить пароль" %}</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-tasks"></i> {% trans "Панель администратора магазина" %}</h4>
+    </div>
+    <div class="card-body">
+                        <p>{% blocktrans %}Добро пожаловать, {{ user.display_name }}! Это ваша оперативная панель.{% endblocktrans %}</p>
+
+        <h5>{% trans "Информация по заказам:" %}</h5>
+        {% if store_stats %}
+            <ul>
+                <li>{% trans "Заказов в обработке:" %} {{ store_stats.orders_status.pending_processing|default:0 }}</li>
+                <li>{% trans "Заказов отправлено:" %} {{ store_stats.orders_status.shipped|default:0 }}</li>
+                <li>{% trans "Заказов завершено:" %} {{ store_stats.orders_status.completed|default:0 }}</li>
+            </ul>
+        {% else %}
+            <p>{% trans "Статистика магазина временно недоступна." %}</p>
+        {% endif %}
+
+        <h5 class="mt-4">{% trans "Операции с магазином:" %}</h5>
+        <div class="list-group">
+            <a href="{% url 'store_admin:magicbeans_store_order_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-box-open"></i> {% trans "Управление заказами" %}</a>
+            <a href="{% url 'store_admin:magicbeans_store_stockitem_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-boxes"></i> {% trans "Управление товарами и остатками" %}</a>
+            <a href="{% url 'store_admin:magicbeans_store_strain_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-seedling"></i> {% trans "Управление сортами (каталог)" %}</a>
+            <a href="{% url 'store_admin:magicbeans_store_coupon_changelist' %}" class="list-group-item list-group-item-action"><i class="fas fa-tags"></i> {% trans "Управление купонами" %}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

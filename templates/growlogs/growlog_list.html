@@ -1,0 +1,13 @@
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- Унифицированные hero-кнопки -->
+<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250609210">
+
+<style>
+    /* ... existing styles ... */
+</style>
+
+<h1>Grow Logs</h1>
+{% for growlog in object_list %}
+    <p>{{ growlog.title }}</p>
+{% endfor %}

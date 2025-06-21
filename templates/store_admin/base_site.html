@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Администратор магазина') }}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #2e7d32;
+        --secondary: #388e3c;
+        --accent: #ff9800;
+        --primary-fg: #fff;
+    }
+    #header { display: none !important; }
+    #content h1, .content h1, #content-main > h1:first-child, .main > h1:first-child { display: none !important; }
+</style>
+{% endblock %}
+
+{% block header %}
+    {% include 'includes/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    {% include "includes/chat_modal.html" %}
+{% endblock %}

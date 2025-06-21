@@ -1,0 +1,102 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <button onclick="resetColumnWidths()" class="btn btn-secondary"
+                style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;"
+                title="Сбросить размеры всех столбцов к начальным значениям">
+            🔄 Сбросить столбцы
+        </button>
+    </li>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        /* Дополнительные стили для мобильной совместимости */
+        @media (max-width: 768px) {
+            .object-tools li button {
+                width: 100%;
+                margin: 5px 0;
+                display: block;
+            }
+
+            .object-tools {
+                text-align: center;
+            }
+        }
+
+        /* Улучшенный стиль кнопки сброса */
+        .object-tools button:hover {
+            background: #5a6268 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .object-tools button:active {
+            transform: translateY(0);
+        }
+
+        /* Индикатор адаптивности */
+        .responsive-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(65, 118, 144, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .responsive-indicator.hidden {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+
+    <script>
+        // Добавляем индикатор размера экрана (для отладки)
+        document.addEventListener('DOMContentLoaded', function() {
+            const indicator = document.createElement('div');
+            indicator.className = 'responsive-indicator';
+            document.body.appendChild(indicator);
+
+            function updateIndicator() {
+                const width = window.innerWidth;
+                let device = '';
+
+                if (width <= 480) {
+                    device = '📱 Мобильный';
+                } else if (width <= 768) {
+                    device = '📱 Мобильный+';
+                } else if (width <= 1024) {
+                    device = '📟 Планшет';
+                } else {
+                    device = '🖥️ Десктоп';
+                }
+
+                indicator.textContent = `${device} (${width}px)`;
+
+                // Скрываем индикатор через 3 секунды после изменения размера
+                indicator.classList.remove('hidden');
+                clearTimeout(indicator.timeout);
+                indicator.timeout = setTimeout(() => {
+                    indicator.classList.add('hidden');
+                }, 3000);
+            }
+
+            updateIndicator();
+            window.addEventListener('resize', updateIndicator);
+
+            // Скрываем индикатор при первой загрузке через 5 секунд
+            setTimeout(() => {
+                indicator.classList.add('hidden');
+            }, 5000);
+        });
+    </script>
+{% endblock %}

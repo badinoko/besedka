@@ -1,0 +1,143 @@
+/* 🎨 УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КАРТОЧЕК ПРОЕКТА "БЕСЕДКА" */
+/* Версия 1.0 (10 июня 2025) */
+/* Версия 1.1 (13 июня 2025) – добавлены line-clamp для card-title и card-text */
+/* ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ ДЛЯ СТИЛЕЙ КАРТОЧЕК */
+
+:root {
+    --card-border-radius: 15px;
+    --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.12);
+    --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --image-height: 200px;
+    --card-min-height: 380px;
+}
+
+/* ==========================================================================
+   ОБЩАЯ БАЗОВАЯ СТРУКТУРА КАРТОЧКИ (ДЛЯ ВСЕХ РАЗДЕЛОВ)
+   ========================================================================== */
+
+.unified-card {
+    background: #ffffff;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--card-shadow);
+    transition: var(--card-transition);
+    border: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: var(--card-min-height);
+    overflow: hidden;
+}
+
+.unified-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Вся карточка как ссылка */
+.unified-card .card-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* ==========================================================================
+   ИЗОБРАЖЕНИЕ КАРТОЧКИ
+   ========================================================================== */
+
+.unified-card .card-image-container {
+    height: var(--image-height);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.unified-card .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.unified-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+/* ==========================================================================
+   КОНТЕНТ КАРТОЧКИ
+   ========================================================================== */
+
+.unified-card .card-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.unified-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    min-height: 4.5rem; /* Гарантирует место для 3 строк */
+    color: #212529;
+    /* Ограничиваем заголовок максимум тремя строками */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.unified-card .card-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    flex-grow: 1;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    min-height: 2.6rem; /* Гарантирует место для 2 строк описания */
+    /* Ограничиваем описание максимум двумя строками */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   ПОДВАЛ КАРТОЧКИ (СТАТИСТИКА И МЕТА-ДАННЫЕ)
+   ========================================================================== */
+
+.unified-card .card-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    margin-top: auto; /* Прижимает подвал к низу */
+    background-color: #f8f9fa;
+}
+
+/* Контейнер для статистики */
+.unified-card-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #6c757d;
+    pointer-events: none; /* Некликабельные индикаторы */
+}
+
+.stat-item i {
+    font-size: 1rem;
+}
+
+/* Цветовое кодирование статистики */
+.stat-item.likes { color: #dc3545; }
+.stat-item.comments { color: #0d6efd; }
+.stat-item.views { color: #198754; }
+.stat-item.price { color: #6c757d; }

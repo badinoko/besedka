@@ -1,0 +1,13 @@
+{% extends "../base.html" %} {# Наследуемся от основного base.html проекта #}
+{% load i18n %}
+
+{% block title %}{% block head_title %}{% endblock %} - {% trans "Аккаунт" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+    {# Контент для страниц allauth будет вставлен здесь дочерними шаблонами #}
+    {% block account_content %}
+        {# Этот блок должен быть определен в login.html, signup.html и т.д. #}
+        {# Но так как мы переопределяем login.html и signup.html полностью, они будут использовать свой {% block content %} #}
+        {# Этот account_content больше для тех шаблонов allauth, которые мы можем не переопределять полностью #}
+    {% endblock account_content %}
+{% endblock %}

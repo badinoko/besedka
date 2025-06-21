@@ -1,0 +1,189 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block content %}
+<!-- ✨ КРАСИВЫЙ ГРАДИЕНТНЫЙ ЗАГОЛОВОК ✨ -->
+<div class="admin-welcome-section">
+    <div class="welcome-header">
+        <p class="subtitle">Центр управления магазином</p>
+    </div>
+</div>
+
+<div class="store-owner-dashboard">
+    {% if available_sections %}
+        {% for section in available_sections %}
+            <div class="dashboard-section">
+                <div class="section-header">
+                    {{ section.title }}
+                </div>
+                <div class="section-description">
+                    {{ section.description }}
+                </div>
+                <div class="section-items">
+                    {% for item in section.items %}
+                    <div class="dashboard-item">
+                        <span class="item-icon">{{ item.icon }}</span>
+                        <a href="{{ item.url }}" class="item-title">{{ item.title }}</a>
+                        <div class="item-description">{{ item.description }}</div>
+                        <div class="item-actions">
+                            <a href="{{ item.url }}" class="btn-admin btn-view">
+                                {% trans 'Открыть' %}
+                            </a>
+                            {% if item.add_url %}
+                                <a href="{{ item.add_url }}" class="btn-admin btn-add">
+                                    {% trans 'Добавить' %}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="dashboard-section">
+            <div class="section-header">
+                {% trans 'Доступ ограничен' %}
+            </div>
+            <div style="padding: 30px; text-align: center;">
+                <p>{% trans 'У вас нет прав владельца магазина.' %}</p>
+                <p>{% trans 'Обратитесь к владельцу платформы.' %}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.admin-welcome-section {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 30px 20px;
+    margin: -20px -20px 30px -20px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+.welcome-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.welcome-header .subtitle {
+    font-size: 1.2rem;
+    margin: 0;
+    opacity: 0.95;
+    font-weight: 300;
+}
+.store-owner-dashboard {
+    padding: 20px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #e0f2f1 100%);
+    min-height: calc(100vh - 200px);
+}
+.dashboard-section {
+    background: white;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    border-left: 5px solid #10b981;
+}
+.dashboard-section:hover {
+    transform: translateY(-2px);
+}
+.section-header {
+    background: #10b981;
+    color: white;
+    padding: 20px;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+.section-description {
+    padding: 15px 20px;
+    background: #f8fafc;
+    color: #666;
+    border-bottom: 1px solid #e0f2f1;
+}
+.section-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0;
+}
+.dashboard-item {
+    padding: 25px;
+    border-right: 1px solid #e0f2f1;
+    border-bottom: 1px solid #e0f2f1;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+.dashboard-item:hover {
+    background: #f8fafc;
+}
+.item-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+}
+.item-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #10b981;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 8px;
+}
+.item-title:hover {
+    color: #059669;
+    text-decoration: none;
+}
+.item-description {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+.item-actions {
+    display: flex;
+    gap: 10px;
+}
+.btn-admin {
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+.btn-view {
+    background: #10b981;
+    color: white !important;
+    font-weight: 600;
+    border: 2px solid #10b981;
+}
+.btn-view:hover {
+    background: #059669;
+    color: white !important;
+    text-decoration: none;
+    border-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.btn-add {
+    background: #059669;
+    color: white !important;
+    font-weight: 600;
+    border: 2px solid #059669;
+}
+.btn-add:hover {
+    background: #10b981;
+    color: white !important;
+    text-decoration: none;
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+</style>
+{% endblock %}

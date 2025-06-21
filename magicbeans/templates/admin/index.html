@@ -1,0 +1,18 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block sidebar %}
+    {{ block.super }}
+    {% if user.is_superuser or perms.auth.view_group or user.groups.filter(name="Владельцы").exists %}
+        <div class="module">
+            <h2>{% trans 'Статистика магазина' %}</h2>
+            <ul class="actionlist">
+                <li>
+                    <a href="{% url 'admin:store_statistics' %}">
+                        {% trans 'Просмотреть статистику' %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "users/cabinet_base.html" %}
+{% load i18n %}
+
+{% block cabinet_main_content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-user-cog"></i> {% trans "Управление профилем" %}</h4>
+    </div>
+    <div class="card-body">
+        <a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2"><i class="fas fa-edit"></i> {% trans "Редактировать профиль" %}</a>
+        <a href="{% url 'users:change_password' %}" class="btn btn-secondary"><i class="fas fa-key"></i> {% trans "Сменить пароль" %}</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-store"></i> {% trans "Панель владельца магазина" %}</h4>
+    </div>
+    <div class="card-body">
+                        <p>{% blocktrans %}Добро пожаловать, {{ user.display_name }}! Это ваша панель управления магазином.{% endblocktrans %}</p>
+
+        <h5>{% trans "Ключевая статистика магазина:" %}</h5>
+        {% if store_stats %}
+            <ul>
+                <li>{% trans "Выручка сегодня:" %} {{ store_stats.sales.today_revenue|default:0 }} руб.</li>
+                <li>{% trans "Выручка за месяц:" %} {{ store_stats.sales.month_revenue|default:0 }} руб.</li>
+                <li>{% trans "Заказов сегодня:" %} {{ store_stats.sales.today_orders_count|default:0 }}</li>
+                <li>{% trans "Товаров с низким остатком:" %} {{ store_stats.inventory.low_stock_items|default:0 }}</li>
+                <li>{% trans "Заказов в обработке:" %} {{ store_stats.orders_status.pending_processing|default:0 }}</li>
+            </ul>
+        {% else %}
+            <p>{% trans "Статистика магазина временно недоступна." %}</p>
+        {% endif %}
+
+        <h5 class="mt-4">{% trans "Управление магазином:" %}</h5>
+        <div class="list-group">
+            <a href="{% url 'store_owner_admin:index' %}" class="list-group-item list-group-item-action"><i class="fas fa-cogs"></i> {% trans "Перейти в админку владельца магазина" %}</a>
+            <a href="{% url 'store_admin:index' %}" class="list-group-item list-group-item-action"><i class="fas fa-shopping-cart"></i> {% trans "Перейти в админку администратора магазина" %}</a>
+            {# <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-chart-bar"></i> {% trans "Отчеты и аналитика" %}</a> #}
+            {# <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-bullhorn"></i> {% trans "Маркетинг и промоакции" %}</a> #}
+        </div>
+    </div>
+</div>
+{% endblock %}

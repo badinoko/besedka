@@ -1,0 +1,229 @@
+{% load static i18n %}
+{% load chat_extras %}
+
+<!-- Модальное окно выбора чата -->
+<div class="modal fade" id="chatSelectionModal" tabindex="-1" aria-labelledby="chatSelectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary" id="chatSelectionModalLabel">
+                    <i class="fas fa-comments me-2"></i>
+                    {% if user.is_authenticated %}
+                        Выберите тип чата
+                    {% else %}
+                        Добро пожаловать в Беседку!
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body p-4">
+                {% if user.is_authenticated %}
+                    <!-- Контент для авторизованных пользователей -->
+                    <div class="row g-4">
+                        <!-- Общий чат -->
+                        <div class="col-md-6">
+                            <div class="card chat-option-card chat-card-hover h-100 border-0 shadow-sm"
+                                 onclick="location.href='{% url 'chat:general' %}'">
+                                <div class="card-body text-center p-4">
+                                    <div class="chat-icon mb-3">
+                                        <i class="fas fa-users fa-3x text-primary"></i>
+                                    </div>
+                                    <h5 class="card-title fw-bold text-dark mb-2">Общий чат</h5>
+                                    <p class="card-text text-muted mb-3">
+                                        Присоединяйтесь к общению с сообществом растениеводов
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center small text-muted">
+                                        <span>
+                                            <i class="fas fa-globe me-1"></i>
+                                            Для всех
+                                        </span>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-circle me-1"></i>
+                                            Активен
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VIP чат -->
+                        <div class="col-md-6">
+                            {% can_access_vip_chat user as vip_access %}
+                            {% if vip_access %}
+                            <div class="card chat-option-card chat-card-hover vip-card h-100 border-0 shadow-sm"
+                                 onclick="location.href='{% url 'chat:vip' %}'">
+                                <div class="card-body text-center p-4">
+                                    <div class="chat-icon mb-3">
+                                        <i class="fas fa-crown fa-3x text-warning"></i>
+                                    </div>
+                                    <h5 class="card-title fw-bold text-dark mb-2">
+                                        VIP Беседка
+                                        <span class="badge bg-danger ms-1">VIP</span>
+                                    </h5>
+                                    <p class="card-text text-muted mb-3">
+                                        Эксклюзивный чат для избранных участников
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center small text-muted">
+                                        <span>
+                                            <i class="fas fa-lock me-1"></i>
+                                            Приватный
+                                        </span>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-star me-1"></i>
+                                            VIP
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="card chat-option-card h-100 border-0 shadow-sm bg-light" style="opacity: 0.6; cursor: not-allowed;">
+                                <div class="card-body text-center p-4">
+                                    <div class="chat-icon mb-3">
+                                        <i class="fas fa-crown fa-3x text-muted"></i>
+                                    </div>
+                                    <h5 class="card-title fw-bold text-muted mb-2">
+                                        VIP Беседка
+                                        <span class="badge bg-secondary ms-1">VIP</span>
+                                    </h5>
+                                    <p class="card-text text-muted mb-3">
+                                        Эксклюзивный чат только по приглашению
+                                    </p>
+                                    <div class="d-flex justify-content-center">
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-lock me-1"></i>
+                                            Нет доступа
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Информация о личных сообщениях -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info border-0 shadow-sm">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-envelope me-2"></i>Личные сообщения
+                                </h6>
+                                <p class="mb-2">Для отправки личного сообщения пользователю:</p>
+                                <ol class="mb-0 small">
+                                    <li>Перейдите в профиль нужного пользователя</li>
+                                    <li>Нажмите кнопку "Написать сообщение"</li>
+                                    <li>Или найдите пользователя в списке участников общего чата</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <!-- Контент для гостей - приглашение к регистрации -->
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="mb-4">
+                                <i class="fas fa-seedling fa-4x text-success mb-3"></i>
+                                <h4 class="fw-bold text-dark">Станьте частью нашего сообщества!</h4>
+                                <p class="lead text-muted">Зарегистрируйтесь, чтобы получить полный доступ ко всем возможностям платформы</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Преимущества платформы -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="me-3">
+                                    <i class="fas fa-store fa-2x text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">🛒 Полноценный магазин</h6>
+                                    <small class="text-muted">Семена, оборудование, удобрения</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="me-3">
+                                    <i class="fas fa-comments fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">💬 Живые чаты</h6>
+                                    <small class="text-muted">Общение с экспертами и новичками</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="me-3">
+                                    <i class="fas fa-book fa-2x text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">📖 Гроу-репорты</h6>
+                                    <small class="text-muted">Делитесь опытом и учитесь у других</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="me-3">
+                                    <i class="fas fa-images fa-2x text-info"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">🖼️ Галерея сообщества</h6>
+                                    <small class="text-muted">Красивые фото и результаты</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопка регистрации -->
+                    <div class="text-center">
+                        <div class="alert alert-success border-0 shadow-sm mb-3">
+                            <i class="fab fa-telegram me-2"></i>
+                            <strong>Быстрая регистрация через Telegram</strong>
+                            <br>
+                            <small class="text-muted">Безопасно и удобно - всего в один клик!</small>
+                        </div>
+
+                        <script async src="https://telegram.org/js/telegram-widget.js?22"
+                                data-telegram-login="{{ TELEGRAM_BOT_NAME }}"
+                                data-size="large"
+                                data-auth-url="{% url 'users:telegram_login' %}"
+                                data-request-access="write"></script>
+                    </div>
+
+                    <!-- Дополнительная информация -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-warning border-0 shadow-sm">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-info-circle me-2"></i>Почему стоит зарегистрироваться?
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li><strong>Участие в чатах:</strong> Задавайте вопросы, делитесь опытом</li>
+                                    <li><strong>Создание гроу-репортов:</strong> Документируйте свои успехи</li>
+                                    <li><strong>Покупки в магазине:</strong> Скидки для активных участников</li>
+                                    <li><strong>Загрузка фото:</strong> Показывайте свои результаты</li>
+                                    <li><strong>Система рейтингов:</strong> Зарабатывайте карму и репутацию</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <div class="w-100 text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {% if user.is_authenticated %}
+                            Выберите нужный тип чата для начала общения
+                        {% else %}
+                            Присоединяйтесь к сообществу энтузиастов выращивания!
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

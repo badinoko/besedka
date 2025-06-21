@@ -1,0 +1,35 @@
+{% load i18n %}
+<div class="comment-section" id="comments">
+    <h4 class="mb-4 d-flex align-items-center gap-2">
+        {# customizable icon and color #}
+        <i class="{{ header_icon|default:'fas fa-comments' }} {{ header_color|default:'text-primary' }}"></i>
+        <span>{% trans "Комментарии" %} (<span class="js-comments-count">{{ comments_count }}</span>)</span>
+    </h4>
+
+    {# ===== ФОРМА ===== #}
+    {% if user.is_authenticated %}
+        {% include 'includes/partials/unified_comment_form.html' with action_url=form_action object_id_field=id_field object_id=object_id comment_type=comment_type placeholder=placeholder %}
+    {% else %}
+        <div class="alert alert-info mb-4 small">
+            <i class="fas fa-info-circle me-2"></i>
+            <a href="{% url 'account_login' %}">{% trans "Войдите" %}</a>, {% trans "чтобы оставить комментарий." %}
+        </div>
+    {% endif %}
+
+    {# ===== СПИСОК КОММЕНТАРИЕВ ===== #}
+    <div id="comments-container">
+        {% include 'includes/partials/unified_comments_list.html' with top_level_comments=top_level_comments %}
+    </div>
+
+    {# Кнопка подгрузки ещё комментариев #}
+    {% if has_more_comments %}
+    <div class="text-center my-3">
+        <button class="btn btn-outline-primary load-more-comments"
+                data-object-type="{{ comment_type }}"
+                data-object-id="{{ object_id }}"
+                data-next-page="2">
+            <i class="fas fa-comments me-1"></i>{% trans "Показать ещё" %}
+        </button>
+    </div>
+    {% endif %}
+</div>

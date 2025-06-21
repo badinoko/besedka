@@ -1,0 +1,121 @@
+/* ОБНОВЛЕННАЯ ВЕРСИЯ 2.0 - ЧАТЫ ПОЧИНЕНЫ! */
+/* Стили для модального окна выбора чата */
+
+.chat-card-hover {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.chat-card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.chat-option-card:hover .card-title {
+    color: #667eea !important;
+}
+
+.vip-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.vip-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ffd700, #ffb347, #ffd700);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.chat-icon {
+    transition: transform 0.3s ease;
+}
+
+.chat-card-hover:hover .chat-icon {
+    transform: scale(1.1);
+}
+
+/* Анимация появления модального окна */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Стили для бейджей */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Специальные стили для красного бейджа VIP-чата */
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem;
+    }
+
+    .chat-icon i {
+        font-size: 2.5rem !important;
+    }
+
+    .card-body {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Дополнительные эффекты для VIP карточки */
+.vip-card:hover {
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3) !important;
+}
+
+.vip-card .text-warning {
+    color: #ffc107 !important;
+}
+
+/* Стили для затемнения фона */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Улучшенные стили для заголовка модального окна */
+.modal-header {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.modal-content {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+/* Стили для подвала модального окна */
+.modal-footer {
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* Улучшенные стили для зеленого бейджа */
+.badge.bg-success {
+    background-color: #198754 !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.3);
+}

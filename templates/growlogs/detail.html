@@ -1,0 +1,1137 @@
+{% extends "base.html" %}
+{% load i18n humanize crispy_forms_tags %}
+
+{% block title %}{{ growlog.title }} - {% trans "Гроу-репорт" %}{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    /* ===== ПРИНУДИТЕЛЬНОЕ ПРИМЕНЕНИЕ СТИЛЕЙ (ВЫСОКАЯ СПЕЦИФИЧНОСТЬ) ===== */
+    body .growlog-detail-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%) !important;
+        min-height: 100vh !important;
+        padding: 20px 0 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+    }
+
+    /* ===== ШАПКА РЕПОРТА (СТИЛЬ GROWDIARIES) ===== */
+    body .growlog-detail-page .diary-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border-radius: 20px !important;
+        padding: 40px !important;
+        margin-bottom: 30px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    body .growlog-detail-page .diary-header::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -50% !important;
+        right: -50% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 50% !important;
+        transform: rotate(45deg) !important;
+    }
+
+    body .growlog-detail-page .diary-title {
+        font-size: 2.8rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 20px !important;
+        color: white !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3) !important;
+        position: relative !important;
+        z-index: 2 !important;
+        line-height: 1.2 !important;
+    }
+
+    body .growlog-detail-page .diary-meta-row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 2rem !important;
+        font-size: 1.1rem !important;
+        color: rgba(255,255,255,0.95) !important;
+        position: relative !important;
+        z-index: 2 !important;
+        margin-bottom: 20px !important;
+    }
+
+    body .growlog-detail-page .meta-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        background: rgba(255,255,255,0.1) !important;
+        padding: 8px 16px !important;
+        border-radius: 25px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    body .growlog-detail-page .meta-item i {
+        opacity: 0.9 !important;
+        font-size: 1rem !important;
+    }
+
+    body .growlog-detail-page .status-badge {
+        background: rgba(255,255,255,0.95) !important;
+        color: #2c3e50 !important;
+        padding: 8px 20px !important;
+        border-radius: 25px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    body .growlog-detail-page .status-badge.public {
+        background: rgba(76,175,80,0.9) !important;
+        color: white !important;
+        border-color: rgba(76,175,80,0.3) !important;
+    }
+
+    body .growlog-detail-page .status-badge.private {
+        background: rgba(255,152,0,0.9) !important;
+        color: white !important;
+        border-color: rgba(255,152,0,0.3) !important;
+    }
+
+    /* ===== ОСНОВНАЯ ИНФОРМАЦИОННАЯ КАРТОЧКА ===== */
+    body .growlog-detail-page .diary-main-card {
+        background: white !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+        overflow: hidden !important;
+        margin-bottom: 30px !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .card-content {
+        display: flex !important;
+        min-height: 300px !important;
+    }
+
+    /* Фото секция */
+    body .growlog-detail-page .diary-photo-section {
+        width: 400px !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    body .growlog-detail-page .diary-main-photo {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        transition: transform 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .diary-main-photo:hover {
+        transform: scale(1.05) !important;
+    }
+
+    body .growlog-detail-page .diary-photo-placeholder {
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #6c757d !important;
+    }
+
+    body .growlog-detail-page .placeholder-icon {
+        font-size: 4rem !important;
+        margin-bottom: 15px !important;
+        opacity: 0.6 !important;
+    }
+
+    body .growlog-detail-page .placeholder-text {
+        font-size: 1.2rem !important;
+        font-weight: 500 !important;
+    }
+
+    /* Информационная панель */
+    body .growlog-detail-page .diary-info-panel {
+        flex: 1 !important;
+        padding: 30px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 25px !important;
+    }
+
+    /* Секции информации */
+    body .growlog-detail-page .info-section {
+        background: #f8f9fa !important;
+        border-radius: 15px !important;
+        padding: 20px !important;
+        border-left: 4px solid #4CAF50 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .info-section:hover {
+        background: #e3f2fd !important;
+        border-left-color: #2196F3 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    body .growlog-detail-page .info-section-title {
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        font-size: 1.1rem !important;
+        margin-bottom: 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    body .growlog-detail-page .info-section-title i {
+        color: #4CAF50 !important;
+    }
+
+    /* Сорт */
+    body .growlog-detail-page .strain-name {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        margin-bottom: 15px !important;
+    }
+
+    body .growlog-detail-page .strain-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    body .growlog-detail-page .strain-detail {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        font-size: 0.95rem !important;
+        padding: 6px 0 !important;
+        border-bottom: 1px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .strain-detail:last-child {
+        border-bottom: none !important;
+    }
+
+    body .growlog-detail-page .detail-label {
+        color: #6c757d !important;
+        font-weight: 600 !important;
+    }
+
+    body .growlog-detail-page .detail-value {
+        color: #2c3e50 !important;
+        font-weight: 500 !important;
+        background: white !important;
+        padding: 4px 12px !important;
+        border-radius: 12px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Автор */
+    body .growlog-detail-page .author-name {
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        margin-bottom: 10px !important;
+    }
+
+    body .growlog-detail-page .author-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    body .growlog-detail-page .author-detail {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        font-size: 0.95rem !important;
+        color: #495057 !important;
+    }
+
+    body .growlog-detail-page .author-detail i {
+        width: 18px !important;
+        color: #6c757d !important;
+    }
+
+    /* Статистика */
+    body .growlog-detail-page .stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+        gap: 15px !important;
+    }
+
+    body .growlog-detail-page .stat-item {
+        background: white !important;
+        border-radius: 12px !important;
+        padding: 15px !important;
+        text-align: center !important;
+        border: 1px solid #e9ecef !important;
+        transition: all 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .stat-item:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
+        border-color: #4CAF50 !important;
+    }
+
+    body .growlog-detail-page .stat-value {
+        font-size: 1.6rem !important;
+        font-weight: 700 !important;
+        color: #4CAF50 !important;
+        display: block !important;
+        margin-bottom: 5px !important;
+    }
+
+    body .growlog-detail-page .stat-label {
+        font-size: 0.8rem !important;
+        color: #6c757d !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* ===== УПРАВЛЯЮЩИЕ КНОПКИ ===== */
+    body .growlog-detail-page .diary-actions {
+        background: white !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+        padding: 25px !important;
+        margin-bottom: 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .action-info h5 {
+        color: #2c3e50 !important;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+        font-size: 1.2rem !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    body .growlog-detail-page .action-info small {
+        color: #6c757d !important;
+        font-size: 0.95rem !important;
+    }
+
+    body .growlog-detail-page .action-buttons {
+        display: flex !important;
+        gap: 15px !important;
+    }
+
+    body .growlog-detail-page .btn-modern {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 0.95rem !important;
+    }
+
+    body .growlog-detail-page .btn-modern:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 25px rgba(0,123,255,0.3) !important;
+        color: white !important;
+        text-decoration: none !important;
+    }
+
+    body .growlog-detail-page .btn-secondary-modern {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    }
+
+    body .growlog-detail-page .btn-secondary-modern:hover {
+        box-shadow: 0 8px 25px rgba(108,117,125,0.3) !important;
+    }
+
+    /* ===== ТАЙМЛАЙН В СТИЛЕ GROWDIARIES ===== */
+    body .growlog-detail-page .timeline-section {
+        background: white !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+        padding: 30px !important;
+        margin-bottom: 30px !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .timeline-title {
+        color: #2c3e50 !important;
+        font-weight: 700 !important;
+        margin-bottom: 30px !important;
+        font-size: 1.8rem !important;
+        text-align: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+    }
+
+    body .growlog-detail-page .timeline-title i {
+        color: #4CAF50 !important;
+    }
+
+    /* ===== КАРТОЧКИ ДНЕЙ (СТИЛЬ GROWDIARIES) ===== */
+    body .growlog-detail-page .timeline-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 30px !important;
+    }
+
+    body .growlog-detail-page .day-card {
+        background: white !important;
+        border: 2px solid #e9ecef !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+        transition: all 0.3s ease !important;
+        position: relative !important;
+    }
+
+    body .growlog-detail-page .day-card:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
+        border-color: #4CAF50 !important;
+    }
+
+    /* Шапка дня */
+    body .growlog-detail-page .day-header {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+        color: white !important;
+        padding: 20px 30px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    body .growlog-detail-page .day-header::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -50% !important;
+        right: -50% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 50% !important;
+        transform: rotate(45deg) !important;
+    }
+
+    body .growlog-detail-page .day-info {
+        position: relative !important;
+        z-index: 2 !important;
+    }
+
+    body .growlog-detail-page .day-number {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-bottom: 5px !important;
+    }
+
+    body .growlog-detail-page .day-number i {
+        color: rgba(255,255,255,0.8) !important;
+    }
+
+    body .growlog-detail-page .day-date {
+        font-size: 1rem !important;
+        opacity: 0.9 !important;
+        font-weight: 500 !important;
+    }
+
+    body .growlog-detail-page .day-stage {
+        background: rgba(255,255,255,0.2) !important;
+        padding: 6px 15px !important;
+        border-radius: 20px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        backdrop-filter: blur(10px) !important;
+        position: relative !important;
+        z-index: 2 !important;
+    }
+
+    /* Контент дня */
+    body .growlog-detail-page .day-content {
+        padding: 30px !important;
+    }
+
+    /* Описание дня */
+    body .growlog-detail-page .day-description {
+        color: #2c3e50 !important;
+        line-height: 1.8 !important;
+        margin-bottom: 30px !important;
+        font-size: 1.05rem !important;
+        background: #f8f9fa !important;
+        padding: 20px !important;
+        border-radius: 15px !important;
+        border-left: 4px solid #4CAF50 !important;
+    }
+
+    /* Фотографии дня */
+    body .growlog-detail-page .day-photos {
+        margin-bottom: 25px !important;
+    }
+
+    body .growlog-detail-page .photos-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 15px !important;
+        margin-top: 15px !important;
+    }
+
+    body .growlog-detail-page .photo-item {
+        position: relative !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        aspect-ratio: 1 !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .photo-item:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+
+    body .growlog-detail-page .photo-item img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        transition: transform 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .photo-item:hover img {
+        transform: scale(1.05) !important;
+    }
+
+    /* Параметры среды */
+    body .growlog-detail-page .environment-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e8f4f8 100%) !important;
+        border-radius: 15px !important;
+        padding: 25px !important;
+        border: 1px solid #e3f2fd !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
+    }
+
+    body .growlog-detail-page .environment-title {
+        color: #2c3e50 !important;
+        font-weight: 700 !important;
+        margin-bottom: 20px !important;
+        font-size: 1.3rem !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    body .growlog-detail-page .environment-title i {
+        color: #4CAF50 !important;
+    }
+
+    body .growlog-detail-page .environment-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+        gap: 15px !important;
+    }
+
+    body .growlog-detail-page .env-param {
+        background: white !important;
+        border-radius: 12px !important;
+        padding: 15px !important;
+        text-align: center !important;
+        border: 1px solid #e9ecef !important;
+        transition: all 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .env-param:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        border-color: #4CAF50 !important;
+    }
+
+    body .growlog-detail-page .env-value {
+        font-size: 1.4rem !important;
+        font-weight: 700 !important;
+        color: #4CAF50 !important;
+        display: block !important;
+        margin-bottom: 5px !important;
+    }
+
+    body .growlog-detail-page .env-label {
+        font-size: 0.8rem !important;
+        color: #6c757d !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* ===== КОММЕНТАРИИ ===== */
+    body .growlog-detail-page .comments-section {
+        background: white !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+        padding: 30px !important;
+        margin-bottom: 30px !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .comments-title {
+        color: #2c3e50 !important;
+        font-weight: 700 !important;
+        margin-bottom: 25px !important;
+        font-size: 1.6rem !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    body .growlog-detail-page .comment-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 12px !important;
+    }
+
+    body .growlog-detail-page .comment-author {
+        font-weight: 700 !important;
+        color: #2c3e50 !important;
+        font-size: 1.05rem !important;
+    }
+
+    body .growlog-detail-page .comment-date {
+        color: #6c757d !important;
+        font-size: 0.9rem !important;
+    }
+
+    body .growlog-detail-page .comment-content {
+        color: #495057 !important;
+        line-height: 1.7 !important;
+        font-size: 1rem !important;
+    }
+
+    /* Форма добавления комментария (перемещена выше списка для консистентности с SSOT) */
+    body .growlog-detail-page .comment-form {
+        margin-top: 30px !important;
+        padding-top: 25px !important;
+        border-top: 2px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .comment-form textarea {
+        border-radius: 12px !important;
+        border: 2px solid #ced4da !important;
+        resize: vertical !important;
+        transition: all 0.3s ease !important;
+    }
+
+    body .growlog-detail-page .comment-form textarea:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.3rem rgba(0,123,255,0.25) !important;
+    }
+
+    /* ===== ПУСТЫЕ СОСТОЯНИЯ ===== */
+    body .growlog-detail-page .empty-state {
+        text-align: center !important;
+        padding: 50px 20px !important;
+        color: #6c757d !important;
+    }
+
+    body .growlog-detail-page .empty-state i {
+        font-size: 4rem !important;
+        margin-bottom: 20px !important;
+        opacity: 0.5 !important;
+    }
+
+    body .growlog-detail-page .empty-state h4 {
+        margin-bottom: 10px !important;
+        color: #495057 !important;
+    }
+
+    /* ===== АЛЕРТЫ ===== */
+    body .growlog-detail-page .alert-modern {
+        border-radius: 15px !important;
+        border: none !important;
+        padding: 20px 25px !important;
+        margin-bottom: 25px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    body .growlog-detail-page .alert-info-modern {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%) !important;
+        color: #0d47a1 !important;
+        border-left: 4px solid #2196f3 !important;
+    }
+
+    /* ===== ЛАЙКИ И ВЗАИМОДЕЙСТВИЕ ===== */
+    body .growlog-detail-page .interaction-panel {
+        background: #f8f9fa !important;
+        border-radius: 15px !important;
+        padding: 20px !important;
+        margin-top: 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    body .growlog-detail-page .like-section {
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    body .growlog-detail-page .like-btn {
+        background: none !important;
+        border: 2px solid #e9ecef !important;
+        border-radius: 25px !important;
+        padding: 8px 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: all 0.3s ease !important;
+        font-weight: 600 !important;
+        color: #6c757d !important;
+    }
+
+    body .growlog-detail-page .like-btn:hover {
+        border-color: #dc3545 !important;
+        color: #dc3545 !important;
+        transform: translateY(-2px) !important;
+    }
+
+    body .growlog-detail-page .like-btn.liked {
+        background: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+
+    /* ===== ОТЗЫВЧИВОСТЬ ===== */
+    @media (max-width: 768px) {
+        body .growlog-detail-page .diary-title {
+            font-size: 2rem !important;
+        }
+
+        body .growlog-detail-page .diary-meta-row {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+
+        body .growlog-detail-page .card-content {
+            flex-direction: column !important;
+        }
+
+        body .growlog-detail-page .diary-photo-section {
+            width: 100% !important;
+            height: 250px !important;
+        }
+
+        body .growlog-detail-page .diary-info-panel {
+            padding: 20px !important;
+            gap: 20px !important;
+        }
+
+        body .growlog-detail-page .stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        body .growlog-detail-page .diary-actions {
+            flex-direction: column !important;
+            gap: 20px !important;
+            text-align: center !important;
+        }
+
+        body .growlog-detail-page .action-buttons {
+            justify-content: center !important;
+        }
+
+        body .growlog-detail-page .environment-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        body .growlog-detail-page .photos-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        body .growlog-detail-page .day-header {
+            padding: 15px 20px !important;
+        }
+
+        body .growlog-detail-page .day-content {
+            padding: 20px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        body .growlog-detail-page .diary-title {
+            font-size: 1.6rem !important;
+        }
+
+        body .growlog-detail-page .stats-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        body .growlog-detail-page .environment-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        body .growlog-detail-page .photos-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="growlog-detail-page">
+    <div class="container">
+        <!-- УНИФИЦИРОВАННАЯ HERO-СЕКЦИЯ -->
+        {% include 'includes/partials/unified_detail_hero.html' with title=growlog.title subtitle=growlog.grower.username|add:' • '|add:growlog.created_at|date:"d.m.Y"|add:' • '|add:growlog.get_current_stage_display|add:' • День '|add:growlog.current_day|default:"1" hero_class='growlogs-hero' stats=detail_hero_stats show_breadcrumbs=False %}
+
+        <!-- ===== ОСНОВНАЯ ИНФОРМАЦИОННАЯ КАРТОЧКА ===== -->
+        <div class="diary-main-card diary-card">
+            <div class="card-content">
+                <!-- Фото секция -->
+                <div class="diary-photo-section">
+                    {% if growlog.logo %}
+                        <img src="{{ growlog.logo.url }}" alt="{{ growlog.title }}" class="diary-main-photo">
+                    {% else %}
+                        <div class="diary-photo-placeholder">
+                            <i class="fas fa-seedling placeholder-icon"></i>
+                            <div class="placeholder-text">Фото репорта</div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Информационная панель -->
+                <div class="diary-info-panel">
+                    <!-- Информация о сорте (реформатировано) -->
+                    <div class="info-section d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+                        <div class="flex-grow-1">
+                            <div class="mb-2">
+                                <small class="text-uppercase text-muted">Сорт</small><br>
+                                <a href="#" class="fw-bold fs-5 text-decoration-none" style="color:#2c3e50;">
+                                    {{ growlog.strain.name|default:growlog.strain_custom|default:"Не указан" }}
+                                </a>
+                            </div>
+                            {% if growlog.strain and growlog.strain.seedbank %}
+                            <div class="mt-2">
+                                <small class="text-uppercase text-muted">Сидбанк</small><br>
+                                <a href="#" class="fw-bold fs-6 text-decoration-none" style="color:#2c3e50;">
+                                    {{ growlog.strain.seedbank.name }}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Кнопка подробнее -->
+                        <div class="text-md-end text-center flex-shrink-0">
+                            <button class="hero-btn" style="border-radius:50px; padding:14px 38px;" data-bs-toggle="modal" data-bs-target="#growlogDetailsModal">
+                                <i class="fas fa-info-circle"></i> ПОДРОБНЕЕ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== УПРАВЛЯЮЩИЕ КНОПКИ ===== -->
+        {% if user.is_authenticated %}
+            <div class="diary-actions">
+                <div class="action-info">
+                    <h5>
+                        <i class="fas fa-tools"></i>
+                        Управление репортом
+                    </h5>
+                    <small>Добавляйте записи и отслеживайте прогресс</small>
+                </div>
+
+                <div class="action-buttons">
+                    {% if user == growlog.grower %}
+                        {# TODO: Создание записей будет реализовано позже #}
+                        <a href="{% url 'growlogs:update' growlog.id %}" class="btn-modern btn-secondary-modern">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </a>
+                    {% endif %}
+
+                    {% if growlog.is_public or user == growlog.grower %}
+                        <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (только иконка, необратимо) -->
+                        {% include 'includes/partials/unified_like_button.html' with object_type='growlog' object_id=growlog.id user_liked=user_liked %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- ===== ТАЙМЛАЙН ДНЕЙ В СТИЛЕ GROWDIARIES ===== -->
+        <div class="timeline-section diary-timeline">
+            <h2 class="timeline-title">
+                <i class="fas fa-history"></i>
+                Дневник роста
+            </h2>
+
+            {% if growlog.entries.exists %}
+                <div class="timeline-container">
+                    {% for day in growlog.entries.all %}
+                        <div class="day-card">
+                            <!-- Шапка дня -->
+                            <div class="day-header">
+                                <div class="day-info">
+                                    <div class="day-number">
+                                        <i class="fas fa-calendar-day"></i>
+                                        День {{ day.day }}
+                                    </div>
+                                    <div class="day-date">{{ day.created_at|date:"d.m.Y" }}</div>
+                                </div>
+                                <div class="day-stage">{{ day.get_stage_display|default:"Вегетация" }}</div>
+                            </div>
+
+                            <!-- Контент дня -->
+                            <div class="day-content">
+                                <!-- Описание -->
+                                {% if day.activities %}
+                                    <div class="day-description">
+                                        {{ day.activities|linebreaks }}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Фотографии -->
+                                {% if day.entry_photos.exists %}
+                                    <div class="day-photos">
+                                        <h5><i class="fas fa-camera"></i> Фотографии дня</h5>
+                                        <div class="photos-grid">
+                                            {% for photo in day.entry_photos.all %}
+                                                <div class="photo-item">
+                                                    <img src="{{ photo.image.url }}" alt="День {{ day.day }}">
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Параметры среды -->
+                                {% if day.temperature or day.humidity or day.ph or day.ec %}
+                                    <div class="environment-section">
+                                        <h5 class="environment-title">
+                                            <i class="fas fa-thermometer-half"></i>
+                                            Параметры среды
+                                        </h5>
+                                        <div class="environment-grid">
+                                            {% if day.temperature %}
+                                                <div class="env-param">
+                                                    <span class="env-value">{{ day.temperature }}°C</span>
+                                                    <span class="env-label">Температура</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if day.humidity %}
+                                                <div class="env-param">
+                                                    <span class="env-value">{{ day.humidity }}%</span>
+                                                    <span class="env-label">Влажность</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if day.ph %}
+                                                <div class="env-param">
+                                                    <span class="env-value">{{ day.ph }}</span>
+                                                    <span class="env-label">pH</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if day.ec %}
+                                                <div class="env-param">
+                                                    <span class="env-value">{{ day.ec }}</span>
+                                                    <span class="env-label">EC</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Панель взаимодействия -->
+                                <div class="interaction-panel">
+                                    <div class="like-section">
+                                        {% if user.is_authenticated and growlog.is_public or user == growlog.grower %}
+                                            <button class="like-btn {% if user in day.likes.all %}liked{% endif %}"
+                                                    data-day-id="{{ day.id }}"
+                                                    onclick="toggleDayLike(this)">
+                                                <i class="fas fa-heart"></i>
+                                                <span class="like-count">{{ day.likes.count }}</span>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    <div class="day-meta">
+                                        <small class="text-muted">
+                                            <i class="fas fa-eye"></i> Просмотры: {{ day.views|default:"0" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-seedling"></i>
+                    <h4>Дневник пока пуст</h4>
+                    <p>Записи появятся, когда автор начнет добавлять дни роста</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ===== КОММЕНТАРИИ ===== -->
+        {% if growlog.is_public or user == growlog.grower %}
+            {% url 'growlogs:add_comment' growlog.pk as growlog_add_comment_url %}
+            {% include 'includes/partials/unified_comment_section.html' with comments_count=growlog.comments_count form_action=growlog_add_comment_url id_field=None object_id=growlog.id comment_type='growlog' placeholder='Поделитесь своими мыслями о данном репорте...' top_level_comments=top_level_comments has_more_comments=has_more_comments %}
+        {% endif %}
+
+        {# Навигация между репортами и кнопка ко всем #}
+        {% url 'growlogs:list' as growlogs_list_url %}
+        {% with prev_url=None next_url=None list_url=growlogs_list_url %}
+            {% include 'includes/partials/unified_detail_footer.html' with list_url=list_url list_label='Все репорты' %}
+        {% endwith %}
+
+        <!-- Приватная заглушка -->
+        {% if not growlog.is_public and user != growlog.grower %}
+            <div class="alert-modern alert-info-modern">
+                <i class="fas fa-lock"></i>
+                Этот гроу-репорт является приватным и доступен только автору.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ===== СКРИПТЫ ===== -->
+<script>
+// ПРИМЕЧАНИЕ: Лайки гроурепортов теперь обрабатываются унифицированной системой (unified_like_handler.js)
+// Старые функции toggleLike() и toggleDayLike() удалены в пользу SSOT архитектуры
+
+// Плавная прокрутка к якорем
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Анимация появления карточек при прокрутке
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Применяем анимацию к карточкам дней
+document.querySelectorAll('.day-card').forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+    observer.observe(card);
+});
+</script>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО С ДЕТАЛЯМИ РЕПОРТА ===== -->
+<div class="modal fade" id="growlogDetailsModal" tabindex="-1" aria-labelledby="growlogDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:linear-gradient(135deg,#667eea 0%, #764ba2 100%); color:#fff;">
+                <h5 class="modal-title mb-0" id="growlogDetailsLabel"><i class="fas fa-info-circle me-2"></i>Детали репорта</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background:#f8f9fa;">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <strong>Сорт:</strong> {{ growlog.strain.name|default:growlog.strain_custom|default:"Не указан" }}
+                    </div>
+                    {% if growlog.strain and growlog.strain.seedbank %}
+                        <div class="col-md-6">
+                            <strong>Сидбанк:</strong> {{ growlog.strain.seedbank.name }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.strain and growlog.strain.get_strain_type_display %}
+                        <div class="col-md-6">
+                            <strong>Тип:</strong> {{ growlog.strain.get_strain_type_display }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.medium %}
+                        <div class="col-md-6">
+                            <strong>Субстрат:</strong> {{ growlog.medium }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.fertilizers %}
+                        <div class="col-md-6">
+                            <strong>Удобрения:</strong> {{ growlog.fertilizers }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.lighting %}
+                        <div class="col-md-6">
+                            <strong>Освещение:</strong> {{ growlog.lighting }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.container_size %}
+                        <div class="col-md-6">
+                            <strong>Размер контейнера:</strong> {{ growlog.container_size }}
+                        </div>
+                    {% endif %}
+                    {% if growlog.expected_yield %}
+                        <div class="col-md-6">
+                            <strong>Ожидаемый урожай:</strong> {{ growlog.expected_yield }} г
+                        </div>
+                    {% endif %}
+                    {% if growlog.setup_description %}
+                        <div class="col-12">
+                            <strong>Описание установки:</strong>
+                            <div class="alert alert-secondary mt-1" style="white-space:pre-wrap;">{{ growlog.setup_description }}</div>
+                        </div>
+                    {% endif %}
+                    {% if growlog.goals %}
+                        <div class="col-12">
+                            <strong>Цели:</strong>
+                            <div class="alert alert-secondary mt-1" style="white-space:pre-wrap;">{{ growlog.goals }}</div>
+                        </div>
+                    {% endif %}
+                    {% if growlog.additional_notes %}
+                        <div class="col-12">
+                            <strong>Дополнительные заметки:</strong>
+                            <p class="mt-1 mb-0">{{ growlog.additional_notes }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

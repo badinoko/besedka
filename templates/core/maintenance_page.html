@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} - {% trans "Техническое обслуживание" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            {% comment %}
+            Цветовая схема будет применяться к этому div.
+            Классы: bg-primary-subtle text-primary-emphasis (blue)
+                     bg-warning-subtle text-warning-emphasis (orange)
+                     bg-danger-subtle text-danger-emphasis (red)
+            {% endcomment %}
+            <div
+                class="p-5 rounded-3 shadow-lg
+                {% if maintenance_setting.color_scheme == 'blue' %}bg-primary-subtle text-primary-emphasis{% endif %}
+                {% if maintenance_setting.color_scheme == 'orange' %}bg-warning-subtle text-warning-emphasis{% endif %}
+                {% if maintenance_setting.color_scheme == 'red' %}bg-danger-subtle text-danger-emphasis{% endif %}
+                border
+                {% if maintenance_setting.color_scheme == 'blue' %}border-primary-subtle{% endif %}
+                {% if maintenance_setting.color_scheme == 'orange' %}border-warning-subtle{% endif %}
+                {% if maintenance_setting.color_scheme == 'red' %}border-danger-subtle{% endif %}
+                "
+            >
+                <h1 class="display-4 fw-bold">{{ maintenance_setting.title }}</h1>
+                <p class="lead">{{ maintenance_setting.message }}</p>
+                <hr class="my-4">
+                <p><i class="fas fa-wrench me-2"></i><strong>{% trans "Техническое обслуживание" %}</strong></p>
+                <p>{% trans "Мы прилагаем все усилия, чтобы как можно скорее восстановить работу." %}</p>
+                {% if maintenance_setting.expected_recovery_time %}
+                    <div class="alert
+                        {% if maintenance_setting.color_scheme == 'blue' %}alert-info{% endif %}
+                        {% if maintenance_setting.color_scheme == 'orange' %}alert-warning{% endif %}
+                        {% if maintenance_setting.color_scheme == 'red' %}alert-danger{% endif %}
+                        mt-4"
+                    >
+                        <strong>{% trans "Ожидаемое время восстановления:" %}</strong> {{ maintenance_setting.expected_recovery_time }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if available_sections %}
+                <div class="mt-5 p-4 bg-light rounded-3 shadow-sm">
+                    <h3 class="mb-3"><i class="fas fa-compass me-2"></i>{% trans "Альтернативные способы общения и доступные разделы:" %}</h3>
+                    <div class="list-group">
+                        {% for section_name, section_url, section_display_name in available_sections %}
+                            <a href="{{ section_url }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                {{ section_display_name }}
+                                <span class="badge bg-success rounded-pill"><i class="fas fa-check-circle me-1"></i>{% trans "Доступно" %}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="mt-5 p-4 bg-light rounded-3 shadow-sm">
+                    <p class="mb-0"><i class="fas fa-info-circle me-2"></i>{% trans "В данный момент другие разделы также могут быть временно недоступны. Приносим извинения за неудобства." %}</p>
+                </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{% url 'news:home' %}" class="btn btn-secondary"><i class="fas fa-home me-2"></i>{% trans "Вернуться на главную" %}</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

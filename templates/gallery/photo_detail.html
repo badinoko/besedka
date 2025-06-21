@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load i18n humanize crispy_forms_tags %}
+
+{% block title %}{{ photo.title|default:_("Фото из галереи") }} - {% trans "Галерея" %}{% endblock %}
+
+{% block extra_css %}
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<style>
+    /* Унифицированные стили для детальной страницы фото */
+    .photo-detail-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    .photo-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .photo-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="photo-detail-page">
+    <div class="container">
+        <!-- УНИФИЦИРОВАННАЯ HERO-СЕКЦИЯ -->
+        {% include 'includes/partials/unified_detail_hero.html' with title=photo.title|default:"Фотография" subtitle=photo.author.display_name|add:' • '|add:photo.created_at|naturalday hero_class='gallery-hero' stats=detail_hero_stats show_breadcrumbs=False %}
+        <div class="row" data-aos="fade-up" data-aos-delay="100">
+    <!-- Основная колонка с фото -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+
+                <!-- Контейнер фото -->
+                <div class="text-center mb-3">
+                    {% if photo.image %}
+                        <img src="{{ photo.image.url }}"
+                             alt="{{ photo.title }}"
+                             class="img-fluid rounded"
+                             style="max-width: 100%; height: auto; max-height: 70vh; object-fit: contain;">
+                    {% else %}
+                        <div class="alert alert-warning">{% trans "Изображение отсутствует." %}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Информация и действия -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-3">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="fas fa-user"></i>
+                        <a href="{% url 'gallery:gallery' %}?author={{ photo.author.username }}" class="text-decoration-none text-muted">
+                            <span class="mx-2">{{ photo.author.display_name }}</span>
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="fas fa-calendar-alt"></i> {{ photo.created_at|naturalday }}
+                    </div>
+
+                    <!-- УВЕЛИЧЕННЫЕ КНОПКИ ДЛЯ МОБИЛЬНЫХ -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (SSOT) -->
+                        {% include 'includes/partials/unified_like_button.html' with object_type='photo' object_id=photo.id likes_count=photo.likes.count user_liked=user_liked size='md' style='button' show_count=True %}
+
+                        {% if user.is_authenticated and photo.author == user %}
+                            <a href="{% url 'gallery:photo_edit' photo.pk %}"
+                               class="btn btn-outline-primary"
+                               style="min-height: 44px;">
+                                <i class="fas fa-edit"></i>
+                                <span class="d-none d-sm-inline">{% trans "Редактировать" %}</span>
+                            </a>
+                            <a href="{% url 'gallery:delete' photo.pk %}"
+                               class="btn btn-outline-danger"
+                               style="min-height: 44px;">
+                                <i class="fas fa-trash"></i>
+                                <span class="d-none d-sm-inline">{% trans "Удалить" %}</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if photo.description %}
+                    <h5><i class="fas fa-info-circle"></i> {% trans "Описание" %}:</h5>
+                    <p class="mb-3">{{ photo.description|linebreaksbr }}</p>
+                {% endif %}
+
+                {% if photo.growlog %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-seedling"></i>
+                        {% trans "Связано с гроу-репортом" %}:
+                        <a href="{% url 'growlogs:detail' pk=photo.growlog.pk %}">{{ photo.growlog.title }}</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Комментарии -->
+        {% url 'gallery:add_comment' pk=photo.pk as photo_add_comment_url %}
+        {% include 'includes/partials/unified_comment_section.html' with comments_count=comments_count form_action=photo_add_comment_url id_field=None object_id=photo.id comment_type='photo' placeholder='Напишите ваш комментарий...' top_level_comments=top_level_comments has_more_comments=has_more_comments %}
+
+        {# Навигация между фото и кнопка в галерею #}
+        {% url 'gallery:gallery' as gallery_list_url %}
+        {% with prev_url=None next_url=None list_url=gallery_list_url %}
+            {% include 'includes/partials/unified_detail_footer.html' with list_url=list_url list_label='В галерею' %}
+        {% endwith %}
+    </div>
+
+    <!-- Боковая панель -->
+    <div class="col-lg-4">
+        <!-- Информация об авторе -->
+        <div class="card mb-4" data-aos="fade-up" data-aos-delay="150">
+            <div class="card-body text-center">
+                <img src="{{ photo.author.profile_extra.avatar.url|default:'/static/images/default_avatar.svg' }}"
+                     alt="{{ photo.author.display_name }}"
+                     class="img-fluid rounded-circle mb-3"
+                     style="width: 80px; height: 80px; object-fit: cover;">
+                <h5><a href="{% url 'gallery:gallery' %}?author={{ photo.author.username }}"
+                       class="text-decoration-none">{{ photo.author.display_name }}</a></h5>
+                <p class="text-muted small mb-3">
+                    {% blocktrans with joined_date=photo.author.date_joined|date:"d.m.Y" %}Присоединился: {{ joined_date }}{% endblocktrans %}<br>
+                    {% blocktrans count photos_count=photo.author.photos.count %}Всего {{ photos_count }} фото{% plural %}Всего {{ photos_count }} фото{% endblocktrans %}
+                </p>
+                <a href="{% url 'gallery:gallery' %}?author={{ photo.author.username }}"
+                   class="btn btn-outline-primary"
+                   style="min-height: 44px;">
+                    <i class="fas fa-images"></i> {% trans "Все фото автора" %}
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- AOS Animation -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<!-- Инициализация AOS анимаций -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    AOS.init({
+        duration: 600,
+        easing: 'ease-out',
+        once: true,
+        offset: 50
+    });
+});
+</script>
+
+<!-- Локальный обработчик ответов больше не нужен: используем unified_comment.js -->
+{% endblock %}

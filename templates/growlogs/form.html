@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}
+        Редактирование гроу-репорта
+    {% else %}
+        Создание гроу-репорта
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header growlogs-hero text-white text-center p-4">
+                    <h1 class="hero-title mb-0">
+                        {% if object %}
+                            <i class="fas fa-edit me-2"></i>Редактирование гроу-репорта
+                        {% else %}
+                            <i class="fas fa-plus-circle me-2"></i>Создание нового гроу-репорта
+                        {% endif %}
+                    </h1>
+                    <p class="hero-subtitle mt-2 mb-0">Заполните все поля, чтобы поделиться своим опытом с сообществом</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {{ form|crispy }}
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% if object %}{% url 'growlogs:detail' object.pk %}{% else %}{% url 'growlogs:list' %}{% endif %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn hero-btn">
+                                <i class="fas fa-check me-2"></i>
+                                {% if object %}
+                                    Сохранить изменения
+                                {% else %}
+                                    Опубликовать репорт
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

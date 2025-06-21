@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}Редактирование записи: День {{ object.day }}{% endblock %}
+
+{% block extra_head %}
+<!-- Include SweetAlert2 for beautiful confirmations -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-edit"></i> Редактирование записи: День {{ object.day }}
+                        </h4>
+                        <a href="{% url 'growlogs:detail' pk=growlog.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Назад к репорту
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="editEntryForm">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.stage|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">День</label>
+                                    <input type="text" class="form-control" value="{{ object.day }}" readonly>
+                                    <small class="form-text text-muted">День нельзя изменить</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ form.activities|as_crispy_field }}
+
+                        <h5 class="mt-4 mb-3"><i class="fas fa-thermometer-half"></i> Параметры среды</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.temperature|as_crispy_field }}
+                                {{ form.humidity|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.ph|as_crispy_field }}
+                                {{ form.ec|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <h5 class="mt-4 mb-3"><i class="fas fa-leaf"></i> Данные по растению</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.height|as_crispy_field }}
+                                {{ form.width|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.water_amount|as_crispy_field }}
+                                {{ form.nutrients_used|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'growlogs:detail' pk=growlog.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Отменить
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar with current info -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Информация о записи</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Гроу-репорт:</strong> {{ growlog.title }}</p>
+                    <p><strong>День:</strong> {{ object.day }}</p>
+                    <p><strong>Текущая стадия:</strong> {{ object.get_stage_display }}</p>
+                    <p><strong>Дата создания:</strong> {{ object.created_at|date:"d.m.Y H:i" }}</p>
+                    <p><strong>Последнее изменение:</strong> {{ object.updated_at|date:"d.m.Y H:i" }}</p>
+
+                    <hr>
+
+                    <h6><i class="fas fa-chart-line"></i> Статистика записи</h6>
+                    <p><small class="text-muted">
+                        Лайков: {{ object.likes.count }}<br>
+                        Комментариев: {{ object.comments.count }}
+                    </small></p>
+                </div>
+            </div>
+
+            <!-- Tips for editing -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Советы по заполнению</h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Опишите что сделано в этот день (полив, подкормка, тренировка)</li>
+                            <li><i class="fas fa-check text-success"></i> Добавьте наблюдения о состоянии растения</li>
+                            <li><i class="fas fa-check text-success"></i> Запишите измеренные параметры среды</li>
+                            <li><i class="fas fa-check text-success"></i> Обновите размеры растения если измеряли</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Красивое подтверждение перед отправкой формы
+    document.getElementById('editEntryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Сохранить изменения?',
+            text: 'Вы уверены, что хотите сохранить изменения в записи "День {{ object.day }}"?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-save"></i> Да, сохранить',
+            cancelButtonText: '<i class="fas fa-times"></i> Отменить',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Показываем загрузку
+                Swal.fire({
+                    title: 'Сохранение...',
+                    text: 'Пожалуйста, подождите',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Отправляем форму
+                this.submit();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+<div class="module">
+    <h1>{{ title }}</h1>
+
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="module aligned">
+                {% for field in form %}
+                    <div class="form-row">
+                        <div class="field-box">
+                            {{ field.errors }}
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="help">{{ field.help_text|safe }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </fieldset>
+
+            <div class="submit-row">
+                <input type="submit" class="default" value="{% trans 'Импортировать' %}" />
+                <a href=".." class="button cancel-link">{% trans 'Отмена' %}</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="help-block">
+        <h2>{% trans 'Инструкция по формату CSV' %}</h2>
+        <p>{% trans 'CSV-файл должен иметь следующий формат:' %}</p>
+        <pre>Сидбанк,Сорт,Количество семян,Цена,Количество на складе,Видимость
+FastBuds,Auto Amnesia,1,750,10,Да
+FastBuds,Auto Amnesia,3,1850,5,Да
+Humboldt Seeds,Auto Blue Dream,5,2500,0,Нет</pre>
+        <p>{% trans 'Первая строка - заголовок (будет пропущен)' %}</p>
+        <p>{% trans 'Колонка "Видимость" может содержать: Да, Yes, True, 1 (для видимых товаров) или Нет, No, False, 0 (для скрытых)' %}</p>
+    </div>
+</div>
+{% endblock %}

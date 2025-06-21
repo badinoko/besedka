@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=besedka
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  web:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: besedka_local_web
+    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - redis
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
+
+  # 🚀 Rocket.Chat stack (added for migration)
+  mongo:
+    image: mongo:6
+    command: >
+      mongod --replSet rs0 --oplogSize 128 --bind_ip_all
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"  # Публикуем порт для прямого доступа к MongoDB
+    restart: unless-stopped
+
+  mongo-init-replica:
+    image: mongo:6
+    depends_on:
+      - mongo
+    command: >
+      bash -c "until mongosh --host mongo:27017 --eval 'rs.initiate()' ; do sleep 5 ; done"
+
+  rocketchat:
+    image: rocketchat/rocket.chat:7.7.1
+    depends_on:
+      - mongo-init-replica
+    ports:
+      - "3000:3000"  # Публикуем для разработки
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/rocketchat?replicaSet=rs0
+      - ROOT_URL=http://127.0.0.1:3000
+      - PORT=3000
+    command: node main.js
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongo_data:

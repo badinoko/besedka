@@ -1,0 +1,392 @@
+/* Основные стили проекта "Беседка" - обновлено 06.06.2025 */
+
+/* Переменные */
+:root {
+  --primary-color: #198754;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --info-color: #17a2b8;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --white: #ffffff;
+  --border-radius: 8px;
+  --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Общие стили */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--dark-color);
+  background-color: var(--light-color);
+}
+
+/* Навигация */
+.navbar, .navbar.navbar-expand-lg, .navbar-dark, .navbar.bg-dark, .navbar .container-fluid, .navbar .container {
+  min-height: 58px !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.navbar-brand {
+  font-size: 1.25rem !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  line-height: 1.2 !important;
+  font-weight: bold;
+  color: var(--primary-color) !important;
+}
+
+.navbar .nav-link {
+  font-size: 0.95rem !important;
+  line-height: 1.2 !important;
+  font-family: inherit !important;
+}
+
+body.besedka-admin .navbar .nav-link {
+  font-size: 0.95rem !important;
+}
+
+.nav-link:hover {
+  color: var(--primary-color) !important;
+}
+
+/* Кнопки */
+.btn {
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #157347;
+  border-color: #146c43;
+  transform: translateY(-1px);
+}
+
+/* Карточки */
+.card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  border: 1px solid #dee2e6;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background-color: var(--light-color);
+  border-bottom: 1px solid #dee2e6;
+  font-weight: 600;
+}
+
+/* Формы */
+.form-control {
+  border-radius: var(--border-radius);
+  border: 2px solid #dee2e6;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--dark-color);
+}
+
+/* Алерты */
+.alert {
+  border-radius: var(--border-radius);
+  border: none;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: #d1eddd;
+  color: #0a3622;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Таблицы */
+.table {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.table thead th {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(25, 135, 84, 0.05);
+}
+
+/* Модальные окна */
+.modal-content {
+  border-radius: var(--border-radius);
+  border: none;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+.modal-header {
+  background-color: var(--light-color);
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+/* Пагинация */
+.pagination .page-link {
+  color: var(--primary-color);
+  border-color: #dee2e6;
+  border-radius: var(--border-radius);
+  margin: 0 2px;
+}
+
+.pagination .page-link:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Хлебные крошки */
+.breadcrumb {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: var(--box-shadow);
+}
+
+.breadcrumb-item a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  text-decoration: underline;
+}
+
+/* Спиннеры загрузки */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary-color);
+}
+
+/* Утилиты */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+  border-color: var(--primary-color) !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Стили для форм входа/регистрации */
+.login-form, .signup-form {
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.login-form .card, .signup-form .card {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.login-form .card-header, .signup-form .card-header {
+  background: linear-gradient(135deg, var(--primary-color), #20c997);
+  color: var(--white);
+  text-align: center;
+  border-bottom: none;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Стили для админ-панелей */
+.admin-header {
+  background: linear-gradient(135deg, var(--primary-color), #20c997);
+  color: var(--white);
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: var(--border-radius);
+}
+
+.admin-sidebar {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 1rem;
+}
+
+.admin-content {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+}
+
+/* Стили для статистики */
+.stats-card {
+  background: linear-gradient(135deg, var(--primary-color), #20c997);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--box-shadow);
+}
+
+.stats-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stats-label {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Улучшенные стили для уведомлений */
+.notification-badge {
+  background-color: var(--danger-color);
+  color: var(--white);
+  border-radius: 50%;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+}
+
+.notification-item {
+  border-left: 4px solid var(--primary-color);
+  background-color: var(--light-color);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius);
+  transition: background-color 0.3s ease;
+}
+
+.notification-item:hover {
+  background-color: var(--white);
+}
+
+.notification-item.unread {
+  background-color: rgba(25, 135, 84, 0.05);
+  border-left-color: var(--primary-color);
+}
+
+.notification-item.read {
+  opacity: 0.7;
+  border-left-color: var(--secondary-color);
+}
+
+/* Фирменный зелёный текст (используется вместо .text-primary, чтобы в админке цвет не менялся) */
+.text-site-primary {
+  color: var(--primary-color) !important;
+}
+
+/* Сбрасываем верхний регистр заголовка модалки в админках */
+body.besedka-admin .modal-title {
+  text-transform: none !important;
+}
+
+/* Унифицируем шрифты в модальном окне и навигации даже в админках */
+body.besedka-admin .modal, body.besedka-admin .modal-title, body.besedka-admin .navbar {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/* Единый размер заголовка модалки */
+.modal-title {
+  font-size: 1.25rem !important;
+  line-height: 1.2 !important;
+}
+
+/* Жёстко одинаковая высота навигации */
+.navbar {
+  height: 60px !important;
+  min-height: 60px !important;
+}
+
+/* --- ЕДИНЫЕ СТИЛИ ДЛЯ КАРТОЧЕК В МОДАЛЬНОМ ОКНЕ ЧАТА --- */
+.chat-option-card .card-title {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+}
+.chat-option-card .chat-icon i {
+  font-size: 3rem !important;
+}
+
+/* Сбрасываем верхний регистр заголовков в модальном окне только в админках */
+body.besedka-admin .modal-title,
+body.besedka-admin .chat-option-card .card-title {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}

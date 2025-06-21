@@ -1,0 +1,66 @@
+{% load i18n %}
+
+{# =============================================================== #}
+{# УНИФИЦИРОВАННАЯ ОБЕРТКА КОРЗИНЫ - ДЛЯ SSOT #}
+{# =============================================================== #}
+{# Использует unified_cart_card.html для отображения товаров в корзине #}
+{# =============================================================== #}
+
+{% if unified_card_list %}
+    <div class="unified-cart-container">
+        <!-- Заголовки -->
+        <div class="row cart-header mb-3">
+            <div class="col-md-2"><strong>{% translate "Товар" %}</strong></div>
+            <div class="col-md-4"><strong>{% translate "Описание" %}</strong></div>
+            <div class="col-md-2 text-center"><strong>{% translate "Цена" %}</strong></div>
+            <div class="col-md-2 text-center"><strong>{% translate "Количество" %}</strong></div>
+            <div class="col-md-1 text-end"><strong>{% translate "Сумма" %}</strong></div>
+            <div class="col-md-1 text-center"><strong>{% translate "Действия" %}</strong></div>
+        </div>
+
+        <!-- Товары в корзине -->
+        {% for item in unified_card_list %}
+            {% include 'includes/partials/unified_cart_card.html' with item=item %}
+        {% endfor %}
+    </div>
+{% else %}
+    <!-- Пустая корзина -->
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">{% translate "Ваша корзина пуста!" %}</h4>
+        <p class="text-muted mb-4">
+            {% translate "Похоже, вы еще ничего не добавили в корзину. Перейдите в каталог, чтобы найти интересные товары." %}
+        </p>
+        <a href="{% url 'store:catalog' %}" class="btn btn-primary">
+            <i class="fas fa-shopping-cart me-2"></i>{% translate "Перейти в каталог" %}
+        </a>
+    </div>
+{% endif %}
+
+<style>
+.unified-cart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.cart-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    color: #495057;
+}
+
+@media (max-width: 768px) {
+    .cart-header {
+        display: none;
+    }
+
+    .cart-item-row {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        padding: 1rem !important;
+    }
+}
+</style>

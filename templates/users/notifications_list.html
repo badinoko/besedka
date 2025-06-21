@@ -1,0 +1,449 @@
+{% extends "users/cabinet_base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Уведомления" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=20250615040">
+<link rel="stylesheet" href="{% static 'css/unified_styles.css' %}?v=202506130100">
+<link rel="stylesheet" href="{% static 'css/unified_hero_buttons.css' %}?v=202506120400">
+<link rel="stylesheet" href="{% static 'css/unified_filters_and_hero.css' %}?v=202506120300">
+<style>
+/* Специализированные стили для плиток уведомлений */
+.notifications-hero {
+    background: linear-gradient(135deg, #6f42c1 0%, #563d7c 100%);
+    color: white;
+    padding: 1.25rem 0;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.notification-tile {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 1);
+}
+
+.notification-tile.unread {
+    border-left: 4px solid #007bff;
+    background: rgba(173, 216, 230, 0.1);
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.notification-icon.system { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+.notification-icon.personal { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
+.notification-icon.global { background: linear-gradient(135deg, #6f42c1, #563d7c); color: white; }
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #2d3748;
+}
+
+.notification-message {
+    color: #4a5568;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.notification-meta {
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+.notification-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Компактные кнопки массовых действий */
+.bulk-actions {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.bulk-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bulk-actions-right {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.bulk-action-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bulk-action-btn:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.bulk-action-btn.btn-primary {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.bulk-action-btn.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.notifications-container {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.load-more-container {
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
+.load-more-btn {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #6f42c1, #563d7c);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.load-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+}
+
+/* SSOT-СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ */
+.notification-tile {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+    border-radius: 1rem !important;
+    transition: all 0.3s ease !important;
+    background: rgba(255,255,255,0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+}
+
+.notification-tile:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
+}
+
+.notification-tile.unread {
+    background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(240,248,255,0.95)) !important;
+    border-left: 4px solid #007bff !important;
+}
+
+/* УВЕЛИЧЕННЫЕ ЧЕКБОКСЫ ДЛЯ МОБИЛЬНЫХ */
+.notification-checkbox {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    cursor: pointer;
+    margin-right: 1rem !important;
+    transform: scale(1.3) !important;
+}
+
+.notification-checkbox:checked {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+}
+
+/* УБИРАЕМ ДВОЙНУЮ ПРОКРУТКУ ПО ТРЕБОВАНИЮ ПОЛЬЗОВАТЕЛЯ */
+.notifications-container {
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
+/* МАССОВЫЕ ДЕЙСТВИЯ В СТИЛЕ SSOT */
+.bulk-action-btn {
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.bulk-action-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+}
+</style>
+{% endblock %}
+
+{% block cabinet_main_content %}
+<!-- Hero-секция с статистикой -->
+<section class="notifications-hero glass-effect" data-aos="fade-in" data-aos-duration="600">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h1 data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-bell me-2"></i>{% trans "Уведомления" %}
+                </h1>
+                <p class="lead" data-aos="fade-up" data-aos-delay="200">
+                    {% trans "Управление вашими уведомлениями" %}
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center">
+            <!-- Статистика слева -->
+            <div class="col-lg-6">
+                <div class="hero-stats d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
+                    {% for stat in hero_context.stats_list %}
+                    <div class="hero-stat" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:2 }}00">
+                        <div class="hero-stat-value">{{ stat.count|default:0 }}</div>
+                        <div class="hero-stat-label">{{ stat.label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Кнопки действий справа -->
+            <div class="col-lg-6">
+                <div class="hero-actions d-flex flex-wrap justify-content-center justify-content-lg-end gap-3">
+                    <a href="{% url 'users:profile' %}"
+                       class="hero-btn hero-btn-secondary"
+                       data-aos="fade-left" data-aos-delay="600">
+                        <i class="fas fa-arrow-left me-2"></i>{% trans "В кабинет" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Фильтры уведомлений в стандарте SSOT -->
+<div class="filters-container glass-effect" data-aos="fade-up" data-aos-delay="100">
+    <div class="hero-filters d-flex flex-wrap gap-2 justify-content-center">
+        <button class="hero-filter-btn active" data-filter="all" data-aos="zoom-in" data-aos-delay="200">
+            <i class="fas fa-list me-2"></i>Все
+        </button>
+        <button class="hero-filter-btn" data-filter="unread" data-aos="zoom-in" data-aos-delay="250">
+            <i class="fas fa-bell me-2"></i>Непрочитанные
+        </button>
+        <button class="hero-filter-btn" data-filter="system" data-aos="zoom-in" data-aos-delay="300">
+            <i class="fas fa-cog me-2"></i>Системные
+        </button>
+        <button class="hero-filter-btn" data-filter="personal" data-aos="zoom-in" data-aos-delay="350">
+            <i class="fas fa-user me-2"></i>Личные
+        </button>
+        <button class="hero-filter-btn" data-filter="orders" data-aos="zoom-in" data-aos-delay="400">
+            <i class="fas fa-shopping-cart me-2"></i>Заказы
+        </button>
+    </div>
+</div>
+
+<!-- Компактные кнопки массовых действий НАД плитками -->
+<div class="bulk-actions" data-aos="fade-up" data-aos-delay="100">
+    <!-- ДОБАВЛЯЕМ CSRF ТОКЕН ДЛЯ AJAX ЗАПРОСОВ -->
+    {% csrf_token %}
+    <div class="bulk-actions-left">
+        <label class="form-check-label">
+            <input type="checkbox" id="select-all" class="form-check-input me-2">
+            {% trans "Выбрать все" %}
+        </label>
+        <span class="text-muted small" id="selected-count">
+            {% trans "Выберите уведомления для массовых операций" %}
+        </span>
+    </div>
+    <div class="bulk-actions-right">
+        <button type="button" class="bulk-action-btn hero-btn-secondary" id="mark-all-read">
+            <i class="fas fa-check-double me-1"></i>{% trans "Прочитать все" %}
+        </button>
+        <button type="button" class="bulk-action-btn btn-danger" id="delete-selected" disabled>
+            <i class="fas fa-trash me-1"></i>{% trans "Удалить" %}
+        </button>
+    </div>
+</div>
+
+<!-- Контейнер с плитками уведомлений -->
+<div class="notifications-container" data-aos="fade-up" data-aos-delay="200">
+    {% if notifications %}
+        {% for notification in notifications %}
+            <div class="notification-tile {% if not notification.is_read %}unread{% endif %}"
+                 data-notification-id="{{ notification.id }}"
+                 data-action-url="{{ notification.get_action_url|default:'#' }}">
+
+                <input type="checkbox" class="notification-checkbox me-2" value="{{ notification.id }}">
+
+                <div class="notification-icon {% if notification.notification_type == 'system' %}system{% else %}personal{% endif %}">
+                    {% if notification.notification_type == 'system' %}
+                        <i class="fas fa-cog"></i>
+                    {% elif notification.notification_type == 'like' %}
+                        <i class="fas fa-heart"></i>
+                    {% elif notification.notification_type == 'comment' %}
+                        <i class="fas fa-comment"></i>
+                    {% elif notification.notification_type == 'follow' %}
+                        <i class="fas fa-user-plus"></i>
+                    {% elif notification.notification_type == 'mention' %}
+                        <i class="fas fa-at"></i>
+                    {% elif notification.notification_type == 'order' %}
+                        <i class="fas fa-shopping-cart"></i>
+                    {% elif notification.notification_type == 'chat_message' %}
+                        <i class="fas fa-comments"></i>
+                    {% else %}
+                        <i class="fas fa-bell"></i>
+                    {% endif %}
+                </div>
+
+                <div class="notification-content">
+                    <div class="notification-title">
+                        {{ notification.get_notification_type_display_verbose }}
+                    </div>
+                    <div class="notification-message">
+                        {{ notification.message }}
+                    </div>
+                    <div class="notification-meta">
+                        <i class="fas fa-clock me-1"></i>{{ notification.created_at|timesince }} {% trans "назад" %}
+                        {% if not notification.is_read %}
+                            <span class="badge bg-primary ms-2">{% trans "Новое" %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Убраны индивидуальные кнопки по требованию пользователя -->
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "У вас пока нет уведомлений" %}</h5>
+            <p class="text-muted">{% trans "Когда появятся новые уведомления, они будут отображаться здесь" %}</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- УНИВЕРСАЛЬНАЯ ПАГИНАЦИЯ SSOT -->
+{% include 'includes/partials/_unified_pagination.html' with page_obj=page_obj current_filter=current_filter %}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/unified_animations.js' %}"></script>
+<script src="{% static 'js/unified_notifications.js' %}?v=202506130200"></script>
+<script src="{% static 'js/notifications.js' %}?v=202506140400"></script>
+
+<script>
+// AJAX обработчик для фильтрации уведомлений
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationsContainer = document.querySelector('.notifications-container');
+
+    // Используем делегирование событий для кнопок фильтрации
+    document.addEventListener('click', function(e) {
+        const filterButton = e.target.closest('.hero-filter-btn');
+        if (!filterButton) return;
+
+        e.preventDefault();
+
+        const filter = filterButton.dataset.filter;
+        const ajaxUrl = '{% url "users:notification_ajax" %}';
+
+        // Обновляем активную кнопку (находим заново каждый раз)
+        document.querySelectorAll('.hero-filter-btn').forEach(btn => btn.classList.remove('active'));
+        filterButton.classList.add('active');
+
+        // Показываем загрузку
+        notificationsContainer.innerHTML = '<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+        // AJAX запрос
+        fetch(`${ajaxUrl}?filter=${filter}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Обновляем содержимое контейнера уведомлений
+                    notificationsContainer.innerHTML = data.notifications_html;
+
+                    // ИСПРАВЛЕНО: Ищем элемент пагинации заново каждый раз
+                    const currentPaginationContainer = document.querySelector('.pagination');
+                    if (data.pagination_html) {
+                        if (currentPaginationContainer) {
+                            currentPaginationContainer.outerHTML = data.pagination_html;
+                        } else {
+                            // Если пагинации не было, добавляем её после контейнера уведомлений
+                            notificationsContainer.insertAdjacentHTML('afterend', data.pagination_html);
+                        }
+                    } else if (currentPaginationContainer) {
+                        currentPaginationContainer.style.display = 'none';
+                    }
+
+                    // Обновляем URL без перезагрузки страницы
+                    const url = new URL(window.location);
+                    url.searchParams.delete('page'); // Сбрасываем страницу при фильтрации
+                    if (filter === 'all') {
+                        url.searchParams.delete('filter');
+                    } else {
+                        url.searchParams.set('filter', filter);
+                    }
+                    window.history.pushState({}, '', url);
+
+                    console.log('✅ AJAX фильтрация выполнена успешно для фильтра:', filter);
+
+                } else {
+                    notificationsContainer.innerHTML = '<div class="alert alert-danger">Ошибка загрузки</div>';
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка AJAX:', error);
+                notificationsContainer.innerHTML = '<div class="alert alert-danger">Ошибка сети</div>';
+            });
+    });
+});
+</script>
+{% endblock %}

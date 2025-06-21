@@ -1,0 +1,89 @@
+/* Стили для админки магазина */
+
+/* Основные цвета и переменные */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --text-color: #ecf0f1;
+    --link-color: #3498db;
+    --link-hover-color: #2980b9;
+    --success-color: #27ae60;
+    --warning-color: #f1c40f;
+    --error-color: #e74c3c;
+}
+
+/* Стили для карточек в админке */
+.app-magicbeans_store .module {
+    background-color: var(--primary-color);
+    border: 1px solid var(--secondary-color);
+    border-radius: 4px;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.app-magicbeans_store .module h2,
+.app-magicbeans_store .module caption {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    padding: 8px 15px;
+    margin: -15px -15px 15px -15px;
+    border-radius: 4px 4px 0 0;
+}
+
+/* Стили для ссылок */
+.app-magicbeans_store .module a:link,
+.app-magicbeans_store .module a:visited {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+.app-magicbeans_store .module a:hover {
+    color: var(--link-hover-color);
+    text-decoration: underline;
+}
+
+/* Стили для текста */
+.app-magicbeans_store .module p,
+.app-magicbeans_store .module label,
+.app-magicbeans_store .module .help {
+    color: var(--text-color);
+}
+
+/* Стили для кнопок действий */
+.app-magicbeans_store .addlink,
+.app-magicbeans_store .changelink,
+.app-magicbeans_store .deletelink {
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-right: 5px;
+    color: var(--text-color) !important;
+}
+
+.app-magicbeans_store .addlink {
+    background-color: var(--success-color);
+}
+
+.app-magicbeans_store .changelink {
+    background-color: var(--warning-color);
+}
+
+.app-magicbeans_store .deletelink {
+    background-color: var(--error-color);
+}
+
+/* Стили для списков */
+.app-magicbeans_store .module ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.app-magicbeans_store .module ul li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.app-magicbeans_store .module ul li:last-child {
+    border-bottom: none;
+}

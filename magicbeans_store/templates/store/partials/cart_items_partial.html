@@ -1,0 +1,14 @@
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+
+{% if cart_items %}
+    {% for item in cart_items %}
+        <div class="cart-item-row" data-item-id="{{ item.id }}">
+            <p>{{ item.stock_item.strain.name }} ({{ item.stock_item.get_packing_display }}) - {{ item.quantity }} x {{ item.price|intcomma }} {{ CURRENCY_SYMBOL }}</p>
+            <p>{% trans "Subtotal" %}: {{ item.subtotal|intcomma }} {{ CURRENCY_SYMBOL }}</p>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>{% trans "Your cart is empty." %}</p>
+{% endif %}

@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}Регистрация для полного доступа - Беседка{% endblock %}
+
+{% block extra_css %}
+<style>
+    .access-denied-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .access-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+        padding: 50px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .access-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        color: white;
+        font-size: 3rem;
+    }
+
+    .access-title {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .access-subtitle {
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .benefits-section {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 40px;
+        margin: 40px 0;
+        text-align: left;
+    }
+
+    .benefits-title {
+        color: #2E7D32;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .benefit-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 5px;
+    }
+
+    .benefit-content h5 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+    }
+
+    .benefit-content p {
+        color: #495057;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .cta-section {
+        margin-top: 40px;
+    }
+
+    .register-btn {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 18px 40px;
+        border-radius: 35px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 6px 20px rgba(76,175,80,0.3);
+        margin-right: 20px;
+    }
+
+    .register-btn:hover {
+        background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(76,175,80,0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .login-btn {
+        background: transparent;
+        color: #4CAF50;
+        padding: 18px 40px;
+        border: 2px solid #4CAF50;
+        border-radius: 35px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+        background: #4CAF50;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-3px);
+    }
+
+    .back-link {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .back-link a {
+        color: #6c757d;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+        color: #4CAF50;
+        text-decoration: underline;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .access-card {
+            padding: 30px 20px;
+            margin: 0 15px;
+        }
+
+        .access-title {
+            font-size: 2rem;
+        }
+
+        .benefits-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .register-btn,
+        .login-btn {
+            display: block;
+            margin: 10px auto;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="access-denied-page">
+    <div class="container">
+        <div class="access-card">
+            <div class="access-icon">
+                <i class="fas fa-seedling"></i>
+            </div>
+
+            <h1 class="access-title">
+                Добро пожаловать в сообщество гроверов!
+            </h1>
+
+            <p class="access-subtitle">
+                Для просмотра полной информации о {{ section_name|default:"этом разделе" }} необходимо зарегистрироваться на нашей платформе.
+                Это откроет для вас мир возможностей для изучения и обмена опытом выращивания.
+            </p>
+
+            <div class="benefits-section">
+                <h2 class="benefits-title">
+                    <i class="fas fa-star text-warning"></i>
+                    Что даст вам членство в нашем сообществе
+                </h2>
+
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h5>Полный доступ к гроурепортам</h5>
+                            <p>Изучайте детальные отчеты опытных гроверов, их техники и результаты</p>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h5>Создание собственных репортов</h5>
+                            <p>Документируйте свой процесс выращивания и делитесь опытом с сообществом</p>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h5>Общение в чате</h5>
+                            <p>Задавайте вопросы, получайте советы и помогайте другим гроверам</p>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h5>Галерея сообщества</h5>
+                            <p>Загружайте фотографии своих растений и любуйтесь работами других</p>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h5>Доступ к магазину</h5>
+                            <p>Покупайте качественные семена от проверенных сидбанков</p>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h5>Персональные уведомления</h5>
+                            <p>Получайте уведомления о новых комментариях и активности</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-muted">
+                        <i class="fas fa-lock me-2"></i>
+                        Регистрация абсолютно <strong>бесплатна</strong> и займет всего минуту
+                    </p>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <a href="{% url 'account_signup' %}?next={{ request.path }}" class="register-btn">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Зарегистрироваться бесплатно
+                </a>
+
+                <a href="{% url 'account_login' %}?next={{ request.path }}" class="login-btn">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Уже есть аккаунт? Войти
+                </a>
+            </div>
+
+            <div class="back-link">
+                <a href="{% url 'growlogs:list' %}">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Вернуться к списку гроурепортов
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% load i18n humanize %}
+{% comment "depth-info" %}{% endcomment %}
+{% with current_level=level|default:0 %}
+<div class="comment d-flex flex-column gap-2 mb-3" id="comment-{{ comment.id }}" data-aos="fade-up">
+    <div class="d-flex align-items-center gap-2">
+        <img src="{{ comment.author.profile.avatar.url|default:'/static/images/default_avatar.svg' }}" class="rounded-circle" style="width:36px;height:36px;object-fit:cover" alt="avatar">
+        <div class="d-flex flex-column">
+            <span class="comment-author fw-bold">{{ comment.author.get_role_icon }} {{ comment.author.display_name }}</span>
+            <small class="comment-date text-muted">{{ comment.created_at|naturaltime }}</small>
+        </div>
+    </div>
+    <div class="comment-content">{{ comment.text|linebreaks }}</div>
+    <div class="comment-actions d-flex gap-3 mt-1">
+        {% if user.is_authenticated and current_level < 2 %}
+        <button type="button" class="reply-btn btn btn-sm btn-outline-secondary" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.display_name }}">
+            <i class="fas fa-reply me-1"></i>{% trans "Ответить" %}
+        </button>
+        {% endif %}
+    </div>
+
+    {# Вложенные ответы (показываем только если не достигнут предел вложенности) #}
+    {% if comment.replies.exists and current_level < 2 %}
+    <div class="replies ms-4 mt-2">
+        {% for reply in comment.replies.all %}
+            {% include 'includes/partials/unified_comment.html' with comment=reply level=current_level|add:'1' %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endwith %}

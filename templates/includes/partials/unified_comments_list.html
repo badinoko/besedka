@@ -1,0 +1,10 @@
+{% if top_level_comments %}
+    {% for comment in top_level_comments %}
+        {% include 'includes/partials/unified_comment.html' with comment=comment level=0 %}
+    {% endfor %}
+{% else %}
+    <div class="text-center text-muted py-4">
+        <i class="fas fa-comments fa-2x mb-3"></i>
+        <p>{% trans "Комментариев пока нет. Будьте первым!" %}</p>
+    </div>
+{% endif %}

@@ -1,0 +1,75 @@
+{% load i18n humanize static %}
+
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead class="table-light">
+            <tr>
+                <th scope="col" style="width: 55%;">{% trans "Товар" %}</th>
+                <th scope="col" style="width: 15%;" class="text-center">{% trans "Цена" %}</th>
+                <th scope="col" style="width: 15%;" class="text-center">{% trans "Количество" %}</th>
+                <th scope="col" style="width: 10%;" class="text-end">{% trans "Сумма" %}</th>
+                <th scope="col" style="width: 5%;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart.items.all %}
+            <tr id="cart-item-{{ item.id }}">
+                <td>
+                    <div class="d-flex align-items-center">
+                        {% if item.stock_item.strain.get_first_photo_url %}
+                            <img src="{{ item.stock_item.strain.get_first_photo_url }}" alt="{{ item.stock_item.strain.name }}" class="img-fluid rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/default_seed_placeholder.png' %}" alt="Default image" class="img-fluid rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">
+                                <a href="{{ item.stock_item.strain.get_absolute_url }}" class="text-decoration-none">{{ item.stock_item.strain.name }}</a>
+                            </h6>
+                            <small class="text-muted">
+                                {% if item.stock_item.get_packing_display %}
+                                    {{ item.stock_item.get_packing_display }}
+                                {% else %}
+                                    {% trans "Стандартная упаковка" %}
+                                {% endif %}
+                                {% if item.stock_item.strain.seedbank %}
+                                    - {{ item.stock_item.strain.seedbank.name }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="price">{{ item.price|floatformat:2 }}&nbsp;₽</span>
+                </td>
+                <td class="text-center">
+                    <form method="post" action="{% url 'store:update_cart' %}" class="update-quantity-form d-inline-flex align-items-center">
+                        {% csrf_token %}
+                        <input type="hidden" name="cart_item_id" value="{{ item.id }}">
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.stock_item.quantity_in_stock_for_cart }}" class="form-control form-control-sm quantity-input" style="width: 70px;">
+                        {# Реальное максимальное значение будет ограничено на сервере, это для UX #}
+                        {# <button type="submit" name="action" value="update" class="btn btn-sm btn-outline-secondary ms-1">{% trans "Обновить" %}</button> #}
+                    </form>
+                </td>
+                <td class="text-end">
+                    <span class="total-item-price">{{ item.total_price|floatformat:2 }}&nbsp;₽</span>
+                </td>
+                <td class="text-end">
+                    <form method="post" action="{% url 'store:remove_from_cart' %}" class="remove-item-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="cart_item_id" value="{{ item.id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="{% trans 'Удалить товар' %}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if not cart.items.exists %}
+<div class="alert alert-info text-center my-3" role="alert">
+    {% trans "Ваша корзина пуста." %}
+</div>
+{% endif %}

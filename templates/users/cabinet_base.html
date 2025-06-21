@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n static crispy_forms_tags %}
+
+{% block title %}{{ page_title|default:_("Личный кабинет") }} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  /* Стили для cabinet-layout и cabinet-content могут быть упрощены или удалены, если aside убран */
+  .cabinet-layout {
+    /* display: flex; */ /* Убрано для отображения в один столбец */
+    /* gap: 1.5rem; */
+  }
+  .cabinet-content {
+    flex-grow: 1;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-4">
+    <div class="cabinet-layout">
+        {# <aside class="cabinet-nav"> #}
+            {# ... код боковой навигации закомментирован или удален ... #}
+        {# </aside> #}
+
+        <main class="cabinet-content w-100"> {# Добавлен w-100 для занятия всей ширины #}
+            {% block cabinet_main_content %}
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Привет, {{ user.display_name }}!</h4>
+                        <p>Это ваш личный кабинет.</p>
+                    </div>
+                </div>
+            {% endblock cabinet_main_content %}
+        </main>
+    </div>
+</div>
+{% endblock %}

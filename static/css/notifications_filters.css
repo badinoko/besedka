@@ -1,0 +1,62 @@
+/* ========== СТИЛИ ДЛЯ ФИЛЬТРОВ УВЕДОМЛЕНИЙ ========== */
+.filters-container {
+    margin-bottom: 1.5rem;
+}
+
+.hero-filters {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: #495057;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #6f42c1;
+    color: #6f42c1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.2);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #6f42c1, #563d7c);
+    border-color: #6f42c1;
+    color: white;
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+}
+
+.filter-btn.active:hover {
+    background: linear-gradient(135deg, #563d7c, #6f42c1);
+    transform: translateY(-2px);
+}
+
+/* Анимация для показа/скрытия плиток */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Улучшенные стили плиток уведомлений */
+.notification-tile {
+    animation: fadeIn 0.3s ease;
+}
+
+.notification-tile[style*="display: none"] {
+    animation: none;
+}

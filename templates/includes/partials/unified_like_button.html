@@ -1,0 +1,280 @@
+{% comment %}
+Унифицированная кнопка лайков для всех разделов проекта (SSOT v21.5)
+КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ v21.5 - ПРИНУДИТЕЛЬНО БЕЛАЯ ИКОНКА ПАЛЬЦА ВВЕРХ!
+
+ПАРАМЕТРЫ:
+- object_type: тип объекта ('photo', 'growlog', 'post')
+- object_id: ID объекта
+- user_liked: лайкнул ли текущий пользователь (опционально)
+- size: размер иконки ('sm', 'md', 'lg', по умолчанию 'md')
+
+✅ КРИТИЧЕСКИЕ ОСОБЕННОСТИ v21.5:
+- ✅ КРАСНАЯ КНОПКА С БЕЛОЙ ИКОНКОЙ ПАЛЬЦА ВВЕРХ
+- ✅ ПРИНУДИТЕЛЬНЫЕ !important СТИЛИ ДЛЯ БЕЛОЙ ИКОНКИ
+- ✅ При повторном нажатии показывается уведомление
+- ✅ Счетчик обновляется только один раз
+- ✅ Автор не может лайкнуть свой контент
+- ✅ Круглая кнопка 50x50px с объемным дизайном и тенями
+
+ИСПОЛЬЗОВАНИЕ:
+{% include 'includes/partials/unified_like_button.html' with object_type='photo' object_id=photo.id user_liked=user_liked %}
+{% include 'includes/partials/unified_like_button.html' with object_type='growlog' object_id=growlog.id user_liked=user_liked %}
+{% include 'includes/partials/unified_like_button.html' with object_type='post' object_id=post.id user_liked=user_liked %}
+{% endcomment %}
+
+{% load static %}
+
+<div class="unified-like-component like-size-{{ size|default:'md' }} like-style-{{ style|default:'button' }}">
+    {% if user.is_authenticated %}
+        <button type="button"
+                class="unified-like-btn {% if user_liked %}liked{% endif %}"
+                data-like-object-type="{{ object_type }}"
+                data-like-object-id="{{ object_id }}"
+                data-like-action="like"
+                {% if object_type == 'post' %}data-reaction-type="like"{% endif %}
+                title="{% if user_liked %}Лайк уже поставлен (нажмите для повтора){% else %}Лайкнуть{% endif %}">
+
+            <div class="like-icon">
+                {# ✅ КРАСИВАЯ ИКОНКА ПАЛЕЦ ВВЕРХ #}
+                <i class="fas fa-thumbs-up"></i>
+            </div>
+        </button>
+
+    {% else %}
+        {# Для неавторизованных пользователей кнопка скрыта #}
+        <div class="unified-like-display" style="opacity: 0.5; pointer-events: none;">
+            <div class="like-icon">
+                <i class="fas fa-thumbs-up"></i>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* ✅ КРАСИВАЯ КРАСНАЯ ОБЪЕМНАЯ КНОПКА v21.1 - ЭТАЛОН ДИЗАЙНА */
+.unified-like-component {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.unified-like-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* ✅ КРАСНЫЙ ГРАДИЕНТНЫЙ ФОН - ОБЪЕМНАЯ КРАСНАЯ КНОПКА */
+    background: linear-gradient(135deg,
+        #dc3545 0%,
+        #c82333 50%,
+        #bd2130 100%);
+    border: 3px solid #dc3545;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.75rem;
+    border-radius: 50%;
+    /* ✅ БЕЛАЯ ИКОНКА НА КРАСНОМ ФОНЕ */
+    color: #ffffff;
+    width: 50px;
+    height: 50px;
+    /* ✅ УСИЛЕННОЕ ОБЪЕМНОЕ ЗАТЕНЕНИЕ для 3D-эффекта */
+    box-shadow:
+        0 15px 35px rgba(220, 53, 69, 0.45),
+        0 8px 20px rgba(220, 53, 69, 0.35),
+        0 4px 8px rgba(0, 0, 0, 0.25),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(15px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ✅ КРАСИВЫЙ эффект при наведении - умеренное всплытие */
+.unified-like-btn:hover {
+    border-color: #bd2130;
+    color: #ffffff;
+    transform: translateY(-4px) scale(1.05);
+    box-shadow:
+        0 15px 35px rgba(220, 53, 69, 0.4),
+        0 8px 20px rgba(220, 53, 69, 0.3),
+        0 4px 10px rgba(0, 0, 0, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg,
+        #e74c3c 0%,
+        #dc3545 50%,
+        #c82333 100%);
+}
+
+/* ✅ ВСЕГДА ОДИНАКОВАЯ КНОПКА - даже после лайка */
+.unified-like-btn.liked {
+    /* Точно такие же стили как у обычной кнопки */
+    background: linear-gradient(135deg,
+        #dc3545 0%,
+        #c82333 50%,
+        #bd2130 100%);
+    border: 3px solid #dc3545;
+    color: #ffffff !important;
+    box-shadow:
+        0 15px 35px rgba(220, 53, 69, 0.45),
+        0 8px 20px rgba(220, 53, 69, 0.35),
+        0 4px 8px rgba(0, 0, 0, 0.25),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Состояние обработки - единственное исключение */
+.unified-like-btn.processing {
+    pointer-events: none;
+    animation: processingPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes processingPulse {
+    0%, 100% {
+        transform: scale(0.95);
+        box-shadow:
+            0 8px 20px rgba(220, 53, 69, 0.3),
+            0 4px 10px rgba(220, 53, 69, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow:
+            0 15px 35px rgba(220, 53, 69, 0.4),
+            0 8px 20px rgba(220, 53, 69, 0.3);
+    }
+}
+
+/* ✅ МОЩНЫЙ эффект нажатия - ДЛЯ ВСЕХ КНОПОК */
+.unified-like-btn:active {
+    transform: translateY(-6px) scale(1.02);
+    transition: all 0.1s ease;
+    box-shadow:
+        0 15px 30px rgba(220, 53, 69, 0.4),
+        0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ✅ КРАСИВЫЙ блеск при наведении - ДЛЯ ВСЕХ КНОПОК */
+.unified-like-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        rgba(255, 255, 255, 0.7),
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    transition: left 0.8s ease;
+    border-radius: inherit;
+    opacity: 0;
+}
+
+.unified-like-btn:hover::before {
+    left: 150%;
+    opacity: 1;
+}
+
+/* Добавляем эффект ряби при клике - ДЛЯ ВСЕХ КНОПОК */
+.unified-like-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.unified-like-btn:active::after {
+    width: 120%;
+    height: 120%;
+}
+
+/* Размеры по размерам */
+.like-size-sm .unified-like-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0.5rem;
+}
+
+.like-size-sm .like-icon i {
+    font-size: 16px;
+}
+
+.unified-like-btn .like-icon i {
+    font-size: 20px;
+    color: inherit;
+}
+
+.like-size-lg .unified-like-btn {
+    width: 60px;
+    height: 60px;
+    padding: 1rem;
+}
+
+.like-size-lg .like-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Стили для анимации загрузки */
+.unified-like-btn .animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive стили */
+@media (max-width: 768px) {
+    .unified-like-btn {
+        width: 45px;
+        height: 45px;
+        padding: 0.65rem;
+    }
+
+    .unified-like-btn:hover {
+        transform: translateY(-8px) scale(1.05);
+    }
+}
+
+/* ✅ ПРИНУДИТЕЛЬНО БЕЛАЯ ИКОНКА ВО ВСЕХ СОСТОЯНИЯХ */
+.unified-like-btn .like-icon i,
+.unified-like-btn.liked .like-icon i,
+.unified-like-btn:hover .like-icon i,
+.unified-like-btn:active .like-icon i {
+    color: #ffffff !important;
+    font-size: 20px !important;
+}
+
+/* ✅ ДОПОЛНИТЕЛЬНОЕ ПРИНУЖДЕНИЕ - БЕЛАЯ ИКОНКА ПАЛЬЦА ВВЕРХ */
+.unified-like-btn i.fa-thumbs-up,
+.unified-like-btn.liked i.fa-thumbs-up,
+.unified-like-btn:hover i.fa-thumbs-up,
+.unified-like-btn:active i.fa-thumbs-up,
+.unified-like-btn .fa-thumbs-up {
+    color: #ffffff !important;
+    background: none !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ✅ УБИРАЕМ ЛЮБЫЕ ДРУГИЕ ЦВЕТА ИЗ ИКОНКИ */
+.unified-like-btn * {
+    color: #ffffff !important;
+}
+</style>
+
+{# unified_like_handler.js подключен глобально в base.html #}

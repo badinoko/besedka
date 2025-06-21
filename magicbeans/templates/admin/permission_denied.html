@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h1>{{ title }}</h1>
+        <div class="errornote">
+            <p>{{ message }}</p>
+        </div>
+        <p>{% trans "Для доступа к этой странице требуются дополнительные права доступа." %}</p>
+        <p>{% trans "Обратитесь к администратору сайта для получения необходимых прав." %}</p>
+        <a href="{% url 'admin:index' %}" class="button">{% trans "Вернуться на главную" %}</a>
+    </div>
+</div>
+{% endblock %}

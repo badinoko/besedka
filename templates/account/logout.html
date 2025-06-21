@@ -1,0 +1,94 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Выход" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- Автоматически показываем модальное окно -->
+            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title" id="logoutModalLabel">
+                                <i class="fas fa-sign-out-alt me-2"></i>{% trans "Подтверждение выхода" %}
+                            </h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-question-circle text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6>{% trans "Вы действительно хотите выйти из системы?" %}</h6>
+                            <p class="text-muted mb-0">{% trans "Вы сможете войти снова в любое время" %}</p>
+                        </div>
+                        <div class="modal-footer justify-content-center">
+                            <form method="post" action="{% url 'account_logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if redirect_field_value %}
+                                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                                {% endif %}
+                                <button type="submit" class="btn btn-danger me-2">
+                                    <i class="fas fa-sign-out-alt me-1"></i>{% trans "Да, выйти" %}
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-secondary" onclick="goBack()">
+                                <i class="fas fa-arrow-left me-1"></i>{% trans "Отмена" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fallback контент для случаев без JS -->
+            <noscript>
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h4 class="mb-0">
+                            <i class="fas fa-sign-out-alt me-2"></i>{% trans "Подтверждение выхода" %}
+                        </h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <p>{% trans "Вы действительно хотите выйти из системы?" %}</p>
+                        <form method="post" action="{% url 'account_logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            {% if redirect_field_value %}
+                                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                            {% endif %}
+                            <button type="submit" class="btn btn-danger me-2">
+                                <i class="fas fa-sign-out-alt me-1"></i>{% trans "Да, выйти" %}
+                            </button>
+                        </form>
+                        <a href="{% url 'news:home' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>{% trans "Отмена" %}
+                        </a>
+                    </div>
+                </div>
+            </noscript>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматически показываем модальное окно
+    const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
+    logoutModal.show();
+
+    // Обработка закрытия модального окна
+    document.getElementById('logoutModal').addEventListener('hidden.bs.modal', function () {
+        goBack();
+    });
+});
+
+function goBack() {
+    // Возвращаемся на предыдущую страницу или на главную
+    if (document.referrer && document.referrer !== window.location.href) {
+        window.history.back();
+    } else {
+                        window.location.href = "{% url 'news:home' %}";
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1500 @@
+/* 🎨 УНИФИЦИРОВАННЫЕ СТИЛИ HERO-КНОПОК ДЛЯ ВСЕХ РАЗДЕЛОВ ПРОЕКТА "БЕСЕДКА" */
+/* v26.0 - ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Центрирование счетчиков + карточки гроурепортов (ИЮНЬ 2025) */
+/* v23.0 - ФИНАЛЬНАЯ ВЕРСИЯ: Синхронизация скоростей анимации (ВОССТАНОВЛЕНО) */
+/* v20.0 - ФИНАЛЬНАЯ ВЕРСИЯ: Постоянная анимация + Настоящий 3D-эффект */
+/* v21.0 - ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Идеальный блик на вторичной кнопке */
+/* v22.0 - ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Бесшовная анимация блика */
+/* v25.0 - ФИНАЛЬНАЯ КОРРЕКЦИЯ: Скорость блика замедлена до 8с для идеальной плавности */
+
+:root {
+    /* Основные переменные кнопок */
+    --hero-btn-transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --hero-btn-border-radius: 14px; /* Слегка увеличил для солидности */
+    /* 🎯 КАРДИНАЛЬНО УСИЛЕННЫЕ ТЕНИ ДЛЯ НАСТОЯЩЕГО 3D-ЭФФЕКТА */
+    --hero-btn-shadow-base:
+        0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+        0 12.5px 10px rgba(0, 0, 0, 0.06),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+        0 100px 80px rgba(0, 0, 0, 0.12);
+    --hero-btn-shadow-hover:
+        0 4px 2.2px rgba(0, 0, 0, 0.05),
+        0 9.6px 5.3px rgba(0, 0, 0, 0.07),
+        0 18.1px 10px rgba(0, 0, 0, 0.09),
+        0 32.3px 17.9px rgba(0, 0, 0, 0.11),
+        0 60.4px 33.4px rgba(0, 0, 0, 0.13),
+        0 145px 80px rgba(0, 0, 0, 0.2);
+    --gallery-primary: #6f42c1;
+    --gallery-secondary: #563d7c;
+    --growlogs-primary: #28a745;
+    --growlogs-secondary: #20c997;
+    --news-primary: #007bff;
+    --news-secondary: #0056b3;
+    --store-primary: #28a745;
+    --store-secondary: #1e7e34;
+    /* УНИФИЦИРОВАННЫЕ ПЕРЕМЕННЫЕ КАРТОЧЕК */
+    --unified-card-radius: 15px;
+    --unified-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    --unified-card-shadow-hover: 0 12px 35px rgba(0, 0, 0, 0.2);
+    --unified-card-border: 1px solid rgba(0, 0, 0, 0.1);
+    --unified-card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --unified-card-min-height: 480px; /* Увеличенная высота для всех элементов */
+    --unified-image-height: 240px; /* Увеличенная высота изображений */
+}
+
+/* === ГРАДИЕНТНЫЕ HERO-СЕКЦИИ ДЛЯ ВСЕХ РАЗДЕЛОВ === */
+
+/* Галерея - фиолетовый градиент */
+.gallery-hero {
+    background: linear-gradient(135deg, var(--gallery-primary) 0%, var(--gallery-secondary) 100%) !important;
+    color: white !important;
+    padding: 0.75rem 0 !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 1rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(111, 66, 193, 0.3) !important;
+}
+
+.gallery-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.gallery-hero h1,
+.gallery-hero .hero-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.gallery-hero p,
+.gallery-hero .hero-subtitle {
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Гроу-репорты - зеленый градиент */
+.growlogs-hero {
+    background: linear-gradient(135deg, var(--growlogs-primary) 0%, var(--growlogs-secondary) 100%) !important;
+    color: white !important;
+    padding: 0.75rem 0 !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 1rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3) !important;
+}
+
+.growlogs-hero h1,
+.growlogs-hero .hero-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.growlogs-hero p,
+.growlogs-hero .hero-subtitle {
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Новости - синий градиент */
+.news-hero {
+    background: linear-gradient(135deg, var(--news-primary) 0%, var(--news-secondary) 100%) !important;
+    color: white !important;
+    padding: 0.75rem 0 !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 1rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3) !important;
+}
+
+.news-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.news-hero h1,
+.news-hero .hero-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.news-hero p,
+.news-hero .hero-subtitle {
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Магазин - зеленый градиент */
+.store-hero {
+    background: linear-gradient(135deg, var(--store-primary) 0%, var(--store-secondary) 100%) !important;
+    color: white !important;
+    padding: 0.75rem 0 !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 1rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3) !important;
+}
+
+.store-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.store-hero h1,
+.store-hero .hero-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.store-hero p,
+.store-hero .hero-subtitle {
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* === ЧЕТКИЕ ГРАНИЦЫ МЕЖДУ HERO И ФИЛЬТРАМИ === */
+
+/* Фильтры галереи - стеклянный эффект с четкой границей */
+.gallery-filters {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 1rem !important;
+    padding: 0.75rem !important;
+    margin: 0 0 1.5rem 0 !important;
+    box-shadow: 0 4px 15px rgba(31, 38, 135, 0.1) !important;
+}
+
+/* Фильтры новостей - стеклянный эффект с четкой границей */
+.news-filters {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 1rem !important;
+    padding: 0.75rem !important;
+    margin: 0 0 1.5rem 0 !important;
+    box-shadow: 0 4px 15px rgba(31, 38, 135, 0.1) !important;
+}
+
+/* === УНИФИЦИРОВАННЫЙ КОНТЕЙНЕР ФИЛЬТРОВ (SSOT) === */
+.unified-filters,
+.gallery-filters,
+.news-filters,
+.growlogs-filters {
+    margin-bottom: 0.75rem !important;
+    padding: 0.5rem !important;
+}
+
+/* === УНИФИЦИРОВАННЫЕ КНОПКИ ФИЛЬТРОВ (SSOT) === */
+.hero-filter-btn {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    color: #495057 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 2px !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.hero-filter-btn:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    color: #212529 !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--section-primary, #007bff) 0%, var(--section-secondary, #0056b3) 100%) !important;
+    border-color: var(--section-primary, #007bff) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3) !important;
+}
+
+.hero-filter-btn.active:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4) !important;
+}
+
+/* Цветовые схемы для активных фильтров по разделам */
+.gallery-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--gallery-primary) 0%, var(--gallery-secondary) 100%) !important;
+    border-color: var(--gallery-primary) !important;
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3) !important;
+}
+
+.growlogs-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--growlogs-primary) 0%, var(--growlogs-secondary) 100%) !important;
+    border-color: var(--growlogs-primary) !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+}
+
+.news-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--news-primary) 0%, var(--news-secondary) 100%) !important;
+    border-color: var(--news-primary) !important;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3) !important;
+}
+
+.store-hero .hero-filter-btn.active {
+    background: linear-gradient(135deg, var(--store-primary) 0%, var(--store-secondary) 100%) !important;
+    border-color: var(--store-primary) !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+}
+
+/* 🚀 HERO-КНОПКИ - ФИНАЛЬНАЯ ВЕРСИЯ */
+
+/* === 1. ОБЩИЕ СТИЛИ (ДЛЯ ОБЕИХ КНОПОК) === */
+.hero-btn,
+.hero-btn-secondary {
+    padding: 16px 32px !important; /* Увеличил паддинги */
+    font-size: 1.15rem !important; /* Увеличил шрифт */
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    border-radius: var(--hero-btn-border-radius) !important;
+    transition: var(--hero-btn-transition) !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
+    z-index: 1 !important;
+    /* 🎯 Постоянный эффект "парения" с новой, сильной тенью */
+    box-shadow: var(--hero-btn-shadow-base) !important;
+    transform: translateY(0) !important;
+    min-width: 180px !important; /* Базовая минимальная ширина для стабильного размера кнопок */
+}
+
+.hero-btn:hover,
+.hero-btn-secondary:hover {
+    text-decoration: none !important;
+    color: #ffffff !important;
+    /* 🎯 Усиление 3D-эффекта: кнопка всплывает выше, тень становится глубже */
+    box-shadow: var(--hero-btn-shadow-hover) !important;
+    transform: translateY(-6px) !important;
+}
+
+.hero-btn:active,
+.hero-btn-secondary:active {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--hero-btn-shadow-base) !important;
+}
+
+/* === 2. ОСНОВНАЯ КНОПКА (.hero-btn): ПОСТОЯННОЕ ПЕРЕЛИВАНИЕ ГРАДИЕНТА === */
+.hero-btn {
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    background-size: 250% 100% !important;
+    /* 🎯 ПОСТОЯННАЯ анимация переливания */
+    animation: shimmer 5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 0% center; }
+    50%  { background-position: 100% center; }
+    100% { background-position: 0% center; }
+}
+
+/* Цветовые схемы для основной кнопки */
+.gallery-hero .hero-btn { background-image: linear-gradient(135deg, #8A2BE2 0%, #4B0082 50%, #8A2BE2 100%) !important; }
+.growlogs-hero .hero-btn { background-image: linear-gradient(135deg, #32CD32 0%, #006400 50%, #32CD32 100%) !important; }
+.news-hero .hero-btn { background-image: linear-gradient(135deg, #1E90FF 0%, #00008B 50%, #1E90FF 100%) !important; }
+.store-hero .hero-btn { background-image: linear-gradient(135deg, #28a745 0%, #1e7e34 50%, #28a745 100%) !important; }
+
+.hero-btn:hover {
+    /* Можно добавить эффект при наведении, если потребуется, но основная анимация уже есть */
+}
+
+/* === 3. ВТОРИЧНАЯ КНОПКА (.hero-btn-secondary): ПОСТОЯННЫЙ СКОЛЬЗЯЩИЙ БЛИК === */
+.hero-btn-secondary {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.hero-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Псевдо-элемент для создания "блика" - ВОССТАНОВЛЕНО К СТАНДАРТУ */
+.hero-btn-secondary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Красивый градиентный блик, а не сплошная полоса */
+    background-image: linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 20%,
+        rgba(255, 255, 255, 0.25) 50%,
+        rgba(255, 255, 255, 0) 80%
+    );
+    background-size: 200% 100%;
+    /* 🎯 ПОСТОЯННАЯ анимация блика по умолчанию, СИНХРОНИЗИРОВАНА с основной кнопкой */
+    animation: glare 5s ease-in-out infinite;
+    animation-delay: 0.5s; /* Небольшая рассинхронизация с основной кнопкой */
+}
+
+/* Анимация "блика" для вторичной кнопки - БЕСШОВНАЯ, как на основной */
+@keyframes glare {
+    0%   { background-position: 170% 0; }
+    50%  { background-position: -170% 0; }
+    100% { background-position: 170% 0; }
+}
+
+/* === 4. ОБЩИЕ УЛУЧШЕНИЯ ИКОНОК И ТЕКСТА === */
+.hero-btn i,
+.hero-btn-secondary i {
+    font-size: 1.3em !important; /* Увеличил иконки */
+    transition: transform 0.3s ease !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.hero-btn:hover i,
+.hero-btn-secondary:hover i {
+    transform: scale(1.1) rotate(-5deg); /* Добавил легкое вращение */
+}
+
+/* === СТРУКТУРА HERO-СЕКЦИЙ === */
+
+.hero-stats-and-actions {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+}
+
+.hero-stats {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    margin-top: 0.25rem !important;
+}
+
+.hero-actions {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+}
+
+.hero-stat {
+    text-align: center !important;
+    min-width: 60px !important;
+    padding: 0.5rem !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+.hero-stat .stat-number {
+    display: block !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.hero-stat .stat-label {
+    display: block !important;
+    font-size: 0.65rem !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-top: 2px !important;
+}
+
+/* === АДАПТИВНОСТЬ === */
+
+@media (max-width: 768px) {
+    .hero-stats-and-actions {
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    .hero-btn {
+        min-width: 180px !important;
+        padding: 14px 28px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .hero-stat {
+        min-width: 75px !important; /* минимальная ширина остаётся */
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-btn,
+    .hero-btn-secondary {
+        min-width: 180px !important;
+        padding: 10px 20px !important;
+        font-size: 1rem !important;
+    }
+
+    .hero-stat {
+        min-width: 75px !important; /* минимальная ширина остаётся */
+    }
+}
+
+/* 🎯 ОДИНАКОВЫЕ ИКОНКИ */
+.hero-btn i,
+.hero-btn-secondary i {
+    font-size: 1.2em !important;
+    transition: transform 0.3s ease !important;
+}
+
+.hero-btn:hover i,
+.hero-btn-secondary:hover i {
+    transform: scale(1.1) !important;
+}
+
+/* СПЕЦИАЛЬНЫЕ КЛАССЫ ДЛЯ ИКОНОК ПЛЮС */
+.hero-btn .fa-plus,
+.hero-btn-secondary .fa-plus,
+.hero-btn .fa-upload,
+.hero-btn-secondary .fa-upload {
+    font-size: 1.3em !important;
+    font-weight: 900 !important;
+}
+
+.hero-btn:hover .fa-plus,
+.hero-btn-secondary:hover .fa-plus {
+    transform: scale(1.2) rotate(90deg) !important;
+}
+
+.hero-btn:hover .fa-upload,
+.hero-btn-secondary:hover .fa-upload {
+    transform: scale(1.2) translateY(-1px) !important;
+}
+
+/* Стили для кликабельной карточки в галерее */
+.gallery-card {
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    min-height: 420px !important; /* УВЕЛИЧЕНА ВЫСОТА ДЛЯ РАЗМЕЩЕНИЯ СЧЕТЧИКОВ */
+    background: white !important;
+    border-radius: 15px !important;
+    overflow: visible !important; /* ВАЖНО: НЕ ОБРЕЗАЕМ СОДЕРЖИМОЕ */
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.gallery-card .card-link {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    flex-grow: 1 !important;
+}
+
+.gallery-card .photo-container {
+    height: 200px !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.gallery-card .card-info {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 12px !important;
+}
+
+.gallery-card .card-body {
+    flex-grow: 1 !important;
+    margin-bottom: 8px !important;
+}
+
+.gallery-card .card-footer {
+    margin-top: auto !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 8px 4px 4px 4px !important;
+    min-height: 50px !important;
+    border-top: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+/* НОВЫЕ КАРТОЧКИ ГРОУРЕПОРТОВ В СТИЛЕ ГАЛЕРЕИ И НОВОСТЕЙ */
+
+.growlog-card {
+    position: relative;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.growlog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.growlog-card .card-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+}
+
+.growlog-card .card-link-wrapper:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.growlog-card .card-title {
+    color: #2c3e50;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.growlog-card:hover .card-title {
+    color: #28a745;
+}
+
+.growlog-card .growlog-image {
+    transition: transform 0.3s ease;
+}
+
+.growlog-card:hover .growlog-image {
+    transform: scale(1.05);
+}
+
+.growlog-card .growlog-meta {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.growlog-card .card-text {
+    color: #495057;
+    line-height: 1.5;
+}
+
+.growlog-card .growlog-stats {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.growlog-card .growlog-status .badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* Стили для заглушки изображения */
+.growlog-placeholder {
+    background: linear-gradient(135deg, #e8f5e8, #d4edda);
+    color: #28a745;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .growlog-card .card-title {
+        font-size: 1.1rem;
+    }
+
+    .growlog-card .growlog-meta {
+        font-size: 0.8rem;
+    }
+}
+
+/* ====================================== */
+/* УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ТЕГОВ С # */
+/* ====================================== */
+
+/* Все теги и категории должны иметь символ # и быть читаемыми */
+.category-tag,
+.tag-item,
+.post-tag {
+    color: #6c757d !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+}
+
+.category-tag:hover,
+.tag-item:hover,
+.post-tag:hover {
+    color: #495057 !important;
+}
+
+/* Теги всегда должны начинаться с # */
+.category-tag::before,
+.tag-item::before,
+.post-tag::before {
+    content: "#" !important;
+}
+
+/* Убираем стили кнопок у тегов */
+.category-tag .badge,
+.tag-item .badge,
+.post-tag .badge {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    color: inherit !important;
+}
+
+/* ====================================== */
+/* УНИФИЦИРОВАННЫЕ СЧЕТЧИКИ ДЛЯ ВСЕХ РАЗДЕЛОВ */
+/* ====================================== */
+
+/* КОНТЕЙНЕРЫ ДЛЯ СЧЕТЧИКОВ */
+.unified-stats {
+    display: flex !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* ОСНОВНЫЕ СТИЛИ ДЛЯ ВСЕХ СЧЕТЧИКОВ */
+.stat-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important; /* ЦЕНТРИРУЕМ СОДЕРЖИМОЕ */
+    gap: 6px !important;
+    font-weight: 500 !important;
+    pointer-events: none !important; /* ОТКЛЮЧАЕМ ИНТЕРАКТИВНОСТЬ */
+    cursor: default !important;
+    padding: 8px 14px !important; /* УВЕЛИЧИЛ ПАДДИНГИ */
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.95) !important; /* УВЕЛИЧИЛ НЕПРОЗРАЧНОСТЬ */
+    backdrop-filter: blur(10px) !important; /* УСИЛИЛ БЛЮР */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important; /* УСИЛИЛ ТЕНЬ */
+    transition: none !important; /* УБИРАЕМ ВСЕ АНИМАЦИИ */
+    border: 1px solid rgba(255, 255, 255, 0.7) !important; /* УСИЛИЛ ГРАНИЦУ */
+    animation: none !important; /* УБИРАЕМ АНИМАЦИИ */
+    transform: none !important; /* УБИРАЕМ ТРАНСФОРМАЦИИ */
+    text-align: center !important; /* ЦЕНТРИРУЕМ ТЕКСТ */
+}
+
+/* УБИРАЕМ ВСЕ HOVER ЭФФЕКТЫ ДЛЯ СЧЕТЧИКОВ */
+.stat-item:hover {
+    transform: none !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ЦВЕТА ИКОНОК И ТЕКСТА */
+.stat-item i {
+    font-size: 1.1rem !important;
+}
+
+.stat-item span {
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+}
+
+/* КРАСНЫЕ ЛАЙКИ */
+.stat-item:has(.fa-heart),
+.stat-item[data-type="likes"] {
+    color: #dc3545 !important;
+}
+
+.stat-item .fa-heart {
+    color: #dc3545 !important;
+}
+
+/* СИНИЕ КОММЕНТАРИИ */
+.stat-item:has(.fa-comment),
+.stat-item[data-type="comments"] {
+    color: #0d6efd !important;
+}
+
+.stat-item .fa-comment {
+    color: #0d6efd !important;
+}
+
+/* ЗЕЛЕНЫЕ ПРОСМОТРЫ/ГРОУРЕПОРТЫ */
+.stat-item:has(.fa-eye),
+.stat-item:has(.fa-seedling),
+.stat-item[data-type="views"],
+.stat-item[data-type="growlogs"] {
+    color: #198754 !important;
+}
+
+.stat-item .fa-eye,
+.stat-item .fa-seedling {
+    color: #198754 !important;
+}
+
+/* СПЕЦИАЛЬНЫЕ КОНТЕЙНЕРЫ ДЛЯ РАЗНЫХ РАЗДЕЛОВ */
+.news-stats-unified,
+.growlog-stats-unified,
+.photo-stats-unified {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 8px 0 !important;
+}
+
+/* СТАРЫЕ КЛАССЫ ГАЛЕРЕИ - ПРИВЯЗКА К НОВЫМ СТИЛЯМ */
+.like-indicator,
+.comment-count,
+.growlog-indicator {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important; /* ЦЕНТРИРУЕМ СОДЕРЖИМОЕ */
+    gap: 6px !important;
+    font-weight: 500 !important;
+    pointer-events: none !important;
+    cursor: default !important;
+    padding: 8px 14px !important; /* УВЕЛИЧИЛ ПАДДИНГИ */
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.95) !important; /* УВЕЛИЧИЛ НЕПРОЗРАЧНОСТЬ */
+    backdrop-filter: blur(10px) !important; /* УСИЛИЛ БЛЮР */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important; /* УСИЛИЛ ТЕНЬ */
+    transition: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important; /* УСИЛИЛ ГРАНИЦУ */
+    animation: none !important; /* УБИРАЕМ АНИМАЦИИ */
+    transform: none !important; /* УБИРАЕМ ТРАНСФОРМАЦИИ */
+    text-align: center !important; /* ЦЕНТРИРУЕМ ТЕКСТ */
+}
+
+/* КРАСНЫЕ ЛАЙКИ (СТАРЫЕ КЛАССЫ) */
+.like-indicator {
+    color: #dc3545 !important;
+}
+
+.like-indicator .fa-heart {
+    color: #dc3545 !important;
+    font-size: 1.1rem !important;
+}
+
+/* СИНИЕ КОММЕНТАРИИ (СТАРЫЕ КЛАССЫ) */
+.comment-count {
+    color: #0d6efd !important;
+}
+
+.comment-count .fa-comment {
+    color: #0d6efd !important;
+    font-size: 1.1rem !important;
+}
+
+/* ЗЕЛЕНЫЕ ГРОУРЕПОРТЫ (СТАРЫЕ КЛАССЫ) */
+.growlog-indicator {
+    color: #198754 !important;
+}
+
+.growlog-indicator .fa-seedling {
+    color: #198754 !important;
+    font-size: 1.1rem !important;
+}
+
+/* УБИРАЕМ ВСЕ HOVER ЭФФЕКТЫ СО СТАРЫХ КЛАССОВ */
+.like-indicator:hover,
+.comment-count:hover,
+.growlog-indicator:hover {
+    transform: none !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    color: inherit !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ====================================== */
+/* СТАБИЛИЗАЦИЯ КОНТЕЙНЕРОВ */
+/* ====================================== */
+
+html {
+    scrollbar-gutter: stable !important;
+    overflow-x: hidden !important;
+}
+
+body {
+    overflow-x: hidden !important;
+    position: relative !important;
+}
+
+.hero-container {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.content-container {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* СТРУКТУРА СЧЕТЧИКИ + КНОПКИ - ВОССТАНОВЛЕНО */
+.hero-stats-and-actions {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+}
+
+.hero-stats {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    margin-top: 0.25rem !important;
+}
+
+/* СЧЕТЧИКИ В HERO-ПЛАШКАХ - ВОССТАНОВЛЕНЫ К ЧИТАЕМОМУ ВИДУ */
+.hero-stat {
+    text-align: center !important;
+    min-width: 60px !important;
+    padding: 0.5rem !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+.hero-stat .stat-number {
+    display: block !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.hero-stat .stat-label {
+    display: block !important;
+    font-size: 0.65rem !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-top: 2px !important;
+}
+
+.hero-actions {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+}
+
+/* АДАПТИВНОСТЬ HERO */
+@media (max-width: 768px) {
+    .hero-stats-and-actions {
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    .hero-btn {
+        min-width: 180px !important;
+        padding: 14px 28px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .hero-stat {
+        min-width: 75px !important; /* минимальная ширина остаётся */
+    }
+}
+
+/* ====================================== */
+/* ФИНАЛЬНЫЕ ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ СЧЕТЧИКОВ (ВЕРСИЯ 11.0) */
+/* МАКСИМАЛЬНАЯ СПЕЦИФИЧНОСТЬ ДЛЯ ГАРАНТИРОВАННОГО ПРИМЕНЕНИЯ */
+/* ====================================== */
+
+/* ПРИНУДИТЕЛЬНАЯ УНИФИКАЦИЯ ВСЕХ СЧЕТЧИКОВ */
+.growlog-stats .unified-stats,
+.news-stats .unified-stats,
+.photo-stats-unified .unified-stats,
+.news-stats-unified .unified-stats,
+.growlog-stats-unified .unified-stats {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 8px 0 !important;
+}
+
+/* ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ ВСЕХ СЧЕТЧИКОВ */
+.growlog-stats .stat-item,
+.news-stats .stat-item,
+.photo-stats-unified .stat-item,
+.news-stats-unified .stat-item,
+.growlog-stats-unified .stat-item,
+.unified-stats .stat-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-weight: 600 !important;
+    pointer-events: none !important;
+    cursor: default !important;
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+    transition: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    animation: none !important;
+    transform: none !important;
+    text-align: center !important;
+    min-width: 60px !important;
+    white-space: nowrap !important;
+}
+
+/* УБИРАЕМ ВСЕ HOVER ЭФФЕКТЫ */
+.growlog-stats .stat-item:hover,
+.news-stats .stat-item:hover,
+.photo-stats-unified .stat-item:hover,
+.news-stats-unified .stat-item:hover,
+.growlog-stats-unified .stat-item:hover,
+.unified-stats .stat-item:hover {
+    transform: none !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ПРИНУДИТЕЛЬНЫЕ ЦВЕТА ИКОНОК */
+/* КРАСНЫЕ ЛАЙКИ */
+.growlog-stats .fa-heart,
+.news-stats .fa-heart,
+.photo-stats-unified .fa-heart,
+.news-stats-unified .fa-heart,
+.growlog-stats-unified .fa-heart,
+.unified-stats .fa-heart {
+    color: #dc3545 !important;
+    font-size: 1.1rem !important;
+}
+
+/* СИНИЕ КОММЕНТАРИИ */
+.growlog-stats .fa-comment,
+.news-stats .fa-comment,
+.photo-stats-unified .fa-comment,
+.news-stats-unified .fa-comment,
+.growlog-stats-unified .fa-comment,
+.unified-stats .fa-comment {
+    color: #0d6efd !important;
+    font-size: 1.1rem !important;
+}
+
+/* ЗЕЛЕНЫЕ ПРОСМОТРЫ И ГРОУ-РЕПОРТЫ */
+.growlog-stats .fa-eye,
+.news-stats .fa-eye,
+.photo-stats-unified .fa-eye,
+.news-stats-unified .fa-eye,
+.growlog-stats-unified .fa-eye,
+.unified-stats .fa-eye,
+.growlog-stats .fa-seedling,
+.news-stats .fa-seedling,
+.photo-stats-unified .fa-seedling,
+.news-stats-unified .fa-seedling,
+.growlog-stats-unified .fa-seedling,
+.unified-stats .fa-seedling {
+    color: #198754 !important;
+    font-size: 1.1rem !important;
+}
+
+/* ПРИНУДИТЕЛЬНЫЕ СТИЛИ ТЕКСТА СЧЕТЧИКОВ */
+.growlog-stats .stat-item span,
+.news-stats .stat-item span,
+.photo-stats-unified .stat-item span,
+.news-stats-unified .stat-item span,
+.growlog-stats-unified .stat-item span,
+.unified-stats .stat-item span {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+}
+
+/* ЦВЕТА КОНТЕЙНЕРОВ СЧЕТЧИКОВ ПО РАЗДЕЛАМ */
+.growlog-stats .stat-item[style*="color: #dc3545"],
+.news-stats .stat-item[style*="color: #dc3545"],
+.photo-stats-unified .stat-item[style*="color: #dc3545"],
+.news-stats-unified .stat-item[style*="color: #dc3545"],
+.growlog-stats-unified .stat-item[style*="color: #dc3545"],
+.unified-stats .stat-item[style*="color: #dc3545"] {
+    color: #dc3545 !important;
+}
+
+.growlog-stats .stat-item[style*="color: #0d6efd"],
+.news-stats .stat-item[style*="color: #0d6efd"],
+.photo-stats-unified .stat-item[style*="color: #0d6efd"],
+.news-stats-unified .stat-item[style*="color: #0d6efd"],
+.growlog-stats-unified .stat-item[style*="color: #0d6efd"],
+.unified-stats .stat-item[style*="color: #0d6efd"] {
+    color: #0d6efd !important;
+}
+
+.growlog-stats .stat-item[style*="color: #198754"],
+.news-stats .stat-item[style*="color: #198754"],
+.photo-stats-unified .stat-item[style*="color: #198754"],
+.news-stats-unified .stat-item[style*="color: #198754"],
+.growlog-stats-unified .stat-item[style*="color: #198754"],
+.unified-stats .stat-item[style*="color: #198754"] {
+    color: #198754 !important;
+}
+
+/* УБИРАЕМ ВСЕ ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ */
+.growlog-stats .reaction-btn,
+.news-stats .reaction-btn,
+.photo-stats-unified .reaction-btn,
+.news-stats-unified .reaction-btn,
+.growlog-stats-unified .reaction-btn {
+    display: none !important;
+}
+
+/* УВЕЛИЧИВАЕМ ВЫСОТУ КАРТОЧЕК ГАЛЕРЕИ */
+.gallery-card {
+    min-height: 380px !important;
+}
+
+.gallery-card .photo-container {
+    height: 220px !important;
+}
+
+.gallery-card .card-footer {
+    min-height: 60px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 12px 8px 8px 8px !important;
+}
+
+/* УВЕЛИЧИВАЕМ ВЫСОТУ КАРТОЧЕК НОВОСТЕЙ */
+.news-card {
+    min-height: 350px !important;
+}
+
+.news-card .overflow-hidden {
+    height: 200px !important;
+}
+
+/* УВЕЛИЧИВАЕМ ВЫСОТУ КАРТОЧЕК ГРОУРЕПОРТОВ */
+.growlog-card {
+    min-height: 400px !important;
+}
+
+.growlog-card .overflow-hidden {
+    height: 200px !important;
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ */
+@media (max-width: 768px) {
+    .growlog-stats .stat-item,
+    .news-stats .stat-item,
+    .photo-stats-unified .stat-item,
+    .news-stats-unified .stat-item,
+    .growlog-stats-unified .stat-item,
+    .unified-stats .stat-item {
+        padding: 6px 10px !important;
+        font-size: 0.85rem !important;
+        min-width: 50px !important;
+    }
+
+    .growlog-stats .stat-item i,
+    .news-stats .stat-item i,
+    .photo-stats-unified .stat-item i,
+    .news-stats-unified .stat-item i,
+    .growlog-stats-unified .stat-item i,
+    .unified-stats .stat-item i {
+        font-size: 1rem !important;
+    }
+}
+
+/* ФИНАЛЬНАЯ ВЕРСИЯ CSS */
+/* ВЕРСИЯ 11.0 - ПРИНУДИТЕЛЬНАЯ УНИФИКАЦИЯ СЧЕТЧИКОВ */
+
+/* ========================================= */
+/* 🚀 РЕВОЛЮЦИЯ УНИФИЦИРОВАННЫХ КАРТОЧЕК V27.0 */
+/* ЕДИНЫЕ РАЗМЕРЫ, ГРАНИЦЫ И ТЕНИ ДЛЯ ВСЕХ РАЗДЕЛОВ */
+/* ========================================= */
+
+/* === БАЗОВЫЕ СТИЛИ ДЛЯ ВСЕХ КАРТОЧЕК === */
+.news-card,
+.gallery-card,
+.growlog-card {
+    background: #ffffff !important;
+    border-radius: var(--unified-card-radius) !important;
+    box-shadow: var(--unified-card-shadow) !important;
+    border: var(--unified-card-border) !important;
+    transition: var(--unified-card-transition) !important;
+    overflow: visible !important; /* НЕ ОБРЕЗАЕМ СОДЕРЖИМОЕ */
+    min-height: var(--unified-card-min-height) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+}
+
+/* === ЭФФЕКТЫ ПРИ НАВЕДЕНИИ === */
+.news-card:hover,
+.gallery-card:hover,
+.growlog-card:hover {
+    transform: translateY(-6px) !important; /* Увеличенное всплытие */
+    box-shadow: var(--unified-card-shadow-hover) !important;
+    border-color: rgba(0, 123, 255, 0.2) !important;
+}
+
+/* === УНИФИЦИРОВАННЫЕ ИЗОБРАЖЕНИЯ === */
+.news-card .news-image,
+.news-card .overflow-hidden,
+.gallery-card .photo-container,
+.growlog-card .overflow-hidden {
+    height: var(--unified-image-height) !important;
+    border-radius: var(--unified-card-radius) var(--unified-card-radius) 0 0 !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+}
+
+.news-card .news-image,
+.gallery-card .photo-image,
+.growlog-card .growlog-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.3s ease !important;
+}
+
+/* ЭФФЕКТ УВЕЛИЧЕНИЯ ИЗОБРАЖЕНИЯ ПРИ НАВЕДЕНИИ */
+.news-card:hover .news-image,
+.gallery-card:hover .photo-image,
+.growlog-card:hover .growlog-image {
+    transform: scale(1.05) !important;
+}
+
+/* === СОДЕРЖИМОЕ КАРТОЧЕК === */
+.news-card .card-body,
+.gallery-card .card-info,
+.growlog-card .card-body {
+    padding: 1.25rem !important;
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* === ЗАГОЛОВКИ КАРТОЧЕК === */
+.news-card .card-title,
+.gallery-card .photo-title,
+.growlog-card .card-title {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.75rem !important;
+    min-height: 3.2rem !important; /* Увеличенная высота для размещения 2 строк */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    color: #2c3e50 !important;
+}
+
+/* ЭФФЕКТ ИЗМЕНЕНИЯ ЦВЕТА ЗАГОЛОВКА ПРИ НАВЕДЕНИИ */
+.news-card:hover .card-title,
+.gallery-card:hover .photo-title,
+.growlog-card:hover .card-title {
+    color: #007bff !important;
+}
+
+/* === ОПИСАНИЯ КАРТОЧЕК === */
+.news-card .card-text,
+.gallery-card .photo-description,
+.growlog-card .card-text {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    color: #6c757d !important;
+    margin-bottom: 1rem !important;
+    min-height: 4.5rem !important; /* Место для 3 строк */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    flex-grow: 1 !important;
+}
+
+/* === МЕТА-ИНФОРМАЦИЯ === */
+.news-card .post-meta,
+.news-card .growlog-meta,
+.gallery-card .author-info,
+.growlog-card .growlog-meta {
+    font-size: 0.85rem !important;
+    color: #8e9296 !important;
+    margin-bottom: 0.75rem !important;
+    padding: 0.5rem 0 !important;
+}
+
+/* === СТАТИСТИКА КАРТОЧЕК === */
+.news-card .news-stats,
+.gallery-card .card-footer,
+.growlog-card .growlog-stats {
+    margin-top: auto !important;
+    padding: 0.75rem 0 0.5rem 0 !important;
+    border-top: 1px solid #f1f3f4 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 60px !important; /* Фиксированная высота для счетчиков */
+}
+
+/* === КЛИКАБЕЛЬНЫЕ ССЫЛКИ-ОБЕРТКИ === */
+.news-card .card-link-wrapper,
+.gallery-card .card-link,
+.growlog-card .card-link-wrapper {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.news-card .card-link-wrapper:hover,
+.gallery-card .card-link:hover,
+.growlog-card .card-link-wrapper:hover {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+/* === БЕЙДЖИ И КАТЕГОРИИ === */
+.news-card .badge,
+.gallery-card .badge,
+.growlog-card .badge {
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 20px !important;
+    font-weight: 500 !important;
+}
+
+/* === СПЕЦИАЛЬНЫЕ ЭФФЕКТЫ ДЛЯ РАЗНЫХ ТИПОВ КАРТОЧЕК === */
+
+/* ЗАКРЕПЛЕННЫЕ НОВОСТИ */
+.news-card.pinned-post {
+    border-left: 4px solid #ffc107 !important;
+    background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%) !important;
+    box-shadow: 0 6px 25px rgba(255, 193, 7, 0.15) !important;
+}
+
+/* ОПРОСЫ */
+.news-card.poll-card {
+    border-left: 4px solid #17a2b8 !important;
+    background: linear-gradient(135deg, #e6f7ff 0%, #ffffff 100%) !important;
+    box-shadow: 0 6px 25px rgba(23, 162, 184, 0.15) !important;
+}
+
+/* ВИДЕО */
+.news-card.video-card {
+    border-left: 4px solid #dc3545 !important;
+    background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%) !important;
+    box-shadow: 0 6px 25px rgba(220, 53, 69, 0.15) !important;
+}
+
+/* === АДАПТИВНОСТЬ КАРТОЧЕК === */
+@media (max-width: 1200px) {
+    .news-card,
+    .gallery-card,
+    .growlog-card {
+        min-height: 450px !important;
+    }
+
+    .news-card .news-image,
+    .news-card .overflow-hidden,
+    .gallery-card .photo-container,
+    .growlog-card .overflow-hidden {
+        height: 220px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .news-card,
+    .gallery-card,
+    .growlog-card {
+        min-height: 420px !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .news-card .card-title,
+    .gallery-card .photo-title,
+    .growlog-card .card-title {
+        min-height: 2.8rem !important;
+        font-size: 1.1rem !important;
+    }
+
+    .news-card .card-text,
+    .gallery-card .photo-description,
+    .growlog-card .card-text {
+        min-height: 4rem !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .news-card,
+    .gallery-card,
+    .growlog-card {
+        min-height: 400px !important;
+    }
+
+    .news-card .news-image,
+    .news-card .overflow-hidden,
+    .gallery-card .photo-container,
+    .growlog-card .overflow-hidden {
+        height: 200px !important;
+    }
+}
+
+/* === ФИНАЛЬНЫЕ ИСПРАВЛЕНИЯ === */
+
+/* ОБНОВЛЕНИЕ ВЕРСИИ CSS */
+/* v27.0 - РЕВОЛЮЦИЯ УНИФИЦИРОВАННЫХ КАРТОЧЕК */
+/* - Единые размеры (480px высота) для всех карточек */
+/* - Красивые границы и тени как в гроурепортах */
+/* - Увеличенные изображения (240px) */
+/* - Фиксированные высоты элементов */
+/* - Эффекты наведения для всех карточек */
+/* - Полная адаптивность */
+/* - Сохранение разноцветных счетчиков */
+
+/* ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ КЕША */
+
+/* ====================================================================
+   v26.1 – Компактные отступы hero-секций и фильтров (12 июня 2025)
+   ==================================================================== */
+.gallery-hero,
+.growlogs-hero,
+.news-hero,
+.store-hero {
+    padding: 0.75rem 0 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.hero-subtitle {
+    margin-bottom: 0.5rem !important;
+}
+
+.hero-stats {
+    margin-top: 0.5rem !important;
+}
+
+/* Фильтры – уменьшаем вертикальные отступы и промежуток между табами */
+.unified-filters,
+.gallery-filters,
+.news-filters,
+.growlogs-filters {
+    margin-bottom: 0.75rem !important;
+    padding: 0.5rem !important;
+}
+
+.filter-tabs {
+    gap: 0.35rem !important;
+}
+
+.filter-tab-link {
+    padding: 0.4rem 0.8rem !important;
+}
+
+.hero-stats-and-actions {
+    gap: 0.75rem !important;
+}
+
+.hero-btn.list-nav {
+    color: #2d3748 !important; /* тёмный текст для читабельности */
+}
+
+/* === 5. УНИФИЦИРОВАННАЯ ПАГИНАЦИЯ === */
+.pagination .page-link {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #2d3748 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: var(--hero-btn-border-radius) !important;
+    box-shadow: var(--hero-btn-shadow-base) !important;
+    transition: var(--hero-btn-transition) !important;
+}
+
+.pagination .page-link:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    color: #2d3748 !important;
+    transform: translateY(-3px) !important;
+    box-shadow: var(--hero-btn-shadow-hover) !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--news-primary) 0%, var(--news-secondary) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    opacity: 0.5 !important;
+    box-shadow: none !important;
+}
+

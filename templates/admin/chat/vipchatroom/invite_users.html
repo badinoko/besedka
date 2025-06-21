@@ -1,0 +1,270 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .invite-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .invite-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .invite-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        .invite-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .invite-content {
+            padding: 30px;
+        }
+        .vip-info {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+        .vip-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .vip-info p {
+            margin: 0;
+            color: #666;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .user-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+        .user-item input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .user-role {
+            font-size: 0.85em;
+            color: #666;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .no-users {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a6fd8;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            color: white;
+        }
+        .select-all-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .select-all-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .select-all-btn:hover {
+            background: #1976d2;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+        &rsaquo; <a href="{% url 'admin:chat_vipchatroom_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        &rsaquo; {{ title }}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="invite-container">
+        <div class="invite-header">
+            <h1>👥 Приглашение в VIP-чат</h1>
+            <p>Выберите пользователей для приглашения в эксклюзивный чат</p>
+        </div>
+
+        <div class="invite-content">
+            <div class="vip-info">
+                <h3>🏆 {{ vip_chat.name }}</h3>
+                <p>{{ vip_chat.description }}</p>
+                <p><strong>Текущих участников:</strong> {{ vip_chat.members.count }}</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h3>Выберите пользователей для приглашения</h3>
+
+                    {% if form.users.field.queryset %}
+                        <div class="select-all-container">
+                            <button type="button" class="select-all-btn" onclick="selectAll()">Выбрать всех</button>
+                            <button type="button" class="select-all-btn" onclick="deselectAll()">Снять выделение</button>
+                            <span style="margin-left: 20px; color: #666;">
+                                Доступно для приглашения: {{ form.users.field.queryset.count }} пользователей
+                            </span>
+                        </div>
+
+                        <div class="users-grid">
+                            {% for choice in form.users %}
+                                <div class="user-item">
+                                    {{ choice.tag }}
+                                    <div class="user-info">
+                                        <div class="user-name">{{ choice.choice_label }}</div>
+                                        <div class="user-role">
+                                            {% with user=choice.data.value|add:0 %}
+                                                {% for u in form.users.field.queryset %}
+                                                    {% if u.id == user %}
+                                                        {{ u.get_role_display }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-users">
+                            <p>🎉 Все активные пользователи уже приглашены в этот VIP-чат!</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    {% if form.users.field.queryset %}
+                        <button type="submit" class="btn btn-primary">
+                            📨 Отправить приглашения
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'admin:chat_vipchatroom_changelist' %}" class="btn btn-secondary">
+                        ← Назад к списку
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="users"]');
+            checkboxes.forEach(cb => cb.checked = true);
+        }
+
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="users"]');
+            checkboxes.forEach(cb => cb.checked = false);
+        }
+
+        // Подсчет выбранных пользователей
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="users"]');
+            const updateCounter = () => {
+                const selected = document.querySelectorAll('input[type="checkbox"][name="users"]:checked').length;
+                const submitBtn = document.querySelector('.btn-primary');
+                if (submitBtn) {
+                    submitBtn.textContent = selected > 0 ?
+                        `📨 Отправить приглашения (${selected})` :
+                        '📨 Отправить приглашения';
+                }
+            };
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateCounter);
+            });
+
+            updateCounter();
+        });
+    </script>
+{% endblock %}

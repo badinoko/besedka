@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Главное меню</a> &rsaquo; <a href="{% url 'admin:store_administrator_changelist' %}">Администраторы</a> &rsaquo; Добавить администратора</div>
+{% endblock %}
+
+{% block content %}
+<div class="admin-form">
+    <form method="post">{% csrf_token %}
+        <div class="form-row">{{ form.username.label_tag }} {{ form.username }}</div>
+        <div class="form-row">{{ form.password1.label_tag }} {{ form.password1 }}</div>
+        <div class="form-row">{{ form.password2.label_tag }} {{ form.password2 }}</div>
+        {% if form.errors %}
+            <div class="errors">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" name="add_admin" class="default">Добавить администратора</button>
+    </form>
+</div>
+
+<hr style="margin: 32px 0; border: none; border-top: 1px solid #333;">
+
+<div class="admin-list">
+    <h3>Назначенные администраторы</h3>
+    {% if admins %}
+    <form method="post" style="margin-top: 16px;">{% csrf_token %}
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="width:40px;"></th>
+                    <th>Логин</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in admins %}
+                <tr>
+                    <td><input type="checkbox" name="selected_admins" value="{{ admin.id }}"></td>
+                    <td>{{ admin.user.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" name="delete_selected" class="danger" style="margin-top: 16px;">Удалить выбранных</button>
+    </form>
+    {% else %}
+        <div style="margin-top: 16px; color: #888;">Нет назначенных администраторов.</div>
+    {% endif %}
+</div>
+
+<style>
+.admin-form { max-width: 400px; margin: 0 auto; }
+.form-row { margin-bottom: 18px; }
+.errors { color: #e74c3c; margin-bottom: 12px; }
+button.default { background: #447e9b; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-size: 1.1em; cursor: pointer; }
+button.default:hover { background: #355e7b; }
+button.danger { background: #e74c3c; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-size: 1em; cursor: pointer; }
+button.danger:hover { background: #b93a2b; }
+.admin-list { max-width: 500px; margin: 0 auto; }
+table { background: #181818; color: #fff; }
+th, td { padding: 8px 12px; border-bottom: 1px solid #333; }
+th { background: #222; }
+</style>
+{% endblock %} 

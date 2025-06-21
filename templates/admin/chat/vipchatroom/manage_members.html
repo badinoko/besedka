@@ -1,0 +1,329 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .manage-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .manage-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .manage-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        .manage-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .manage-content {
+            padding: 30px;
+        }
+        .vip-info {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+        .vip-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .vip-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .members-section {
+            margin-bottom: 30px;
+        }
+        .members-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .members-grid {
+            display: grid;
+            gap: 15px;
+        }
+        .member-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .member-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        .member-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .member-info {
+            flex: 1;
+        }
+        .member-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .member-role {
+            font-size: 0.9em;
+            color: #666;
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .member-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .detail-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .detail-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+        .member-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+            color: white;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a6fd8;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            color: white;
+        }
+        .no-members {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .back-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1976d2;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+        &rsaquo; <a href="{% url 'admin:chat_vipchatroom_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        &rsaquo; {{ title }}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="manage-container">
+        <div class="manage-header">
+            <h1>⚙️ Управление участниками</h1>
+            <p>Просмотр и управление участниками VIP-чата</p>
+        </div>
+
+        <div class="manage-content">
+            <div class="vip-info">
+                <h3>🏆 {{ vip_chat.name }}</h3>
+                <p>{{ vip_chat.description }}</p>
+                <p><strong>Создатель:</strong> {{ vip_chat.created_by.username }}</p>
+                <p><strong>Создан:</strong> {{ vip_chat.created|date:"d.m.Y H:i" }}</p>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-number">{{ members.count }}</span>
+                    <span class="stat-label">Всего участников</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ members|length }}</span>
+                    <span class="stat-label">Активных</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ vip_chat.room.get_messages.count }}</span>
+                    <span class="stat-label">Сообщений</span>
+                </div>
+            </div>
+
+            <div class="members-section">
+                <h3>
+                    👥 Участники VIP-чата
+                    <span style="font-size: 0.8em; color: #666;">({{ members.count }})</span>
+                </h3>
+
+                {% if members %}
+                    <div class="members-grid">
+                        {% for membership in members %}
+                            <div class="member-card">
+                                <div class="member-header">
+                                    <div class="member-info">
+                                        <div class="member-name">
+                                            {{ membership.user.get_full_name|default:membership.user.username }}
+                                        </div>
+                                        <div class="member-role">
+                                            {{ membership.user.get_role_display }}
+                                        </div>
+                                    </div>
+                                    <div class="status-badge {% if membership.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                        {% if membership.is_active %}Активен{% else %}Неактивен{% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="member-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Пригласил</div>
+                                        <div class="detail-value">{{ membership.invited_by.username }}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Дата приглашения</div>
+                                        <div class="detail-value">{{ membership.invited_at|date:"d.m.Y H:i" }}</div>
+                                    </div>
+                                    {% if membership.accepted_at %}
+                                    <div class="detail-item">
+                                        <div class="detail-label">Принял приглашение</div>
+                                        <div class="detail-value">{{ membership.accepted_at|date:"d.m.Y H:i" }}</div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="detail-item">
+                                        <div class="detail-label">Email</div>
+                                        <div class="detail-value">{{ membership.user.email|default:"Не указан" }}</div>
+                                    </div>
+                                </div>
+
+                                {% if membership.is_active %}
+                                <div class="member-actions">
+                                    <form method="post" style="display: inline;"
+                                          onsubmit="return confirm('Вы уверены, что хотите исключить {{ membership.user.username }} из VIP-чата?')">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="remove">
+                                        <input type="hidden" name="user_id" value="{{ membership.user.id }}">
+                                        <button type="submit" class="btn btn-danger">
+                                            🚫 Исключить
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-members">
+                        <p>😔 В этом VIP-чате пока нет участников</p>
+                        <p>Используйте кнопку "Пригласить" для добавления пользователей</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="back-actions">
+                <a href="{% url 'admin:chat_vipchatroom_invite_users' vip_chat.id %}" class="btn btn-primary">
+                    👥 Пригласить пользователей
+                </a>
+                <a href="{% url 'admin:chat_vipchatroom_changelist' %}" class="btn btn-secondary">
+                    ← Назад к списку
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,27 @@
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Сумма заказа</h5>
+                        {% include "store/partials/cart_summary_details.html" with cart=cart %}
+                        <a href="{% url 'store:checkout' %}" class="btn btn-primary w-100 mt-3">Перейти к оформлению</a>
+                    </div>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Применить купон</h5>
+                        {# <form method="post" action="{% url 'store:apply_coupon' %}" id="apply-coupon-form"> #}
+                        {#    {% csrf_token %} #}
+                        {#    <div class="input-group"> #}
+                        {#        {{ apply_coupon_form.code }} #}
+                        {#        <button class="btn btn-outline-secondary" type="submit">Применить</button> #}
+                        {#    </div> #}
+                        {#    {% if apply_coupon_form.code.errors %} #}
+                        {#        <div class="text-danger mt-1"> #}
+                        {#            {{ apply_coupon_form.code.errors.as_text }} #}
+                        {#        </div> #}
+                        {#    {% endif %} #}
+                        {# </form> #}
+                        <p class="text-muted">Функционал промокодов находится в разработке и будет доступен позднее.</p>
+                    </div>
+                </div>
+            </div>

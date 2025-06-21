@@ -1,0 +1,222 @@
+/* Стили для страницы списка гроу-репортов */
+
+/* Точно как в магазине - фиксированные размеры и структура */
+.growlogs-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0 0 20px 20px;
+}
+
+.filters-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.growlog-list {
+    margin: 0;
+    padding: 0;
+}
+
+.growlog-list-item {
+    border-radius: .5rem;
+    transition: all .2s ease-in-out;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    min-height: 200px;
+    display: flex;
+}
+
+.growlog-list-item > .d-flex.w-100 {
+    flex-grow: 1;
+    align-items: stretch; /* Растягиваем элементы по высоте */
+}
+
+.growlog-list-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075), 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+.growlog-logo-container {
+    width: 80px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 0.5rem; /* Небольшой отступ сверху */
+}
+
+.growlog-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: .25rem;
+}
+
+.growlog-logo-placeholder {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .25rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.growlog-actions {
+    min-width: 140px;
+    text-align: end;
+    padding-left: 1rem; /* Отступ от основного контента */
+}
+
+.growlog-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.growlog-title a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.growlog-title a:hover {
+    color: #0d6efd;
+}
+
+.growlog-description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #555;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 2.52rem;
+}
+
+.growlog-strain-info {
+    font-size: 0.85rem;
+    line-height: 1.3;
+    max-height: 2.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5rem;
+}
+
+.growlog-characteristics {
+    margin-top: 0.5rem;
+    max-height: 2.0em;
+    overflow: hidden;
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+.growlog-characteristics .col-sm-6.col-md-3 {
+    padding-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.growlog-characteristics small {
+    font-size: 0.85rem;
+    color: #444;
+}
+
+.growlog-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.stage-badge {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.environment-badge {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.stats-inline {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f0f0f0; /* Визуальное разделение */
+}
+
+.stats-inline .stat-item {
+    margin-right: 1rem;
+    cursor: pointer;
+}
+
+.stats-inline .stat-item:hover {
+    color: #0d6efd;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .growlogs-header {
+        padding: 2rem 0;
+    }
+
+    .growlog-list-item .d-flex {
+        flex-direction: column;
+    }
+
+    .growlog-logo-container {
+        width: 100%;
+        height: 120px;
+        margin-bottom: 1rem;
+        margin-top: 0;
+    }
+
+    .growlog-actions {
+        min-width: auto;
+        text-align: center;
+        margin-top: 1rem;
+        padding-left: 0;
+    }
+
+    .stats-inline {
+        border-top: none;
+        padding-top: 0;
+    }
+}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Запрос на снятие бана - Беседка{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Ваш аккаунт заблокирован</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger mb-4">
+                        <h5>Причина блокировки:</h5>
+                        <p>{{ ban_reason|default:"Нарушение правил сообщества" }}</p>
+                        
+                        {% if ban_expires %}
+                        <p><strong>Срок блокировки:</strong> до {{ ban_expires }}</p>
+                        {% else %}
+                        <p><strong>Блокировка постоянная.</strong> Вы можете запросить ее снятие ниже.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="mb-3">Запрос на снятие блокировки</h5>
+                    <p>Если вы считаете, что блокировка была наложена ошибочно, заполните форму ниже:</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            Пожалуйста, исправьте следующие ошибки:
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if success_message %}
+                        <div class="alert alert-success">
+                            {{ success_message }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                            {{ form.email.help_text }}
+                            <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" class="form-control" required {% if ban_email %}value="{{ ban_email }}"{% endif %}>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">{{ form.reason.label }}</label>
+                            <p class="text-muted small">{{ form.reason.help_text }}</p>
+                            <textarea name="{{ form.reason.name }}" id="{{ form.reason.id_for_label }}" class="form-control" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Отправить запрос</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted">Администрация рассмотрит ваш запрос и примет решение в ближайшее время.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,134 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Главное меню</a> &rsaquo; Администраторы</div>
+{% endblock %}
+
+{% block content %}
+<div class="admin-form">
+    <form method="post" autocomplete="off">{% csrf_token %}
+        <div class="form-row">
+            {{ form.username.label_tag }}<br>
+            {{ form.username }}
+            {% if form.username.help_text %}<div class="help">{{ form.username.help_text }}</div>{% endif %}
+            {% if form.username.errors %}
+                <div class="error-list username-errors">
+                    {% for error in form.username.errors %}
+                        <div class="error-item">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-row password-row">
+            {{ form.password1.label_tag }}<br>
+            <div class="password-input-wrapper">
+                {{ form.password1 }}
+                <span class="toggle-password" onclick="togglePassword('id_password1', this)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+            </div>
+            {% if form.password1.help_text %}<div class="help">{{ form.password1.help_text }}</div>{% endif %}
+            {% if form.password1.errors %}
+                <div class="error-list password-errors">
+                    {% for error in form.password1.errors %}
+                        <div class="error-item">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-row password-row">
+            {{ form.password2.label_tag }}<br>
+            <div class="password-input-wrapper">
+                {{ form.password2 }}
+                <span class="toggle-password" onclick="togglePassword('id_password2', this)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+            </div>
+            {% if form.password2.errors %}
+                <div class="error-list password-errors">
+                    {% for error in form.password2.errors %}
+                        <div class="error-item">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% if form.non_field_errors %}
+            <div class="error-list general-errors">
+                {% for error in form.non_field_errors %}
+                    <div class="error-item">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div style="text-align:center; margin-top: 24px;">
+            <button type="submit" name="add_admin" class="default">Добавить администратора</button>
+        </div>
+    </form>
+</div>
+
+<hr style="margin: 32px 0; border: none; border-top: 1px solid #333;">
+
+<div class="admin-list">
+    {% if admins %}
+    <form method="post" style="margin-top: 16px;">{% csrf_token %}
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="width:40px;"></th>
+                    <th>Логин</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in admins %}
+                <tr>
+                    <td><input type="checkbox" name="selected_admins" value="{{ admin.id }}"></td>
+                    <td>{{ admin.user.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" name="delete_selected" class="danger" style="margin-top: 16px;">Удалить выбранных</button>
+    </form>
+    {% else %}
+        <div class="empty-admins">Нет назначенных администраторов.</div>
+    {% endif %}
+</div>
+
+<style>
+.admin-form { max-width: 400px; margin: 0 auto; }
+.form-row { margin-bottom: 18px; text-align: left; }
+.form-row input { width: 100%; max-width: 320px; padding: 8px; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; }
+.password-input-wrapper { position: relative; display: flex; align-items: center; }
+.password-input-wrapper input { padding-right: 36px; }
+.toggle-password { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.7; }
+.toggle-password:hover { opacity: 1; }
+.help { color: #888; font-size: 0.95em; margin-top: 4px; }
+.error-list { margin-top: 8px; }
+.error-item { color: #e74c3c; font-size: 0.9em; margin-bottom: 4px; }
+.username-errors .error-item { color: #e74c3c; }
+.password-errors .error-item { color: #f39c12; }
+.general-errors .error-item { color: #c0392b; }
+button.default { background: #447e9b; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-size: 1.1em; cursor: pointer; }
+button.default:hover { background: #355e7b; }
+button.danger { background: #e74c3c; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-size: 1em; cursor: pointer; }
+button.danger:hover { background: #b93a2b; }
+.admin-list { max-width: 500px; margin: 0 auto; }
+table { background: #181818; color: #fff; }
+th, td { padding: 8px 12px; border-bottom: 1px solid #333; }
+th { background: #222; }
+.empty-admins { text-align: center; color: #888; margin-top: 16px; }
+</style>
+<script>
+function togglePassword(inputId, el) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === "password") {
+        input.type = "text";
+        el.querySelector('svg').style.stroke = '#447e9b';
+    } else {
+        input.type = "password";
+        el.querySelector('svg').style.stroke = '#aaa';
+    }
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,85 @@
+body .card.gallery-card {
+    height: 420px !important; /* Общая высота карточки */
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: .5rem !important;
+    background-color: #fff !important;
+    transition: all .2s ease-in-out !important;
+}
+
+body .card.gallery-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075), 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+body .gallery-image-container {
+    height: 220px !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    background-color: #f8f9fa !important;
+    border-top-left-radius: .5rem !important;
+    border-top-right-radius: .5rem !important;
+}
+
+body .gallery-image-container .card-img-top {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+body .card.gallery-card .card-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-grow: 1 !important; /* Занимает оставшееся пространство */
+    padding: 1rem !important;
+    overflow: hidden !important;
+}
+
+body .card.gallery-card .card-title {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    min-height: 2.6em !important; /* Для ~2 строк (1.1rem * ~1.2 line-height * 2) */
+    max-height: 2.6em !important;
+    line-height: 1.3em !important; /* Добавлено для предсказуемости высоты */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    margin-bottom: 0.5rem !important;
+}
+
+body .card.gallery-card .card-text.photo-author-date {
+    font-size: 0.85rem !important;
+    color: #6c757d !important;
+    margin-bottom: 0.5rem !important;
+    height: 1.2em !important; /* Для 1 строки */
+    line-height: 1.2em !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+}
+
+body .card.gallery-card .card-text.photo-description {
+    font-size: 0.9rem !important;
+    line-height: 1.4em !important; /* Добавлено для предсказуемости высоты */
+    color: #555 !important;
+    flex-grow: 1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    margin-bottom: 0.75rem !important;
+}
+
+body .card.gallery-card .photo-actions {
+    margin-top: auto !important;
+    padding-top: 0.75rem !important;
+    border-top: 1px solid #eee !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}

@@ -1,0 +1,20 @@
+{% comment %}
+    Универсальные вкладки-фильтры.
+
+    Принимает следующий контекст в переменной `filter_data`:
+    - filter_data.filter_list: Список словарей для фильтров.
+    - filter_data.extra_classes: Дополнительные CSS классы для контейнера.
+{% endcomment %}
+<div class="filter-tabs-container {{ filter_data.extra_classes }}">
+    <ul class="nav nav-pills justify-content-center">
+        {% for filter in filter_data.filter_list %}
+            <li class="nav-item">
+                <a class="nav-link filter-tab-link {% if filter.is_active %}active{% endif %}"
+                   href="?filter={{ filter.id }}"
+                   data-filter="{{ filter.id }}">
+                   {{ filter.label }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

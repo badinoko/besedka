@@ -1,0 +1,79 @@
+{% extends "admin/base_site.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Управление Владельцем Магазина | Админка Владельца Платформы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Управление Владельцем Магазина "Magic Beans"</h1>
+    <hr>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <h2>Текущий Владелец Магазина</h2>
+            {% if current_store_owner %}
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <strong>Имя пользователя:</strong> {{ current_store_owner.username }}<br>
+                            <strong>Email:</strong> {{ current_store_owner.email }}<br>
+                            <strong>Имя:</strong> {{ current_store_owner.first_name|default:"Не указано" }}<br>
+                            <strong>Фамилия:</strong> {{ current_store_owner.last_name|default:"Не указано" }}<br>
+                            <strong>Статус:</strong> {% if current_store_owner.is_active %}Активен{% else %}Неактивен{% endif %}
+                        </p>
+                        <form method="post" action="{% url 'owner_admin:manage_store_owner' %}">
+                            {% csrf_token %}
+                            {{ deactivate_form|crispy }}
+                            <button type="submit" name="deactivate_owner_submit" class="btn btn-danger mt-2">Отозвать Владельца Магазина</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted">Владелец магазина еще не назначен.</p>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h2>Назначить нового Владельца Магазина</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" action="{% url 'owner_admin:manage_store_owner' %}">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" name="assign_owner_submit" class="btn btn-primary mt-3">Назначить Владельца</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if temp_password_details %}
+    <div class="alert alert-warning mt-4">
+        <h4>Данные для нового Владельца Магазина:</h4>
+        <p>
+            Пожалуйста, передайте эти данные новому Владельцу Магазина. Он должен будет сменить пароль при первом входе.
+        </p>
+        <p>
+            <strong>Логин:</strong> {{ temp_password_details.username }}<br>
+            <strong>Временный пароль:</strong> <code>{{ temp_password_details.password }}</code><br>
+            <strong>Пароль действителен до:</strong> {{ temp_password_details.expires_at|date:"Y-m-d H:i:s" }} (UTC)
+        </p>
+    </div>
+    {% endif %}
+
+    <p class="mt-4"><a href="{% url 'owner_admin:index' %}" class="btn btn-secondary">Назад в админку Владельца Платформы</a></p>
+
+</div>
+
+<p>Сообщение из view: {{ message }}</p> <!-- Для отладки, удалить позже -->
+
+{% endblock %}

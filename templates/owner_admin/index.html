@@ -1,0 +1,235 @@
+{% extends "owner_admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block content %}
+<!-- ✨ ВОССТАНОВЛЕННЫЙ ОРИГИНАЛЬНЫЙ КРАСИВЫЙ ЗАГОЛОВОК ✨ -->
+<div class="admin-welcome-section">
+    <div class="welcome-header">
+        <h1>Центр управления платформой "Беседка"</h1>
+        <p class="subtitle">Полный контроль над платформой и пользователями</p>
+    </div>
+</div>
+
+<div class="owner-dashboard">
+    {% for section in available_sections %}
+        <div class="dashboard-section">
+            <div class="section-header">
+                {{ section.title }}
+            </div>
+            <div class="section-description">
+                {{ section.description }}
+            </div>
+            <div class="section-items">
+                {% for item in section.items %}
+                <div class="dashboard-item">
+                    <span class="item-icon">{{ item.icon }}</span>
+                    <a href="{{ item.url }}" class="item-title">{{ item.title }}</a>
+                    <div class="item-description">{{ item.description }}</div>
+                    <div class="item-actions">
+                        <a href="{{ item.url }}" class="btn-admin btn-view">
+                            {% trans 'Открыть' %}
+                        </a>
+                        {% if item.add_url %}
+                            <a href="{{ item.add_url }}" class="btn-admin btn-add">
+                                {% trans 'Добавить' %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="dashboard-section">
+            <div class="section-header">
+                {% trans 'Доступ ограничен' %}
+            </div>
+            <div style="padding: 30px; text-align: center;">
+                <p>{% trans 'У вас нет прав владельца платформы.' %}</p>
+                <p>{% trans 'Обратитесь к системному администратору.' %}</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<style>
+/* ✨ ВОССТАНОВЛЕННЫЕ ОРИГИНАЛЬНЫЕ КРАСИВЫЕ СТИЛИ ✨ */
+
+/* КРАСИВЫЙ ГРАДИЕНТНЫЙ ЗАГОЛОВОК */
+.admin-welcome-section {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    padding: 30px 20px;
+    margin: -20px -20px 30px -20px;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.welcome-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.welcome-header .subtitle {
+    font-size: 1.2rem;
+    margin: 0;
+    opacity: 0.95;
+    font-weight: 300;
+}
+
+/* ОСТАЛЬНЫЕ СТИЛИ АДМИНКИ */
+.owner-dashboard {
+    padding: 20px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    min-height: calc(100vh - 200px);
+}
+
+.dashboard-section {
+    background: white;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    border-left: 5px solid #8b5cf6;
+}
+
+.dashboard-section:hover {
+    transform: translateY(-2px);
+}
+
+.section-header {
+    background: #6366f1;
+    color: white;
+    padding: 20px;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.section-description {
+    padding: 15px 20px;
+    background: #f8fafc;
+    color: #666;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.section-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0;
+}
+
+.dashboard-item {
+    padding: 25px;
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.dashboard-item:hover {
+    background: #f8fafc;
+}
+
+.item-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.item-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #6366f1;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.item-title:hover {
+    color: #8b5cf6;
+    text-decoration: none;
+}
+
+.item-description {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.item-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-admin {
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-view {
+    background: #6366f1;
+    color: white !important;
+    font-weight: 600;
+    border: 2px solid #6366f1;
+}
+
+.btn-view:hover {
+    background: #8b5cf6;
+    color: white !important;
+    text-decoration: none;
+    border-color: #8b5cf6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-add {
+    background: #a855f7;
+    color: white !important;
+    font-weight: 600;
+    border: 2px solid #a855f7;
+}
+
+.btn-add:hover {
+    background: #8b5cf6;
+    color: white !important;
+    text-decoration: none;
+    border-color: #8b5cf6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 📱 АДАПТИВНОСТЬ */
+@media (max-width: 768px) {
+    .section-items {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-item {
+        border-right: none;
+    }
+
+    .owner-dashboard {
+        padding: 10px;
+    }
+
+    .welcome-header h1 {
+        font-size: 2rem;
+    }
+
+    .welcome-header .subtitle {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

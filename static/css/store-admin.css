@@ -1,0 +1,198 @@
+/* Основные цвета и стили */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --success-color: #27ae60;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+    --text-color: #2c3e50;
+    --light-text: #ffffff;
+    --button-text: #ffffff;
+    --button-hover: #2980b9;
+}
+
+/* Шапка админки */
+.store-admin-header {
+    background: var(--primary-color);
+    color: var(--light-text);
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Навигация */
+.store-admin-nav {
+    background: var(--secondary-color);
+    padding: 0.5rem;
+}
+
+.store-admin-nav a {
+    color: var(--light-text);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.store-admin-nav a:hover {
+    background: var(--accent-color);
+    color: var(--button-text);
+}
+
+/* Стандартные кнопки Django админки */
+.submit-row input[type="submit"],
+.submit-row input[type="button"],
+.submit-row a.deletelink {
+    background: var(--accent-color);
+    color: var(--button-text);
+    font-weight: 600;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-row input[type="submit"]:hover,
+.submit-row input[type="button"]:hover {
+    background: var(--button-hover);
+}
+
+.submit-row a.deletelink {
+    background: var(--danger-color);
+}
+
+.submit-row a.deletelink:hover {
+    background: #c0392b;
+}
+
+/* Кнопки действий */
+.action-button {
+    background: var(--accent-color);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+    background: var(--button-hover);
+}
+
+.action-button.success {
+    background: var(--success-color);
+}
+
+.action-button.success:hover {
+    background: #219a52;
+}
+
+.action-button.warning {
+    background: var(--warning-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.action-button.warning:hover {
+    background: #dab10d;
+}
+
+.action-button.danger {
+    background: var(--danger-color);
+    color: var(--button-text);
+}
+
+.action-button.danger:hover {
+    background: #c0392b;
+}
+
+/* Таблицы */
+.store-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.store-admin-table th,
+.store-admin-table td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+}
+
+.store-admin-table th {
+    background: var(--secondary-color);
+    color: var(--light-text);
+    font-weight: 600;
+}
+
+.store-admin-table tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* Формы */
+.store-admin-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Иконки в меню */
+.menu-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    fill: currentColor;
+}
+
+/* Статусы */
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: var(--success-color);
+    color: var(--button-text);
+}
+
+.status-pending {
+    background: var(--warning-color);
+    color: var(--primary-color);
+}
+
+.status-inactive {
+    background: var(--danger-color);
+    color: var(--button-text);
+}

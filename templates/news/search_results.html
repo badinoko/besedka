@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Поиск: "{{ query }}" - Новости - Беседка{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item">
+    <a href="{% url 'news:home' %}">Новости</a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">Поиск: "{{ query }}"</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-header {
+        background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+        color: white;
+        padding: 2rem 0;
+        margin: -1.5rem -15px 2rem -15px;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .search-form {
+        position: relative;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .search-form .form-control {
+        padding: 1rem 4rem 1rem 1.5rem;
+        border-radius: 50px;
+        border: 3px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.1);
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .search-form .form-control::placeholder {
+        color: rgba(255,255,255,0.7);
+    }
+
+    .search-form .form-control:focus {
+        border-color: rgba(255,255,255,0.8);
+        background: rgba(255,255,255,0.2);
+        box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
+        color: white;
+    }
+
+    .search-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .search-btn:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+
+    .news-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .news-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .news-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .news-meta {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .news-excerpt {
+        color: #495057;
+        line-height: 1.6;
+    }
+
+    .category-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+    }
+
+    .post-stats {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .post-stats i {
+        margin-right: 0.25rem;
+    }
+
+    .search-filters {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-btn {
+        border: 2px solid #e9ecef;
+        background: white;
+        border-radius: 25px;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #6c757d;
+        display: inline-block;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        border-color: #6f42c1;
+        background: #6f42c1;
+        color: white;
+        text-decoration: none;
+    }
+
+    .search-highlight {
+        background: #fff3cd;
+        padding: 0.1rem 0.2rem;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+
+    .search-stats {
+        background: #e7f3ff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 3rem 0;
+    }
+
+    .no-results i {
+        font-size: 4rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .search-suggestions {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .suggestion-tag {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        text-decoration: none;
+        margin: 0.25rem 0.25rem 0.25rem 0;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .suggestion-tag:hover {
+        background: #6f42c1;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ЗАГОЛОВОК ПОИСКА -->
+<div class="search-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center">
+                <h1 class="display-5 mb-4">
+                    <i class="fas fa-search me-2"></i>Поиск новостей
+                </h1>
+
+                <!-- ФОРМА ПОИСКА -->
+                <form method="get" action="{% url 'news:search' %}" class="search-form">
+                    <input type="text" name="q" class="form-control"
+                           placeholder="Введите ключевые слова для поиска..."
+                           value="{{ query }}" required>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div class="col-lg-8">
+        {% if query %}
+        <!-- СТАТИСТИКА ПОИСКА -->
+        <div class="search-stats">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        Результаты поиска
+                    </h5>
+                    <p class="mb-0 text-muted">
+                        По запросу "<strong>{{ query }}</strong>" найдено
+                        <strong>{{ results_count }}</strong>
+                        {{ results_count|pluralize:"результат,результата,результатов" }}
+                    </p>
+                </div>
+                {% if results_count > 0 %}
+                <div class="text-end">
+                    <small class="text-muted">Время поиска: {{ search_time|floatformat:3 }} сек</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if posts.count > 0 %}
+        <!-- ФИЛЬТРЫ -->
+        <div class="search-filters">
+            <h6 class="mb-3">
+                <i class="fas fa-filter text-primary me-2"></i>
+                Уточнить поиск:
+            </h6>
+            <a href="{% url 'news:search' %}?q={{ query }}"
+               class="filter-btn {% if not request.GET.type and not request.GET.category %}active{% endif %}">
+                Все результаты
+            </a>
+            <a href="{% url 'news:search' %}?q={{ query }}&type=article"
+               class="filter-btn {% if request.GET.type == 'article' %}active{% endif %}">
+                <i class="fas fa-file-alt me-1"></i>Статьи
+            </a>
+            <a href="{% url 'news:search' %}?q={{ query }}&type=poll"
+               class="filter-btn {% if request.GET.type == 'poll' %}active{% endif %}">
+                <i class="fas fa-poll me-1"></i>Опросы
+            </a>
+            <a href="{% url 'news:search' %}?q={{ query }}&type=video_link"
+               class="filter-btn {% if request.GET.type == 'video_link' %}active{% endif %}">
+                <i class="fas fa-video me-1"></i>Видео
+            </a>
+
+            {% if search_categories %}
+            <div class="mt-2">
+                <small class="text-muted me-2">По категориям:</small>
+                {% for category in search_categories %}
+                <a href="{% url 'news:search' %}?q={{ query }}&category={{ category.slug }}"
+                   class="filter-btn {% if request.GET.category == category.slug %}active{% endif %}">
+                    {{ category.name }} ({{ category.post_count }})
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- РЕЗУЛЬТАТЫ ПОИСКА - UNIFIED CARDS -->
+        {% include 'includes/partials/_unified_cards_wrapper.html' with unified_card_list=unified_card_list %}
+
+        <!-- ПАГИНАЦИЯ -->
+        {% if is_paginated %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&page={{ num }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- НЕТ РЕЗУЛЬТАТОВ -->
+        <div class="no-results">
+            <i class="fas fa-search-minus"></i>
+            <h3 class="text-muted">По вашему запросу ничего не найдено</h3>
+            <p class="text-muted">
+                Попробуйте изменить поисковый запрос или воспользуйтесь предложениями ниже.
+            </p>
+
+            <!-- ПРЕДЛОЖЕНИЯ -->
+            {% if search_suggestions %}
+            <div class="search-suggestions">
+                <h5 class="mb-3">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                    Возможно, вас заинтересует:
+                </h5>
+                <div class="mb-3">
+                    <strong>Популярные теги:</strong><br>
+                    {% for tag in search_suggestions.popular_tags %}
+                    <a href="{% url 'news:tag_posts' tag.slug %}" class="suggestion-tag">
+                        #{{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+
+                {% if search_suggestions.recent_posts %}
+                <div>
+                    <strong>Последние новости:</strong>
+                    <div class="mt-2">
+                        {% for recent_post in search_suggestions.recent_posts %}
+                        <div class="mb-2">
+                            <a href="{% url 'news:post_detail' recent_post.slug %}" class="text-decoration-none">
+                                {{ recent_post.title|truncatechars:60 }}
+                            </a>
+                            <small class="text-muted d-block">
+                                {{ recent_post.published_at|timesince }} назад
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- НАЧАЛЬНОЕ СОСТОЯНИЕ -->
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">Введите поисковый запрос</h3>
+            <p class="text-muted">Используйте форму выше для поиска новостей по ключевым словам.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- САЙДБАР -->
+    <div class="col-lg-4">
+        <!-- СОВЕТЫ ПО ПОИСКУ -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-info me-2"></i>
+                    Советы по поиску
+                </h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Используйте ключевые слова
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Попробуйте синонимы
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Используйте фильтры
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Ищите по тегам
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ПОПУЛЯРНЫЕ ПОИСКОВЫЕ ЗАПРОСЫ -->
+        {% if popular_searches %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-fire text-danger me-2"></i>
+                    Популярные запросы
+                </h5>
+                {% for search_term in popular_searches %}
+                <a href="{% url 'news:search' %}?q={{ search_term }}" class="suggestion-tag">
+                    {{ search_term }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- КАТЕГОРИИ -->
+        {% if categories %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-folder text-primary me-2"></i>
+                    Поиск по категориям
+                </h5>
+                <div class="list-group list-group-flush">
+                    {% for category in categories %}
+                    <a href="{% url 'news:category_posts' category.slug %}"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        {{ category.name }}
+                        <span class="badge bg-primary rounded-pill">{{ category.posts.published.count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ПОСЛЕДНИЕ НОВОСТИ -->
+        {% if recent_posts %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock text-primary me-2"></i>
+                    Последние новости
+                </h5>
+                {% for recent_post in recent_posts %}
+                <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <h6 class="mb-1">
+                        <a href="{% url 'news:post_detail' recent_post.slug %}" class="text-decoration-none">
+                            {{ recent_post.title|truncatechars:40 }}
+                        </a>
+                    </h6>
+                    <small class="text-muted">
+                        {% if recent_post.category %}{{ recent_post.category.name }} • {% endif %}
+                        {{ recent_post.published_at|timesince }} назад
+                    </small>
+                </div>
+                {% endfor %}
+                <a href="{% url 'news:home' %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-newspaper me-1"></i>Все новости
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const cards = document.querySelectorAll('.news-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Подсветка поисковых терминов
+    const query = "{{ query|escapejs }}";
+    if (query && query.length > 2) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        document.querySelectorAll('.card-title a, .news-excerpt').forEach(element => {
+            element.innerHTML = element.innerHTML.replace(regex, '<span class="search-highlight">$1</span>');
+        });
+    }
+});
+</script>
+{% endblock %}

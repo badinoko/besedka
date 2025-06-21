@@ -1,0 +1,50 @@
+{% comment %}
+    Унифицированная пагинация
+    Принимает page_obj и current_filter
+{% endcomment %}
+
+{% if page_obj.has_other_pages %}
+<nav aria-label="Навигация по страницам">
+    <ul class="pagination justify-content-center">
+
+        <!-- Предыдущая страница -->
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link pagination-link" data-page="{{ page_obj.previous_page_number }}" data-filter="{{ current_filter|default:'all' }}" href="?page={{ page_obj.previous_page_number }}{% if current_filter and current_filter != 'all' %}&filter={{ current_filter }}{% endif %}" aria-label="Предыдущая">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+            </li>
+        {% endif %}
+
+        <!-- Номера страниц -->
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link pagination-link" data-page="{{ num }}" data-filter="{{ current_filter|default:'all' }}" href="?page={{ num }}{% if current_filter and current_filter != 'all' %}&filter={{ current_filter }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Следующая страница -->
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link pagination-link" data-page="{{ page_obj.next_page_number }}" data-filter="{{ current_filter|default:'all' }}" href="?page={{ page_obj.next_page_number }}{% if current_filter and current_filter != 'all' %}&filter={{ current_filter }}{% endif %}" aria-label="Следующая">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

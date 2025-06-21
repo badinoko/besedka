@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная • Беседка{% endblock %}
+
+{% block content %}
+<section class="hero-section text-center py-5" data-aos="fade-up">
+    <h1 class="display-4 fw-bold mb-3">Главная страница проекта «Беседка»</h1>
+    <p class="lead">Добро пожаловать! Здесь вскоре появятся баннеры, акции и важные объявления.</p>
+    <a href="{% url 'news:home' %}" class="btn btn-primary hero-btn mt-4">
+        Перейти к новостям
+    </a>
+</section>
+{% endblock %}
