@@ -672,7 +672,12 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
 
         # Проверяем доступ к VIP чату
         user = self.request.user
-        context['user_has_vip_access'] = user.role in ['owner', 'moderator'] or hasattr(user, 'vip_access')
+        context['user_has_vip_access'] = (
+            user.role == 'owner' or
+            user.role == 'moderator' or
+            user.is_staff or
+            hasattr(user, 'vip_memberships') and user.vip_memberships.filter(is_active=True).exists()
+        )
 
         return context
 

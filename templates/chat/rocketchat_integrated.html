@@ -423,6 +423,40 @@
         .rc-header { display: none !important; }
         .rc-sidebar { display: none !important; }
         .contextual-bar { max-width: 350px !important; }
+
+        /* 🚫 ПРИНУДИТЕЛЬНОЕ СКРЫТИЕ КНОПКИ JOIN CHANNEL */
+        .join-room { display: none !important; }
+        .room-container .join-room { display: none !important; }
+        .room-container .join-channel { display: none !important; }
+        .join-channel-button { display: none !important; }
+        .rc-room .join-room { display: none !important; }
+        .rc-room .join-channel { display: none !important; }
+        .main-content .join-room { display: none !important; }
+        .main-content .join-channel { display: none !important; }
+        .empty-room .join-room { display: none !important; }
+        .empty-room .join-channel { display: none !important; }
+        .empty-room-component { display: none !important; }
+        .room-not-found { display: none !important; }
+        .room-not-found .join-room { display: none !important; }
+
+        /* Скрываем любые варианты текста о присоединении */
+        [data-qa="join-room-button"] { display: none !important; }
+        [data-qa="join-channel-button"] { display: none !important; }
+        button[title*="join" i] { display: none !important; }
+        button[title*="Join" i] { display: none !important; }
+        button:contains("Join") { display: none !important; }
+        button:contains("join") { display: none !important; }
+
+        /* Скрываем сообщения о необходимости присоединения */
+        .room-container .empty-room { display: none !important; }
+        .message-empty-room { display: none !important; }
+        .join-room-wrapper { display: none !important; }
+
+        /* Показываем контент канала принудительно */
+        .room-container .main-content { display: block !important; }
+        .rc-room .main-content { display: block !important; }
+        .messages-container { display: block !important; }
+        .messages-list { display: block !important; }
     </style>
 
     <script>
@@ -502,8 +536,10 @@
             }
         }
 
-        // Функция переключения каналов
+        // 🔄 ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
         function switchChannel(channelName) {
+            console.log('🔄 Переключение на канал:', channelName);
+
             // Обновляем активную кнопку
             document.querySelectorAll('.channel-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -516,16 +552,30 @@
             // Обновляем приветственное окно для нового канала
             updateWelcomeModal(channelName);
 
-            // Пытаемся переключить канал через postMessage (более плавно)
-            try {
-                iframe.contentWindow.postMessage({
-                    type: 'navigate',
-                    channel: channelName
-                }, '{{ rocketchat_url }}');
-            } catch (e) {
-                // Fallback: прямое изменение src
-                iframe.src = `{{ rocketchat_url }}/channel/${channelName}?layout=embedded`;
-            }
+            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ
+            const channelMapping = {
+                'general': 'GENERAL',     // канал general имеет ID GENERAL
+                'vip': 'vip',             // канал vip имеет ID vip
+                'moderators': 'moderators' // канал moderators имеет ID moderators
+            };
+
+            const actualChannelId = channelMapping[channelName] || channelName;
+
+            // ПРЯМОЕ ПЕРЕКЛЮЧЕНИЕ через изменение src iframe
+            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
+
+            console.log('🔄 Переключение на канал:', channelName);
+            console.log('🔄 Фактический ID канала:', actualChannelId);
+            console.log('🔄 Переключение на URL:', newUrl);
+            console.log('🔍 Текущий URL:', iframe.src);
+
+            // Принудительное изменение URL
+            iframe.src = newUrl;
+
+            // Скрываем загрузку через 2 секунды
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 2000);
         }
 
 
@@ -593,10 +643,75 @@
                 const customStyle = document.createElement('style');
                 customStyle.textContent = document.getElementById('rocketchatCustomCSS').textContent;
                 iframeDoc.head.appendChild(customStyle);
+
+                // 🚫 ПРИНУДИТЕЛЬНОЕ УДАЛЕНИЕ КНОПКИ JOIN CHANNEL
+                setTimeout(() => {
+                    removeJoinButtons(iframeDoc);
+                }, 1000);
+
+                // Повторяем удаление кнопки каждые 2 секунды
+                setInterval(() => {
+                    removeJoinButtons(iframeDoc);
+                }, 2000);
+
             } catch (e) {
                 console.log('Cannot inject CSS due to CORS');
             }
         };
+
+        // Функция принудительного удаления кнопок JOIN
+        function removeJoinButtons(doc) {
+            try {
+                // Список селекторов для поиска кнопок Join
+                const joinSelectors = [
+                    'button[data-qa="join-room-button"]',
+                    'button[data-qa="join-channel-button"]',
+                    'button:contains("Join")',
+                    'button:contains("join")',
+                    '.join-room',
+                    '.join-channel',
+                    '.join-channel-button',
+                    '.empty-room-component',
+                    '.room-not-found'
+                ];
+
+                joinSelectors.forEach(selector => {
+                    const elements = doc.querySelectorAll(selector);
+                    elements.forEach(element => {
+                        if (element) {
+                            element.style.display = 'none !important';
+                            element.remove();
+                            console.log('🚫 Удалена кнопка Join:', selector);
+                        }
+                    });
+                });
+
+                // Также ищем по тексту
+                const allButtons = doc.querySelectorAll('button');
+                allButtons.forEach(button => {
+                    const buttonText = button.textContent?.toLowerCase() || '';
+                    if (buttonText.includes('join') || buttonText.includes('присоединиться')) {
+                        button.style.display = 'none !important';
+                        button.remove();
+                        console.log('🚫 Удалена кнопка по тексту:', buttonText);
+                    }
+                });
+
+                // Принудительно показываем контент канала
+                const mainContent = doc.querySelector('.main-content');
+                if (mainContent) {
+                    mainContent.style.display = 'block !important';
+                }
+
+                const messagesContainer = doc.querySelector('.messages-container');
+                if (messagesContainer) {
+                    messagesContainer.style.display = 'block !important';
+                }
+
+            } catch (e) {
+                console.log('Cannot remove join buttons:', e);
+            }
+        }
 
         // Обработка изменения размера окна (для мобильных)
         let vh = window.innerHeight * 0.01;
