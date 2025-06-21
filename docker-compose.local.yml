@@ -69,6 +69,11 @@ services:
       - MONGO_URL=mongodb://mongo:27017/rocketchat?replicaSet=rs0
       - ROOT_URL=http://127.0.0.1:3000
       - PORT=3000
+      - OVERWRITE_SETTING_Show_Setup_Wizard=completed  # отключаем мастер-настройку
+      - INITIAL_USER=true                              # включаем авто-создание учётки
+      - ADMIN_USERNAME=owner
+      - ADMIN_PASS=owner123secure
+      - ADMIN_EMAIL=owner@besedka.local
     command: node main.js
     restart: unless-stopped
 
