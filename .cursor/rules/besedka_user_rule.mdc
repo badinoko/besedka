@@ -11,9 +11,9 @@ description: Правила для AI-ассистента проекта «Бе
 **⚠️ КРИТИЧЕСКОЕ СОСТОЯНИЕ:** Первая попытка миграции провалилась. Необходим новый подход с ПОЛНОЙ ИЗОЛЯЦИЕЙ и постепенной интеграцией.
 
 **Ключевые документы для изучения:**
-- `docs/ROCKETCHAT_MIGRATION_PROMPT.md` (исходный план - слишком агрессивный)
-- `docs/ROCKETCHAT_RECOVERY_PLAN.md` (план восстановления с правильным подходом)
-- `docs/ANALYSIS_REPORT.md` (анализ причин провала)
+- `docs/ROCKETCHAT_MIGRATION_PLAN_V3.md` (план миграции)
+- `docs/ROCKETCHAT_MIGRATION_PROGRESS.md` (прогресс миграции)
+- `docs/ROCKETCHAT_CONSOLIDATED_NOTES.md` (консолидированные заметки)
 - `BESEDKA_MASTER_DOCUMENTATION.md`
 - `BESEDKA_UI_STANDARDS.md`
 - `BESEDKA_USER_SYSTEM.md`
@@ -55,7 +55,7 @@ description: Правила для AI-ассистента проекта «Бе
 ## Рабочий процесс (Фаза Миграции)
 
 ### Начало работы над блоком задач:
-1. Внимательно изучи все документы миграции, особенно `ROCKETCHAT_RECOVERY_PLAN.md` и `ANALYSIS_REPORT.md`.
+1. Внимательно изучи все документы миграции, особенно `ROCKETCHAT_MIGRATION_PLAN_V3.md` и `ROCKETCHAT_MIGRATION_PROGRESS.md`.
 2. Убедись, что Docker-контейнеры (включая **новый стек Rocket.Chat**) запущены, БД доступна, сервер разработки работает.
 3. Проверь доступность Rocket.Chat на http://localhost:3000 прямым обращением.
 
