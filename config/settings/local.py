@@ -10,6 +10,11 @@ SECRET_KEY = env(
 )
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "testserver"]
 
+# РЕШЕНИЕ ПРОБЛЕМЫ 404 ОШИБОК ROCKET.CHAT
+MIDDLEWARE = [
+    "core.middleware.RocketChatProxyMiddleware",  # 🚀 ПРОКСИРОВАНИЕ ROCKET.CHAT ФАЙЛОВ
+] + MIDDLEWARE
+
 # FILE UPLOAD SETTINGS
 # ------------------------------------------------------------------------------
 # Увеличиваем лимиты для загрузки файлов

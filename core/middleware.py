@@ -437,3 +437,82 @@ class DisableCSRFForOAuth(MiddlewareMixin):
                 setattr(request, '_dont_enforce_csrf_checks', True)
 
         return None
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+class TemporaryDebug404Middleware:
+    """ВРЕМЕННЫЙ middleware для диагностики 404 ошибок Rocket.Chat"""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Логируем интересные запросы ДО обработки (без эмодзи для Windows)
+        path = request.path
+        if '/dynamic/client/' in path or path.endswith('.map'):
+            print(f"[404 DEBUG] Incoming request: {request.method} {path}")
+            print(f"   Referer: {request.META.get('HTTP_REFERER', 'отсутствует')}")
+            print(f"   Host: {request.META.get('HTTP_HOST', 'отсутствует')}")
+
+        response = self.get_response(request)
+
+        # Логируем результаты для интересных запросов
+        if ('/dynamic/client/' in path or path.endswith('.map')) and response.status_code == 404:
+            print(f"[404 DEBUG] Response: {response.status_code} for {path}")
+            print(f"   This is causing the flood of 404 errors!")
+            print()
+
+        return response
+
+
+class RocketChatProxyMiddleware:
+    """Middleware для проксирования Rocket.Chat файлов"""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Если запрос к файлам Rocket.Chat - проксируем на Rocket.Chat
+        if request.path.startswith('/dynamic/client/'):
+            import requests
+            from django.http import HttpResponse
+
+            try:
+                # Формируем URL для Rocket.Chat
+                rocketchat_url = f"http://127.0.0.1:3000{request.path}"
+
+                # Проксируем запрос
+                response = requests.get(
+                    rocketchat_url,
+                    params=request.GET,
+                    headers={
+                        'User-Agent': request.META.get('HTTP_USER_AGENT', ''),
+                        'Accept': request.META.get('HTTP_ACCEPT', '*/*'),
+                    },
+                    timeout=10
+                )
+
+                # Возвращаем ответ от Rocket.Chat
+                django_response = HttpResponse(
+                    content=response.content,
+                    status=response.status_code,
+                    content_type=response.headers.get('Content-Type', 'application/octet-stream')
+                )
+
+                # Копируем важные заголовки
+                for header in ['Cache-Control', 'ETag', 'Last-Modified']:
+                    if header in response.headers:
+                        django_response[header] = response.headers[header]
+
+                print(f"[PROXY] Proxied {request.path} -> {response.status_code}")
+                return django_response
+
+            except Exception as e:
+                print(f"[PROXY ERROR] Failed to proxy {request.path}: {e}")
+                # Возвращаем 404 если проксирование не удалось
+                return HttpResponse("File not found", status=404)
+
+        # Для остальных запросов - обычная обработка
+        return self.get_response(request)

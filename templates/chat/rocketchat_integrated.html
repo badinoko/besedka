@@ -282,7 +282,8 @@ Rocket.Chat Интегрированная страница
 
             // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ IFRAME - добавляем timestamp для избежания кеширования
             const timestamp = new Date().getTime();
-            const urlWithTimestamp = `${newUrl}?t=${timestamp}`;
+            // ИСПРАВЛЕНО: правильно добавляем timestamp к URL с existing параметрами
+            const urlWithTimestamp = `${newUrl}&t=${timestamp}`;
 
             // Сначала очищаем src чтобы гарантировать перезагрузку
             iframe.src = 'about:blank';

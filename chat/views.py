@@ -723,3 +723,6 @@ class RocketChatAuthAPIView(LoginRequiredMixin, View):
                 'authenticated': False,
                 'error': str(e)
             }, status=500)
+
+
+
