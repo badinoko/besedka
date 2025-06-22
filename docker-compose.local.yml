@@ -48,8 +48,16 @@ services:
     image: mongo:6
     depends_on:
       - mongo
+    restart: "no"
     command: >
-      bash -c "until mongosh --host mongo:27017 --eval 'rs.initiate()' ; do sleep 5 ; done"
+      bash -c "
+        until mongosh --host mongo:27017 --eval 'rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongo:27017\"}]})' ; do
+          echo 'Waiting for mongo...' ;
+          sleep 5 ;
+        done &&
+        echo 'Replica set initialized successfully' &&
+        exit 0
+      "
 
   rocketchat:
     image: rocketchat/rocket.chat:7.7.1
@@ -61,6 +69,11 @@ services:
       - MONGO_URL=mongodb://mongo:27017/rocketchat?replicaSet=rs0
       - ROOT_URL=http://127.0.0.1:3000
       - PORT=3000
+      - OVERWRITE_SETTING_Show_Setup_Wizard=completed  # отключаем мастер-настройку
+      - INITIAL_USER=true                              # включаем авто-создание учётки
+      - ADMIN_USERNAME=owner
+      - ADMIN_PASS=owner123secure
+      - ADMIN_EMAIL=owner@besedka.local
     command: node main.js
     restart: unless-stopped
 

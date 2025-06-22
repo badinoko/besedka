@@ -1,3 +1,7 @@
+# Rocket.Chat Integration Views
+# Последнее обновление: 22 июня 2025 г., 03:15 MSK
+# Статус: Все три канала работают, OAuth настроен, система стабильна
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required

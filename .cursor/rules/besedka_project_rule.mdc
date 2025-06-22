@@ -18,7 +18,7 @@ alwaysApply: true
 **Ключевые документы текущей фазы:**
 - **docs/ROCKETCHAT_MIGRATION_PLAN_V3.md** — план миграции
 - **docs/ROCKETCHAT_MIGRATION_PROGRESS.md** — прогресс миграции
-- **docs/ROCKETCHAT_CONSOLIDATED_NOTES.md** — быстрый справочник команд
+- **docs/ROCKETCHAT_STABILITY_PLAN.md** — краткий рецепт устойчивой работы (обязателен к выполнению)
 - **docs/ROCKETCHAT_FINAL_GUIDE.md** — финальное руководство с готовыми решениями
 - **EMERGENCY_RESTORE.md** — процедуры экстренного восстановления
 

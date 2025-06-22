@@ -12,8 +12,8 @@ alwaysApply: true
 
 **Ключевые документы для изучения:**
 - `docs/ROCKETCHAT_MIGRATION_PLAN_V3.md` (план миграции)
+- `docs/ROCKETCHAT_STABILITY_PLAN.md` (план устойчивости, обязателен)
 - `docs/ROCKETCHAT_MIGRATION_PROGRESS.md` (прогресс миграции)
-- `docs/ROCKETCHAT_CONSOLIDATED_NOTES.md` (консолидированные заметки)
 - `BESEDKA_MASTER_DOCUMENTATION.md`
 - `BESEDKA_UI_STANDARDS.md`
 - `BESEDKA_USER_SYSTEM.md`
