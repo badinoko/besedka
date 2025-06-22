@@ -18,6 +18,9 @@ from .forms import MessageForm, DiscussionRoomForm
 from django.db.models import Count
 from core.base_views import UnifiedListView
 from django.conf import settings
+import pymongo
+from pymongo import MongoClient
+from datetime import datetime
 
 User = get_user_model()
 
@@ -723,6 +726,124 @@ class RocketChatAuthAPIView(LoginRequiredMixin, View):
                 'authenticated': False,
                 'error': str(e)
             }, status=500)
+
+
+class TestMessageInputView(LoginRequiredMixin, TemplateView):
+    """Тестовая страница для отправки сообщений в Rocket.Chat каналы"""
+    template_name = 'chat/test_message_input.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        context.update({
+            'user_id': str(user.id),
+            'rocketchat_url': f"http://127.0.0.1:3000",
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Отправка тестового сообщения в MongoDB напрямую"""
+        channel = request.POST.get('channel', 'GENERAL')
+        message_text = request.POST.get('message', '').strip()
+
+        if not message_text:
+            test_result = {
+                'status': 'error',
+                'message': 'Сообщение не может быть пустым'
+            }
+        else:
+            test_result = self._send_message_to_mongodb(request.user, channel, message_text)
+
+        context = self.get_context_data(**kwargs)
+        context['test_result'] = test_result
+
+        return self.render_to_response(context)
+
+    def _send_message_to_mongodb(self, user, channel_id, message_text):
+        """Отправляем сообщение напрямую в MongoDB"""
+        try:
+            # Подключаемся к MongoDB
+            client = MongoClient('mongodb://127.0.0.1:27017/')
+            db = client.rocketchat
+
+            # Проверяем существование канала
+            channel = db.rocketchat_room.find_one({'_id': channel_id})
+            if not channel:
+                return {
+                    'status': 'error',
+                    'message': f'Канал {channel_id} не найден в MongoDB'
+                }
+
+            # Проверяем подписку пользователя на канал
+            subscription = db.rocketchat_subscription.find_one({
+                'u.username': user.username,
+                'rid': channel_id
+            })
+
+            if not subscription:
+                return {
+                    'status': 'error',
+                    'message': f'Пользователь {user.username} не подписан на канал {channel_id}',
+                    'details': f'Канал найден: {channel["name"]} ({channel["fname"]}), но подписки нет'
+                }
+
+            # Получаем ID пользователя из Rocket.Chat
+            rocket_user = db.users.find_one({'username': user.username})
+            if not rocket_user:
+                return {
+                    'status': 'error',
+                    'message': f'Пользователь {user.username} не найден в Rocket.Chat'
+                }
+
+            # Создаем сообщение
+            from bson.objectid import ObjectId
+            message_doc = {
+                '_id': ObjectId(),
+                'rid': channel_id,
+                'msg': message_text,
+                'ts': datetime.utcnow(),
+                'u': {
+                    '_id': rocket_user['_id'],
+                    'username': user.username,
+                    'name': rocket_user.get('name', user.username)
+                },
+                't': None,
+                'groupable': False,
+                '_updatedAt': datetime.utcnow()
+            }
+
+            # Вставляем сообщение в базу
+            result = db.rocketchat_message.insert_one(message_doc)
+
+            # Обновляем статистику канала
+            db.rocketchat_room.update_one(
+                {'_id': channel_id},
+                {
+                    '$inc': {'msgs': 1},
+                    '$set': {'lm': datetime.utcnow()}
+                }
+            )
+
+            return {
+                'status': 'success',
+                'message': f'Сообщение успешно отправлено в канал {channel["fname"]}',
+                'details': f'Message ID: {result.inserted_id}',
+                'mongo_result': f'Канал: {channel["name"]} | Пользователь: {user.username}'
+            }
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Ошибка отправки сообщения: {str(e)}',
+                'details': f'MongoDB connection error или другая техническая проблема'
+            }
+        finally:
+            try:
+                client.close()
+            except:
+                pass
 
 
 

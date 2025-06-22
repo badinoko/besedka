@@ -30,3 +30,21 @@ subscriptions.forEach(sub => {
 });
 
 print("\n=== АНАЛИЗ ЗАВЕРШЕН ===");
+
+// Быстрая проверка каналов и подписок
+print("КАНАЛЫ:");
+db.rocketchat_room.find({t:'c'}).forEach(function(doc) {
+    print(doc._id + " | " + doc.name + " | ro:" + (doc.ro || false));
+});
+
+print("\nПОДПИСКИ owner:");
+db.rocketchat_subscription.find({"u.username":"owner"}).forEach(function(doc) {
+    print(doc.rid + " | " + doc.name + " | roles:" + (doc.roles || []));
+});
+
+print("\nНАСТРОЙКИ:");
+const settings = ["Iframe_Restrict_Access", "Message_AllowEditing"];
+settings.forEach(function(setting) {
+    const s = db.rocketchat_settings.findOne({_id: setting});
+    if (s) print(setting + ": " + s.value);
+});
