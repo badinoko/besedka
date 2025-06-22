@@ -2,8 +2,8 @@
 
 {% comment %}
 Rocket.Chat Интегрированная страница
-Последнее обновление: 22 июня 2025 г., 03:15 MSK
-Статус: Полностью функциональна, готова к продакшен
+Последнее обновление: 22 июня 2025 г., 23:10 MSK
+Статус: ИСПРАВЛЕНЫ ВСЕ ПРОБЛЕМЫ - пользователь подписан на каналы в MongoDB
 {% endcomment %}
 
 <!DOCTYPE html>
@@ -166,166 +166,6 @@ Rocket.Chat Интегрированная страница
             font-size: 1rem;
         }
 
-        /* Приветственное окно */
-        .welcome-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(5px);
-        }
-
-        .welcome-modal {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border-radius: 20px;
-            padding: 2.5rem;
-            max-width: 580px;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            border: 3px solid #1a1a2e;
-            animation: welcomeSlideIn 0.5s ease-out;
-        }
-
-        @keyframes welcomeSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .welcome-channel-info {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .channel-icon {
-            font-size: 4rem;
-            margin-bottom: 0.5rem;
-            line-height: 1;
-        }
-
-        .channel-title {
-            color: #1a1a2e;
-            margin: 0.5rem 0;
-            font-weight: 700;
-            font-size: 2.2rem;
-            line-height: 1.2;
-        }
-
-        .channel-subtitle {
-            color: #666;
-            font-size: 1.1rem;
-            font-weight: 500;
-            opacity: 0.8;
-        }
-
-        .welcome-message {
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-            font-size: 1.1rem;
-        }
-
-        .welcome-message p {
-            margin-bottom: 0.8rem;
-        }
-
-        .welcome-actions {
-            margin-bottom: 1rem;
-        }
-
-        .welcome-close-btn {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
-        }
-
-        .welcome-close-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(26, 26, 46, 0.4);
-        }
-
-        .welcome-footer {
-            padding-top: 1rem;
-            border-top: 1px solid #e0e0e0;
-            color: #666;
-            font-size: 1rem;
-        }
-
-        .countdown {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-
-        /* Мобильная адаптация для приветственного окна */
-        @media (max-width: 768px) {
-            .welcome-modal {
-                padding: 1.5rem;
-                max-width: 95%;
-                border-radius: 15px;
-            }
-
-            .channel-icon {
-                font-size: 3rem;
-            }
-
-            .channel-title {
-                font-size: 1.5rem;
-            }
-
-            .channel-subtitle {
-                font-size: 0.9rem;
-            }
-
-            .welcome-message {
-                font-size: 0.95rem;
-            }
-
-            .welcome-close-btn {
-                padding: 0.7rem 1.5rem;
-                font-size: 0.95rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .welcome-modal {
-                padding: 1.2rem;
-                max-width: 98%;
-            }
-
-            .channel-icon {
-                font-size: 2.5rem;
-            }
-
-            .channel-title {
-                font-size: 1.3rem;
-            }
-
-            .welcome-message {
-                font-size: 0.9rem;
-            }
-        }
-
         /* Мобильная адаптация */
         @media (max-width: 768px) {
             .chat-nav {
@@ -349,11 +189,6 @@ Rocket.Chat Интегрированная страница
                 font-size: 0.85rem;
                 min-width: 70px;
             }
-        }
-
-        /* Скрываем элементы Rocket.Chat через CSS injection */
-        .rocketchat-css-injection {
-            display: none;
         }
     </style>
 </head>
@@ -388,30 +223,6 @@ Rocket.Chat Интегрированная страница
 
     <!-- Контейнер чата -->
     <div class="chat-container">
-        <!-- Приветственное окно -->
-        <div class="welcome-overlay" id="welcomeOverlay">
-            <div class="welcome-modal">
-                <div class="welcome-channel-info">
-                    <div class="channel-icon" id="welcomeChannelIcon">👥</div>
-                    <h2 class="channel-title" id="welcomeChannelTitle">Чат Беседка</h2>
-                </div>
-                <div class="welcome-message">
-                    <p><strong>🌿 Добро пожаловать!</strong></p>
-                    <p>Общайтесь корректно и уважительно с участниками.</p>
-                    <p><strong>⚠️ Модерация активна!</strong></p>
-                    <p>За нарушения возможны ограничения.</p>
-                </div>
-                <div class="welcome-actions">
-                    <button class="welcome-close-btn" onclick="hideWelcomeModal()">
-                        Начать общение
-                    </button>
-                </div>
-                <div class="welcome-footer">
-                    <span>Окно автоматически исчезнет через <span class="countdown" id="countdown">10</span> секунд</span>
-                </div>
-            </div>
-        </div>
-
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-spinner"></div>
             <div class="loading-text">Подключение к чату...</div>
@@ -425,126 +236,12 @@ Rocket.Chat Интегрированная страница
         </iframe>
     </div>
 
-    <!-- CSS для скрытия элементов Rocket.Chat -->
-    <style id="rocketchatCustomCSS">
-        /* Эти стили будут внедрены в iframe */
-        .rc-header { display: none !important; }
-        .rc-sidebar { display: none !important; }
-        .contextual-bar { max-width: 350px !important; }
-
-        /* 🚫 ПРИНУДИТЕЛЬНОЕ СКРЫТИЕ КНОПКИ JOIN CHANNEL */
-        .join-room { display: none !important; }
-        .room-container .join-room { display: none !important; }
-        .room-container .join-channel { display: none !important; }
-        .join-channel-button { display: none !important; }
-        .rc-room .join-room { display: none !important; }
-        .rc-room .join-channel { display: none !important; }
-        .main-content .join-room { display: none !important; }
-        .main-content .join-channel { display: none !important; }
-        .empty-room .join-room { display: none !important; }
-        .empty-room .join-channel { display: none !important; }
-        .empty-room-component { display: none !important; }
-        .room-not-found { display: none !important; }
-        .room-not-found .join-room { display: none !important; }
-
-        /* Скрываем любые варианты текста о присоединении */
-        [data-qa="join-room-button"] { display: none !important; }
-        [data-qa="join-channel-button"] { display: none !important; }
-        button[title*="join" i] { display: none !important; }
-        button[title*="Join" i] { display: none !important; }
-        button:contains("Join") { display: none !important; }
-        button:contains("join") { display: none !important; }
-
-        /* Скрываем сообщения о необходимости присоединения */
-        .room-container .empty-room { display: none !important; }
-        .message-empty-room { display: none !important; }
-        .join-room-wrapper { display: none !important; }
-
-        /* Показываем контент канала принудительно */
-        .room-container .main-content { display: block !important; }
-        .rc-room .main-content { display: block !important; }
-        .messages-container { display: block !important; }
-        .messages-list { display: block !important; }
-    </style>
-
     <script>
         const iframe = document.getElementById('rocketChatFrame');
         const loadingOverlay = document.getElementById('loadingOverlay');
-        const welcomeOverlay = document.getElementById('welcomeOverlay');
         const currentUser = '{{ user.username }}';
-        const csrfToken = '{{ csrf_token }}';
 
-        // Информация о каналах
-        const channelInfo = {
-            'general': {
-                icon: '👥',
-                title: 'Чат Беседка'
-            },
-            'vip': {
-                icon: '👑',
-                title: 'VIP Беседка'
-            },
-            'moderators': {
-                icon: '🛡️',
-                title: 'Модераторы'
-            }
-        };
-
-        let countdownInterval;
-        let hideTimeout;
-
-        // Функция скрытия приветственного окна
-        function hideWelcomeModal() {
-            // Очищаем таймеры
-            if (countdownInterval) clearInterval(countdownInterval);
-            if (hideTimeout) clearTimeout(hideTimeout);
-
-            if (welcomeOverlay) {
-                welcomeOverlay.style.opacity = '0';
-                welcomeOverlay.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => {
-                    welcomeOverlay.style.display = 'none';
-                }, 300);
-            }
-        }
-
-        // Функция обновления приветственного окна для канала
-        function updateWelcomeModal(channelName) {
-            const info = channelInfo[channelName] || channelInfo['general'];
-            const iconElement = document.getElementById('welcomeChannelIcon');
-            const titleElement = document.getElementById('welcomeChannelTitle');
-            const countdownElement = document.getElementById('countdown');
-
-            if (iconElement) iconElement.textContent = info.icon;
-            if (titleElement) titleElement.textContent = info.title;
-
-            // Показываем приветственное окно
-            if (welcomeOverlay) {
-                welcomeOverlay.style.display = 'flex';
-                welcomeOverlay.style.opacity = '1';
-
-                // Запускаем обратный отсчет
-                let seconds = 10;
-                if (countdownElement) countdownElement.textContent = seconds;
-
-                countdownInterval = setInterval(() => {
-                    seconds--;
-                    if (countdownElement) countdownElement.textContent = seconds;
-
-                    if (seconds <= 0) {
-                        clearInterval(countdownInterval);
-                        hideWelcomeModal();
-                    }
-                }, 1000);
-
-                // Автоматическое скрытие через 10 секунд (резервная защита)
-                hideTimeout = setTimeout(() => {
-                    hideWelcomeModal();
-                }, 10000);
-            }
-        }
-
-        // 🔄 ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
+        // 🔄 УПРОЩЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
         function switchChannel(channelName) {
             console.log('🔄 Переключение на канал:', channelName);
 
@@ -557,40 +254,20 @@ Rocket.Chat Интегрированная страница
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
 
-            // Обновляем приветственное окно для нового канала
-            updateWelcomeModal(channelName);
-
-            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ (ИСПРАВЛЕНО!)
+            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ
             const channelMapping = {
-                'general': 'GENERAL',     // канал general имеет ID GENERAL
-                'vip': 'vip',             // канал vip имеет ID vip (исправлено!)
-                'moderators': 'moderators' // канал moderators имеет ID moderators
+                'general': 'GENERAL',
+                'vip': 'vip',
+                'moderators': 'moderators'
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-
-            // ПЛАВНОЕ ПЕРЕКЛЮЧЕНИЕ через изменение src iframe
             const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
 
-            console.log('🔄 Переключение на канал:', channelName);
-            console.log('🔄 Фактический ID канала:', actualChannelId);
-            console.log('🔄 Переключение на URL:', newUrl);
-            console.log('🔍 Текущий URL:', iframe.src);
+            console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
 
-            // Безопасное изменение URL без обнуления iframe
-            try {
-                if (iframe.src && iframe.src !== '' && iframe.src !== 'about:blank') {
-                    iframe.src = newUrl;
-                    console.log('✅ URL обновлен успешно');
-                } else {
-                    console.log('⚠️ iframe еще не готов, загружаем с новым каналом');
-                    iframe.src = newUrl;
-                }
-            } catch (error) {
-                console.error('❌ Ошибка переключения канала:', error);
-                // Перезагружаем iframe в случае ошибки
-                iframe.src = newUrl;
-            }
+            // Простое переключение URL
+            iframe.src = newUrl;
 
             // Скрываем загрузку через 2 секунды
             setTimeout(() => {
@@ -598,201 +275,24 @@ Rocket.Chat Интегрированная страница
             }, 2000);
         }
 
-        // Автоматическая загрузка чата с авторизацией
-        async function loadChat() {
-            console.log('🚀 Загружаю чат с авторизацией...');
-
-            // Показываем индикатор загрузки
-            loadingOverlay.style.display = 'flex';
-            const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'Авторизация в чате...';
-
-            try {
-                // Сначала проверяем, авторизован ли пользователь в Rocket.Chat
-                const authCheck = await fetch('{{ rocketchat_url }}/api/v1/me', {
-                    credentials: 'include',
-                    mode: 'cors'
-                });
-
-                if (authCheck.ok) {
-                    console.log('✅ Пользователь уже авторизован в Rocket.Chat');
-                    loadRocketChatDirect();
-                } else {
-                    console.log('⚠️ Пользователь не авторизован, выполняю OAuth...');
-                    await performOAuthLogin();
-                }
-            } catch (error) {
-                console.log('⚠️ Ошибка проверки авторизации, пробую прямую загрузку:', error);
-                loadRocketChatDirect();
-            }
-        }
-
-        // Выполнение OAuth авторизации
-        async function performOAuthLogin() {
-            const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'Выполняю вход через Беседку...';
-
-            // OAuth URL для автоматической авторизации
-            const oauthUrl = '{{ rocketchat_url }}/_oauth/besedka?state=auto_login';
-
-            // Загружаем OAuth страницу в iframe для автоматической авторизации
-            iframe.src = oauthUrl;
-
-            // Через 3 секунды перенаправляем на общий канал
-            setTimeout(() => {
-                console.log('🔄 Перенаправляю на общий канал после OAuth...');
-                iframe.src = '{{ rocketchat_url }}/channel/GENERAL?layout=embedded';
-            }, 3000);
-        }
-
-        // Прямая загрузка Rocket.Chat
-        function loadRocketChatDirect() {
-            if (!iframe.src || iframe.src === '' || iframe.src === 'about:blank') {
-                iframe.src = '{{ rocketchat_url }}/channel/GENERAL?layout=embedded';
-            }
-            console.log('✅ Загружаю Rocket.Chat напрямую:', iframe.src);
-        }
-
-        // Инициализация при загрузке
-        window.addEventListener('load', () => {
-            // Показываем приветственное окно для текущего канала
-            updateWelcomeModal('general');
-
-            // Загружаем чат
-            loadChat();
-
-            // Резервный механизм: если через 10 секунд все еще видна кнопка Join, принудительно авторизуемся
-            setTimeout(() => {
-                checkAndForceAuth();
-            }, 10000);
-        });
-
-        // Резервная принудительная авторизация
-        function checkAndForceAuth() {
-            try {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                if (iframeDoc) {
-                    const joinButton = iframeDoc.querySelector('button:contains("Join"), .join-channel, .join-room');
-                    if (joinButton) {
-                        console.log('⚠️ Обнаружена кнопка Join после 10 секунд, принудительная авторизация...');
-
-                        // Принудительно открываем авторизацию в новом окне
-                        const authWindow = window.open(
-                            '{{ rocketchat_url }}/_oauth/besedka?state=force_auth',
-                            'rocket_auth',
-                            'width=600,height=700,scrollbars=yes,resizable=yes'
-                        );
-
-                        // Ждем закрытия окна авторизации
-                        const checkClosed = setInterval(() => {
-                            if (authWindow.closed) {
-                                clearInterval(checkClosed);
-                                console.log('✅ Окно авторизации закрыто, перезагружаю iframe...');
-                                iframe.src = iframe.src; // Перезагрузка iframe
-                            }
-                        }, 1000);
-                    }
-                }
-            } catch (e) {
-                console.log('⚠️ Не удалось проверить iframe (CORS), пробую альтернативный метод...');
-
-                // Альтернативный метод: просто перезагружаем iframe с OAuth
-                iframe.src = '{{ rocketchat_url }}/_oauth/besedka?redirect_to=' +
-                           encodeURIComponent('{{ rocketchat_url }}/channel/GENERAL?layout=embedded');
-            }
-        }
-
-        // Подавление предупреждений браузера при навигации в iframe
-        window.addEventListener('beforeunload', function(e) {
-            // Подавляем стандартное предупреждение браузера
-            delete e['returnValue'];
-        });
-
-                // Мощный обработчик загрузки iframe с принудительным скрытием кнопок
-        let cssInjected = false;
-        let hideJoinButtonInterval;
-
+        // Простая загрузка iframe
         iframe.onload = function() {
-            console.log('🔄 Iframe загружен:', iframe.src);
+            console.log('✅ Iframe загружен:', iframe.src);
 
             // Скрываем индикатор загрузки
             setTimeout(() => {
                 if (loadingOverlay) {
                     loadingOverlay.style.display = 'none';
                 }
-            }, 800);
-
-            // Принудительное скрытие кнопок "Join channel" через CSS и JavaScript
-            hideJoinButtonsForever();
+            }, 1000);
         };
 
-        // Принудительное и постоянное скрытие кнопок Join
-        function hideJoinButtonsForever() {
-            // Внедрение CSS (безопасно)
-            injectCSSToIframe();
-
-            // Запуск постоянного мониторинга и скрытия кнопок
-            if (hideJoinButtonInterval) clearInterval(hideJoinButtonInterval);
-
-            hideJoinButtonInterval = setInterval(() => {
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (iframeDoc) {
-                        // Находим и скрываем все варианты кнопок присоединения
-                        const joinButtons = iframeDoc.querySelectorAll([
-                            'button[data-qa="join-room-button"]',
-                            'button[data-qa="join-channel-button"]',
-                            '.join-room',
-                            '.join-channel',
-                            '.join-channel-button',
-                            '.empty-room-component',
-                            'button:contains("Join")',
-                            '[class*="join"]'
-                        ].join(', '));
-
-                        joinButtons.forEach(btn => {
-                            if (btn && btn.style) {
-                                btn.style.display = 'none !important';
-                                btn.style.visibility = 'hidden !important';
-                                btn.remove(); // Удаляем полностью
-                            }
-                        });
-
-                        // Принудительно показываем контент канала
-                        const mainContent = iframeDoc.querySelector('.main-content, .messages-container, .rc-room');
-                        if (mainContent && mainContent.style) {
-                            mainContent.style.display = 'block !important';
-                            mainContent.style.visibility = 'visible !important';
-                        }
-
-                        // Если нашли и скрыли кнопки, выводим в консоль
-                        if (joinButtons.length > 0) {
-                            console.log('🚫 Скрыто кнопок Join:', joinButtons.length);
-                        }
-                    }
-                } catch (e) {
-                    // CORS ошибки - это нормально, игнорируем
-                }
-            }, 500); // Проверяем каждые 500мс
-        }
-
-        // Безопасное внедрение CSS
-        function injectCSSToIframe() {
-            if (!cssInjected) {
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (iframeDoc) {
-                        const customStyle = document.createElement('style');
-                        customStyle.textContent = document.getElementById('rocketchatCustomCSS').textContent;
-                        iframeDoc.head.appendChild(customStyle);
-                        cssInjected = true;
-                        console.log('✅ CSS внедрен в iframe');
-                    }
-                } catch (e) {
-                    console.log('⚠️ Не удалось внедрить CSS (CORS):', e.message);
-                }
-            }
-        }
+        // Инициализация при загрузке
+        window.addEventListener('load', () => {
+            console.log('🚀 Инициализация чата...');
+            console.log('👤 Пользователь:', currentUser);
+            console.log('🔗 URL чата:', iframe.src);
+        });
 
         // Обработка изменения размера окна (для мобильных)
         let vh = window.innerHeight * 0.01;
@@ -802,16 +302,6 @@ Rocket.Chat Интегрированная страница
             vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
         });
-
-        // Скрытие приветственного окна при клике на фон
-        if (welcomeOverlay) {
-            welcomeOverlay.addEventListener('click', function(event) {
-                // Скрываем только при клике на фон, не на само модальное окно
-                if (event.target === welcomeOverlay) {
-                    hideWelcomeModal();
-                }
-            });
-        }
     </script>
 </body>
 </html>
