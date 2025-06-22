@@ -2,8 +2,8 @@
 
 {% comment %}
 Rocket.Chat Интегрированная страница
-Последнее обновление: 22 июня 2025 г., 23:10 MSK
-Статус: ИСПРАВЛЕНЫ ВСЕ ПРОБЛЕМЫ - пользователь подписан на каналы в MongoDB
+Последнее обновление: 22 июня 2025 г., 23:30 MSK
+Статус: ИСПРАВЛЕНА корневая причина - owner добавлен в участники каналов
 {% endcomment %}
 
 <!DOCTYPE html>
@@ -166,6 +166,110 @@ Rocket.Chat Интегрированная страница
             font-size: 1rem;
         }
 
+        /* Приветственное окно */
+        .welcome-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .welcome-modal {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 580px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 3px solid #1a1a2e;
+            animation: welcomeSlideIn 0.5s ease-out;
+        }
+
+        @keyframes welcomeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .welcome-channel-info {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .channel-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .channel-title {
+            color: #1a1a2e;
+            margin: 0.5rem 0;
+            font-weight: 700;
+            font-size: 2.2rem;
+            line-height: 1.2;
+        }
+
+        .welcome-message {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .welcome-message p {
+            margin-bottom: 0.8rem;
+        }
+
+        .welcome-actions {
+            margin-bottom: 1rem;
+        }
+
+        .welcome-close-btn {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
+        }
+
+        .welcome-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 26, 46, 0.4);
+        }
+
+        .welcome-footer {
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .countdown {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
         /* Мобильная адаптация */
         @media (max-width: 768px) {
             .chat-nav {
@@ -188,6 +292,20 @@ Rocket.Chat Интегрированная страница
                 padding: 0.5rem 0.8rem;
                 font-size: 0.85rem;
                 min-width: 70px;
+            }
+
+            .welcome-modal {
+                padding: 1.5rem;
+                max-width: 95%;
+                border-radius: 15px;
+            }
+
+            .channel-icon {
+                font-size: 3rem;
+            }
+
+            .channel-title {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -223,6 +341,30 @@ Rocket.Chat Интегрированная страница
 
     <!-- Контейнер чата -->
     <div class="chat-container">
+        <!-- Приветственное окно -->
+        <div class="welcome-overlay" id="welcomeOverlay">
+            <div class="welcome-modal">
+                <div class="welcome-channel-info">
+                    <div class="channel-icon" id="welcomeChannelIcon">👥</div>
+                    <h2 class="channel-title" id="welcomeChannelTitle">Чат Беседка</h2>
+                </div>
+                <div class="welcome-message">
+                    <p><strong>🌿 Добро пожаловать!</strong></p>
+                    <p>Общайтесь корректно и уважительно с участниками.</p>
+                    <p><strong>⚠️ Модерация активна!</strong></p>
+                    <p>За нарушения возможны ограничения.</p>
+                </div>
+                <div class="welcome-actions">
+                    <button class="welcome-close-btn" onclick="hideWelcomeModal()">
+                        Начать общение
+                    </button>
+                </div>
+                <div class="welcome-footer">
+                    <span>Окно автоматически исчезнет через <span class="countdown" id="countdown">10</span> секунд</span>
+                </div>
+            </div>
+        </div>
+
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-spinner"></div>
             <div class="loading-text">Подключение к чату...</div>
@@ -239,9 +381,79 @@ Rocket.Chat Интегрированная страница
     <script>
         const iframe = document.getElementById('rocketChatFrame');
         const loadingOverlay = document.getElementById('loadingOverlay');
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
         const currentUser = '{{ user.username }}';
 
-        // 🔄 УПРОЩЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
+        // Информация о каналах
+        const channelInfo = {
+            'general': {
+                icon: '👥',
+                title: 'Чат Беседка'
+            },
+            'vip': {
+                icon: '👑',
+                title: 'VIP Беседка'
+            },
+            'moderators': {
+                icon: '🛡️',
+                title: 'Модераторы'
+            }
+        };
+
+        let countdownInterval;
+        let hideTimeout;
+
+        // Функция скрытия приветственного окна
+        function hideWelcomeModal() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (hideTimeout) clearTimeout(hideTimeout);
+
+            if (welcomeOverlay) {
+                welcomeOverlay.style.opacity = '0';
+                welcomeOverlay.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    welcomeOverlay.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // Функция обновления приветственного окна для канала
+        function updateWelcomeModal(channelName) {
+            const info = channelInfo[channelName] || channelInfo['general'];
+            const iconElement = document.getElementById('welcomeChannelIcon');
+            const titleElement = document.getElementById('welcomeChannelTitle');
+            const countdownElement = document.getElementById('countdown');
+
+            if (iconElement) iconElement.textContent = info.icon;
+            if (titleElement) titleElement.textContent = info.title;
+
+            // Показываем приветственное окно
+            if (welcomeOverlay) {
+                welcomeOverlay.style.display = 'flex';
+                welcomeOverlay.style.opacity = '1';
+
+                // Запускаем обратный отсчет
+                let seconds = 10;
+                if (countdownElement) countdownElement.textContent = seconds;
+
+                countdownInterval = setInterval(() => {
+                    seconds--;
+                    if (countdownElement) countdownElement.textContent = seconds;
+
+                    if (seconds <= 0) {
+                        clearInterval(countdownInterval);
+                        hideWelcomeModal();
+                    }
+                }, 1000);
+
+                // Автоматическое скрытие через 10 секунд
+                hideTimeout = setTimeout(() => {
+                    hideWelcomeModal();
+                }, 10000);
+            }
+        }
+
+        // 🔄 ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
         function switchChannel(channelName) {
             console.log('🔄 Переключение на канал:', channelName);
 
@@ -253,6 +465,9 @@ Rocket.Chat Интегрированная страница
 
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
+
+            // Обновляем приветственное окно для нового канала
+            updateWelcomeModal(channelName);
 
             // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ
             const channelMapping = {
@@ -266,7 +481,7 @@ Rocket.Chat Интегрированная страница
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
 
-            // Простое переключение URL
+            // Переключение URL
             iframe.src = newUrl;
 
             // Скрываем загрузку через 2 секунды
@@ -275,7 +490,7 @@ Rocket.Chat Интегрированная страница
             }, 2000);
         }
 
-        // Простая загрузка iframe
+        // Загрузка iframe
         iframe.onload = function() {
             console.log('✅ Iframe загружен:', iframe.src);
 
@@ -291,10 +506,12 @@ Rocket.Chat Интегрированная страница
         window.addEventListener('load', () => {
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
-            console.log('🔗 URL чата:', iframe.src);
+
+            // Показываем приветственное окно для текущего канала
+            updateWelcomeModal('general');
         });
 
-        // Обработка изменения размера окна (для мобильных)
+        // Обработка изменения размера окна
         let vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
 
@@ -302,6 +519,15 @@ Rocket.Chat Интегрированная страница
             vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
         });
+
+        // Скрытие приветственного окна при клике на фон
+        if (welcomeOverlay) {
+            welcomeOverlay.addEventListener('click', function(event) {
+                if (event.target === welcomeOverlay) {
+                    hideWelcomeModal();
+                }
+            });
+        }
     </script>
 </body>
 </html>

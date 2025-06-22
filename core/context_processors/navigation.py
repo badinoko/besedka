@@ -88,7 +88,7 @@ def has_admin_access(user):
         return False
 
     role = get_user_role(user)
-    return role in ['owner', 'admin', 'store_owner', 'store_admin']
+    return role in ['owner', 'admin', 'moderator', 'store_owner', 'store_admin']
 
 
 def get_notifications_count(user):
@@ -123,7 +123,7 @@ def get_navigation_items(user):
         # Add admin items based on role
         if role == 'owner':
             items.append({'name': 'Админка', 'url': '/owner_admin/', 'icon': 'settings'})
-        elif role == 'admin':
+        elif role in ['admin', 'moderator']:
             items.append({'name': 'Модерация', 'url': '/moderator_admin/', 'icon': 'shield'})
         elif role == 'store_owner':
             items.append({'name': 'Управление магазином', 'url': '/store_owner_admin/', 'icon': 'store'})
@@ -142,6 +142,7 @@ def get_user_role_badge(user):
     badge_map = {
         'owner': {'class': 'bg-success', 'text': 'Владелец'},
         'admin': {'class': 'bg-primary', 'text': 'Модератор'},
+        'moderator': {'class': 'bg-primary', 'text': 'Модератор'},
         'store_owner': {'class': 'bg-warning text-dark', 'text': 'Владелец магазина'},
         'store_admin': {'class': 'bg-info text-dark', 'text': 'Админ магазина'},
         'user': {'class': 'bg-secondary', 'text': 'Пользователь'},
@@ -158,7 +159,7 @@ def get_admin_navigation_items(user):
         # Владелец уже может войти в админку модераторов из своей админки,
         # дублирующая ссылка не нужна (см. пользовательское требование).
         # items.append({'url': '/moderator_admin/', 'icon': 'fa-shield-alt', 'title': 'Админка модераторов', 'type': 'admin_secondary'})
-    elif role == 'admin':
+    elif role in ['admin', 'moderator']:
         items.append({'url': '/moderator_admin/', 'icon': 'fa-shield-alt', 'title': 'Админка модераторов', 'type': 'admin_primary'})
     elif role == 'store_owner':
         items.append({'url': '/store_owner_admin/', 'icon': 'fa-store', 'title': 'Админка магазина', 'type': 'admin_primary'})

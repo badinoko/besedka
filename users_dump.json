@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "username": "AnonymousUser",
+    "role": "user",
+    "is_staff": false,
+    "is_superuser": false
+  },
+  {
+    "id": 4,
+    "username": "store_owner",
+    "role": "store_owner",
+    "is_staff": true,
+    "is_superuser": false
+  },
+  {
+    "id": 5,
+    "username": "store_admin",
+    "role": "store_admin",
+    "is_staff": true,
+    "is_superuser": false
+  },
+  {
+    "id": 6,
+    "username": "test_user",
+    "role": "user",
+    "is_staff": false,
+    "is_superuser": false
+  },
+  {
+    "id": 3,
+    "username": "admin",
+    "role": "moderator",
+    "is_staff": true,
+    "is_superuser": false
+  },
+  {
+    "id": 2,
+    "username": "owner",
+    "role": "owner",
+    "is_staff": true,
+    "is_superuser": true
+  }
+]
