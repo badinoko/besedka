@@ -10,7 +10,7 @@ Rocket.Chat Интегрированная страница
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Чат - Беседка</title>
     <style>
         * {
@@ -22,6 +22,7 @@ Rocket.Chat Интегрированная страница
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             background: #f5f5f5;
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -36,6 +37,7 @@ Rocket.Chat Интегрированная страница
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .nav-brand {
@@ -44,6 +46,10 @@ Rocket.Chat Интегрированная страница
             gap: 0.5rem;
             font-size: 1.2rem;
             font-weight: 600;
+        }
+
+        .nav-brand .icon {
+            font-size: 1.5rem;
         }
 
         .nav-user {
@@ -59,10 +65,13 @@ Rocket.Chat Интегрированная страница
             gap: 0.5rem;
             flex-shrink: 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .channel-btn {
             flex: 1;
+            min-width: 80px;
             padding: 0.6rem 1rem;
             border: 2px solid #e0e0e0;
             background: white;
@@ -71,6 +80,7 @@ Rocket.Chat Интегрированная страница
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            white-space: nowrap;
             text-align: center;
         }
 
@@ -85,10 +95,20 @@ Rocket.Chat Интегрированная страница
             border-color: #1a1a2e;
         }
 
+        .channel-btn.vip {
+            border-color: #ffd700;
+            color: #b8860b;
+        }
+
         .channel-btn.vip.active {
             background: linear-gradient(135deg, #ffd700, #ffb347);
             border-color: #ffd700;
             color: #1a1a2e;
+        }
+
+        .channel-btn.moderator {
+            border-color: #dc3545;
+            color: #dc3545;
         }
 
         .channel-btn.moderator.active {
@@ -97,115 +117,78 @@ Rocket.Chat Интегрированная страница
             color: white;
         }
 
-        /* Основной контейнер чата */
+        /* Контейнер для iframe */
         .chat-container {
             flex: 1;
-            display: flex;
-            flex-direction: column;
+            position: relative;
             overflow: hidden;
         }
 
-        /* Область сообщений */
-        .messages-container {
-            flex: 1;
+        .chat-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Индикатор загрузки */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: white;
-            overflow-y: auto;
-            padding: 1rem;
-            border-left: 3px solid #1a1a2e;
-        }
-
-        .message {
-            margin-bottom: 1rem;
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #1a1a2e;
-            color: white;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 1000;
         }
 
-        .message-content {
-            flex: 1;
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a1a2e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .message-author {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-
-        .message-time {
-            font-size: 0.75rem;
+        .loading-text {
             color: #666;
-        }
-
-        .message-text {
-            color: #333;
-            line-height: 1.4;
-        }
-
-        /* Форма отправки сообщения */
-        .message-form {
-            background: white;
-            padding: 1rem;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
             font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s ease;
         }
 
-        .message-input:focus {
-            border-color: #1a1a2e;
-        }
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            .chat-nav {
+                padding: 0.5rem;
+            }
 
-        .send-button {
-            padding: 0.75rem 1.5rem;
-            background: #1a1a2e;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
+            .nav-brand {
+                font-size: 1.1rem;
+            }
 
-        .send-button:hover {
-            background: #16213e;
-        }
+            .nav-user {
+                display: none;
+            }
 
-        /* Информационное сообщение */
-        .info-message {
-            background: #e3f2fd;
-            border: 1px solid #bbdefb;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem;
-            text-align: center;
-            color: #1976d2;
+            .channel-switcher {
+                padding: 0.4rem;
+            }
+
+            .channel-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+                min-width: 70px;
+            }
         }
     </style>
 </head>
@@ -213,8 +196,8 @@ Rocket.Chat Интегрированная страница
     <!-- Навигация -->
     <div class="chat-nav">
         <div class="nav-brand">
-            <span>🌿</span>
-            <span>Беседка - Чат</span>
+            <span class="icon">🌿</span>
+            <span>Беседка</span>
         </div>
         <div class="nav-user">
             {{ user.username }}
@@ -240,78 +223,106 @@ Rocket.Chat Интегрированная страница
 
     <!-- Контейнер чата -->
     <div class="chat-container">
-        <!-- Область сообщений -->
-        <div class="messages-container" id="messagesContainer">
-            <div class="info-message">
-                <strong>🚧 Чат временно недоступен</strong><br>
-                Интеграция Rocket.Chat приостановлена для исправления проблем с интерфейсом.<br>
-                Используйте <a href="http://127.0.0.1:3000" target="_blank">прямую ссылку на Rocket.Chat</a> для общения.
-            </div>
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Подключение к чату...</div>
         </div>
-
-        <!-- Форма отправки сообщения -->
-        <div class="message-form">
-            <input
-                type="text"
-                class="message-input"
-                placeholder="Напишите сообщение..."
-                id="messageInput"
-                disabled
-            >
-            <button class="send-button" onclick="sendMessage()" disabled>
-                Отправить
-            </button>
-        </div>
+        <iframe
+            id="rocketChatFrame"
+            class="chat-iframe"
+            src="{{ rocketchat_url }}/channel/GENERAL"
+            allow="camera; microphone; clipboard-write"
+            allowfullscreen>
+        </iframe>
     </div>
 
     <script>
-        let currentChannel = 'general';
+        const iframe = document.getElementById('rocketChatFrame');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const currentUser = '{{ user.username }}';
 
+        // 🔄 ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
         function switchChannel(channelName) {
-            // Убираем активный класс со всех кнопок
+            console.log('🔄 Переключение на канал:', channelName);
+
+            // Обновляем активную кнопку
             document.querySelectorAll('.channel-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
+            document.querySelector(`[data-channel="${channelName}"]`).classList.add('active');
 
-            // Добавляем активный класс к выбранной кнопке
-            const activeBtn = document.querySelector(`[data-channel="${channelName}"]`);
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-            }
+            // Показываем загрузку
+            loadingOverlay.style.display = 'flex';
 
-            currentChannel = channelName;
-            console.log('Переключение на канал:', channelName);
-
-            // Здесь будет логика загрузки сообщений для выбранного канала
-            updateChannelContent(channelName);
-        }
-
-        function updateChannelContent(channelName) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            const channelNames = {
-                'general': 'Общий чат',
-                'vip': 'VIP чат',
-                'moderators': 'Модераторский чат'
+            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ
+            const channelMapping = {
+                'general': 'GENERAL',
+                'vip': 'vip',
+                'moderators': 'moderators'
             };
 
-            messagesContainer.innerHTML = `
-                <div class="info-message">
-                    <strong>📍 ${channelNames[channelName] || 'Чат'}</strong><br>
-                    Интеграция Rocket.Chat приостановлена для исправления проблем.<br>
-                    Используйте <a href="http://127.0.0.1:3000/channel/${channelName === 'general' ? 'GENERAL' : channelName}" target="_blank">прямую ссылку</a> для общения в этом канале.
-                </div>
-            `;
+            const actualChannelId = channelMapping[channelName] || channelName;
+            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}`;
+
+            console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
+
+            // Переключение URL
+            iframe.src = newUrl;
+
+            // Скрываем загрузку через 2 секунды
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 2000);
         }
 
-        function sendMessage() {
-            // Временно отключено
-            console.log('Отправка сообщений временно отключена');
-        }
+        // Загрузка iframe
+        iframe.onload = function() {
+            console.log('✅ Iframe загружен:', iframe.src);
 
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Чат инициализирован в безопасном режиме');
-            updateChannelContent('general');
+            // Скрываем индикатор загрузки
+            setTimeout(() => {
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            }, 1000);
+        };
+
+        // Обработка ошибок iframe
+        iframe.onerror = function() {
+            console.error('❌ Ошибка загрузки iframe:', iframe.src);
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = '<div class="loading-text" style="color: red;">❌ Ошибка загрузки чата</div>';
+            }
+        };
+
+        // Диагностика загрузки
+        setTimeout(() => {
+            console.log('🔍 Диагностика iframe:');
+            console.log('URL:', iframe.src);
+            console.log('Видимость iframe:', iframe.style.display);
+            console.log('Размеры iframe:', iframe.offsetWidth, 'x', iframe.offsetHeight);
+
+            // Если через 5 секунд загрузка все еще показывается, выводим предупреждение
+            if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+                console.warn('⚠️ Iframe не загрузился за 5 секунд');
+                loadingOverlay.innerHTML = '<div class="loading-text" style="color: orange;">⚠️ Загрузка чата занимает больше времени...</div>';
+            }
+        }, 5000);
+
+        // Инициализация при загрузке
+        window.addEventListener('load', () => {
+            console.log('🚀 Инициализация чата...');
+            console.log('👤 Пользователь:', currentUser);
+            console.log('✅ Чат готов к использованию');
+        });
+
+        // Обработка изменения размера окна
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+        window.addEventListener('resize', () => {
+            vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
         });
     </script>
 </body>

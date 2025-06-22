@@ -570,16 +570,6 @@ class VIPChatView(LoginRequiredMixin, TemplateView):
 
 # 🚀 ROCKET.CHAT МИГРАЦИЯ - ИЗОЛИРОВАННАЯ ТЕСТОВАЯ СТРАНИЦА
 
-class RocketChatTestView(TemplateView):
-    """Изолированный view для тестирования Rocket.Chat"""
-    template_name = 'chat/rocketchat_test.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['rocketchat_url'] = 'http://127.0.0.1:3000'
-        return context
-
-
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import redirect
@@ -733,61 +723,3 @@ class RocketChatAuthAPIView(LoginRequiredMixin, View):
                 'authenticated': False,
                 'error': str(e)
             }, status=500)
-
-
-class RocketChatDiagnosticView(TemplateView):
-    """Диагностическая страница для проверки состояния Rocket.Chat"""
-    template_name = 'chat/diagnostic.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        import requests
-
-        # Проверяем доступность Rocket.Chat
-        try:
-            response = requests.get('http://127.0.0.1:3000', timeout=5)
-            rocketchat_status = response.status_code
-            rocketchat_available = True
-        except:
-            rocketchat_status = 0
-            rocketchat_available = False
-
-        # Проверяем Django
-        django_status = 200  # мы уже тут, значит Django работает
-
-        # Информация о пользователе
-        user_info = {
-            'authenticated': self.request.user.is_authenticated,
-            'username': self.request.user.username if self.request.user.is_authenticated else 'Anonymous',
-            'role': getattr(self.request.user, 'role', 'N/A'),
-            'is_staff': self.request.user.is_staff if self.request.user.is_authenticated else False,
-        }
-
-        context.update({
-            'rocketchat_status': rocketchat_status,
-            'rocketchat_available': rocketchat_available,
-            'django_status': django_status,
-            'user_info': user_info,
-            'rocketchat_url': 'http://127.0.0.1:3000',
-        })
-        return context
-
-
-class ChatDiagnosticView(TemplateView):
-    """Диагностическая страница для устранения проблем с чатом"""
-    template_name = 'chat/diagnostic.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Информация о системе
-        context.update({
-            'django_working': True,
-            'user_authenticated': self.request.user.is_authenticated,
-            'current_user': self.request.user if self.request.user.is_authenticated else None,
-            'rocketchat_url': getattr(settings, 'ROCKETCHAT_URL', 'http://127.0.0.1:3000'),
-            'debug_mode': settings.DEBUG,
-        })
-
-        return context
