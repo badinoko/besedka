@@ -230,7 +230,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/general?layout=embedded"
+            src="{{ rocketchat_url }}/channel/general"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -259,15 +259,15 @@ Rocket.Chat Интегрированная страница
             loadingOverlay.style.display = 'flex';
 
             // УНИФИЦИРОВАННЫЙ МАППИНГ КАНАЛОВ (ВЕЗДЕ ОДИНАКОВО!)
-            // Используем точные ID каналов из базы данных
+            // Используем точные ID каналов из базы данных MongoDB
             const channelMapping = {
-                'general': 'general',      // В базе: _id: 'GENERAL' -> 'general'
+                'general': 'general',      // В базе: _id: 'general' (исправлено 23.06.2025)
                 'vip': 'vip',              // В базе: _id: 'vip'
                 'moderators': 'moderators' // В базе: _id: 'moderators'
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
+            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}`;
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
             console.log('🌐 Новый URL:', newUrl);
@@ -277,7 +277,7 @@ Rocket.Chat Интегрированная страница
                 console.log('🚨 СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
                 console.log('   - Mapping работает:', channelMapping['general']);
                 console.log('   - Final URL:', newUrl);
-                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/general?layout=embedded');
+                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/general');
                 console.log('   - ВАЖНО: Канал в коде использует "general" (маленькими)');
             }
 
@@ -304,7 +304,7 @@ Rocket.Chat Интегрированная страница
                     console.log('🚨 КРИТИЧЕСКАЯ ДИАГНОСТИКА КАНАЛА GENERAL:');
                     console.log('   - Iframe загружен полностью');
                     console.log('   - URL содержит general:', iframe.src.includes('general'));
-                    console.log('   - layout=embedded активен:', iframe.src.includes('layout=embedded'));
+                    console.log('   - URL корректный:', iframe.src.includes('/channel/'));
                     console.log('   - ПРОВЕРЬТЕ ПОЛЕ ВВОДА В БРАУЗЕРЕ!');
                 }
                 }, 2000);
