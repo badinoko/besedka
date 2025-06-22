@@ -147,6 +147,94 @@ Rocket.Chat Интегрированная страница
             z-index: 1000;
         }
 
+        /* Приветственное окно с автоскрытием */
+        .welcome-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .welcome-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .welcome-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-content h3 {
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .welcome-message {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .welcome-countdown {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-close-btn {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .welcome-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 26, 46, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -227,6 +315,25 @@ Rocket.Chat Интегрированная страница
             <div class="loading-spinner"></div>
             <div class="loading-text">Подключение к чату...</div>
         </div>
+
+        <!-- Приветственное окно с автоскрытием -->
+        <div class="welcome-modal" id="welcomeModal">
+            <div class="welcome-content">
+                <div class="welcome-icon">🌿💬</div>
+                <h3>Добро пожаловать в чат Беседка!</h3>
+                <p class="welcome-message">
+                    Система чата восстановлена и готова к работе.<br>
+                    <strong>Модерация активна!</strong> За нарушения правил возможен бан.
+                </p>
+                <div class="welcome-countdown">
+                    Окно скроется через <span id="countdown">10</span> секунд
+                </div>
+                <button class="welcome-close-btn" onclick="hideWelcomeModal()">
+                    Начать общение
+                </button>
+            </div>
+        </div>
+
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
@@ -383,11 +490,66 @@ Rocket.Chat Интегрированная страница
         }, 5000);
 
         // Инициализация при загрузке
+        // ФУНКЦИИ ПРИВЕТСТВЕННОГО ОКНА
+        let welcomeTimer;
+        let countdownTimer;
+        let timeLeft = 10;
+
+        function hideWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+
+            // Очищаем таймеры
+            if (welcomeTimer) clearTimeout(welcomeTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+        }
+
+        function startWelcomeCountdown() {
+            const countdownElement = document.getElementById('countdown');
+
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                if (countdownElement) {
+                    countdownElement.textContent = timeLeft;
+                }
+
+                if (timeLeft <= 0) {
+                    hideWelcomeModal();
+                }
+            }, 1000);
+        }
+
+        function initWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                // Автоматическое скрытие через 10 секунд
+                welcomeTimer = setTimeout(hideWelcomeModal, 10000);
+
+                // Запускаем обратный отсчет
+                startWelcomeCountdown();
+
+                // Скрытие при клике на фон
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        hideWelcomeModal();
+                    }
+                });
+            }
+        }
+
         window.addEventListener('load', () => {
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
             console.log('🎯 Канал по умолчанию: general');
             console.log('✅ Чат готов к использованию');
+
+            // Инициализируем приветственное окно
+            initWelcomeModal();
         });
 
         // Обработка изменения размера окна
