@@ -206,7 +206,7 @@ Rocket.Chat Интегрированная страница
 
     <!-- Переключатель каналов -->
     <div class="channel-switcher">
-        <button class="channel-btn active" data-channel="GENERAL" onclick="switchChannel('GENERAL')">
+        <button class="channel-btn active" data-channel="general" onclick="switchChannel('general')">
             Общий
         </button>
         {% if user_has_vip_access %}
@@ -230,7 +230,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/GENERAL?layout=embedded"
+            src="{{ rocketchat_url }}/channel/general?layout=embedded"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -261,7 +261,7 @@ Rocket.Chat Интегрированная страница
             // УНИФИЦИРОВАННЫЙ МАППИНГ КАНАЛОВ (ВЕЗДЕ ОДИНАКОВО!)
             // Используем точные ID каналов из базы данных
             const channelMapping = {
-                'GENERAL': 'GENERAL',      // В базе: _id: 'GENERAL'
+                'general': 'general',      // В базе: _id: 'GENERAL' -> 'general'
                 'vip': 'vip',              // В базе: _id: 'vip'
                 'moderators': 'moderators' // В базе: _id: 'moderators'
             };
@@ -273,12 +273,12 @@ Rocket.Chat Интегрированная страница
             console.log('🌐 Новый URL:', newUrl);
 
             // СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ ПРОБЛЕМНОГО КАНАЛА
-            if (channelName === 'GENERAL') {
+            if (channelName === 'general') {
                 console.log('🚨 СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
-                console.log('   - Mapping работает:', channelMapping['GENERAL']);
+                console.log('   - Mapping работает:', channelMapping['general']);
                 console.log('   - Final URL:', newUrl);
-                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/GENERAL?layout=embedded');
-                console.log('   - ВАЖНО: Канал в базе имеет _id: "GENERAL" (заглавными)');
+                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/general?layout=embedded');
+                console.log('   - ВАЖНО: Канал в коде использует "general" (маленькими)');
             }
 
             // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ IFRAME с timestamp для избежания кеширования
