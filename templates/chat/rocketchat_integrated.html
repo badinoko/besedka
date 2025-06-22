@@ -358,6 +358,9 @@ Rocket.Chat Интегрированная страница
                     <button class="welcome-close-btn" onclick="hideWelcomeModal()">
                         Начать общение
                     </button>
+                    <button class="welcome-close-btn" onclick="window.open('{{ rocketchat_url }}', '_blank')" style="margin-top: 0.5rem; background: #dc3545;">
+                        🚀 Открыть в новом окне
+                    </button>
                 </div>
                 <div class="welcome-footer">
                     <span>Окно автоматически исчезнет через <span class="countdown" id="countdown">10</span> секунд</span>
@@ -372,7 +375,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/GENERAL?layout=embedded"
+            src="{{ rocketchat_url }}/channel/GENERAL"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -477,7 +480,7 @@ Rocket.Chat Интегрированная страница
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
+            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}`;
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
 
@@ -501,6 +504,28 @@ Rocket.Chat Интегрированная страница
                 }
             }, 1000);
         };
+
+        // Обработка ошибок iframe
+        iframe.onerror = function() {
+            console.error('❌ Ошибка загрузки iframe:', iframe.src);
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = '<div class="loading-text" style="color: red;">❌ Ошибка загрузки чата</div>';
+            }
+        };
+
+        // Диагностика загрузки
+        setTimeout(() => {
+            console.log('🔍 Диагностика iframe:');
+            console.log('URL:', iframe.src);
+            console.log('Видимость iframe:', iframe.style.display);
+            console.log('Размеры iframe:', iframe.offsetWidth, 'x', iframe.offsetHeight);
+
+            // Если через 5 секунд загрузка все еще показывается, выводим ошибку
+            if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+                console.warn('⚠️ Iframe не загрузился за 5 секунд');
+                loadingOverlay.innerHTML = '<div class="loading-text" style="color: orange;">⚠️ Загрузка чата занимает больше времени...</div>';
+            }
+        }, 5000);
 
         // Инициализация при загрузке
         window.addEventListener('load', () => {
