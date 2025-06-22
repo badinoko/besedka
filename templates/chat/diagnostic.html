@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Диагностика чата - Беседка{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h2 class="mb-0">🔧 Диагностика системы чата</h2>
+                    <small>Честный отчет о текущем состоянии</small>
+                </div>
+                <div class="card-body">
+
+                    <!-- Состояние Django -->
+                    <div class="alert alert-success mb-4">
+                        <h5>✅ Django сервер</h5>
+                        <p class="mb-0">
+                            <strong>Статус:</strong> Работает стабильно<br>
+                            <strong>Порт:</strong> 8001<br>
+                            <strong>Пользователь:</strong>
+                            {% if user_authenticated %}
+                                {{ current_user.username }} ({{ current_user.role }})
+                            {% else %}
+                                Не авторизован
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Состояние интеграции -->
+                    <div class="alert alert-danger mb-4">
+                        <h5>❌ Rocket.Chat интеграция</h5>
+                        <p class="mb-0">
+                            <strong>Статус:</strong> ПРИОСТАНОВЛЕНА<br>
+                            <strong>Причина:</strong> Проблемы с отображением полного интерфейса Rocket.Chat в iframe<br>
+                            <strong>Проблемы:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Iframe показывал весь интерфейс Rocket.Chat вместо только чата</li>
+                                <li>Поле ввода сообщений было недоступно из-за iframe ограничений</li>
+                                <li>Появились лишние кнопки в интерфейсе</li>
+                                <li>Нестабильная работа подписок и каналов</li>
+                            </ul>
+                        </p>
+                    </div>
+
+                    <!-- Варианты использования -->
+                    <div class="alert alert-info mb-4">
+                        <h5>💡 Доступные варианты чата</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>1. Прямой доступ к Rocket.Chat:</h6>
+                                <a href="{{ rocketchat_url }}" target="_blank" class="btn btn-primary btn-sm">
+                                    🚀 Открыть Rocket.Chat
+                                </a>
+                                <small class="d-block mt-2 text-muted">
+                                    Полнофункциональный чат в отдельном окне
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>2. Каналы по ссылкам:</h6>
+                                <div class="d-flex flex-column gap-1">
+                                    <a href="{{ rocketchat_url }}/channel/GENERAL" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        👥 Общий чат
+                                    </a>
+                                    {% if current_user.role == 'owner' %}
+                                    <a href="{{ rocketchat_url }}/channel/vip" target="_blank" class="btn btn-outline-warning btn-sm">
+                                        👑 VIP чат
+                                    </a>
+                                    {% endif %}
+                                    {% if current_user.is_staff %}
+                                    <a href="{{ rocketchat_url }}/channel/moderators" target="_blank" class="btn btn-outline-danger btn-sm">
+                                        🛡️ Модераторы
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Техническая информация -->
+                    <div class="alert alert-secondary mb-4">
+                        <h5>🔧 Техническая информация</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Система:</strong>
+                                <ul class="mb-0">
+                                    <li>Django: Работает</li>
+                                    <li>PostgreSQL: Активна</li>
+                                    <li>Redis: Активен</li>
+                                    <li>Rocket.Chat: {{ rocketchat_url }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Проблемы:</strong>
+                                <ul class="mb-0">
+                                    <li>Iframe интеграция нестабильна</li>
+                                    <li>Требуется переработка подхода</li>
+                                    <li>Необходимо API решение</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Действия -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="/" class="btn btn-secondary">
+                            ← Вернуться на главную
+                        </a>
+                        <a href="/chat/integrated/" class="btn btn-warning">
+                            🚧 Посмотреть приостановленную интеграцию
+                        </a>
+                        <a href="{{ rocketchat_url }}" target="_blank" class="btn btn-success">
+                            💬 Использовать рабочий чат
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
