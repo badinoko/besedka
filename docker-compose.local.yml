@@ -44,25 +44,10 @@ services:
       - "27017:27017"  # Публикуем порт для прямого доступа к MongoDB
     restart: unless-stopped
 
-  mongo-init-replica:
-    image: mongo:6
-    depends_on:
-      - mongo
-    restart: "no"
-    command: >
-      bash -c "
-        until mongosh --host mongo:27017 --eval 'rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongo:27017\"}]})' ; do
-          echo 'Waiting for mongo...' ;
-          sleep 5 ;
-        done &&
-        echo 'Replica set initialized successfully' &&
-        exit 0
-      "
-
   rocketchat:
     image: rocketchat/rocket.chat:7.7.1
     depends_on:
-      - mongo-init-replica
+      - mongo
     ports:
       - "3000:3000"  # Публикуем для разработки
     environment:
