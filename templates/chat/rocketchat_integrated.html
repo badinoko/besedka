@@ -337,11 +337,15 @@ Rocket.Chat Интегрированная страница
             Модераторы
         </button>
         {% endif %}
+        <button class="channel-btn" onclick="window.open('{{ rocketchat_url }}', '_blank')" style="background: #dc3545; color: white; border-color: #dc3545;">
+            🚀 Новое окно
+        </button>
     </div>
 
     <!-- Контейнер чата -->
     <div class="chat-container">
-        <!-- Приветственное окно -->
+        <!-- Временно убрано приветственное окно для устранения проблемы загрузки -->
+        <!--
         <div class="welcome-overlay" id="welcomeOverlay">
             <div class="welcome-modal">
                 <div class="welcome-channel-info">
@@ -367,8 +371,9 @@ Rocket.Chat Интегрированная страница
                 </div>
             </div>
         </div>
+        -->
 
-        <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
             <div class="loading-spinner"></div>
             <div class="loading-text">Подключение к чату...</div>
         </div>
@@ -469,9 +474,6 @@ Rocket.Chat Интегрированная страница
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
 
-            // Обновляем приветственное окно для нового канала
-            updateWelcomeModal(channelName);
-
             // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ
             const channelMapping = {
                 'general': 'GENERAL',
@@ -532,8 +534,8 @@ Rocket.Chat Интегрированная страница
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
 
-            // Показываем приветственное окно для текущего канала
-            updateWelcomeModal('general');
+            // Приветственное окно временно отключено
+            console.log('✅ Чат готов к использованию');
         });
 
         // Обработка изменения размера окна
