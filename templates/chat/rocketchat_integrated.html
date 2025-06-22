@@ -598,22 +598,59 @@ Rocket.Chat Интегрированная страница
             }, 2000);
         }
 
-        // Автоматическая загрузка чата (ИСПРАВЛЕННАЯ ЛОГИКА)
+        // Автоматическая загрузка чата с авторизацией
         async function loadChat() {
-            console.log('🚀 Загружаю чат...');
+            console.log('🚀 Загружаю чат с авторизацией...');
 
             // Показываем индикатор загрузки
             loadingOverlay.style.display = 'flex';
             const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'Подключение к чату...';
+            if (loadingText) loadingText.textContent = 'Авторизация в чате...';
 
-            // Iframe уже загружается с правильным URL из шаблона
-            // Не перезаписываем src если он уже установлен
+            try {
+                // Сначала проверяем, авторизован ли пользователь в Rocket.Chat
+                const authCheck = await fetch('{{ rocketchat_url }}/api/v1/me', {
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+
+                if (authCheck.ok) {
+                    console.log('✅ Пользователь уже авторизован в Rocket.Chat');
+                    loadRocketChatDirect();
+                } else {
+                    console.log('⚠️ Пользователь не авторизован, выполняю OAuth...');
+                    await performOAuthLogin();
+                }
+            } catch (error) {
+                console.log('⚠️ Ошибка проверки авторизации, пробую прямую загрузку:', error);
+                loadRocketChatDirect();
+            }
+        }
+
+        // Выполнение OAuth авторизации
+        async function performOAuthLogin() {
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingText) loadingText.textContent = 'Выполняю вход через Беседку...';
+
+            // OAuth URL для автоматической авторизации
+            const oauthUrl = '{{ rocketchat_url }}/_oauth/besedka?state=auto_login';
+
+            // Загружаем OAuth страницу в iframe для автоматической авторизации
+            iframe.src = oauthUrl;
+
+            // Через 3 секунды перенаправляем на общий канал
+            setTimeout(() => {
+                console.log('🔄 Перенаправляю на общий канал после OAuth...');
+                iframe.src = '{{ rocketchat_url }}/channel/GENERAL?layout=embedded';
+            }, 3000);
+        }
+
+        // Прямая загрузка Rocket.Chat
+        function loadRocketChatDirect() {
             if (!iframe.src || iframe.src === '' || iframe.src === 'about:blank') {
                 iframe.src = '{{ rocketchat_url }}/channel/GENERAL?layout=embedded';
             }
-
-            console.log('✅ Iframe использует URL:', iframe.src);
+            console.log('✅ Загружаю Rocket.Chat напрямую:', iframe.src);
         }
 
         // Инициализация при загрузке
@@ -623,7 +660,47 @@ Rocket.Chat Интегрированная страница
 
             // Загружаем чат
             loadChat();
+
+            // Резервный механизм: если через 10 секунд все еще видна кнопка Join, принудительно авторизуемся
+            setTimeout(() => {
+                checkAndForceAuth();
+            }, 10000);
         });
+
+        // Резервная принудительная авторизация
+        function checkAndForceAuth() {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (iframeDoc) {
+                    const joinButton = iframeDoc.querySelector('button:contains("Join"), .join-channel, .join-room');
+                    if (joinButton) {
+                        console.log('⚠️ Обнаружена кнопка Join после 10 секунд, принудительная авторизация...');
+
+                        // Принудительно открываем авторизацию в новом окне
+                        const authWindow = window.open(
+                            '{{ rocketchat_url }}/_oauth/besedka?state=force_auth',
+                            'rocket_auth',
+                            'width=600,height=700,scrollbars=yes,resizable=yes'
+                        );
+
+                        // Ждем закрытия окна авторизации
+                        const checkClosed = setInterval(() => {
+                            if (authWindow.closed) {
+                                clearInterval(checkClosed);
+                                console.log('✅ Окно авторизации закрыто, перезагружаю iframe...');
+                                iframe.src = iframe.src; // Перезагрузка iframe
+                            }
+                        }, 1000);
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Не удалось проверить iframe (CORS), пробую альтернативный метод...');
+
+                // Альтернативный метод: просто перезагружаем iframe с OAuth
+                iframe.src = '{{ rocketchat_url }}/_oauth/besedka?redirect_to=' +
+                           encodeURIComponent('{{ rocketchat_url }}/channel/GENERAL?layout=embedded');
+            }
+        }
 
         // Подавление предупреждений браузера при навигации в iframe
         window.addEventListener('beforeunload', function(e) {
@@ -631,8 +708,10 @@ Rocket.Chat Интегрированная страница
             delete e['returnValue'];
         });
 
-        // Обработчик загрузки iframe (ОПТИМИЗИРОВАННЫЙ)
+                // Мощный обработчик загрузки iframe с принудительным скрытием кнопок
         let cssInjected = false;
+        let hideJoinButtonInterval;
+
         iframe.onload = function() {
             console.log('🔄 Iframe загружен:', iframe.src);
 
@@ -643,7 +722,62 @@ Rocket.Chat Интегрированная страница
                 }
             }, 800);
 
-            // Внедряем CSS только один раз
+            // Принудительное скрытие кнопок "Join channel" через CSS и JavaScript
+            hideJoinButtonsForever();
+        };
+
+        // Принудительное и постоянное скрытие кнопок Join
+        function hideJoinButtonsForever() {
+            // Внедрение CSS (безопасно)
+            injectCSSToIframe();
+
+            // Запуск постоянного мониторинга и скрытия кнопок
+            if (hideJoinButtonInterval) clearInterval(hideJoinButtonInterval);
+
+            hideJoinButtonInterval = setInterval(() => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc) {
+                        // Находим и скрываем все варианты кнопок присоединения
+                        const joinButtons = iframeDoc.querySelectorAll([
+                            'button[data-qa="join-room-button"]',
+                            'button[data-qa="join-channel-button"]',
+                            '.join-room',
+                            '.join-channel',
+                            '.join-channel-button',
+                            '.empty-room-component',
+                            'button:contains("Join")',
+                            '[class*="join"]'
+                        ].join(', '));
+
+                        joinButtons.forEach(btn => {
+                            if (btn && btn.style) {
+                                btn.style.display = 'none !important';
+                                btn.style.visibility = 'hidden !important';
+                                btn.remove(); // Удаляем полностью
+                            }
+                        });
+
+                        // Принудительно показываем контент канала
+                        const mainContent = iframeDoc.querySelector('.main-content, .messages-container, .rc-room');
+                        if (mainContent && mainContent.style) {
+                            mainContent.style.display = 'block !important';
+                            mainContent.style.visibility = 'visible !important';
+                        }
+
+                        // Если нашли и скрыли кнопки, выводим в консоль
+                        if (joinButtons.length > 0) {
+                            console.log('🚫 Скрыто кнопок Join:', joinButtons.length);
+                        }
+                    }
+                } catch (e) {
+                    // CORS ошибки - это нормально, игнорируем
+                }
+            }, 500); // Проверяем каждые 500мс
+        }
+
+        // Безопасное внедрение CSS
+        function injectCSSToIframe() {
             if (!cssInjected) {
                 try {
                     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -658,7 +792,7 @@ Rocket.Chat Интегрированная страница
                     console.log('⚠️ Не удалось внедрить CSS (CORS):', e.message);
                 }
             }
-        };
+        }
 
         // Обработка изменения размера окна (для мобильных)
         let vh = window.innerHeight * 0.01;
