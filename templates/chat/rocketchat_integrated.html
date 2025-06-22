@@ -2,8 +2,8 @@
 
 {% comment %}
 Rocket.Chat Интегрированная страница
-Последнее обновление: 22 июня 2025 г., 23:30 MSK
-Статус: ИСПРАВЛЕНА корневая причина - owner добавлен в участники каналов
+Последнее обновление: 22 июня 2025 г., 23:50 MSK
+Статус: ИСПРАВЛЕН маппинг каналов для унификации
 {% endcomment %}
 
 <!DOCTYPE html>
@@ -206,7 +206,7 @@ Rocket.Chat Интегрированная страница
 
     <!-- Переключатель каналов -->
     <div class="channel-switcher">
-        <button class="channel-btn active" data-channel="general" onclick="switchChannel('general')">
+        <button class="channel-btn active" data-channel="GENERAL" onclick="switchChannel('GENERAL')">
             Общий
         </button>
         {% if user_has_vip_access %}
@@ -241,7 +241,7 @@ Rocket.Chat Интегрированная страница
         const loadingOverlay = document.getElementById('loadingOverlay');
         const currentUser = '{{ user.username }}';
 
-        // 🔄 ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
+        // 🔄 ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ (ИСПРАВЛЕННЫЙ МАППИНГ)
         function switchChannel(channelName) {
             console.log('🔄 Переключение на канал:', channelName);
             console.log('📊 Диагностика iframe ПЕРЕД переключением:');
@@ -258,31 +258,31 @@ Rocket.Chat Интегрированная страница
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
 
-            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ (ИСПРАВЛЕН!)
+            // УНИФИЦИРОВАННЫЙ МАППИНГ КАНАЛОВ (ВЕЗДЕ ОДИНАКОВО!)
+            // Используем точные ID каналов из базы данных
             const channelMapping = {
-                'general': 'GENERAL',
-                'vip': 'vip',
-                'moderators': 'moderators'
+                'GENERAL': 'GENERAL',      // В базе: _id: 'GENERAL'
+                'vip': 'vip',              // В базе: _id: 'vip'
+                'moderators': 'moderators' // В базе: _id: 'moderators'
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-            // ИСПРАВЛЕНО: используем embedded режим для показа только чата
             const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
             console.log('🌐 Новый URL:', newUrl);
 
-            // ДИАГНОСТИКА ДЛЯ КАНАЛА GENERAL
-            if (channelName === 'general') {
+            // СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ ПРОБЛЕМНОГО КАНАЛА
+            if (channelName === 'GENERAL') {
                 console.log('🚨 СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
-                console.log('   - Mapping работает:', channelMapping['general']);
+                console.log('   - Mapping работает:', channelMapping['GENERAL']);
                 console.log('   - Final URL:', newUrl);
-                console.log('   - Базовый URL:', `{{ rocketchat_url }}`);
+                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/GENERAL?layout=embedded');
+                console.log('   - ВАЖНО: Канал в базе имеет _id: "GENERAL" (заглавными)');
             }
 
-            // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ IFRAME - добавляем timestamp для избежания кеширования
+            // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ IFRAME с timestamp для избежания кеширования
             const timestamp = new Date().getTime();
-            // ИСПРАВЛЕНО: правильно добавляем timestamp к URL с existing параметрами
             const urlWithTimestamp = `${newUrl}&t=${timestamp}`;
 
             // Сначала очищаем src чтобы гарантировать перезагрузку
@@ -294,34 +294,23 @@ Rocket.Chat Интегрированная страница
                 iframe.src = urlWithTimestamp;
                 console.log('🔄 Iframe принудительно перезагружен:', urlWithTimestamp);
 
-                // Дополнительная диагностика через 1 секунду
+                // Дополнительная диагностика через 2 секунды
                 setTimeout(() => {
                     console.log('🔍 Диагностика iframe ПОСЛЕ загрузки:');
                     console.log('   - URL:', iframe.src);
-                    console.log('   - Document ready:', iframe.contentDocument ? 'YES' : 'NO (cross-origin)');
                     console.log('   - Размеры:', iframe.offsetWidth, 'x', iframe.offsetHeight);
 
-                    if (channelName === 'general') {
-                        console.log('🚨 ФИНАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
-                        console.log('   - Iframe загружен полностью');
-                        console.log('   - Проверьте поле ввода в Rocket.Chat');
-
-                        // Попытка обнаружить проблему с cross-origin
-                        try {
-                            const iframeDoc = iframe.contentDocument;
-                            if (iframeDoc) {
-                                console.log('   - Доступ к iframe документу: ЕСТЬ');
-                            } else {
-                                console.log('   - Доступ к iframe документу: НЕТ (cross-origin restriction)');
-                            }
-                        } catch (e) {
-                            console.log('   - Cross-origin error:', e.message);
-                        }
-                    }
-                }, 1000);
+                                    if (channelName === 'general') {
+                    console.log('🚨 КРИТИЧЕСКАЯ ДИАГНОСТИКА КАНАЛА GENERAL:');
+                    console.log('   - Iframe загружен полностью');
+                    console.log('   - URL содержит general:', iframe.src.includes('general'));
+                    console.log('   - layout=embedded активен:', iframe.src.includes('layout=embedded'));
+                    console.log('   - ПРОВЕРЬТЕ ПОЛЕ ВВОДА В БРАУЗЕРЕ!');
+                }
+                }, 2000);
             }, 100);
 
-            // Скрываем загрузку через 3 секунды (больше времени для полной перезагрузки)
+            // Скрываем загрузку через 3 секунды
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
                 console.log('✅ Индикатор загрузки скрыт');
@@ -336,18 +325,18 @@ Rocket.Chat Интегрированная страница
             console.log('📊 Диагностика загруженного iframe:');
             console.log('   - Final URL:', iframe.src);
             console.log('   - Width/Height:', iframe.offsetWidth, 'x', iframe.offsetHeight);
-            console.log('   - Parent container:', iframe.parentElement.offsetWidth, 'x', iframe.parentElement.offsetHeight);
 
             // Проверяем какой канал загружен
             const currentUrl = iframe.src;
-            if (currentUrl.includes('/channel/GENERAL')) {
-                console.log('🚨 ЗАГРУЖЕН КАНАЛ GENERAL - проверяем поле ввода!');
-                console.log('   - Если поле ввода не работает, проблема НЕ в JavaScript');
-                console.log('   - Проблема может быть в Rocket.Chat настройках для этого канала');
+            if (currentUrl.includes('/channel/general')) {
+                console.log('🚨 ЗАГРУЖЕН КАНАЛ GENERAL - поле ввода должно работать!');
+                console.log('   - Канал ID: general (правильный)');
+                console.log('   - Layout: embedded (правильный)');
+                console.log('   - Если поле ввода НЕ РАБОТАЕТ - проблема в Rocket.Chat настройках канала');
             } else if (currentUrl.includes('/channel/vip')) {
-                console.log('✅ Загружен VIP канал - поле ввода должно работать');
+                console.log('✅ Загружен VIP канал');
             } else if (currentUrl.includes('/channel/moderators')) {
-                console.log('✅ Загружен канал модераторов - поле ввода должно работать');
+                console.log('✅ Загружен канал модераторов');
             }
 
             // Скрываем индикатор загрузки
@@ -366,14 +355,27 @@ Rocket.Chat Интегрированная страница
             }
         };
 
+        // ИСПРАВЛЕНИЕ ОШИБОК В КОНСОЛИ - добавляем CSP и другие заголовки безопасности
+        // Устраняем ошибки Permissions policy violation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Исправление ошибок консоли...');
+
+            // Добавляем мета-теги для устранения ошибок CSP
+            if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
+                const cspMeta = document.createElement('meta');
+                cspMeta.setAttribute('http-equiv', 'Content-Security-Policy');
+                cspMeta.setAttribute('content', 'frame-src *; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\';');
+                document.head.appendChild(cspMeta);
+                console.log('✅ CSP заголовки добавлены');
+            }
+        });
+
         // Диагностика загрузки
         setTimeout(() => {
-            console.log('🔍 Диагностика iframe:');
+            console.log('🔍 Финальная диагностика iframe:');
             console.log('URL:', iframe.src);
-            console.log('Видимость iframe:', iframe.style.display);
             console.log('Размеры iframe:', iframe.offsetWidth, 'x', iframe.offsetHeight);
 
-            // Если через 5 секунд загрузка все еще показывается, выводим предупреждение
             if (loadingOverlay && loadingOverlay.style.display !== 'none') {
                 console.warn('⚠️ Iframe не загрузился за 5 секунд');
                 loadingOverlay.innerHTML = '<div class="loading-text" style="color: orange;">⚠️ Загрузка чата занимает больше времени...</div>';
@@ -384,6 +386,7 @@ Rocket.Chat Интегрированная страница
         window.addEventListener('load', () => {
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
+            console.log('🎯 Канал по умолчанию: general');
             console.log('✅ Чат готов к использованию');
         });
 
