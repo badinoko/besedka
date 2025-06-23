@@ -844,4 +844,114 @@ class TestMessageInputView(LoginRequiredMixin, TemplateView):
                 pass
 
 
+# 🔐 OAuth API Views для интеграции с Rocket.Chat
+
+class RocketChatOAuthTokenView(View):
+    """API endpoint для получения OAuth токена от Rocket.Chat"""
+
+    def post(self, request):
+        """Обработка запроса токена от Rocket.Chat OAuth"""
+        try:
+            # Получаем параметры OAuth
+            client_id = request.POST.get('client_id')
+            client_secret = request.POST.get('client_secret')
+            grant_type = request.POST.get('grant_type')
+            code = request.POST.get('code')
+
+            # Проверяем Client ID и Secret
+            if client_id != 'BesedkaRocketChat2025' or client_secret != 'SecureSecretKey2025BesedkaRocketChatSSO':
+                return JsonResponse({'error': 'invalid_client'}, status=401)
+
+            if grant_type != 'authorization_code':
+                return JsonResponse({'error': 'unsupported_grant_type'}, status=400)
+
+            # Для упрощения используем статический токен
+            # В продакшене здесь должна быть полноценная OAuth логика
+            access_token = 'besedka_access_token_' + str(datetime.now().timestamp())
+
+            return JsonResponse({
+                'access_token': access_token,
+                'token_type': 'Bearer',
+                'expires_in': 3600,
+                'refresh_token': 'besedka_refresh_token',
+                'scope': 'read'
+            })
+
+        except Exception as e:
+            return JsonResponse({'error': 'server_error', 'details': str(e)}, status=500)
+
+
+class RocketChatOAuthUserView(View):
+    """API endpoint для получения информации о пользователе"""
+
+    def get(self, request):
+        """Возвращает информацию о текущем пользователе для Rocket.Chat"""
+        try:
+            # УПРОЩЕННАЯ ЛОГИКА: работаем только с авторизованными пользователями Django
+            if not request.user.is_authenticated:
+                return JsonResponse({
+                    'error': 'unauthorized',
+                    'message': 'Пользователь не авторизован в Django'
+                }, status=401)
+
+            user = request.user
+
+            # Проверяем обязательные поля пользователя
+            if not hasattr(user, 'role'):
+                return JsonResponse({
+                    'error': 'user_incomplete',
+                    'message': 'У пользователя нет поля role'
+                }, status=400)
+
+            # Простой маппинг ролей для Rocket.Chat
+            role_mapping = {
+                'owner': ['admin', 'vip', 'user'],
+                'moderator': ['admin', 'user'],
+                'store_owner': ['user'],
+                'store_admin': ['user'],
+                'user': ['user']
+            }
+
+            rocket_roles = role_mapping.get(user.role, ['user'])
+
+            # Определяем каналы на основе роли
+            channels = ['general']  # Всем доступен общий канал
+            if user.role == 'owner':
+                channels.extend(['vip', 'moderators'])
+            elif user.role == 'moderator':
+                channels.append('moderators')
+
+            # Простое получение avatar без сложной логики
+            avatar_url = '/static/images/default_avatar.svg'
+
+            # Возвращаем данные пользователя в простом формате
+            user_data = {
+                'id': str(user.id),
+                'username': user.username,
+                'email': getattr(user, 'email', ''),
+                'name': user.username,  # Упрощаем - просто username
+                'role': user.role,
+                'roles': rocket_roles,
+                'channels': channels,
+                'avatar': avatar_url,
+                'active': True,
+                'verified': True
+            }
+
+            logger.info(f"✅ RocketChat OAuth user data for {user.username}: {user_data}")
+            return JsonResponse(user_data)
+
+        except Exception as e:
+            logger.error(f"❌ RocketChat OAuth user error: {str(e)}")
+            return JsonResponse({
+                'error': 'server_error',
+                'message': str(e),
+                'debug_info': f'User: {request.user}, Authenticated: {request.user.is_authenticated}'
+            }, status=500)
+
+    def post(self, request):
+        """Альтернативный метод для POST запросов"""
+        return self.get(request)
+
+
 

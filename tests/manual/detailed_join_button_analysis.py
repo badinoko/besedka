@@ -62,10 +62,10 @@ class JoinButtonAnalyzer:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
 
-        # Включаем логирование
+        # Включаем логирование (исправлен для новых версий Chrome)
         chrome_options.add_argument("--enable-logging")
         chrome_options.add_argument("--log-level=0")
-        chrome_options.add_experimental_option("loggingPrefs", {
+        chrome_options.set_capability("goog:loggingPrefs", {
             "browser": "ALL",
             "driver": "ALL",
             "performance": "ALL"
