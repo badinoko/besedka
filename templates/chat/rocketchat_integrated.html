@@ -337,7 +337,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/embed?layout=embedded&channel=general"
+            src="{{ rocketchat_url }}/channel/general?layout=embedded"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -374,17 +374,17 @@ Rocket.Chat Интегрированная страница
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-            const newUrl = `{{ rocketchat_url }}/embed?layout=embedded&channel=${actualChannelId}`;
+            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
-            console.log('🌐 Новый URL (embed):', newUrl);
+            console.log('🌐 Новый URL (channel+embedded):', newUrl);
 
             // СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ ПРОБЛЕМНОГО КАНАЛА
             if (channelName === 'general') {
                 console.log('🚨 СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
                 console.log('   - Mapping работает:', channelMapping['general']);
                 console.log('   - Final URL:', newUrl);
-                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/embed?layout=embedded&channel=general');
+                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/general?layout=embedded');
                 console.log('   - ВАЖНО: Канал в коде использует "general" (маленькими)');
             }
 
@@ -435,16 +435,16 @@ Rocket.Chat Интегрированная страница
 
             // Проверяем какой канал загружен
             const currentUrl = iframe.src;
-            if (currentUrl.includes('channel=general')) {
-                console.log('🚨 ЗАГРУЖЕН КАНАЛ GENERAL (EMBED) - поле ввода должно работать!');
+            if (currentUrl.includes('/channel/general')) {
+                console.log('🚨 ЗАГРУЖЕН КАНАЛ GENERAL (EMBEDDED) - поле ввода должно работать!');
                 console.log('   - Канал ID: general (правильный)');
-                console.log('   - Layout: embedded (правильный)');
-                console.log('   - URL режим: embed (исправлено для iframe)');
-                console.log('   - Если поле ввода НЕ РАБОТАЕТ - проверьте настройки Rocket.Chat');
-            } else if (currentUrl.includes('channel=vip')) {
-                console.log('✅ Загружен VIP канал (embed режим)');
-            } else if (currentUrl.includes('channel=moderators')) {
-                console.log('✅ Загружен канал модераторов (embed режим)');
+                console.log('   - Layout: embedded (должен скрывать навигацию)');
+                console.log('   - URL режим: /channel/general?layout=embedded');
+                console.log('   - Если НАВИГАЦИЯ ВИДНА - проблема с layout=embedded');
+            } else if (currentUrl.includes('/channel/vip')) {
+                console.log('✅ Загружен VIP канал (embedded режим)');
+            } else if (currentUrl.includes('/channel/moderators')) {
+                console.log('✅ Загружен канал модераторов (embedded режим)');
             }
 
             // Скрываем индикатор загрузки
