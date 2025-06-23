@@ -10,8 +10,8 @@
     console.log('🚀 Auto Join Fix загружен');
 
     let autoJoinAttempts = 0;
-    const maxAutoJoinAttempts = 10;
-    const autoJoinInterval = 2000; // 2 секунды
+    const maxAutoJoinAttempts = 15;
+    const autoJoinInterval = 1500; // 1.5 секунды
 
     /**
      * Функция поиска и автоматического нажатия кнопки Join
@@ -159,31 +159,60 @@
                 console.log('📦 Auto Join скрипт загружен внутри Rocket.Chat iframe');
 
                 function findAndClickJoinButton() {
-                    const joinSelectors = [
-                        '[data-qa="join-channel"]',
-                        'button[title*="Join"]',
-                        '.join-channel-button',
-                        '[class*="join"]',
-                        'button:contains("Join")',
-                        '.rc-button--primary:contains("Join")'
-                    ];
+                                         const joinSelectors = [
+                         '[data-qa="join-channel"]',
+                         'button[title*="Join"]',
+                         'button[aria-label*="Join"]',
+                         '.join-channel-button',
+                         '.join-channel',
+                         '[class*="join"]',
+                         'button:contains("Join")',
+                         '.rc-button--primary:contains("Join")',
+                         '.rc-button:contains("Join")',
+                         'button[type="button"]:contains("Join")',
+                         '[role="button"]:contains("Join")',
+                         '.button:contains("Join")',
+                         'a:contains("Join")'
+                     ];
 
-                    for (const selector of joinSelectors) {
-                        const button = document.querySelector(selector);
-                        if (button) {
-                            console.log('✅ Найдена кнопка Join:', selector);
-                            button.click();
+                                         for (const selector of joinSelectors) {
+                         const button = document.querySelector(selector);
+                         if (button) {
+                             console.log('✅ Найдена кнопка Join:', selector);
+                             button.click();
 
-                            // Уведомляем родительское окно
-                            window.parent.postMessage({
-                                type: 'JOIN_BUTTON_FOUND',
-                                selector: selector
-                            }, '*');
+                             // Уведомляем родительское окно
+                             window.parent.postMessage({
+                                 type: 'JOIN_BUTTON_FOUND',
+                                 selector: selector
+                             }, '*');
 
-                            return true;
-                        }
-                    }
-                    return false;
+                             return true;
+                         }
+                     }
+
+                     // Дополнительный поиск по текстовому содержимому
+                     const allButtons = document.querySelectorAll('button, [role="button"], .button, a');
+                     for (const button of allButtons) {
+                         const text = button.textContent || button.innerText || '';
+                         if (text.toLowerCase().includes('join') &&
+                             (text.toLowerCase().includes('channel') ||
+                              text.toLowerCase().includes('general') ||
+                              text.toLowerCase().includes('присоединить'))) {
+                             console.log('✅ Найдена кнопка Join по тексту:', text);
+                             button.click();
+
+                             window.parent.postMessage({
+                                 type: 'JOIN_BUTTON_FOUND',
+                                 selector: 'text-based',
+                                 text: text
+                             }, '*');
+
+                             return true;
+                         }
+                     }
+
+                     return false;
                 }
 
                 // Слушаем сообщения от родительского окна
@@ -199,8 +228,10 @@
                     }
                 });
 
-                // Автоматический поиск кнопки при загрузке
-                setTimeout(findAndClickJoinButton, 2000);
+                                 // Автоматический поиск кнопки при загрузке
+                 setTimeout(findAndClickJoinButton, 1000);
+                 setTimeout(findAndClickJoinButton, 3000);
+                 setTimeout(findAndClickJoinButton, 5000);
 
                 // Наблюдатель за изменениями DOM
                 const observer = new MutationObserver(function(mutations) {
