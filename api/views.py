@@ -247,6 +247,69 @@ class RocketOAuthExchangeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        """Получить авторизованный URL для Rocket.Chat с токеном"""
+        try:
+            import requests
+
+            user = request.user
+            channel = request.GET.get('channel', 'general')
+
+            # Получаем токен администратора Rocket.Chat
+            admin_login_data = {
+                "username": "owner",
+                "password": "owner123secure"
+            }
+
+            admin_response = requests.post(
+                'http://127.0.0.1:3000/api/v1/login',
+                json=admin_login_data,
+                timeout=5
+            )
+
+            if admin_response.status_code == 200:
+                admin_token = admin_response.json()['data']['authToken']
+                admin_user_id = admin_response.json()['data']['userId']
+
+                # Создаем токен для текущего пользователя
+                token_response = requests.post(
+                    f'http://127.0.0.1:3000/api/v1/users.createToken',
+                    json={"username": user.username},
+                    headers={
+                        'X-Auth-Token': admin_token,
+                        'X-User-Id': admin_user_id
+                    },
+                    timeout=5
+                )
+
+                if token_response.status_code == 200:
+                    user_token = token_response.json()['data']['authToken']
+
+                    # Создаем URL для конкретного канала
+                    auto_login_url = f'http://127.0.0.1:3000/channel/{channel}?layout=embedded&resumeToken={user_token}'
+
+                    return Response({
+                        "auto_login_url": auto_login_url,
+                        "channel": channel,
+                        "success": True
+                    })
+                else:
+                    return Response({
+                        "error": "Не удалось создать токен пользователя",
+                        "success": False
+                    }, status=400)
+            else:
+                return Response({
+                    "error": "Не удалось авторизоваться как администратор",
+                    "success": False
+                }, status=500)
+
+        except Exception as e:
+            return Response({
+                "error": f"Ошибка создания авторизованного URL: {str(e)}",
+                "success": False
+            }, status=500)
+
+    def post(self, request):
         user = request.user
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
