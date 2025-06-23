@@ -1,0 +1,37 @@
+rs0 [direct: primary] test> 
+rs0 [direct: primary] test> switched to db rocketchat
+rs0 [direct: primary] rocketchat> 
+rs0 [direct: primary] rocketchat> 🚨 ДИАГНОСТИКА ПРОБЛЕМ С КАНАЛАМИ ROCKET.CHAT
+
+rs0 [direct: primary] rocketchat> NaN
+
+rs0 [direct: primary] rocketchat> 
+rs0 [direct: primary] rocketchat> 
+📋 ВСЕ КАНАЛЫ В БАЗЕ:
+
+rs0 [direct: primary] rocketchat> ... ...    ID: general | name: 'general' | fname: 'Общий чат'
+   ID: vip | name: 'vip' | fname: 'VIP чат'
+   ID: moderators | name: 'moderators' | fname: '����������'
+
+rs0 [direct: primary] rocketchat> 
+rs0 [direct: primary] rocketchat> 
+🎯 ОЖИДАЕМЫЕ КАНАЛЫ (ДОЛЖНЫ БЫТЬ):
+
+rs0 [direct: primary] rocketchat>    ID: general | name: 'general' | fname: 'Общий'
+
+rs0 [direct: primary] rocketchat>    ID: vip | name: 'vip' | fname: 'VIP'
+
+rs0 [direct: primary] rocketchat>    ID: moderators | name: 'moderators' | fname: 'Модераторы'
+
+rs0 [direct: primary] rocketchat> 
+rs0 [direct: primary] rocketchat> 
+👤 ПОДПИСКИ ПОЛЬЗОВАТЕЛЯ admin:
+
+rs0 [direct: primary] rocketchat> ... ... 
+rs0 [direct: primary] rocketchat> 
+rs0 [direct: primary] rocketchat> 
+🔍 ПОИСК ПРОБЛЕМНЫХ КАНАЛОВ:
+
+rs0 [direct: primary] rocketchat> 
+rs0 [direct: primary] rocketchat> ... ... ... ... ... ... ... ... 
+rs0 [direct: primary] rocketchat> 
