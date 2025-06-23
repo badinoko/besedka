@@ -678,8 +678,6 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         context['user_has_vip_access'] = (
             user.role == 'owner' or
-            user.role == 'moderator' or
-            user.is_staff or
             hasattr(user, 'vip_memberships') and user.vip_memberships.filter(is_active=True).exists()
         )
 

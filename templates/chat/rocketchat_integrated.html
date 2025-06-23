@@ -214,7 +214,7 @@ Rocket.Chat Интегрированная страница
             VIP
         </button>
         {% endif %}
-        {% if user.is_staff or user.role == 'moderator' %}
+        {% if user.role == 'owner' or user.role == 'moderator' %}
         <button class="channel-btn moderator" data-channel="moderators" onclick="switchChannel('moderators')">
             Модераторы
         </button>
@@ -254,10 +254,10 @@ Rocket.Chat Интегрированная страница
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
 
-            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ
+            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ (ФАКТИЧЕСКИЕ ИЗ БАЗЫ)
             const channelMapping = {
                 'general': 'GENERAL',
-                'vip': 'vip',
+                'vip': 'vip-chat',
                 'moderators': 'moderators'
             };
 
