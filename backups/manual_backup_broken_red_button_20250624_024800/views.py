@@ -668,8 +668,117 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Простая настройка URL Rocket.Chat без сложной авторизации
-        context['rocketchat_url'] = 'http://127.0.0.1:3000'
+        # АВТОМАТИЧЕСКАЯ АВТОРИЗАЦИЯ ПОЛЬЗОВАТЕЛЯ В ROCKET.CHAT
+        try:
+            import requests
+            import json
+
+            # Получаем токен администратора Rocket.Chat
+            admin_login_data = {
+                "username": "owner",
+                "password": "owner123secure"
+            }
+
+            admin_response = requests.post(
+                'http://127.0.0.1:3000/api/v1/login',
+                json=admin_login_data,
+                timeout=5
+            )
+
+            if admin_response.status_code == 200:
+                admin_token = admin_response.json()['data']['authToken']
+                admin_user_id = admin_response.json()['data']['userId']
+
+                # Создаем или обновляем пользователя в Rocket.Chat
+                user_data = {
+                    "username": user.username,
+                    "email": user.email or f"{user.username}@besedka.local",
+                    "name": getattr(user, 'name', user.username),
+                    "password": f"auto_{user.id}_{user.username}",  # Автогенерируемый пароль
+                    "active": True,
+                    "verified": True,
+                    "sendWelcomeEmail": False
+                }
+
+                # Проверяем существует ли пользователь
+                check_user_response = requests.get(
+                    f'http://127.0.0.1:3000/api/v1/users.info?username={user.username}',
+                    headers={
+                        'X-Auth-Token': admin_token,
+                        'X-User-Id': admin_user_id
+                    },
+                    timeout=5
+                )
+
+                if check_user_response.status_code == 200:
+                    # Пользователь существует - обновляем
+                    rocketchat_user_id = check_user_response.json()['user']['_id']
+
+                    # Создаем персональный access token для пользователя
+                    token_response = requests.post(
+                        f'http://127.0.0.1:3000/api/v1/users.createToken',
+                        json={"username": user.username},
+                        headers={
+                            'X-Auth-Token': admin_token,
+                            'X-User-Id': admin_user_id
+                        },
+                        timeout=5
+                    )
+
+                    if token_response.status_code == 200:
+                        user_token = token_response.json()['data']['authToken']
+
+                        # Создаем URL с автоматической авторизацией
+                        auto_login_url = f'http://127.0.0.1:3000/channel/general?layout=embedded&resumeToken={user_token}'
+                        context['rocketchat_url'] = auto_login_url
+                        context['auto_login_success'] = True
+                    else:
+                        context['rocketchat_url'] = 'http://127.0.0.1:3000'
+                        context['auto_login_error'] = 'Не удалось создать токен авторизации'
+
+                else:
+                    # Пользователь не существует - создаем
+                    create_user_response = requests.post(
+                        'http://127.0.0.1:3000/api/v1/users.create',
+                        json=user_data,
+                        headers={
+                            'X-Auth-Token': admin_token,
+                            'X-User-Id': admin_user_id
+                        },
+                        timeout=5
+                    )
+
+                    if create_user_response.status_code == 200:
+                        # Создаем токен для нового пользователя
+                        token_response = requests.post(
+                            f'http://127.0.0.1:3000/api/v1/users.createToken',
+                            json={"username": user.username},
+                            headers={
+                                'X-Auth-Token': admin_token,
+                                'X-User-Id': admin_user_id
+                            },
+                            timeout=5
+                        )
+
+                        if token_response.status_code == 200:
+                            user_token = token_response.json()['data']['authToken']
+                            auto_login_url = f'http://127.0.0.1:3000/channel/general?layout=embedded&resumeToken={user_token}'
+                            context['rocketchat_url'] = auto_login_url
+                            context['auto_login_success'] = True
+                        else:
+                            context['rocketchat_url'] = 'http://127.0.0.1:3000'
+                            context['auto_login_error'] = 'Не удалось создать токен для нового пользователя'
+                    else:
+                        context['rocketchat_url'] = 'http://127.0.0.1:3000'
+                        context['auto_login_error'] = 'Не удалось создать пользователя в Rocket.Chat'
+            else:
+                context['rocketchat_url'] = 'http://127.0.0.1:3000'
+                context['auto_login_error'] = 'Не удалось авторизоваться как администратор'
+
+        except Exception as e:
+            # Fallback - показываем обычный Rocket.Chat без авторизации
+            context['rocketchat_url'] = 'http://127.0.0.1:3000'
+            context['auto_login_error'] = f'Ошибка автоматической авторизации: {str(e)}'
 
         # Определение прав доступа к каналам
         def user_has_vip_access():

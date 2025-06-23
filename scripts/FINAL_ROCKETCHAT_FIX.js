@@ -90,8 +90,8 @@ const channels = [
 
 print('🧹 Очищаю неправильные данные...');
 
-// Удаляем неправильные каналы
-const wrongChannels = ['general', 'vip-chat'];
+// Удаляем только неправильные каналы (НЕ УДАЛЯЕМ general, vip, moderators!)
+const wrongChannels = ['vip-chat', 'GENERAL'];
 wrongChannels.forEach(wrongId => {
     const wrongChannel = db.rocketchat_room.findOne({ _id: wrongId });
     if (wrongChannel) {
@@ -101,8 +101,8 @@ wrongChannels.forEach(wrongId => {
     }
 });
 
-// Очищаем все подписки для пересоздания
-print('  🧹 Очищаю все подписки для пересоздания...');
+// Удаляем только подписки для пересоздания (НЕ УДАЛЯЕМ КАНАЛЫ!)
+print('  🧹 Очищаю только подписки для пересоздания...');
 db.rocketchat_subscription.deleteMany({});
 
 // ===================================================================
@@ -183,9 +183,9 @@ channels.forEach(channelData => {
         db.rocketchat_room.insertOne(channelDoc);
         print(`  ✅ Создан канал: ${channelData.displayName} (${channelData.id})`);
     } else {
-        print(`  ✅ Канал существует: ${channelData.displayName} (${channelData.id})`);
+        print(`  ✅ Канал существует: ${channelData.displayName} (${channelData.id}) - СОХРАНЯЕМ СООБЩЕНИЯ`);
 
-        // Обновляем данные канала
+        // Обновляем ТОЛЬКО метаданные канала, НЕ ТРОГАЕМ СООБЩЕНИЯ
         db.rocketchat_room.updateOne(
             { _id: channelData.id },
             {
@@ -193,7 +193,8 @@ channels.forEach(channelData => {
                     name: channelData.name,
                     fname: channelData.displayName,
                     description: channelData.description,
-                    default: channelData.default
+                    default: channelData.default,
+                    _updatedAt: new Date()
                 }
             }
         );
