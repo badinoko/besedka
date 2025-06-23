@@ -59,7 +59,7 @@ db.rocketchat_settings.updateOne(
 
 // 6. Создаем каналы если их нет
 const channels = [
-    {_id: 'GENERAL', name: 'general', fname: 'Общий чат', t: 'c', default: true},
+    {_id: 'general', name: 'general', fname: 'Общий чат', t: 'c', default: true},
     {_id: 'vip', name: 'vip', fname: 'VIP чат', t: 'p', default: false},
     {_id: 'moderators', name: 'moderators', fname: 'Модераторы', t: 'p', default: false}
 ];

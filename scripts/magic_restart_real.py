@@ -79,7 +79,7 @@ if (!owner) {
 }
 
 // 4. Создаем подписки на ВСЕ каналы если их нет
-const allChannels = ['GENERAL', 'vip', 'moderators'];
+const allChannels = ['general', 'vip', 'moderators'];
 allChannels.forEach(channelId => {
     const room = db.rocketchat_room.findOne({ _id: channelId });
     if (!room) {
@@ -167,7 +167,7 @@ print('✅ OAuth настроен автоматически');
 // ИТОГОВЫЙ ОТЧЕТ
 print('\\n=== МАГИЧЕСКИЙ РЕЗУЛЬТАТ ===');
 print('✅ Setup Wizard отключен навсегда');
-print('✅ Каналы исправлены: GENERAL, vip, moderators');
+print('✅ Каналы исправлены: general, vip, moderators');
 print('✅ Пользователь owner подписан на все каналы');
 print('✅ OAuth полностью настроен');
 print('✅ Iframe разрешен');

@@ -91,7 +91,7 @@ const channels = [
 print('🧹 Очищаю неправильные данные...');
 
 // Удаляем неправильные каналы
-const wrongChannels = ['GENERAL', 'vip-chat'];
+const wrongChannels = ['general', 'vip-chat'];
 wrongChannels.forEach(wrongId => {
     const wrongChannel = db.rocketchat_room.findOne({ _id: wrongId });
     if (wrongChannel) {
