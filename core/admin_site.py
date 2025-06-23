@@ -372,7 +372,7 @@ class OwnerAdminSite(BaseCustomAdminSite):
                         'url': f'/{self.name}/users/user/',
                         'add_url': f'/{self.name}/users/user/add/',
                         'icon': '👤',
-                        'description': _("Назначение ролей: admin, store_owner, store_admin")
+                        'description': _("Назначение ролей: moderator, store_owner, store_admin")
                     },
                     {
                         'title': _("Управление Владельцем Магазина"),
@@ -448,7 +448,7 @@ class ModeratorAdminSite(BaseCustomAdminSite):
         """
         return (request.user.is_active and
                 request.user.is_staff and
-                request.user.role in ('admin', 'owner'))
+                request.user.role in ('moderator', 'owner'))
 
     def index(self, request, extra_context=None):
         """
@@ -460,7 +460,7 @@ class ModeratorAdminSite(BaseCustomAdminSite):
         # Быстрые действия модерации
         available_sections = []
 
-        if user.role in ('admin', 'owner'):
+        if user.role in ('moderator', 'owner'):
             available_sections.append({
                 'id': 'quick_moderation',
                 'title': _("🚨 Быстрая модерация"),
