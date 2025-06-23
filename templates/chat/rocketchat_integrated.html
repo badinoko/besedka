@@ -343,7 +343,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/general?layout=embedded"
+            src="about:blank"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -416,13 +416,13 @@ Rocket.Chat Интегрированная страница
                     console.log('   - URL:', iframe.src);
                     console.log('   - Размеры:', iframe.offsetWidth, 'x', iframe.offsetHeight);
 
-                                    if (channelName === 'general') {
-                    console.log('🚨 КРИТИЧЕСКАЯ ДИАГНОСТИКА КАНАЛА GENERAL:');
-                    console.log('   - Iframe загружен полностью');
-                    console.log('   - URL содержит general:', iframe.src.includes('general'));
-                    console.log('   - URL корректный:', iframe.src.includes('/channel/'));
-                    console.log('   - ПРОВЕРЬТЕ ПОЛЕ ВВОДА В БРАУЗЕРЕ!');
-                }
+                    if (channelName === 'general') {
+                        console.log('🚨 КРИТИЧЕСКАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
+                        console.log('   - Iframe загружен полностью');
+                        console.log('   - URL содержит general:', iframe.src.includes('general'));
+                        console.log('   - URL корректный:', iframe.src.includes('/channel/'));
+                        console.log('   - ПРОВЕРЬТЕ ПОЛЕ ВВОДА В БРАУЗЕРЕ!');
+                    }
                 }, 2000);
             }, 100);
 
@@ -557,11 +557,69 @@ Rocket.Chat Интегрированная страница
         }
         */
 
+        // 🔐 АВТОМАТИЧЕСКАЯ АВТОРИЗАЦИЯ В ROCKET.CHAT
+        async function autoAuthenticateAndLoadChat() {
+            console.log('🔐 Начинаем автоматическую авторизацию...');
+            loadingOverlay.style.display = 'flex';
+
+            try {
+                // Создаем скрытый iframe для OAuth авторизации
+                const authIframe = document.createElement('iframe');
+                authIframe.style.display = 'none';
+                authIframe.src = '{{ rocketchat_url }}/home';
+                document.body.appendChild(authIframe);
+
+                // Ждем загрузки и проверяем авторизацию
+                authIframe.onload = function() {
+                    console.log('🔍 Проверяем статус авторизации...');
+
+                    // Удаляем скрытый iframe
+                    setTimeout(() => {
+                        document.body.removeChild(authIframe);
+                    }, 1000);
+
+                    // Выполняем OAuth авторизацию через основной iframe
+                    const oauthUrl = '{{ rocketchat_url }}/oauth/authorize?client_id=BesedkaRocketChat2025&redirect_uri=' +
+                                   encodeURIComponent('{{ rocketchat_url }}/_oauth/besedka') +
+                                   '&response_type=code&scope=read&state=auto';
+
+                    console.log('🚀 Выполняем OAuth авторизацию:', oauthUrl);
+                    iframe.src = oauthUrl;
+
+                    // После OAuth авторизации перенаправляем на канал
+                    setTimeout(() => {
+                        const channelUrl = '{{ rocketchat_url }}/channel/general?layout=embedded';
+                        console.log('📺 Загружаем канал:', channelUrl);
+                        iframe.src = channelUrl;
+
+                        // Скрываем загрузку через 3 секунды
+                        setTimeout(() => {
+                            loadingOverlay.style.display = 'none';
+                        }, 3000);
+                    }, 2000);
+                };
+
+            } catch (error) {
+                console.error('❌ Ошибка автоматической авторизации:', error);
+
+                // Fallback - просто загружаем канал напрямую
+                const channelUrl = '{{ rocketchat_url }}/channel/general?layout=embedded';
+                console.log('🔄 Fallback - загружаем канал напрямую:', channelUrl);
+                iframe.src = channelUrl;
+
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 3000);
+            }
+        }
+
         window.addEventListener('load', () => {
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
             console.log('🎯 Канал по умолчанию: general');
-            console.log('✅ Чат готов к использованию');
+
+            // Запускаем автоматическую авторизацию
+            autoAuthenticateAndLoadChat();
 
             // ПРИВЕТСТВЕННОЕ ОКНО ВРЕМЕННО ОТКЛЮЧЕНО (23.06.2025)
             // initWelcomeModal();
