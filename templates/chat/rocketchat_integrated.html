@@ -337,7 +337,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/general?layout=embedded"
+            src="{{ rocketchat_url }}/embed?channel=general"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -374,18 +374,18 @@ Rocket.Chat Интегрированная страница
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
+            const newUrl = `{{ rocketchat_url }}/embed?channel=${actualChannelId}`;
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
-            console.log('🌐 Новый URL (channel+embedded):', newUrl);
+            console.log('🌐 Новый URL (embed?channel):', newUrl);
 
             // СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ ПРОБЛЕМНОГО КАНАЛА
             if (channelName === 'general') {
                 console.log('🚨 СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
                 console.log('   - Mapping работает:', channelMapping['general']);
                 console.log('   - Final URL:', newUrl);
-                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/general?layout=embedded');
-                console.log('   - ВАЖНО: Канал в коде использует "general" (маленькими)');
+                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/embed?channel=general');
+                console.log('   - ВАЖНО: Используем /embed endpoint вместо /channel');
             }
 
             // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ IFRAME с timestamp для избежания кеширования
