@@ -230,7 +230,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/GENERAL?layout=embedded"
+            src="{{ rocketchat_url }}/channel/general?layout=embedded"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -256,8 +256,8 @@ Rocket.Chat Интегрированная страница
 
             // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ (ФАКТИЧЕСКИЕ ИЗ БАЗЫ)
             const channelMapping = {
-                'general': 'GENERAL',
-                'vip': 'vip-chat',
+                'general': 'general',
+                'vip': 'vip',
                 'moderators': 'moderators'
             };
 
