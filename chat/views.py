@@ -853,7 +853,7 @@ class TestMessageInputView(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         """Отправка тестового сообщения в MongoDB напрямую"""
-        channel = request.POST.get('channel', 'GENERAL')
+        channel = request.POST.get('channel', 'general')
         message_text = request.POST.get('message', '').strip()
 
         if not message_text:
