@@ -343,7 +343,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="about:blank"
+            src="{{ rocketchat_url }}/channel/general?layout=embedded"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -557,59 +557,18 @@ Rocket.Chat Интегрированная страница
         }
         */
 
-        // 🔐 АВТОМАТИЧЕСКАЯ АВТОРИЗАЦИЯ В ROCKET.CHAT
-        async function autoAuthenticateAndLoadChat() {
-            console.log('🔐 Начинаем автоматическую авторизацию...');
-            loadingOverlay.style.display = 'flex';
+        // 🔧 ДИАГНОСТИКА АВТОРИЗАЦИИ
+        function checkAuthenticationStatus() {
+            console.log('🔍 Проверяем статус авторизации iframe...');
+            console.log('👤 Django пользователь:', currentUser);
+            console.log('🌐 Iframe URL:', iframe.src);
 
+            // Проверяем можем ли получить информацию об iframe
             try {
-                // Создаем скрытый iframe для OAuth авторизации
-                const authIframe = document.createElement('iframe');
-                authIframe.style.display = 'none';
-                authIframe.src = '{{ rocketchat_url }}/home';
-                document.body.appendChild(authIframe);
-
-                // Ждем загрузки и проверяем авторизацию
-                authIframe.onload = function() {
-                    console.log('🔍 Проверяем статус авторизации...');
-
-                    // Удаляем скрытый iframe
-                    setTimeout(() => {
-                        document.body.removeChild(authIframe);
-                    }, 1000);
-
-                    // Выполняем OAuth авторизацию через основной iframe
-                    const oauthUrl = '{{ rocketchat_url }}/oauth/authorize?client_id=BesedkaRocketChat2025&redirect_uri=' +
-                                   encodeURIComponent('{{ rocketchat_url }}/_oauth/besedka') +
-                                   '&response_type=code&scope=read&state=auto';
-
-                    console.log('🚀 Выполняем OAuth авторизацию:', oauthUrl);
-                    iframe.src = oauthUrl;
-
-                    // После OAuth авторизации перенаправляем на канал
-                    setTimeout(() => {
-                        const channelUrl = '{{ rocketchat_url }}/channel/general?layout=embedded';
-                        console.log('📺 Загружаем канал:', channelUrl);
-                        iframe.src = channelUrl;
-
-                        // Скрываем загрузку через 3 секунды
-                        setTimeout(() => {
-                            loadingOverlay.style.display = 'none';
-                        }, 3000);
-                    }, 2000);
-                };
-
-            } catch (error) {
-                console.error('❌ Ошибка автоматической авторизации:', error);
-
-                // Fallback - просто загружаем канал напрямую
-                const channelUrl = '{{ rocketchat_url }}/channel/general?layout=embedded';
-                console.log('🔄 Fallback - загружаем канал напрямую:', channelUrl);
-                iframe.src = channelUrl;
-
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 3000);
+                console.log('📄 Iframe readyState:', iframe.readyState);
+                console.log('⚠️ Если появляется "Войдите, чтобы начать разговор" - проблема с авторизацией в iframe');
+            } catch (e) {
+                console.log('🚫 Не можем получить информацию об iframe (CORS)');
             }
         }
 
@@ -617,9 +576,12 @@ Rocket.Chat Интегрированная страница
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
             console.log('🎯 Канал по умолчанию: general');
+            console.log('✅ Iframe загружается напрямую без автоматической авторизации');
 
-            // Запускаем автоматическую авторизацию
-            autoAuthenticateAndLoadChat();
+            // Запускаем диагностику через 3 секунды после загрузки
+            setTimeout(() => {
+                checkAuthenticationStatus();
+            }, 3000);
 
             // ПРИВЕТСТВЕННОЕ ОКНО ВРЕМЕННО ОТКЛЮЧЕНО (23.06.2025)
             // initWelcomeModal();
