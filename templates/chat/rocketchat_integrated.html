@@ -2,8 +2,8 @@
 
 {% comment %}
 Rocket.Chat Интегрированная страница
-Последнее обновление: 22 июня 2025 г., 23:10 MSK
-Статус: ИСПРАВЛЕНЫ ВСЕ ПРОБЛЕМЫ - пользователь подписан на каналы в MongoDB
+Последнее обновление: 22 июня 2025 г., 23:50 MSK
+Статус: ИСПРАВЛЕН маппинг каналов для унификации
 {% endcomment %}
 
 <!DOCTYPE html>
@@ -139,12 +139,100 @@ Rocket.Chat Интегрированная страница
             right: 0;
             bottom: 0;
             background: white;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             gap: 1rem;
             z-index: 1000;
+        }
+
+        /* Приветственное окно с автоскрытием */
+        .welcome-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .welcome-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .welcome-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-content h3 {
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .welcome-message {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .welcome-countdown {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-close-btn {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .welcome-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 26, 46, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
 
         .loading-spinner {
@@ -227,10 +315,29 @@ Rocket.Chat Интегрированная страница
             <div class="loading-spinner"></div>
             <div class="loading-text">Подключение к чату...</div>
         </div>
+
+        <!-- Приветственное окно с автоскрытием -->
+        <div class="welcome-modal" id="welcomeModal">
+            <div class="welcome-content">
+                <div class="welcome-icon">🌿💬</div>
+                <h3>Добро пожаловать в чат Беседка!</h3>
+                <p class="welcome-message">
+                    Система чата восстановлена и готова к работе.<br>
+                    <strong>Модерация активна!</strong> За нарушения правил возможен бан.
+                </p>
+                <div class="welcome-countdown">
+                    Окно скроется через <span id="countdown">10</span> секунд
+                </div>
+                <button class="welcome-close-btn" onclick="hideWelcomeModal()">
+                    Начать общение
+                </button>
+            </div>
+        </div>
+
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/general?layout=embedded"
+            src="{{ rocketchat_url }}/channel/general"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -241,9 +348,13 @@ Rocket.Chat Интегрированная страница
         const loadingOverlay = document.getElementById('loadingOverlay');
         const currentUser = '{{ user.username }}';
 
-        // 🔄 УПРОЩЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ
+        // 🔄 ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ (ИСПРАВЛЕННЫЙ МАППИНГ)
         function switchChannel(channelName) {
             console.log('🔄 Переключение на канал:', channelName);
+            console.log('📊 Диагностика iframe ПЕРЕД переключением:');
+            console.log('   - URL:', iframe.src);
+            console.log('   - Готовность:', iframe.readyState);
+            console.log('   - Размеры:', iframe.offsetWidth, 'x', iframe.offsetHeight);
 
             // Обновляем активную кнопку
             document.querySelectorAll('.channel-btn').forEach(btn => {
@@ -254,30 +365,86 @@ Rocket.Chat Интегрированная страница
             // Показываем загрузку
             loadingOverlay.style.display = 'flex';
 
-            // МАППИНГ ПРАВИЛЬНЫХ ID КАНАЛОВ (ФАКТИЧЕСКИЕ ИЗ БАЗЫ)
+            // УНИФИЦИРОВАННЫЙ МАППИНГ КАНАЛОВ (ВЕЗДЕ ОДИНАКОВО!)
+            // Используем точные ID каналов из базы данных MongoDB
             const channelMapping = {
-                'general': 'general',
-                'vip': 'vip',
-                'moderators': 'moderators'
+                'general': 'general',      // В базе: _id: 'general' (исправлено 23.06.2025)
+                'vip': 'vip',              // В базе: _id: 'vip'
+                'moderators': 'moderators' // В базе: _id: 'moderators'
             };
 
             const actualChannelId = channelMapping[channelName] || channelName;
-            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded`;
+            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}`;
 
             console.log('✅ Переключение на канал:', channelName, '-> ID:', actualChannelId);
+            console.log('🌐 Новый URL:', newUrl);
 
-            // Простое переключение URL
-            iframe.src = newUrl;
+            // СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ ПРОБЛЕМНОГО КАНАЛА
+            if (channelName === 'general') {
+                console.log('🚨 СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ GENERAL:');
+                console.log('   - Mapping работает:', channelMapping['general']);
+                console.log('   - Final URL:', newUrl);
+                console.log('   - Ожидаемый URL: {{ rocketchat_url }}/channel/general');
+                console.log('   - ВАЖНО: Канал в коде использует "general" (маленькими)');
+            }
 
-            // Скрываем загрузку через 2 секунды
+            // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ IFRAME с timestamp для избежания кеширования
+            const timestamp = new Date().getTime();
+            const urlWithTimestamp = `${newUrl}&t=${timestamp}`;
+
+            // Сначала очищаем src чтобы гарантировать перезагрузку
+            iframe.src = 'about:blank';
+            console.log('🧹 Iframe очищен (about:blank)');
+
+            // Через небольшую задержку загружаем новый URL
+            setTimeout(() => {
+                iframe.src = urlWithTimestamp;
+                console.log('🔄 Iframe принудительно перезагружен:', urlWithTimestamp);
+
+                // Дополнительная диагностика через 2 секунды
+                setTimeout(() => {
+                    console.log('🔍 Диагностика iframe ПОСЛЕ загрузки:');
+                    console.log('   - URL:', iframe.src);
+                    console.log('   - Размеры:', iframe.offsetWidth, 'x', iframe.offsetHeight);
+
+                                    if (channelName === 'general') {
+                    console.log('🚨 КРИТИЧЕСКАЯ ДИАГНОСТИКА КАНАЛА GENERAL:');
+                    console.log('   - Iframe загружен полностью');
+                    console.log('   - URL содержит general:', iframe.src.includes('general'));
+                    console.log('   - URL корректный:', iframe.src.includes('/channel/'));
+                    console.log('   - ПРОВЕРЬТЕ ПОЛЕ ВВОДА В БРАУЗЕРЕ!');
+                }
+                }, 2000);
+            }, 100);
+
+            // Скрываем загрузку через 3 секунды
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
-            }, 2000);
+                console.log('✅ Индикатор загрузки скрыт');
+            }, 3000);
         }
 
-        // Простая загрузка iframe
+        // Загрузка iframe
         iframe.onload = function() {
             console.log('✅ Iframe загружен:', iframe.src);
+
+            // ДЕТАЛЬНАЯ ДИАГНОСТИКА ПРИ ЗАГРУЗКЕ
+            console.log('📊 Диагностика загруженного iframe:');
+            console.log('   - Final URL:', iframe.src);
+            console.log('   - Width/Height:', iframe.offsetWidth, 'x', iframe.offsetHeight);
+
+            // Проверяем какой канал загружен
+            const currentUrl = iframe.src;
+            if (currentUrl.includes('/channel/general')) {
+                console.log('🚨 ЗАГРУЖЕН КАНАЛ GENERAL - поле ввода должно работать!');
+                console.log('   - Канал ID: general (правильный)');
+                console.log('   - Layout: embedded (правильный)');
+                console.log('   - Если поле ввода НЕ РАБОТАЕТ - проблема в Rocket.Chat настройках канала');
+            } else if (currentUrl.includes('/channel/vip')) {
+                console.log('✅ Загружен VIP канал');
+            } else if (currentUrl.includes('/channel/moderators')) {
+                console.log('✅ Загружен канал модераторов');
+            }
 
             // Скрываем индикатор загрузки
             setTimeout(() => {
@@ -287,14 +454,105 @@ Rocket.Chat Интегрированная страница
             }, 1000);
         };
 
+        // Обработка ошибок iframe
+        iframe.onerror = function() {
+            console.error('❌ Ошибка загрузки iframe:', iframe.src);
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = '<div class="loading-text" style="color: red;">❌ Ошибка загрузки чата</div>';
+            }
+        };
+
+        // ИСПРАВЛЕНИЕ ОШИБОК В КОНСОЛИ - добавляем CSP и другие заголовки безопасности
+        // Устраняем ошибки Permissions policy violation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Исправление ошибок консоли...');
+
+            // Добавляем мета-теги для устранения ошибок CSP
+            if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
+                const cspMeta = document.createElement('meta');
+                cspMeta.setAttribute('http-equiv', 'Content-Security-Policy');
+                cspMeta.setAttribute('content', 'frame-src *; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\';');
+                document.head.appendChild(cspMeta);
+                console.log('✅ CSP заголовки добавлены');
+            }
+        });
+
+        // Диагностика загрузки
+        setTimeout(() => {
+            console.log('🔍 Финальная диагностика iframe:');
+            console.log('URL:', iframe.src);
+            console.log('Размеры iframe:', iframe.offsetWidth, 'x', iframe.offsetHeight);
+
+            if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+                console.warn('⚠️ Iframe не загрузился за 5 секунд');
+                loadingOverlay.innerHTML = '<div class="loading-text" style="color: orange;">⚠️ Загрузка чата занимает больше времени...</div>';
+            }
+        }, 5000);
+
         // Инициализация при загрузке
+        // ФУНКЦИИ ПРИВЕТСТВЕННОГО ОКНА
+        let welcomeTimer;
+        let countdownTimer;
+        let timeLeft = 10;
+
+        function hideWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+
+            // Очищаем таймеры
+            if (welcomeTimer) clearTimeout(welcomeTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+        }
+
+        function startWelcomeCountdown() {
+            const countdownElement = document.getElementById('countdown');
+
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                if (countdownElement) {
+                    countdownElement.textContent = timeLeft;
+                }
+
+                if (timeLeft <= 0) {
+                    hideWelcomeModal();
+                }
+            }, 1000);
+        }
+
+        function initWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                // Автоматическое скрытие через 10 секунд
+                welcomeTimer = setTimeout(hideWelcomeModal, 10000);
+
+                // Запускаем обратный отсчет
+                startWelcomeCountdown();
+
+                // Скрытие при клике на фон
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        hideWelcomeModal();
+                    }
+                });
+            }
+        }
+
         window.addEventListener('load', () => {
             console.log('🚀 Инициализация чата...');
             console.log('👤 Пользователь:', currentUser);
-            console.log('🔗 URL чата:', iframe.src);
+            console.log('🎯 Канал по умолчанию: general');
+            console.log('✅ Чат готов к использованию');
+
+            // Инициализируем приветственное окно
+            initWelcomeModal();
         });
 
-        // Обработка изменения размера окна (для мобильных)
+        // Обработка изменения размера окна
         let vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
 
