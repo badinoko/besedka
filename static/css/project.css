@@ -15,12 +15,20 @@
   --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
+/* Всегда резервируем место под вертикальный скролл, чтобы исключить «прыжок» при смене страниц */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
 /* Общие стили */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: var(--dark-color);
   background-color: var(--light-color);
+  /* Резервируем место под скроллбар, чтобы избежать скачков ширины между страницами */
+  scrollbar-gutter: stable;
 }
 
 /* Навигация */
@@ -389,4 +397,121 @@ body.besedka-admin .modal-title,
 body.besedka-admin .chat-option-card .card-title {
   text-transform: none !important;
   letter-spacing: normal !important;
+}
+
+/* Единый бейдж роли в навигации */
+.navbar .badge {
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
+  line-height: 1 !important;
+}
+
+/* Стили для чат-каналов в выпадающем меню - версия 2025062503 */
+.chat-channel-general {
+  color: #28a745 !important;
+  font-weight: 600;
+}
+.chat-channel-general:hover {
+  background: rgba(40, 167, 69, 0.1) !important;
+  color: #1e7e34 !important;
+}
+
+.chat-channel-vip {
+  color: #ffc107 !important;
+  font-weight: 600;
+}
+.chat-channel-vip:hover {
+  background: rgba(255, 193, 7, 0.1) !important;
+  color: #d39e00 !important;
+}
+
+.chat-channel-moderators {
+  color: #8060c7 !important;
+  font-weight: 600;
+}
+.chat-channel-moderators:hover {
+  background: rgba(128, 96, 199, 0.1) !important;
+  color: #6f50b3 !important;
+}
+
+/* Стили для названия текущего канала в навигации */
+.current-channel-nav {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+  box-shadow: 0 4px 15px rgba(52, 73, 94, 0.3);
+  transition: all 0.3s ease !important;
+}
+
+.current-channel-nav:hover {
+  background: linear-gradient(135deg, #34495e 0%, #2980b9 100%) !important;
+  color: white !important;
+  text-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+  box-shadow: 0 6px 20px rgba(52, 73, 94, 0.4);
+  transform: translateY(-2px);
+}
+
+.current-channel-nav::after {
+  border-top-color: white !important;
+}
+
+/* Цветные варианты названия канала */
+.current-channel-nav.channel-general {
+  background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%) !important;
+  text-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+  box-shadow: 0 4px 15px rgba(30, 126, 52, 0.3);
+}
+
+.current-channel-nav.channel-general:hover {
+  background: linear-gradient(135deg, #155724 0%, #1e7e34 100%) !important;
+  text-shadow: 0 0 15px rgba(40, 167, 69, 0.7);
+  box-shadow: 0 6px 20px rgba(30, 126, 52, 0.4);
+}
+
+.current-channel-nav.channel-vip {
+  background: linear-gradient(135deg, #d39e00 0%, #ffc107 100%) !important;
+  color: #212529 !important;
+  text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+  box-shadow: 0 4px 15px rgba(211, 158, 0, 0.3);
+}
+
+.current-channel-nav.channel-vip:hover {
+  background: linear-gradient(135deg, #b8860b 0%, #e0a800 100%) !important;
+  color: #212529 !important;
+  text-shadow: 0 0 15px rgba(255, 193, 7, 0.7);
+  box-shadow: 0 6px 20px rgba(211, 158, 0, 0.4);
+}
+
+.current-channel-nav.channel-moderators {
+  background: linear-gradient(135deg, #8060c7 0%, #9876de 100%) !important;
+  text-shadow: 0 0 10px rgba(152, 118, 222, 0.5);
+  box-shadow: 0 4px 15px rgba(128, 96, 199, 0.3);
+}
+
+.current-channel-nav.channel-moderators:hover {
+  background: linear-gradient(135deg, #6f50b3 0%, #8060c7 100%) !important;
+  text-shadow: 0 0 15px rgba(152, 118, 222, 0.7);
+  box-shadow: 0 6px 20px rgba(128, 96, 199, 0.4);
+}
+
+/* Стили для выпадающего меню каналов в навигации */
+.navbar .dropdown-menu {
+  border-radius: 15px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+  border: none !important;
+  padding: 0.5rem !important;
+}
+
+.navbar .dropdown-item {
+  border-radius: 10px !important;
+  margin: 0.25rem 0 !important;
+  font-weight: 600 !important;
+  transition: all 0.25s ease !important;
+}
+
+.navbar .dropdown-item:hover {
+  transform: scale(1.03);
 }

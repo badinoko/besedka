@@ -1,1 +1,0 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"level":{"$numberInt":"1"},"settingId":{"$numberInt":"1"}},"name":"level_1_settingId_1"}],"uuid":"9557a3b9b55a4e7dae84273f2102e787","collectionName":"rocketchat_permissions","type":"collection"}

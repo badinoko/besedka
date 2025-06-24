@@ -26,6 +26,8 @@ alwaysApply: true
 - **BESEDKA_MASTER_DOCUMENTATION.md**
 - **BESEDKA_UI_STANDARDS.md**
 - **BESEDKA_USER_SYSTEM.md**
+- - **docs/CHAT_DEVELOPMENT_ROADMAP.md** — план развития чата и интерфейса
+- - **docs/CHAT_DEVELOPMENT_PROGRESS.md** — живой журнал выполнения Roadmap
 
 ## 🚨 КЛЮЧЕВОЙ ПРИНЦИП: SSOT (Single Source of Truth)
 

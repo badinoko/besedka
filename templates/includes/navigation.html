@@ -2,7 +2,7 @@
 {% load core_tags %}
 <!-- templates/includes/navigation.html -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-3 px-lg-4">
         <a class="navbar-brand fw-bold" href="{% url 'home' %}" style="{% if request and request.path and 'admin' in request.path %}color: #28a745 !important;{% endif %}">
             <i class="fas fa-home"></i> Беседка
         </a>
@@ -11,6 +11,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavGlobal">
             <!-- ОСНОВНЫЕ ССЫЛКИ -->
+            {% if not hide_extra_nav %}
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'news:home' %}">
@@ -38,9 +39,38 @@
                     </a>
                 </li>
             </ul>
+            {% endif %}
+
+            <!-- ТЕКУЩИЙ КАНАЛ ЧАТА (показывается только в чате) -->
+            {% if request.resolver_match.url_name == 'rocketchat_integrated' %}
+            <ul class="navbar-nav" style="margin-left: auto; margin-right: 10%;">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle current-channel-nav channel-general" href="#"
+                       id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-hashtag me-1"></i>
+                        <span id="currentChannelName">Общий</span>
+                    </a>
+                    <ul class="dropdown-menu shadow" aria-labelledby="channelDropdownNav">
+                        <li><a class="dropdown-item channel-option-general" href="{% url 'chat:rocketchat_integrated' %}?channel=general" onclick="switchChannelNav('general')">
+                            <span class="text-success">⬤</span> Общий
+                        </a></li>
+                        {% if user.role == 'owner' %}
+                        <li><a class="dropdown-item channel-option-vip" href="{% url 'chat:rocketchat_integrated' %}?channel=vip" onclick="switchChannelNav('vip')">
+                            <span class="text-warning">⬤</span> VIP
+                        </a></li>
+                        {% endif %}
+                        {% if user.role == 'owner' or user.role == 'moderator' %}
+                        <li><a class="dropdown-item channel-option-moderators" href="{% url 'chat:rocketchat_integrated' %}?channel=moderators" onclick="switchChannelNav('moderators')">
+                            <span class="text-info">⬤</span> Модераторы
+                        </a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+            {% endif %}
 
             <!-- МЕНЮ ПОЛЬЗОВАТЕЛЯ -->
-            <ul class="navbar-nav">
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
                         <i class="fas fa-shopping-cart nav-icon"></i>

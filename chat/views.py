@@ -726,6 +726,9 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
         # Простая настройка URL Rocket.Chat без сложной авторизации
         context['rocketchat_url'] = 'http://127.0.0.1:3000'
 
+        # Скрываем основные пункты меню, оставляя только логотип и блок пользователя
+        context['hide_extra_nav'] = True
+
         # Определение прав доступа к каналам
         def user_has_vip_access():
             return user.role == 'owner'

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% comment %}
+Rocket.Chat Интегрированная страница
+Последнее обновление: 22 июня 2025 г., 23:50 MSK
+Статус: ИСПРАВЛЕН маппинг каналов для унификации
+{% endcomment %}
+
+{% block title %}Чат - Беседка{% endblock %}
+
+{# --- ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ТОЛЬКО ДЛЯ ЧАТА (без переопределения навигации) --- #}
+{% block extra_css %}
+<style>
+    /* Контейнеры чата */
+    body.chat-integrated-page {
+        overflow-y: hidden; /* Вся прокрутка в html, nav не смещается */
+    }
+
+    .channel-switcher {
+        background: #f8f9fa;
+        padding: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .channel-btn {
+        flex: 1;
+        min-width: 80px;
+        padding: 0.6rem 1rem;
+        border: 2px solid #e0e0e0;
+        background: #fff;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .channel-btn:hover { background: #f2f2f2; }
+    .channel-btn.active {
+        background: #1a1a2e;
+        color: #fff;
+        border-color: #1a1a2e;
+    }
+    .channel-btn.vip       { border-color: #ffd700; color: #b8860b; }
+    .channel-btn.vip.active{
+        background: linear-gradient(135deg,#ffd700,#ffb347);
+        color:#1a1a2e;
+    }
+    .channel-btn.moderator       { border-color:#dc3545; color:#dc3545; }
+    .channel-btn.moderator.active{ background:#dc3545; color:#fff; }
+
+    .chat-container {
+        position: fixed;
+        top: 60px;   /* высота navbar */
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #1a1a2e;
+        display: flex;
+        flex-direction: column;
+    }
+    .chat-container iframe { flex: 1; width: 100%; border: none; }
+</style>
+{% endblock %}
+
+{# --- JS --- #}
+{% block extra_js %}
+<script src="{% static 'js/auto_join_fix.js' %}"></script>
+<script>
+let isSwitching=false;
+function switchChannel(name){
+ if(isSwitching)return;isSwitching=true;
+ document.querySelectorAll('.channel-btn').forEach(b=>b.classList.remove('active'));
+ document.querySelector(`[data-channel="${name}"]`).classList.add('active');
+ const frame=document.getElementById('rocketChatFrame');
+ const t=Date.now();
+ frame.src=`{{ rocketchat_url }}/channel/${name}?layout=embedded&t=${t}`;
+ frame.onload=()=>{isSwitching=false;};
+}
+
+window.addEventListener('load',()=>{
+ const params=new URLSearchParams(window.location.search);
+ const ch=params.get('channel');
+ if(ch&&ch!=='general')switchChannel(ch);
+ });
+</script>
+{% endblock %}
+
+{# --- ГЛАВНЫЙ КОНТЕНТ --- #}
+{% block main_container %}
+<body class="chat-integrated-page">
+    {# Переключатель каналов теперь в выпадающем меню пользователя #}
+
+    <div class="chat-container">
+        <iframe id="rocketChatFrame" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
+    </div>
+</body>
+{% endblock %}
+
+{# --- Убираем стандартный футер --- #}
+{% block footer %}{% endblock %}
