@@ -343,7 +343,7 @@ Rocket.Chat Интегрированная страница
         <iframe
             id="rocketChatFrame"
             class="chat-iframe"
-            src="{{ rocketchat_url }}/channel/general?layout=embedded"
+            src="{{ rocketchat_url }}/embed?channel=general"
             allow="camera; microphone; clipboard-write"
             allowfullscreen>
         </iframe>
@@ -387,7 +387,7 @@ Rocket.Chat Интегрированная страница
             };
             const actualChannelId = channelMapping[channelName] || channelName;
             const timestamp = new Date().getTime();
-            const newUrl = `{{ rocketchat_url }}/channel/${actualChannelId}?layout=embedded&t=${timestamp}`;
+            const newUrl = `{{ rocketchat_url }}/embed?channel=${actualChannelId}&t=${timestamp}`;
 
             console.log('🌐 Переключаем на:', newUrl);
 
