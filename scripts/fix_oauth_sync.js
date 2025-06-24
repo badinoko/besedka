@@ -16,7 +16,7 @@ const oauthSettings = [
     {_id: 'Accounts_OAuth_Custom-Besedka-authorize_path', value: '/o/authorize/', type: 'string'},
     {_id: 'Accounts_OAuth_Custom-Besedka-scope', value: 'read', type: 'string'},
     {_id: 'Accounts_OAuth_Custom-Besedka-id', value: 'BesedkaRocketChat2025', type: 'string'},
-    {_id: 'Accounts_OAuth_Custom-Besedka-secret', value: 'SecureSecretKey2025BesedkaRocketChatSSO', type: 'string'},
+    {_id: 'Accounts_OAuth_Custom-Besedka-secret', value: 'pbkdf2_sha256$600000$SJWzPbA9fRm98aaxqdzQI2$lskAN7LEKlEGkUP9DT6k/6SpPbESh2rnotOAHYsmkZc=', type: 'string'},
     {_id: 'Accounts_OAuth_Custom-Besedka-button_label_text', value: 'Войти через Беседку', type: 'string'},
     {_id: 'Accounts_OAuth_Custom-Besedka-button_color', value: '#1d74f5', type: 'string'},
     {_id: 'Accounts_OAuth_Custom-Besedka-button_label_color', value: '#FFFFFF', type: 'string'},
