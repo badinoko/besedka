@@ -35,7 +35,7 @@ services:
 
   # 🚀 Rocket.Chat stack (added for migration)
   mongo:
-    image: mongo:6
+    image: mongo:5.0
     command: >
       mongod --replSet rs0 --oplogSize 128 --bind_ip_all
     volumes:
@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
 
   rocketchat:
-    image: rocketchat/rocket.chat:7.7.1
+    image: rocketchat/rocket.chat:6.4.8
     depends_on:
       - mongo
     ports:

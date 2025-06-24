@@ -94,3 +94,27 @@
 
 ## ⚠️ Текущий приоритет:
 Решить проблему с кнопкой "Join the Channel" БЕЗ разрушения работающей системы. 
+
+## [24 июня 2025, 18:20 MSK] КОНТРОЛЬНАЯ ТОЧКА – СИСТЕМА ПОЛНОСТЬЮ РАБОЧА
+**Статус:** ✅ Полностью функциональна (кнопки Join Channel отсутствуют, баннер обновления скрыт)
+
+### Подтверждённое состояние
+- Django (127.0.0.1:8001) → HTTP 200
+- Rocket.Chat (127.0.0.1:3000) → HTTP 200
+- Iframe `/chat/integrated/` отображает чистый чат, переключение каналов `general`/`vip`/`moderators` работает без Join-кнопки.
+- Пользователи: owner, admin, store_owner, store_admin, test_user (5/5)
+- Каналы: general, vip, moderators (3) + DM (Rocket.Cat)
+- Подписки: 8 (распределены в точности по BESEDKA_USER_SYSTEM.md)
+- OAuth SSO полностью настроен, кнопка «Войти через Беседку» оставлена (скрыта на интегрированной странице).
+- Баннер «Обновите ваш Rocket.Chat» отключён настройками `Update_Enable=false`, `Show_Update_Notification=false`.
+
+### Резервные копии
+- MongoDB: `rocketchat_backups/rc_backup_<timestamp>.gz`
+- (опционально) PostgreSQL: `backups/postgres/postgres_backup_20250624.sql`
+
+### Следующие шаги
+1. Поддерживать скрипт `FINAL_ROCKETCHAT_FIX.js` как SSOT для любых будущих восстановлений.
+2. Любые изменения в структуре каналов / ролей проводить **только** через этот скрипт.
+3. Перед экспериментами создавать новый `mongodump` в `rocketchat_backups/`.
+
+---

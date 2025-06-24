@@ -162,6 +162,27 @@ db.rocketchat_settings.updateOne(
     {$set: {value: false, valueSource: 'customValue', _updatedAt: new Date()}}
 );
 
+// 7. Отключаем Service Worker и Content-Security-Policy
+print('🔧 Отключаю Service Worker и CSP...');
+db.rocketchat_settings.updateOne(
+    {_id: 'Register_ServiceWorker'},
+    {$set: {value: false, valueSource: 'customValue', _updatedAt: new Date()}},
+    {upsert: true}
+);
+
+db.rocketchat_settings.updateOne(
+    {_id: 'Content_Security_Policy_Enable'},
+    {$set: {value: false, valueSource: 'customValue', _updatedAt: new Date()}},
+    {upsert: true}
+);
+
+// (на некоторых версиях RC существует общий флаг Enable_PWA)
+db.rocketchat_settings.updateOne(
+    {_id: 'Enable_PWA'},
+    {$set: {value: false, valueSource: 'customValue', _updatedAt: new Date()}},
+    {upsert: true}
+);
+
 print('✅ OAuth настроен автоматически');
 
 // ИТОГОВЫЙ ОТЧЕТ
