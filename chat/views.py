@@ -664,6 +664,57 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
     """Интегрированный view для Rocket.Chat с кнопками переключения каналов"""
     template_name = 'chat/rocketchat_integrated.html'
 
+    def _ensure_subscriptions(self, user):
+        """Гарантируем, что пользователь подписан на обязательные каналы (general/vip/moderators)."""
+        try:
+            from pymongo import MongoClient
+            client = MongoClient('mongodb://127.0.0.1:27017/')
+            db = client.rocketchat
+
+            # Определяем список каналов по роли
+            channels = ['general']
+            if user.role == 'owner':
+                channels += ['vip', 'moderators']
+            elif user.role == 'moderator':
+                channels += ['moderators']
+
+            # Получаем rocket user
+            rocket_user = db.users.find_one({'username': user.username})
+            if not rocket_user:
+                return
+
+            for cid in channels:
+                # Проверяем существование канала
+                room = db.rocketchat_room.find_one({'_id': cid})
+                if not room:
+                    continue
+
+                # Проверяем подписку
+                subscription = db.rocketchat_subscription.find_one({'u._id': rocket_user['_id'], 'rid': cid})
+                if subscription:
+                    continue
+
+                # Создаем подписку простым insert (минимальный набор полей)
+                db.rocketchat_subscription.insert_one({
+                    'open': True,
+                    'alert': False,
+                    'u': {
+                        '_id': rocket_user['_id'],
+                        'username': user.username,
+                        'name': rocket_user.get('name', user.username)
+                    },
+                    'rid': cid,
+                    'name': room.get('name', cid),
+                    'fname': room.get('fname', cid),
+                    't': room.get('t', 'c'),
+                    'roles': ['owner'] if user.role == 'owner' else ['user'],
+                    'ts': datetime.utcnow(),
+                    'ls': datetime.utcnow(),
+                    '_updatedAt': datetime.utcnow()
+                })
+        except Exception:
+            pass
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -676,6 +727,7 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
             return user.role == 'owner'
 
         context['user_has_vip_access'] = user_has_vip_access()
+        self._ensure_subscriptions(user)
         return context
 
 
