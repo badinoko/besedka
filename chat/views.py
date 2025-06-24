@@ -19,10 +19,13 @@ from django.db.models import Count
 from core.base_views import UnifiedListView
 from django.conf import settings
 import pymongo
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 from datetime import datetime
 
 User = get_user_model()
+
+# Глобальный клиент MongoDB для переиспользования
+MONGO_CLIENT = MongoClient('mongodb://127.0.0.1:27017/', serverSelectionTimeoutMS=2000)
 
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
@@ -664,13 +667,12 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
     """Интегрированный view для Rocket.Chat с кнопками переключения каналов"""
     template_name = 'chat/rocketchat_integrated.html'
 
-    def _ensure_subscriptions(self, user):
-        """Гарантируем, что пользователь подписан на обязательные каналы (general/vip/moderators)."""
+    def _ensure_subscriptions(self, request, user):
+        """Гарантируем подписки, выполняем один раз за сессию для ускорения."""
+        if request.session.get('subs_checked', False):
+            return
         try:
-            from pymongo import MongoClient
-            client = MongoClient('mongodb://127.0.0.1:27017/')
-            db = client.rocketchat
-
+            db = MONGO_CLIENT.rocketchat
             # Определяем список каналов по роли
             channels = ['general']
             if user.role == 'owner':
@@ -712,8 +714,10 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
                     'ls': datetime.utcnow(),
                     '_updatedAt': datetime.utcnow()
                 })
-        except Exception:
+        except errors.ServerSelectionTimeoutError:
             pass
+        finally:
+            request.session['subs_checked'] = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -727,7 +731,7 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
             return user.role == 'owner'
 
         context['user_has_vip_access'] = user_has_vip_access()
-        self._ensure_subscriptions(user)
+        self._ensure_subscriptions(self.request, user)
         return context
 
 
