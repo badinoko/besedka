@@ -60,7 +60,7 @@ const users = [
 const channels = [
     {
         id: 'general',
-        name: 'general',
+        name: 'Общий',
         displayName: 'Общий чат',
         description: 'Общий чат для всех зарегистрированных пользователей',
         type: 'c',
@@ -68,7 +68,7 @@ const channels = [
     },
     {
         id: 'vip',
-        name: 'vip',
+        name: 'VIP',
         displayName: 'VIP чат',
         description: 'VIP чат (владелец вручную раздает доступ)',
         type: 'c',
@@ -76,7 +76,7 @@ const channels = [
     },
     {
         id: 'moderators',
-        name: 'moderators',
+        name: 'Модераторы',
         displayName: 'Модераторы',
         description: 'Админский чат (владелец + модераторы для оперативных совещаний)',
         type: 'c',
@@ -229,7 +229,7 @@ users.forEach(userData => {
             _id: `${user._id}-${channelId}`,
             t: channel.t,
             ts: new Date(),
-            name: channel.name,
+            name: channel.name, // Теперь без символа # (Общий, VIP, Модераторы)
             fname: channel.fname,
             rid: channelId,
             u: {
