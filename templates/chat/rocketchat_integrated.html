@@ -54,8 +54,7 @@ function switchChannel(name){
  frame.src=`{{ rocketchat_url }}/channel/${name}?layout=embedded&t=${t}`;
  frame.onload=()=>{
    isSwitching=false;
-   // Убираем символы # после загрузки нового канала
-   setTimeout(() => removeHashSymbols(), 1000);
+
  };
 }
 
@@ -67,8 +66,7 @@ window.addEventListener('load',()=>{
  // Обновляем название канала в навигации при загрузке
  updateChannelNavTitle(ch || 'general');
 
- // Убираем символы # после первоначальной загрузки
- setTimeout(() => removeHashSymbols(), 2000);
+
 });
 
 // Новая функция для переключения каналов из навигации
@@ -98,62 +96,7 @@ function updateChannelNavTitle(channel) {
  buttonEl.classList.add('channel-' + channel);
 }
 
-// НОВАЯ ФУНКЦИЯ: Удаление символов # из iframe Rocket.Chat
-function removeHashSymbols() {
- const iframe = document.getElementById('rocketChatFrame');
- if (!iframe || !iframe.contentWindow) return;
 
- try {
-   // Попытка доступа к содержимому iframe (может не сработать из-за CORS)
-   const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-   if (!iframeDoc) return;
-
-   // Находим все элементы с названиями каналов и убираем символ #
-   const selectors = [
-     '[data-qa="room-title"]',
-     '.rcx-sidebar-item__title',
-     '.room-title',
-     '.sidebar-item__title',
-     '.rc-room-header-title'
-   ];
-
-   selectors.forEach(selector => {
-     const elements = iframeDoc.querySelectorAll(selector);
-     elements.forEach(el => {
-       if (el.textContent && el.textContent.startsWith('#')) {
-         el.textContent = el.textContent.substring(1); // Убираем первый символ #
-       }
-     });
-   });
-
- } catch (error) {
-   // CORS блокирует доступ - используем альтернативный метод через CSS injection
-   console.log('CORS blocked, using CSS injection method');
-
-   // Инжектируем CSS прямо в iframe
-   const style = iframe.contentDocument?.createElement('style') || document.createElement('style');
-   style.textContent = `
-     [data-qa="room-title"]::before,
-     .rcx-sidebar-item__title::before,
-     .room-title::before,
-     .sidebar-item__title::before {
-       display: none !important;
-     }
-     [data-qa="room-title"]:first-letter,
-     .rcx-sidebar-item__title:first-letter,
-     .room-title:first-letter,
-     .sidebar-item__title:first-letter {
-       font-size: 0 !important;
-       width: 0 !important;
-       display: none !important;
-     }
-   `;
-
-   if (iframe.contentDocument) {
-     iframe.contentDocument.head?.appendChild(style);
-   }
- }
-}
 
 // Закрытие dropdown при клике в любое место экрана (усиленная версия)
 document.addEventListener('click', function(event) {
@@ -210,10 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
      }, 150);
    });
 
-   // Убираем символы # когда iframe полностью загрузился
-   iframe.addEventListener('load', function() {
-     setTimeout(() => removeHashSymbols(), 1500);
-   });
+
  }
 });
 </script>
