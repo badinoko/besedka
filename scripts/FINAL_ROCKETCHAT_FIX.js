@@ -61,24 +61,24 @@ const channels = [
     {
         id: 'general',
         name: 'general',
-        displayName: 'Общий чат',
-        description: 'Общий чат для всех зарегистрированных пользователей',
+        displayName: 'general',
+        description: 'General chat for all registered users',
         type: 'c',
         default: true
     },
     {
         id: 'vip',
         name: 'vip',
-        displayName: 'VIP чат',
-        description: 'VIP чат (владелец вручную раздает доступ)',
+        displayName: 'vip',
+        description: 'VIP chat (owner manually grants access)',
         type: 'c',
         default: false
     },
     {
         id: 'moderators',
         name: 'moderators',
-        displayName: 'Модераторы',
-        description: 'Админский чат (владелец + модераторы для оперативных совещаний)',
+        displayName: 'moderators',
+        description: 'Admin chat (owner + moderators for operational meetings)',
         type: 'c',
         default: false
     }
