@@ -60,7 +60,7 @@ const users = [
 const channels = [
     {
         id: 'general',
-        name: 'Общий',
+        name: 'general',
         displayName: 'Общий чат',
         description: 'Общий чат для всех зарегистрированных пользователей',
         type: 'c',
@@ -68,7 +68,7 @@ const channels = [
     },
     {
         id: 'vip',
-        name: 'VIP',
+        name: 'vip',
         displayName: 'VIP чат',
         description: 'VIP чат (владелец вручную раздает доступ)',
         type: 'c',
@@ -76,7 +76,7 @@ const channels = [
     },
     {
         id: 'moderators',
-        name: 'Модераторы',
+        name: 'moderators',
         displayName: 'Модераторы',
         description: 'Админский чат (владелец + модераторы для оперативных совещаний)',
         type: 'c',
@@ -101,9 +101,8 @@ wrongChannels.forEach(wrongId => {
     }
 });
 
-// Удаляем только подписки для пересоздания (НЕ УДАЛЯЕМ КАНАЛЫ!)
-print('  🧹 Очищаю только подписки для пересоздания...');
-db.rocketchat_subscription.deleteMany({});
+// ИСПРАВЛЕНО: НЕ УДАЛЯЕМ СУЩЕСТВУЮЩИЕ ПОДПИСКИ - это ломает поле ввода сообщений
+print('  ✅ Сохраняем существующие подписки пользователей');
 
 // ===================================================================
 // 4. СОЗДАНИЕ ПОЛЬЗОВАТЕЛЕЙ
@@ -205,7 +204,7 @@ channels.forEach(channelData => {
 // 6. СОЗДАНИЕ ПОДПИСОК (ПРАВА ДОСТУПА)
 // ===================================================================
 
-print('🔐 Создаю подписки согласно правам доступа...');
+print('🔐 Создаю недостающие подписки согласно правам доступа...');
 
 users.forEach(userData => {
     const user = db.users.findOne({ username: userData.username });
@@ -214,6 +213,17 @@ users.forEach(userData => {
     userData.chatAccess.forEach(channelId => {
         const channel = db.rocketchat_room.findOne({ _id: channelId });
         if (!channel) return;
+
+        // ПРОВЕРЯЕМ: есть ли уже подписка?
+        const existingSubscription = db.rocketchat_subscription.findOne({
+            'u.username': userData.username,
+            rid: channelId
+        });
+
+        if (existingSubscription) {
+            print(`  ✅ Подписка существует: ${userData.username} → ${channel.fname || channel.name}`);
+            return; // НЕ ПЕРЕСОЗДАЕМ СУЩЕСТВУЮЩИЕ ПОДПИСКИ
+        }
 
         // Определяем роли в канале
         let channelRoles = ['user'];
@@ -229,7 +239,7 @@ users.forEach(userData => {
             _id: `${user._id}-${channelId}`,
             t: channel.t,
             ts: new Date(),
-            name: channel.name, // Теперь без символа # (Общий, VIP, Модераторы)
+            name: channel.name,
             fname: channel.fname,
             rid: channelId,
             u: {
@@ -249,7 +259,7 @@ users.forEach(userData => {
         };
 
         db.rocketchat_subscription.insertOne(subscription);
-        print(`  ✅ ${userData.username} → ${channel.fname} (роли: ${channelRoles.join(', ')})`);
+        print(`  ✅ СОЗДАНА: ${userData.username} → ${channel.fname || channel.name} (роли: ${channelRoles.join(', ')})`);
     });
 });
 
