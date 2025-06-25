@@ -24,8 +24,17 @@ from datetime import datetime
 
 User = get_user_model()
 
-# Глобальный клиент MongoDB для переиспользования
-MONGO_CLIENT = MongoClient('mongodb://127.0.0.1:27017/', serverSelectionTimeoutMS=2000)
+# Функция для безопасного получения MongoDB клиента (только когда нужно)
+def get_mongo_client():
+    """Безопасное подключение к MongoDB с обработкой ошибок"""
+    try:
+        client = MongoClient('mongodb://127.0.0.1:27017/', serverSelectionTimeoutMS=2000, connectTimeoutMS=2000)
+        # Проверяем соединение
+        client.admin.command('ping')
+        return client
+    except (pymongo.errors.ServerSelectionTimeoutError, pymongo.errors.ConnectionFailure) as e:
+        print(f"⚠️ MongoDB недоступен: {e}")
+        return None
 
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
@@ -671,7 +680,9 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
         if request.session.get('subs_checked', False):
             return
         try:
-            db = MONGO_CLIENT.rocketchat
+            db = get_mongo_client()
+            if not db:
+                return
             # Определяем список каналов по роли
             channels = ['general']
             if user.role == 'owner':
@@ -822,7 +833,12 @@ class TestMessageInputView(LoginRequiredMixin, TemplateView):
         """Отправляем сообщение напрямую в MongoDB"""
         try:
             # Подключаемся к MongoDB
-            client = MongoClient('mongodb://127.0.0.1:27017/')
+            client = get_mongo_client()
+            if not client:
+                return {
+                    'status': 'error',
+                    'message': 'Не удалось подключиться к MongoDB'
+                }
             db = client.rocketchat
 
             # Проверяем существование канала
@@ -1075,7 +1091,9 @@ class RocketChatTestView(LoginRequiredMixin, TemplateView):
     def _ensure_subscriptions(self, request, user):
         """Точная копия логики подписок из RocketChatIntegratedView"""
         try:
-            db = MONGO_CLIENT['rocketchat']
+            db = get_mongo_client()
+            if not db:
+                return
 
             # Получаем все каналы
             channels = list(db.rocketchat_room.find({'t': 'c'}))
