@@ -2,24 +2,24 @@
 {% load static %}
 
 {% comment %}
-🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ INTEGRATED + минимальные дополнения
+🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ INTEGRATED
 Последнее обновление: 25 июня 2025 г.
-Статус: ИСПРАВЛЕНА - убрана лишняя плашка, восстановлена SSOT структура
+Статус: ТОЧНАЯ КОПИЯ - убраны все лишние элементы
 {% endcomment %}
 
 {% block title %}🧪 Чат (тест) - Беседка{% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ СТИЛЕЙ ИЗ INTEGRATED + стили для увеличенных кнопок --- #}
+{# --- ТОЧНАЯ КОПИЯ СТИЛЕЙ ИЗ INTEGRATED --- #}
 {% block extra_css %}
 <style>
-    /* Стили для body только для чата - КОПИЯ ИЗ integrated */
+    /* Стили для body только для чата */
     body.chat-page {
         overflow-y: hidden; /* Вся прокрутка в html, nav не смещается */
     }
 
     .chat-container {
         position: fixed;
-        top: 60px;   /* высота navbar - КАК В ОРИГИНАЛЕ */
+        top: 60px;   /* высота navbar */
         left: 0;
         right: 0;
         bottom: 0;
@@ -34,48 +34,19 @@
         border: none;
     }
 
-    /* === УВЕЛИЧЕННЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы) === */
-    .chat-control-enlarged {
-        position: relative;
-        padding: 0.75rem 1rem !important; /* Увеличенные отступы */
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .chat-control-enlarged:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        transform: scale(1.05);
-    }
-
-    .nav-icon-enlarged {
-        font-size: 1.5rem !important; /* Увеличенные иконки */
-        color: #ffffff;
-    }
-
-    .nav-counter-badge-enlarged {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        min-width: 22px;
-        height: 22px;
-        font-size: 11px !important;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid #343a40;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    /* Исправление обрезания счетчика */
-    .nav-link-with-counter {
-        position: relative;
-        min-width: 60px; /* Достаточно места для badge */
-    }
-
-    /* Группировка кнопок: счетчик отдален, стрелки близко друг к другу */
-    .chat-control-enlarged + .chat-control-enlarged {
-        margin-left: -0.5rem; /* Сближаем стрелки между собой */
+    /* МАЛЕНЬКИЙ ТЕСТОВЫЙ ИНДИКАТОР */
+    .test-indicator {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(40, 167, 69, 0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        z-index: 9999;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 </style>
 
@@ -86,11 +57,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED + дополнения --- #}
+{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED --- #}
 {% block extra_js %}
 <script src="{% static 'js/auto_join_fix.js' %}"></script>
 <script>
-// === ТОЧНАЯ КОПИЯ ИЗ INTEGRATED ===
 let isSwitching=false;
 function switchChannel(name){
  if(isSwitching)return;isSwitching=true;
@@ -99,6 +69,7 @@ function switchChannel(name){
  frame.src=`{{ rocketchat_url }}/channel/${name}?layout=embedded&t=${t}`;
  frame.onload=()=>{
    isSwitching=false;
+
  };
 }
 
@@ -109,6 +80,8 @@ window.addEventListener('load',()=>{
 
  // Обновляем название канала в навигации при загрузке
  updateChannelNavTitle(ch || 'general');
+
+
 });
 
 // Новая функция для переключения каналов из навигации
@@ -137,6 +110,8 @@ function updateChannelNavTitle(channel) {
  buttonEl.classList.remove('channel-general', 'channel-vip', 'channel-moderators');
  buttonEl.classList.add('channel-' + channel);
 }
+
+
 
 // Закрытие dropdown при клике в любое место экрана (усиленная версия)
 document.addEventListener('click', function(event) {
@@ -192,83 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
        }
      }, 150);
    });
+
+
  }
 });
-
-// === ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ НОВЫХ КНОПОК ===
-
-// ⬇️⬆️ Навигация по сообщениям
-function scrollToBottom() {
-    const frame = document.getElementById('rocketChatFrame');
-    if (frame && frame.contentWindow) {
-        try {
-            // Пытаемся управлять скроллом напрямую через iframe
-            frame.contentWindow.postMessage({
-                action: 'scrollToBottom',
-                source: 'besedka-test'
-            }, '*');
-
-            // Также пытаемся скроллить сам iframe на случай если postMessage не сработает
-            frame.contentWindow.scrollTo(0, frame.contentWindow.document.body.scrollHeight);
-        } catch (e) {
-            // Если не получается через postMessage, пытаемся скроллить контейнер iframe
-            console.log('🚀 Альтернативный скролл к последнему сообщению');
-            frame.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-    }
-    console.log('🚀 Скролл к последнему сообщению');
-}
-
-function scrollToFirstUnread() {
-    const frame = document.getElementById('rocketChatFrame');
-    if (frame && frame.contentWindow) {
-        try {
-            // Отправляем команду в Rocket.Chat
-            frame.contentWindow.postMessage({
-                action: 'scrollToFirstUnread',
-                source: 'besedka-test'
-            }, '*');
-
-            // Альтернативно - скроллим к началу как к "первому непрочитанному"
-            frame.contentWindow.scrollTo(0, 0);
-        } catch (e) {
-            console.log('🚀 Альтернативный скролл к первому непрочитанному');
-            frame.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-    console.log('🚀 Скролл к первому непрочитанному');
-}
-
-// Слушаем сообщения от Rocket.Chat iframe
-window.addEventListener('message', function(event) {
-    // Проверяем что сообщение от нашего Rocket.Chat
-    if (event.origin === 'http://127.0.0.1:3000') {
-        console.log('🚀 Получено сообщение от Rocket.Chat:', event.data);
-
-        // Обрабатываем различные типы сообщений
-        if (event.data && event.data.type === 'unread-count') {
-            // Обновляем счетчик непрочитанных
-            const badge = document.getElementById('unreadBadge');
-            if (badge && event.data.count > 0) {
-                badge.textContent = event.data.count > 99 ? '99+' : event.data.count;
-                badge.style.display = 'flex';
-            } else if (badge) {
-                badge.style.display = 'none';
-            }
-        }
-    }
-});
-
-// 📊 Управление счетчиками (тестовые данные)
-setTimeout(() => {
-    {% if enable_message_counters %}
-    const badge = document.getElementById('unreadBadge');
-    if (badge) {
-        badge.textContent = '3';
-        badge.style.display = 'flex';
-    }
-    {% endif %}
-}, 1000);
 </script>
 {% endblock %}
 
@@ -276,6 +178,11 @@ setTimeout(() => {
 {% block main_container %}
     <div class="chat-container">
         <iframe id="rocketChatFrame" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
+
+        <!-- МАЛЕНЬКИЙ ТЕСТОВЫЙ ИНДИКАТОР -->
+        <div class="test-indicator">
+            🧪 Тест
+        </div>
     </div>
 {% endblock %}
 
