@@ -43,7 +43,7 @@
 
             <!-- ТЕКУЩИЙ КАНАЛ ЧАТА (показывается только в чате) -->
             {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
-            <ul class="navbar-nav" style="margin-left: auto; margin-right: 10%;">
+            <ul class="navbar-nav mx-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle current-channel-nav channel-general" href="#"
                        id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
