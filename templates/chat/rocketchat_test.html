@@ -8,7 +8,7 @@
 Последнее обновление: 25 июня 2025 г.
 {% endcomment %}
 
-{% block title %}🧪 Test: Reply/Quote Messages | §2.1 | Channel: {{ current_channel }}{% endblock %}
+{% block title %}Rocket.Chat Test | Channel: {{ current_channel }}{% endblock %}
 
 {# --- ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ТОЛЬКО ДЛЯ ЧАТА (идентично основной интеграции) --- #}
 {% block extra_css %}
@@ -35,24 +35,7 @@
         border: none;
     }
 
-    /* 🧪 ТЕСТОВЫЙ ИНДИКАТОР: скромная плашка в углу */
-    .test-indicator {
-        position: fixed;
-        top: 70px;
-        right: 10px;
-        background: rgba(102, 126, 234, 0.9);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        z-index: 1050;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .test-indicator.reply-active {
-        background: rgba(40, 167, 69, 0.9);
-    }
+    /* 🧪 ТЕСТОВЫЙ ИНДИКАТОР: убран по просьбе пользователя */
 </style>
 
 <script>
@@ -735,9 +718,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {# --- ГЛАВНЫЙ КОНТЕНТ (идентично основной интеграции) --- #}
 {% block main_container %}
-    <!-- 🧪 Скромный тестовый индикатор -->
-    <div class="test-indicator">🧪 Reply/Quote: Initializing...</div>
-
     <div class="chat-container">
         <iframe id="testRocketChatFrame" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
     </div>

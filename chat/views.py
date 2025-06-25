@@ -29,12 +29,11 @@ MONGO_CLIENT = MongoClient('mongodb://127.0.0.1:27017/', serverSelectionTimeoutM
 
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
-    """Главная страница чата - перенаправляет на тестовую страницу Rocket.Chat"""
+    """Главная страница чата - перенаправляет на интегрированный Rocket.Chat"""
 
     def dispatch(self, request, *args, **kwargs):
-        # Перенаправляем на тестовую страницу для разработки Reply/Quote
-        messages.info(request, '🧪 Добро пожаловать в тестовую версию чата с Reply/Quote!')
-        return redirect('chat:rocketchat_test')
+        # Перенаправляем на интегрированную страницу Rocket.Chat (основная система)
+        return redirect('chat:rocketchat_integrated')
 
     def get_context_data(self, **kwargs):
         # Этот метод больше не используется, так как мы перенаправляем
