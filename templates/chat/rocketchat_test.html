@@ -35,6 +35,10 @@
         border: none;
     }
 
+    .chat-container iframe.test-mode {
+        /* Класс test-mode добавлен для активации Reply/Quote кнопок */
+    }
+
     /* 🧪 ТЕСТОВЫЙ ИНДИКАТОР: убран по просьбе пользователя */
 </style>
 
@@ -719,7 +723,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {# --- ГЛАВНЫЙ КОНТЕНТ (идентично основной интеграции) --- #}
 {% block main_container %}
     <div class="chat-container">
-        <iframe id="testRocketChatFrame" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
+        <iframe id="testRocketChatFrame" class="test-mode" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
     </div>
 {% endblock %}
 
