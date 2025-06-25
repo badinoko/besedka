@@ -85,30 +85,59 @@ def login_to_django(session):
         print_status(f"Ошибка получения страницы логина: {e}", "ERROR")
         return False
 
-    # Извлекаем CSRF токен
+    # Извлекаем CSRF токен из формы
     import re
-    csrf_match = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', response.text)
+    csrf_match = re.search(r'name=["\']csrfmiddlewaretoken["\'] value=["\']([^"\']+)["\']', response.text)
     if not csrf_match:
-        print_status("Не удалось извлечь CSRF токен", "ERROR")
-        return False
+        # Пробуем альтернативный способ извлечения
+        csrf_match = re.search(r'csrfmiddlewaretoken["\'] value=["\']([^"\']+)["\']', response.text)
+        if not csrf_match:
+            print_status("Не удалось извлечь CSRF токен", "ERROR")
+            return False
 
     csrf_token = csrf_match.group(1)
+    print_status(f"CSRF токен получен: {csrf_token[:10]}...", "PROGRESS")
+
+    # Получаем CSRF токен из cookies
+    csrf_cookie = None
+    for cookie in session.cookies:
+        if cookie.name == 'csrftoken':
+            csrf_cookie = cookie.value
+            break
+
+    # Добавляем заголовки для CSRF защиты
+    headers = {
+        'Referer': f"{DJANGO_BASE}/accounts/login/",
+        'X-CSRFToken': csrf_cookie if csrf_cookie else csrf_token,
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
 
     # Отправляем данные логина
     login_data = {
-        'username': OWNER_CREDENTIALS['username'],
+        'login': OWNER_CREDENTIALS['username'],  # Django allauth использует 'login', не 'username'
         'password': OWNER_CREDENTIALS['password'],
         'csrfmiddlewaretoken': csrf_token
     }
 
     try:
-        response = session.post(f"{DJANGO_BASE}/accounts/login/", data=login_data)
-        if response.url.endswith('/accounts/login/'):
+        response = session.post(f"{DJANGO_BASE}/accounts/login/",
+                              data=login_data,
+                              headers=headers,
+                              allow_redirects=False)
+
+        print_status(f"Ответ Django: {response.status_code}", "PROGRESS")
+
+        # Проверяем успешность авторизации
+        if response.status_code == 302:  # Редирект означает успех
+            print_status("Успешная авторизация в Django", "SUCCESS")
+            return True
+        elif response.status_code == 200 and 'login' in response.text.lower():
             print_status("Неверные учетные данные для Django", "ERROR")
             return False
+        else:
+            print_status(f"Неожиданный ответ: {response.status_code}", "WARNING")
+            return True  # Пробуем продолжить
 
-        print_status("Успешная авторизация в Django", "SUCCESS")
-        return True
     except Exception as e:
         print_status(f"Ошибка авторизации в Django: {e}", "ERROR")
         return False
