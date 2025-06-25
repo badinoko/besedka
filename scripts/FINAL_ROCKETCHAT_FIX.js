@@ -282,7 +282,51 @@ const settings = [
     { _id: 'Site_Name', value: 'Беседка Chat' },
     { _id: 'Language', value: 'ru' },
     { _id: 'UI_Use_Real_Name', value: true },
-    { _id: 'UI_Allow_room_names_with_special_chars', value: true }
+    { _id: 'UI_Allow_room_names_with_special_chars', value: true },
+
+    // ===================================================================
+    // OAUTH НАСТРОЙКИ ДЛЯ ПРОВАЙДЕРА "BESEDKA" - ИСПРАВЛЕНИЕ КНОПКИ
+    // ===================================================================
+    { _id: 'Accounts_OAuth_Custom-besedka', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-id', value: 'BesedkaRocketChat2025' },
+    { _id: 'Accounts_OAuth_Custom-besedka-secret', value: 'SecureSecretKey2025BesedkaRocketChatSSO' },
+    { _id: 'Accounts_OAuth_Custom-besedka-server_url', value: 'http://127.0.0.1:8001' },
+    { _id: 'Accounts_OAuth_Custom-besedka-authorize_path', value: '/o/authorize/' },
+    { _id: 'Accounts_OAuth_Custom-besedka-access_token_path', value: '/o/token/' },
+    { _id: 'Accounts_OAuth_Custom-besedka-scope', value: 'read' },
+    { _id: 'Accounts_OAuth_Custom-besedka-button_label_text', value: 'Войти через Беседку' },
+    { _id: 'Accounts_OAuth_Custom-besedka-show_button', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-merge_users', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-merge_roles', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-map_channels', value: true },
+
+    // СКРЫТИЕ КНОПКИ ЛОГАУТА В EMBEDDED РЕЖИМЕ - РЕШЕНИЕ ПРОБЛЕМЫ ЛОГАУТА
+    { _id: 'Layout_Custom_CSS', value: `
+        /* СКРЫВАЕМ КНОПКУ ЛОГАУТА ТОЛЬКО В EMBEDDED РЕЖИМЕ */
+        /* Это решает проблему когда пользователь случайно делает логаут и ломает SSO связь */
+        .embedded .rc-user-menu [data-qa="logout"],
+        .embedded .rc-user-dropdown [data-qa="logout"],
+        .embedded .flex-nav .flex-nav__user .user-logout,
+        .embedded [data-qa="user-menu-logout"],
+        .embedded .user-menu .logout,
+        .embedded .account-menu .logout {
+            display: none !important;
+        }
+
+        /* Также скрываем любые ссылки и кнопки с текстом "Logout" или "Выйти" */
+        .embedded a[href*="logout"],
+        .embedded button[title*="Logout"],
+        .embedded button[title*="Выйти"],
+        .embedded .sidebar-item[title*="Logout"] {
+            display: none !important;
+        }
+
+        /* Дополнительная защита - скрываем родительские элементы кнопок логаута */
+        .embedded .rc-user-menu:has([data-qa="logout"]) .logout-container,
+        .embedded .user-dropdown:has([data-qa="logout"]) .logout-option {
+            display: none !important;
+        }
+    ` }
 ];
 
 settings.forEach(setting => {
