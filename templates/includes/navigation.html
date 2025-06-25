@@ -41,7 +41,7 @@
             </ul>
             {% endif %}
 
-            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: ТОЛЬКО НАЗВАНИЕ КАНАЛА (точно по центру) -->
+            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: НАЗВАНИЕ КАНАЛА + новые кнопки (только для тестовой страницы) -->
             {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item dropdown">
@@ -66,6 +66,28 @@
                         {% endif %}
                     </ul>
                 </li>
+
+                <!-- НОВЫЕ КНОПКИ ЧАТА (только для тестовой страницы) -->
+                {% if request.resolver_match.url_name == 'rocketchat_test' %}
+                <li class="nav-item me-4">
+                    <a class="nav-link nav-link-with-counter chat-control-enlarged" href="#" title="Непрочитанные сообщения">
+                        <i class="fas fa-envelope nav-icon-enlarged"></i>
+                        <span id="unreadBadge" class="nav-counter-badge-enlarged bg-danger rounded-pill" style="display: none;">
+                            0
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item me-1">
+                    <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToBottom(); return false;" title="К последнему сообщению">
+                        <i class="fas fa-arrow-down nav-icon-enlarged"></i>
+                    </a>
+                </li>
+                <li class="nav-item me-3">
+                    <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToFirstUnread(); return false;" title="К первому непрочитанному">
+                        <i class="fas fa-arrow-up nav-icon-enlarged"></i>
+                    </a>
+                </li>
+                {% endif %}
             </ul>
             {% endif %}
 
