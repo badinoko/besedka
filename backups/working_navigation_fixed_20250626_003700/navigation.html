@@ -1,0 +1,94 @@
+{% load static i18n %}
+{% load core_tags %}
+<!-- templates/includes/navigation.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
+    <div class="container-fluid px-3 px-lg-4">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}" style="{% if request and request.path and 'admin' in request.path %}color: #28a745 !important;{% endif %}">
+            <i class="fas fa-home"></i> Беседка
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavGlobal">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavGlobal">
+            <!-- ОСНОВНЫЕ ССЫЛКИ -->
+            {% if not hide_extra_nav %}
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'news:home' %}">
+                        <i class="fas fa-newspaper"></i> Новости
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'store:catalog' %}">
+                        <i class="fas fa-store"></i> {% trans "Магазин" %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'growlogs:list' %}">
+                        <i class="fas fa-seedling"></i> Гроурепорты
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gallery:gallery' %}">
+                        <i class="fas fa-images"></i> Галерея
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'chat:rocketchat_test' %}">
+                        <i class="fas fa-comments"></i> {% trans "Чат" %}
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
+
+            <!-- ТЕКУЩИЙ КАНАЛ ЧАТА (показывается только в чате) -->
+            {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle current-channel-nav channel-general" href="#"
+                       id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-comments me-1"></i>
+                        <span id="currentChannelName">Общий</span>
+                    </a>
+                    <ul class="dropdown-menu shadow" aria-labelledby="channelDropdownNav">
+                        <li><a class="dropdown-item channel-option-general" href="{% if request.resolver_match.url_name == 'rocketchat_test' %}{% url 'chat:rocketchat_test' %}{% else %}{% url 'chat:rocketchat_integrated' %}{% endif %}?channel=general" onclick="switchChannelNav('general')">
+                            <span class="text-success">⬤</span> Общий
+                        </a></li>
+                        {% if user.role == 'owner' %}
+                        <li><a class="dropdown-item channel-option-vip" href="{% if request.resolver_match.url_name == 'rocketchat_test' %}{% url 'chat:rocketchat_test' %}{% else %}{% url 'chat:rocketchat_integrated' %}{% endif %}?channel=vip" onclick="switchChannelNav('vip')">
+                            <span class="text-warning">⬤</span> VIP
+                        </a></li>
+                        {% endif %}
+                        {% if user.role == 'owner' or user.role == 'moderator' %}
+                        <li><a class="dropdown-item channel-option-moderators" href="{% if request.resolver_match.url_name == 'rocketchat_test' %}{% url 'chat:rocketchat_test' %}{% else %}{% url 'chat:rocketchat_integrated' %}{% endif %}?channel=moderators" onclick="switchChannelNav('moderators')">
+                            <span class="text-info">⬤</span> Модераторы
+                        </a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+            {% endif %}
+
+            <!-- МЕНЮ ПОЛЬЗОВАТЕЛЯ -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
+                        <i class="fas fa-shopping-cart nav-icon"></i>
+                        <span class="nav-counter-badge cart-badge rounded-pill" style="{% if cart_items_count == 0 %}display: none;{% else %}display: flex;{% endif %}">
+                            {{ cart_items_count|default:0 }}
+                            <span class="visually-hidden">товаров в корзине</span>
+                        </span>
+                    </a>
+                </li>
+
+                {% user_info_badge %}
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{# ЗАКОММЕНТИРОВАНО ПО ПРОСЬБЕ ПОЛЬЗОВАТЕЛЯ - модальное окно сохранено для будущего #}
+{# {% include 'includes/chat_modal.html' %} #}
+
+<!-- Модальное окно "Магазин" удалено после запуска каталога -->

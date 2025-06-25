@@ -19,19 +19,30 @@ from django.db.models import Count
 from core.base_views import UnifiedListView
 from django.conf import settings
 import pymongo
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 from datetime import datetime
 
 User = get_user_model()
+
+# Функция для безопасного получения MongoDB клиента (только когда нужно)
+def get_mongo_client():
+    """Безопасное подключение к MongoDB с обработкой ошибок"""
+    try:
+        client = MongoClient('mongodb://127.0.0.1:27017/', serverSelectionTimeoutMS=2000, connectTimeoutMS=2000)
+        # Проверяем соединение
+        client.admin.command('ping')
+        return client
+    except (pymongo.errors.ServerSelectionTimeoutError, pymongo.errors.ConnectionFailure) as e:
+        print(f"⚠️ MongoDB недоступен: {e}")
+        return None
 
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
     """Главная страница чата - перенаправляет на интегрированный Rocket.Chat"""
 
     def dispatch(self, request, *args, **kwargs):
-        # Перенаправляем на новую интегрированную страницу Rocket.Chat
-        messages.info(request, '🚀 Добро пожаловать в новый чат на базе Rocket.Chat!')
-        return redirect('chat:rocketchat_integrated')
+        # 🧪 ВРЕМЕННО: Перенаправляем на тестовую страницу для разработки Reply/Quote функциональности
+        return redirect('chat:rocketchat_test')
 
     def get_context_data(self, **kwargs):
         # Этот метод больше не используется, так как мы перенаправляем
@@ -664,6 +675,60 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
     """Интегрированный view для Rocket.Chat с кнопками переключения каналов"""
     template_name = 'chat/rocketchat_integrated.html'
 
+    def _ensure_subscriptions(self, request, user):
+        """Гарантируем подписки, выполняем один раз за сессию для ускорения."""
+        if request.session.get('subs_checked', False):
+            return
+        try:
+            db = get_mongo_client()
+            if not db:
+                return
+            # Определяем список каналов по роли
+            channels = ['general']
+            if user.role == 'owner':
+                channels += ['vip', 'moderators']
+            elif user.role == 'moderator':
+                channels += ['moderators']
+
+            # Получаем rocket user
+            rocket_user = db.users.find_one({'username': user.username})
+            if not rocket_user:
+                return
+
+            for cid in channels:
+                # Проверяем существование канала
+                room = db.rocketchat_room.find_one({'_id': cid})
+                if not room:
+                    continue
+
+                # Проверяем подписку
+                subscription = db.rocketchat_subscription.find_one({'u._id': rocket_user['_id'], 'rid': cid})
+                if subscription:
+                    continue
+
+                # Создаем подписку простым insert (минимальный набор полей)
+                db.rocketchat_subscription.insert_one({
+                    'open': True,
+                    'alert': False,
+                    'u': {
+                        '_id': rocket_user['_id'],
+                        'username': user.username,
+                        'name': rocket_user.get('name', user.username)
+                    },
+                    'rid': cid,
+                    'name': room.get('name', cid),
+                    'fname': room.get('fname', cid),
+                    't': room.get('t', 'c'),
+                    'roles': ['owner'] if user.role == 'owner' else ['user'],
+                    'ts': datetime.utcnow(),
+                    'ls': datetime.utcnow(),
+                    '_updatedAt': datetime.utcnow()
+                })
+        except errors.ServerSelectionTimeoutError:
+            pass
+        finally:
+            request.session['subs_checked'] = True
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -671,11 +736,15 @@ class RocketChatIntegratedView(LoginRequiredMixin, TemplateView):
         # Простая настройка URL Rocket.Chat без сложной авторизации
         context['rocketchat_url'] = 'http://127.0.0.1:3000'
 
+        # Скрываем основные пункты меню, оставляя только логотип и блок пользователя
+        context['hide_extra_nav'] = True
+
         # Определение прав доступа к каналам
         def user_has_vip_access():
             return user.role == 'owner'
 
         context['user_has_vip_access'] = user_has_vip_access()
+        self._ensure_subscriptions(self.request, user)
         return context
 
 
@@ -764,7 +833,12 @@ class TestMessageInputView(LoginRequiredMixin, TemplateView):
         """Отправляем сообщение напрямую в MongoDB"""
         try:
             # Подключаемся к MongoDB
-            client = MongoClient('mongodb://127.0.0.1:27017/')
+            client = get_mongo_client()
+            if not client:
+                return {
+                    'status': 'error',
+                    'message': 'Не удалось подключиться к MongoDB'
+                }
             db = client.rocketchat
 
             # Проверяем существование канала
@@ -992,6 +1066,99 @@ class RocketChatOAuthUserView(View):
     def post(self, request):
         """Альтернативный метод для POST запросов"""
         return self.get(request)
+
+
+class RocketChatTestView(LoginRequiredMixin, TemplateView):
+    """🧪 ИЗОЛИРОВАННЫЙ ТЕСТОВЫЙ VIEW для разработки новой функциональности
+
+    КОПИРУЕТ ТОЧНУЮ ЛОГИКУ RocketChatIntegratedView + добавляет новые функции
+    согласно дорожной карте: §2.1 Reply/Quote функциональность
+
+    Принцип: ТА ЖЕ авторизация, ТА ЖЕ логика доступа, + новые кнопки/счетчики
+    """
+    template_name = 'chat/rocketchat_test.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Точная копия логики из integrated
+        if not request.user.is_authenticated:
+            return redirect('account_login')
+
+        # Убеждаемся, что пользователь подписан на каналы
+        self._ensure_subscriptions(request, request.user)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ensure_subscriptions(self, request, user):
+        """Точная копия логики подписок из RocketChatIntegratedView"""
+        try:
+            db = get_mongo_client()
+            if not db:
+                return
+
+            # Получаем все каналы
+            channels = list(db.rocketchat_room.find({'t': 'c'}))
+            channel_names = [ch['name'] for ch in channels if 'name' in ch]
+
+            if not channel_names:
+                messages.warning(request, "Каналы Rocket.Chat не найдены")
+                return
+
+            # Проверяем подписки пользователя
+            user_subscriptions = list(db.rocketchat_subscription.find({
+                'u.username': user.username,
+                't': 'c'
+            }))
+
+            subscribed_rooms = set()
+            for sub in user_subscriptions:
+                if 'rid' in sub:
+                    subscribed_rooms.add(sub['rid'])
+
+            # Подписываем на недостающие каналы
+            for channel in channels:
+                if channel.get('_id') not in subscribed_rooms:
+                    subscription_doc = {
+                        'rid': channel['_id'],
+                        'u': {
+                            '_id': user.username,
+                            'username': user.username
+                        },
+                        't': 'c',
+                        'open': True,
+                        'alert': True,
+                        'unread': 0,
+                        'userMentions': 0,
+                        'groupMentions': 0,
+                        'ts': datetime.utcnow(),
+                        '_updatedAt': datetime.utcnow()
+                    }
+                    db.rocketchat_subscription.insert_one(subscription_doc)
+
+        except Exception as e:
+            messages.warning(request, f"Ошибка настройки подписок: {e}")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Функция проверки VIP доступа (точная копия из integrated)
+        def user_has_vip_access():
+            return user.role == 'owner'
+
+        context.update({
+            'hide_extra_nav': True,  # Скрываем лишние кнопки навигации как в integrated
+            'rocketchat_url': 'http://127.0.0.1:3000',
+            'user_can_access_vip': user_has_vip_access(),
+            'user_can_access_moderators': user.role in ['owner', 'moderator'],
+
+            # === ФЛАГИ НОВОЙ ФУНКЦИОНАЛЬНОСТИ (дорожная карта) ===
+            'enable_reply_buttons': True,       # §2.1 Система ответов и цитирования
+            'enable_message_counters': True,    # §2.4 Система непрочитанных сообщений
+            'enable_enhanced_header': False,    # §2.2 Отключен - используем навигацию вместо плашки
+            'enable_reaction_system': False,    # §2.3 Пока отключено
+        })
+
+        return context
 
 
 

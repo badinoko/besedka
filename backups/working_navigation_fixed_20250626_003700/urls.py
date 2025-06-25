@@ -35,6 +35,9 @@ urlpatterns = [
     path('oauth/', views.RocketChatOAuthView.as_view(), name='rocketchat_oauth'),
     path('integrated/', views.RocketChatIntegratedView.as_view(), name='rocketchat_integrated'),
 
+    # 🧪 ИЗОЛИРОВАННОЕ ТЕСТИРОВАНИЕ (Roadmap §2.1 Reply/Quote)
+    path('test/', views.RocketChatTestView.as_view(), name='rocketchat_test'),
+
     # API для интеграции с Rocket.Chat
     path('api/auth/', views.RocketChatAuthAPIView.as_view(), name='rocketchat_auth_api'),
 ]
