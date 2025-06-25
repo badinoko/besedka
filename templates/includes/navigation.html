@@ -43,7 +43,7 @@
 
             <!-- ТЕКУЩИЙ КАНАЛ ЧАТА (показывается только в чате) -->
             {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
-            <ul class="navbar-nav" style="margin-left: auto; margin-right: 10%;">
+            <ul class="navbar-nav mx-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle current-channel-nav channel-general" href="#"
                        id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -71,24 +71,24 @@
 
             <!-- ДОПОЛНИТЕЛЬНЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы) -->
             {% if request.resolver_match.url_name == 'rocketchat_test' %}
-            <ul class="navbar-nav">
+            <ul class="navbar-nav me-3">
                 <li class="nav-item">
-                    <a class="nav-link nav-link-with-counter" href="#" onclick="return false;" title="Непрочитанные сообщения">
-                        <i class="fas fa-envelope nav-icon"></i>
-                        <span id="unreadBadge" class="nav-counter-badge rounded-pill" style="display: none; background: #dc3545;">
+                    <a class="nav-link nav-link-with-counter chat-control-enlarged" href="#" onclick="return false;" title="Непрочитанные сообщения">
+                        <i class="fas fa-envelope nav-icon-enlarged"></i>
+                        <span id="unreadBadge" class="nav-counter-badge-enlarged rounded-pill" style="display: none; background: #dc3545;">
                             0
                             <span class="visually-hidden">непрочитанных сообщений</span>
                         </span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="scrollToBottom(); return false;" title="К последнему сообщению">
-                        <i class="fas fa-arrow-down nav-icon"></i>
+                    <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToBottom(); return false;" title="К последнему сообщению">
+                        <i class="fas fa-arrow-down nav-icon-enlarged"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="scrollToFirstUnread(); return false;" title="К первому непрочитанному">
-                        <i class="fas fa-arrow-up nav-icon"></i>
+                    <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToFirstUnread(); return false;" title="К первому непрочитанному">
+                        <i class="fas fa-arrow-up nav-icon-enlarged"></i>
                     </a>
                 </li>
             </ul>

@@ -9,7 +9,7 @@
 
 {% block title %}🧪 Чат (тест) - Беседка{% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ СТИЛЕЙ ИЗ INTEGRATED --- #}
+{# --- ТОЧНАЯ КОПИЯ СТИЛЕЙ ИЗ INTEGRATED + стили для увеличенных кнопок --- #}
 {% block extra_css %}
 <style>
     /* Стили для body только для чата - КОПИЯ ИЗ integrated */
@@ -32,6 +32,45 @@
         flex: 1;
         width: 100%;
         border: none;
+    }
+
+    /* === УВЕЛИЧЕННЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы) === */
+    .chat-control-enlarged {
+        position: relative;
+        padding: 0.75rem 1rem !important; /* Увеличенные отступы */
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .chat-control-enlarged:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: scale(1.05);
+    }
+
+    .nav-icon-enlarged {
+        font-size: 1.5rem !important; /* Увеличенные иконки */
+        color: #ffffff;
+    }
+
+    .nav-counter-badge-enlarged {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        min-width: 22px;
+        height: 22px;
+        font-size: 11px !important;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #343a40;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Исправление обрезания счетчика */
+    .nav-link-with-counter {
+        position: relative;
+        min-width: 60px; /* Достаточно места для badge */
     }
 </style>
 
@@ -157,7 +196,20 @@ document.addEventListener('DOMContentLoaded', function() {
 function scrollToBottom() {
     const frame = document.getElementById('rocketChatFrame');
     if (frame && frame.contentWindow) {
-        frame.contentWindow.postMessage({ action: 'scrollToBottom' }, '*');
+        try {
+            // Пытаемся управлять скроллом напрямую через iframe
+            frame.contentWindow.postMessage({
+                action: 'scrollToBottom',
+                source: 'besedka-test'
+            }, '*');
+
+            // Также пытаемся скроллить сам iframe на случай если postMessage не сработает
+            frame.contentWindow.scrollTo(0, frame.contentWindow.document.body.scrollHeight);
+        } catch (e) {
+            // Если не получается через postMessage, пытаемся скроллить контейнер iframe
+            console.log('🚀 Альтернативный скролл к последнему сообщению');
+            frame.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
     }
     console.log('🚀 Скролл к последнему сообщению');
 }
@@ -165,10 +217,42 @@ function scrollToBottom() {
 function scrollToFirstUnread() {
     const frame = document.getElementById('rocketChatFrame');
     if (frame && frame.contentWindow) {
-        frame.contentWindow.postMessage({ action: 'scrollToFirstUnread' }, '*');
+        try {
+            // Отправляем команду в Rocket.Chat
+            frame.contentWindow.postMessage({
+                action: 'scrollToFirstUnread',
+                source: 'besedka-test'
+            }, '*');
+
+            // Альтернативно - скроллим к началу как к "первому непрочитанному"
+            frame.contentWindow.scrollTo(0, 0);
+        } catch (e) {
+            console.log('🚀 Альтернативный скролл к первому непрочитанному');
+            frame.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
     console.log('🚀 Скролл к первому непрочитанному');
 }
+
+// Слушаем сообщения от Rocket.Chat iframe
+window.addEventListener('message', function(event) {
+    // Проверяем что сообщение от нашего Rocket.Chat
+    if (event.origin === 'http://127.0.0.1:3000') {
+        console.log('🚀 Получено сообщение от Rocket.Chat:', event.data);
+
+        // Обрабатываем различные типы сообщений
+        if (event.data && event.data.type === 'unread-count') {
+            // Обновляем счетчик непрочитанных
+            const badge = document.getElementById('unreadBadge');
+            if (badge && event.data.count > 0) {
+                badge.textContent = event.data.count > 99 ? '99+' : event.data.count;
+                badge.style.display = 'flex';
+            } else if (badge) {
+                badge.style.display = 'none';
+            }
+        }
+    }
+});
 
 // 📊 Управление счетчиками (тестовые данные)
 setTimeout(() => {

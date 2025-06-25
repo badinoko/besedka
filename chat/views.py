@@ -1123,23 +1123,23 @@ class RocketChatTestView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Точная копия логики доступа из integrated
+        # Функция проверки VIP доступа (точная копия из integrated)
         def user_has_vip_access():
-            return user.role in ['owner'] or getattr(user, 'has_vip_access', False)
+            return user.role == 'owner'
 
         context.update({
+            'hide_extra_nav': True,  # Скрываем лишние кнопки навигации как в integrated
             'rocketchat_url': 'http://127.0.0.1:3000',
             'user_can_access_vip': user_has_vip_access(),
             'user_can_access_moderators': user.role in ['owner', 'moderator'],
 
-            # 🚀 НОВЫЕ ФЛАГИ ДЛЯ РАЗРАБОТКИ (согласно дорожной карте §2.1, §2.2)
-            'test_mode': True,
-            'feature_name': 'Reply/Quote + Навигация v1.0',
-            'enable_reply_buttons': True,  # §2.1 Система ответов и цитирования
-            'enable_message_counters': True,  # §2.4 Система непрочитанных сообщений
-            'enable_enhanced_header': True,  # §2.2 Красивый header чата
-            'enable_reaction_system': True,  # §2.3 Система реакций и эмодзи
+            # === ФЛАГИ НОВОЙ ФУНКЦИОНАЛЬНОСТИ (дорожная карта) ===
+            'enable_reply_buttons': True,       # §2.1 Система ответов и цитирования
+            'enable_message_counters': True,    # §2.4 Система непрочитанных сообщений
+            'enable_enhanced_header': False,    # §2.2 Отключен - используем навигацию вместо плашки
+            'enable_reaction_system': False,    # §2.3 Пока отключено
         })
+
         return context
 
 
