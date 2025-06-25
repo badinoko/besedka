@@ -295,10 +295,25 @@ const settings = [
     { _id: 'Accounts_OAuth_Custom-besedka-access_token_path', value: '/o/token/' },
     { _id: 'Accounts_OAuth_Custom-besedka-scope', value: 'read' },
     { _id: 'Accounts_OAuth_Custom-besedka-button_label_text', value: 'Войти через Беседку' },
-    { _id: 'Accounts_OAuth_Custom-besedka-show_button', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-show_button', value: false },
     { _id: 'Accounts_OAuth_Custom-besedka-merge_users', value: true },
     { _id: 'Accounts_OAuth_Custom-besedka-merge_roles', value: true },
     { _id: 'Accounts_OAuth_Custom-besedka-map_channels', value: true },
+
+    // === 🔒 8. ОТКЛЮЧАЕМ WORKSPACE REGISTRATION И ЛИЦЕНЗИОННЫЕ ОГРАНИЧЕНИЯ ===
+    // Полностью отключаем привязку к облаку Rocket.Chat, чтобы убрать лимит 50 пользователей
+    { _id: 'Cloud_Workspace_Registration_State', value: 'registered' },
+    { _id: 'Cloud_Workspace_Client_Id', value: '' },
+    { _id: 'Cloud_Workspace_Client_Secret', value: '' },
+    { _id: 'Cloud_Workspace_Client_Secret_Expires_At', value: 0 },
+    // Сбрасываем поле лицензии, чтобы Rocket.Chat работал в OSS-режиме без Enterprise-баннера
+    { _id: 'Enterprise_License', value: '' },
+    // Полностью выключаем регистрацию пользователей и сторонних OAuth прямо в Rocket.Chat UI
+    { _id: 'Accounts_RegistrationForm', value: 'Disabled' },
+    { _id: 'Accounts_Registration_ExtraFields', value: '' },
+    { _id: 'Accounts_RegistrationForm_LinkReplacementText', value: 'Регистрация отключена администратором' },
+    { _id: 'Accounts_RegistrationForm_Type', value: 'Disabled' },
+    // ===================================================================
 
     // СКРЫТИЕ КНОПКИ ЛОГАУТА В EMBEDDED РЕЖИМЕ - РЕШЕНИЕ ПРОБЛЕМЫ ЛОГАУТА
     { _id: 'Layout_Custom_CSS', value: `
@@ -324,6 +339,22 @@ const settings = [
         /* Дополнительная защита - скрываем родительские элементы кнопок логаута */
         .embedded .rc-user-menu:has([data-qa="logout"]) .logout-container,
         .embedded .user-dropdown:has([data-qa="logout"]) .logout-option {
+            display: none !important;
+        }
+
+        /* 🔕 Убираем любые баннеры о регистрации/облаке */
+        .rc-announcement, .cloud-warning-banner, .CloudRegistrationBanner,
+        .rcx-banner, .rcx-banner-manager, .rc-alerts, .CloudBanner,
+        #rocket-chat-cloud-registration-banner {
+            display: none !important;
+        }
+
+        /* 🎛️ Прячем пункты меню, связанные с облаком / магазином */
+        .sidebar-item__link[href*="cloud"],
+        .sidebar-item__link[href*="marketplace"],
+        .sidebar-item__link[href*="omnichannel"],
+        .sidebar-item__link[href*="license"],
+        .sidebar-item__link[href*="workspaces"] {
             display: none !important;
         }
     ` }
