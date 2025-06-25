@@ -485,6 +485,37 @@ const settings = [
         .embedded:not(.test-mode) .rcx-message:hover::after {
             display: none !important;
         }
+
+        /* === PHASE A MINIMAL UI (Roadmap 8.1) === */
+        .embedded .rcx-room-header,
+        .embedded .rcx-sidebar,
+        .embedded .sidebar,
+        .embedded .sidebar__toolbar,
+        .embedded .rcx-message-actions,
+        .embedded .rc-popover {
+            display: none !important;
+        }
+        /* Сохраняем composer и message-list */
+        .embedded .rcx-message-list {
+            margin-top: 0 !important;
+        }
+        .embedded .rcx-message-composer {
+            border-top: 1px solid var(--rc-color-light, #2b2f33);
+        }
+
+        /* === PHASE B HIDE NATIVE HOVER ACTIONS === */
+        .embedded .rcx-message-hover-toolbar,
+        .embedded .rcx-message-actions,
+        .embedded .rcx-message-action,
+        .embedded .rcx-message-action-menu,
+        .embedded .rcx-message:hover .rcx-message-actions,
+        .embedded [data-qa="message-action-menu"],
+        .embedded [data-qa="message-action-reply"],
+        .embedded [data-qa="message-action-edit"],
+        .embedded [data-qa="message-action-delete"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
     ` }
 ];
 

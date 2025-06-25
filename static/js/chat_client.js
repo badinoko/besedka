@@ -12,6 +12,8 @@ class ChatClient {
         this.isTyping = false;
         this.typingTimer = null;
         this.userReactedMessages = new Set(); // track messages reacted by current user to block double reaction
+        this.replyToId = null; // <-- ID сообщения, на которое отвечаем
+        this.replyToSnippet = null;
 
         this.init();
     }
@@ -209,8 +211,14 @@ class ChatClient {
         }
 
         // Build reaction HTML snippet for header (inline)
+        const replyControl = `
+            <button class="reply-set-btn" data-message-id="${message.id}" data-author="${this.escapeHtml(message.author_name)}" title="Ответить">
+                <i class="fas fa-reply"></i>
+            </button>`;
+
         const reactionsInHeader = `
             <div class="message-reactions">
+                ${replyControl}
                 <button class="reaction-btn like-btn" data-message-id="${message.id}" data-action="like" title="Нравится">
                     <i class="fas fa-thumbs-up"></i>
                     <div class="reaction-count">${likes}</div>
@@ -302,13 +310,21 @@ class ChatClient {
         const message = input.value.trim();
 
         if (message && this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify({
+            const payload = {
                 type: 'message',
                 message: message
-            }));
+            };
+            if (this.replyToId) {
+                payload.reply_to_id = this.replyToId;
+            }
+            this.socket.send(JSON.stringify(payload));
 
             input.value = '';
             this.stopTyping();
+
+            // Сбрасываем режим ответа
+            this.replyToId = null;
+            this.hideReplyIndicator();
         } else if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             window.showNotification('Нет соединения с сервером', 'error');
         }
@@ -401,7 +417,7 @@ class ChatClient {
             });
         }
 
-        // Делегирование кликов на кнопки реакций
+        // Делегирование кликов на кнопки реакций и ответов
         const messagesContainer = document.getElementById('chat-messages');
         if (messagesContainer) {
             messagesContainer.addEventListener('click', (e) => {
@@ -443,6 +459,18 @@ class ChatClient {
                         targetEl.classList.add('reply-highlighted');
                         setTimeout(() => targetEl.classList.remove('reply-highlighted'), 2000);
                     }
+                }
+
+                // Обработка кнопки "Ответить"
+                const replyBtn = e.target.closest('.reply-set-btn');
+                if (replyBtn) {
+                    const targetId = replyBtn.getAttribute('data-message-id');
+                    const author = replyBtn.getAttribute('data-author');
+                    this.replyToId = targetId;
+                    this.replyToSnippet = author;
+                    this.showReplyIndicator(author); // Отображаем индикатор
+                    const input = document.getElementById('message-input');
+                    if (input) input.focus();
                 }
             });
         }
@@ -517,6 +545,28 @@ class ChatClient {
         const dislikeCountEl = messageEl.querySelector('.dislike-btn .reaction-count');
         if (likeCountEl) likeCountEl.textContent = likes;
         if (dislikeCountEl) dislikeCountEl.textContent = dislikes;
+    }
+
+    showReplyIndicator(author) {
+        const indicator = document.getElementById('reply-indicator-area');
+        if (!indicator) return;
+        indicator.innerHTML = `Ответ @${this.escapeHtml(author)}  <button id="cancel-reply-btn" class="btn btn-sm btn-link text-light">Отмена</button>`;
+        indicator.style.display = 'block';
+        const cancelBtn = document.getElementById('cancel-reply-btn');
+        if (cancelBtn) {
+            cancelBtn.onclick = () => {
+                this.replyToId = null;
+                this.hideReplyIndicator();
+            };
+        }
+    }
+
+    hideReplyIndicator() {
+        const indicator = document.getElementById('reply-indicator-area');
+        if (indicator) {
+            indicator.style.display = 'none';
+            indicator.innerHTML = '';
+        }
     }
 }
 

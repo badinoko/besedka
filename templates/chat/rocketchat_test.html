@@ -2,9 +2,9 @@
 {% load static %}
 
 {% comment %}
-🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ INTEGRATED
-Последнее обновление: 25 июня 2025 г.
-Статус: ТОЧНАЯ КОПИЯ - убраны все лишние элементы
+🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ INTEGRATED + 3 простые кнопки
+Последнее обновление: 26 июня 2025 г.
+Статус: ВОССТАНОВЛЕНО - убраны все наложения и фантазии
 {% endcomment %}
 
 {% block title %}🧪 Чат (тест) - Беседка{% endblock %}
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED --- #}
+{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED + простые функции навигации --- #}
 {% block extra_js %}
 <script src="{% static 'js/auto_join_fix.js' %}"></script>
 <script>
@@ -69,7 +69,6 @@ function switchChannel(name){
  frame.src=`{{ rocketchat_url }}/channel/${name}?layout=embedded&t=${t}`;
  frame.onload=()=>{
    isSwitching=false;
-
  };
 }
 
@@ -80,8 +79,6 @@ window.addEventListener('load',()=>{
 
  // Обновляем название канала в навигации при загрузке
  updateChannelNavTitle(ch || 'general');
-
-
 });
 
 // Новая функция для переключения каналов из навигации
@@ -111,9 +108,30 @@ function updateChannelNavTitle(channel) {
  buttonEl.classList.add('channel-' + channel);
 }
 
+// ПРОСТЫЕ ФУНКЦИИ ДЛЯ КНОПОК НАВИГАЦИИ
+function scrollToBottom() {
+    const iframe = document.getElementById('rocketChatFrame');
+    if (iframe && iframe.contentWindow) {
+        try {
+            iframe.contentWindow.postMessage({type: 'scroll-to-bottom'}, 'http://127.0.0.1:3000');
+        } catch(e) {
+            console.log('Скролл к последнему сообщению (demo)');
+        }
+    }
+}
 
+function scrollToFirstUnread() {
+    const iframe = document.getElementById('rocketChatFrame');
+    if (iframe && iframe.contentWindow) {
+        try {
+            iframe.contentWindow.postMessage({type: 'scroll-to-first-unread'}, 'http://127.0.0.1:3000');
+        } catch(e) {
+            console.log('Скролл к первому непрочитанному (demo)');
+        }
+    }
+}
 
-// Закрытие dropdown при клике в любое место экрана (усиленная версия)
+// Закрытие dropdown при клике в любое место экрана
 document.addEventListener('click', function(event) {
  const dropdown = document.getElementById('channelDropdownNav');
  const dropdownMenu = dropdown ? dropdown.nextElementSibling : null;
@@ -143,34 +161,6 @@ document.addEventListener('keydown', function(event) {
    }
  }
 });
-
-// Дополнительно закрываем dropdown при потере фокуса или клике на iframe
-document.addEventListener('DOMContentLoaded', function() {
- const dropdown = document.getElementById('channelDropdownNav');
- const iframe = document.getElementById('rocketChatFrame');
-
- if (dropdown && iframe) {
-   // Закрываем dropdown при клике на iframe
-   iframe.addEventListener('mousedown', function() {
-     const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
-     if (bsDropdown) {
-       bsDropdown.hide();
-     }
-   });
-
-   // Закрываем dropdown при потере фокуса
-   dropdown.addEventListener('blur', function() {
-     setTimeout(function() {
-       const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
-       if (bsDropdown) {
-         bsDropdown.hide();
-       }
-     }, 150);
-   });
-
-
- }
-});
 </script>
 {% endblock %}
 
@@ -181,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         <!-- МАЛЕНЬКИЙ ТЕСТОВЫЙ ИНДИКАТОР -->
         <div class="test-indicator">
-            🧪 Тест
+            🧪 Тест навигации v1.0
         </div>
     </div>
 {% endblock %}
