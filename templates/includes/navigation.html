@@ -69,11 +69,11 @@
             </ul>
             {% endif %}
 
-            <!-- ПРАВАЯ СЕКЦИЯ: дополнительные кнопки чата + корзина + пользователь -->
+            <!-- ПРАВАЯ СЕКЦИЯ: корзина + пользователь (ТОЧНО КАК В INTEGRATED!) -->
             <ul class="navbar-nav ms-auto">
-                <!-- ДОПОЛНИТЕЛЬНЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы) -->
+                <!-- Дополнительные кнопки только для тестовой страницы -->
                 {% if request.resolver_match.url_name == 'rocketchat_test' %}
-                <li class="nav-item me-4">
+                <li class="nav-item me-2">
                     <a class="nav-link nav-link-with-counter chat-control-enlarged" href="#" onclick="return false;" title="Непрочитанные сообщения">
                         <i class="fas fa-envelope nav-icon-enlarged"></i>
                         <span id="unreadBadge" class="nav-counter-badge-enlarged rounded-pill" style="display: none; background: #dc3545;">
@@ -87,14 +87,13 @@
                         <i class="fas fa-arrow-down nav-icon-enlarged"></i>
                     </a>
                 </li>
-                <li class="nav-item me-3">
+                <li class="nav-item me-2">
                     <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToFirstUnread(); return false;" title="К первому непрочитанному">
                         <i class="fas fa-arrow-up nav-icon-enlarged"></i>
                     </a>
                 </li>
                 {% endif %}
 
-                <!-- КОРЗИНА И ПОЛЬЗОВАТЕЛЬ (как в integrated) -->
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
                         <i class="fas fa-shopping-cart nav-icon"></i>
