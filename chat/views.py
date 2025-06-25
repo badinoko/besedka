@@ -1062,79 +1062,83 @@ class RocketChatTestView(LoginRequiredMixin, TemplateView):
     """
     template_name = 'chat/rocketchat_test.html'
 
-    def _ensure_subscriptions(self, request, user):
-        """КОПИЯ метода из RocketChatIntegratedView для обеспечения подписок"""
-        if request.session.get('subs_checked', False):
-            return
-        try:
-            db = MONGO_CLIENT.rocketchat
-            # Определяем список каналов по роли
-            channels = ['general']
-            if user.role == 'owner':
-                channels += ['vip', 'moderators']
-            elif user.role == 'moderator':
-                channels += ['moderators']
+    def dispatch(self, request, *args, **kwargs):
+        # Точная копия логики из integrated
+        if not request.user.is_authenticated:
+            return redirect('account_login')
 
-            # Получаем rocket user
-            rocket_user = db.users.find_one({'username': user.username})
-            if not rocket_user:
+        # Убеждаемся, что пользователь подписан на каналы
+        self._ensure_subscriptions(request, request.user)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ensure_subscriptions(self, request, user):
+        """Точная копия логики подписок из RocketChatIntegratedView"""
+        try:
+            db = MONGO_CLIENT['rocketchat']
+
+            # Получаем все каналы
+            channels = list(db.rocketchat_room.find({'t': 'c'}))
+            channel_names = [ch['name'] for ch in channels if 'name' in ch]
+
+            if not channel_names:
+                messages.warning(request, "Каналы Rocket.Chat не найдены")
                 return
 
-            for cid in channels:
-                # Проверяем существование канала
-                room = db.rocketchat_room.find_one({'_id': cid})
-                if not room:
-                    continue
+            # Проверяем подписки пользователя
+            user_subscriptions = list(db.rocketchat_subscription.find({
+                'u.username': user.username,
+                't': 'c'
+            }))
 
-                # Проверяем подписку
-                subscription = db.rocketchat_subscription.find_one({'u._id': rocket_user['_id'], 'rid': cid})
-                if subscription:
-                    continue
+            subscribed_rooms = set()
+            for sub in user_subscriptions:
+                if 'rid' in sub:
+                    subscribed_rooms.add(sub['rid'])
 
-                # Создаем подписку простым insert (минимальный набор полей)
-                db.rocketchat_subscription.insert_one({
-                    'open': True,
-                    'alert': False,
-                    'u': {
-                        '_id': rocket_user['_id'],
-                        'username': user.username,
-                        'name': rocket_user.get('name', user.username)
-                    },
-                    'rid': cid,
-                    'name': room.get('name', cid),
-                    'fname': room.get('fname', cid),
-                    't': room.get('t', 'c'),
-                    'roles': ['owner'] if user.role == 'owner' else ['user'],
-                    'ts': datetime.utcnow(),
-                    'ls': datetime.utcnow(),
-                    '_updatedAt': datetime.utcnow()
-                })
-        except errors.ServerSelectionTimeoutError:
-            pass
-        finally:
-            request.session['subs_checked'] = True
+            # Подписываем на недостающие каналы
+            for channel in channels:
+                if channel.get('_id') not in subscribed_rooms:
+                    subscription_doc = {
+                        'rid': channel['_id'],
+                        'u': {
+                            '_id': user.username,
+                            'username': user.username
+                        },
+                        't': 'c',
+                        'open': True,
+                        'alert': True,
+                        'unread': 0,
+                        'userMentions': 0,
+                        'groupMentions': 0,
+                        'ts': datetime.utcnow(),
+                        '_updatedAt': datetime.utcnow()
+                    }
+                    db.rocketchat_subscription.insert_one(subscription_doc)
+
+        except Exception as e:
+            messages.warning(request, f"Ошибка настройки подписок: {e}")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # ТОЧНАЯ КОПИЯ логики из RocketChatIntegratedView
-        context['rocketchat_url'] = 'http://127.0.0.1:3000'
-        context['hide_extra_nav'] = True
-
-        # Определение прав доступа к каналам - КОПИЯ из integrated
+        # Точная копия логики доступа из integrated
         def user_has_vip_access():
-            return user.role == 'owner'
+            return user.role in ['owner'] or getattr(user, 'has_vip_access', False)
 
-        context['user_has_vip_access'] = user_has_vip_access()
-        self._ensure_subscriptions(self.request, user)
-
-        # ДОПОЛНИТЕЛЬНО: Флаги для новой функциональности согласно дорожной карте
         context.update({
-            'test_mode': True,  # Флаг что это тестовая страница
-            'feature_name': '§2.1 Reply/Quote Messages',  # Текущая разработка
-            'enable_reply_buttons': True,  # Новая функциональность
-            'enable_message_counters': True,  # Новая функциональность
+            'rocketchat_url': 'http://127.0.0.1:3000',
+            'user_can_access_vip': user_has_vip_access(),
+            'user_can_access_moderators': user.role in ['owner', 'moderator'],
+
+            # 🚀 НОВЫЕ ФЛАГИ ДЛЯ РАЗРАБОТКИ (согласно дорожной карте §2.1, §2.2)
+            'test_mode': True,
+            'feature_name': 'Reply/Quote + Навигация v1.0',
+            'enable_reply_buttons': True,  # §2.1 Система ответов и цитирования
+            'enable_message_counters': True,  # §2.4 Система непрочитанных сообщений
+            'enable_enhanced_header': True,  # §2.2 Красивый header чата
+            'enable_reaction_system': True,  # §2.3 Система реакций и эмодзи
         })
         return context
 

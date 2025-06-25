@@ -69,6 +69,31 @@
             </ul>
             {% endif %}
 
+            <!-- ДОПОЛНИТЕЛЬНЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы) -->
+            {% if request.resolver_match.url_name == 'rocketchat_test' %}
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-with-counter" href="#" onclick="return false;" title="Непрочитанные сообщения">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <span id="unreadBadge" class="nav-counter-badge rounded-pill" style="display: none; background: #dc3545;">
+                            0
+                            <span class="visually-hidden">непрочитанных сообщений</span>
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="scrollToBottom(); return false;" title="К последнему сообщению">
+                        <i class="fas fa-arrow-down nav-icon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="scrollToFirstUnread(); return false;" title="К первому непрочитанному">
+                        <i class="fas fa-arrow-up nav-icon"></i>
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
+
             <!-- МЕНЮ ПОЛЬЗОВАТЕЛЯ -->
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">

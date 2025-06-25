@@ -2,10 +2,9 @@
 {% load static %}
 
 {% comment %}
-🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ RocketChatIntegratedView
+🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ INTEGRATED + минимальные дополнения
 Последнее обновление: 25 июня 2025 г.
-Статус: ИСПРАВЛЕНО - использует ту же логику авторизации что и integrated
-Цель: Безопасное тестирование §2.1 Reply/Quote функциональности
+Статус: ИСПРАВЛЕНА - убрана лишняя плашка, восстановлена SSOT структура
 {% endcomment %}
 
 {% block title %}🧪 Чат (тест) - Беседка{% endblock %}
@@ -20,7 +19,7 @@
 
     .chat-container {
         position: fixed;
-        top: 60px;   /* высота navbar */
+        top: 60px;   /* высота navbar - КАК В ОРИГИНАЛЕ */
         left: 0;
         right: 0;
         bottom: 0;
@@ -34,37 +33,20 @@
         width: 100%;
         border: none;
     }
-
-    /* === ДОПОЛНИТЕЛЬНО: ТЕСТОВЫЙ ИНДИКАТОР === */
-    .test-indicator {
-        position: absolute;
-        top: 65px;
-        right: 10px;
-        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 10px;
-        font-weight: 600;
-        z-index: 9999;
-        opacity: 0.8;
-    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('chat-page');
-    console.log('🧪 TEST PAGE: Запущен как копия integrated + новые функции');
 });
 </script>
 {% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED --- #}
+{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED + дополнения --- #}
 {% block extra_js %}
 <script src="{% static 'js/auto_join_fix.js' %}"></script>
 <script>
-// === ТОЧНАЯ КОПИЯ ФУНКЦИЙ ИЗ RocketChatIntegratedView ===
-
+// === ТОЧНАЯ КОПИЯ ИЗ INTEGRATED ===
 let isSwitching=false;
 function switchChannel(name){
  if(isSwitching)return;isSwitching=true;
@@ -73,7 +55,6 @@ function switchChannel(name){
  frame.src=`{{ rocketchat_url }}/channel/${name}?layout=embedded&t=${t}`;
  frame.onload=()=>{
    isSwitching=false;
-   console.log(`🧪 TEST: Канал ${name} переключен (идентично integrated)`);
  };
 }
 
@@ -170,30 +151,35 @@ document.addEventListener('DOMContentLoaded', function() {
  }
 });
 
-// === ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ТЕСТИРОВАНИЯ (согласно дорожной карте) ===
+// === ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ НОВЫХ КНОПОК ===
 
-{% if enable_reply_buttons %}
-// 🚀 БУДУЩАЯ ФУНКЦИОНАЛЬНОСТЬ: Reply к сообщениям
-function testReplyFeature() {
-    console.log('🧪 TEST: Тестирование Reply функциональности');
-    // TODO: Реализация согласно §2.1 дорожной карты
+// ⬇️⬆️ Навигация по сообщениям
+function scrollToBottom() {
+    const frame = document.getElementById('rocketChatFrame');
+    if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage({ action: 'scrollToBottom' }, '*');
+    }
+    console.log('🚀 Скролл к последнему сообщению');
 }
-{% endif %}
 
-{% if enable_message_counters %}
-// 📊 БУДУЩАЯ ФУНКЦИОНАЛЬНОСТЬ: Счетчики сообщений
-function testMessageCounters() {
-    console.log('🧪 TEST: Тестирование счетчиков сообщений');
-    // TODO: Реализация согласно §2.1 дорожной карты
+function scrollToFirstUnread() {
+    const frame = document.getElementById('rocketChatFrame');
+    if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage({ action: 'scrollToFirstUnread' }, '*');
+    }
+    console.log('🚀 Скролл к первому непрочитанному');
 }
-{% endif %}
 
-// Инициализация тестовых функций
+// 📊 Управление счетчиками (тестовые данные)
 setTimeout(() => {
-    console.log('🧪 TEST: Инициализация будущих функций');
-    {% if enable_reply_buttons %}testReplyFeature();{% endif %}
-    {% if enable_message_counters %}testMessageCounters();{% endif %}
-}, 2000);
+    {% if enable_message_counters %}
+    const badge = document.getElementById('unreadBadge');
+    if (badge) {
+        badge.textContent = '3';
+        badge.style.display = 'flex';
+    }
+    {% endif %}
+}, 1000);
 </script>
 {% endblock %}
 
@@ -201,13 +187,6 @@ setTimeout(() => {
 {% block main_container %}
     <div class="chat-container">
         <iframe id="rocketChatFrame" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
-
-        <!-- ТЕСТОВЫЙ ИНДИКАТОР (только на test странице) -->
-        {% if test_mode %}
-        <div class="test-indicator">
-            🧪 {{ feature_name }}
-        </div>
-        {% endif %}
     </div>
 {% endblock %}
 
