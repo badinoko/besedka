@@ -29,12 +29,12 @@ MONGO_CLIENT = MongoClient('mongodb://127.0.0.1:27017/', serverSelectionTimeoutM
 
 
 class ChatHomeView(LoginRequiredMixin, TemplateView):
-    """Главная страница чата - перенаправляет на интегрированный Rocket.Chat"""
+    """Главная страница чата - перенаправляет на тестовую страницу Rocket.Chat"""
 
     def dispatch(self, request, *args, **kwargs):
-        # Перенаправляем на новую интегрированную страницу Rocket.Chat
-        messages.info(request, '🚀 Добро пожаловать в новый чат на базе Rocket.Chat!')
-        return redirect('chat:rocketchat_integrated')
+        # Перенаправляем на тестовую страницу для разработки Reply/Quote
+        messages.info(request, '🧪 Добро пожаловать в тестовую версию чата с Reply/Quote!')
+        return redirect('chat:rocketchat_test')
 
     def get_context_data(self, **kwargs):
         # Этот метод больше не используется, так как мы перенаправляем
@@ -1051,6 +1051,47 @@ class RocketChatOAuthUserView(View):
     def post(self, request):
         """Альтернативный метод для POST запросов"""
         return self.get(request)
+
+
+class RocketChatTestView(LoginRequiredMixin, TemplateView):
+    """🧪 ИЗОЛИРОВАННЫЙ ТЕСТОВЫЙ VIEW для разработки новой функциональности
+
+    Используется для безопасного тестирования новых возможностей Rocket.Chat
+    без влияния на основной /chat/integrated/ URL.
+
+    Текущая разработка: §2.1 Reply/Quote функциональность (Roadmap)
+    """
+    template_name = 'chat/rocketchat_test.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Определяем доступные каналы для тестирования согласно BESEDKA_USER_SYSTEM.md
+        available_channels = []
+        if user.role == 'owner':
+            available_channels = ['general', 'vip', 'moderators']
+        elif user.role == 'moderator':
+            available_channels = ['general', 'moderators']
+        else:
+            available_channels = ['general']
+
+        # Канал по умолчанию из параметра URL или general
+        current_channel = self.request.GET.get('channel', 'general')
+        if current_channel not in available_channels:
+            current_channel = 'general'
+
+        context.update({
+            'available_channels': available_channels,
+            'current_channel': current_channel,
+            'user': user,
+            'test_mode': True,  # Флаг для шаблона что это тестовая страница
+            'feature_name': 'Reply/Quote Messages',
+            'roadmap_section': '§2.1',
+            'rocketchat_url': 'http://127.0.0.1:3000',  # Прямой URL Rocket.Chat
+            'hide_extra_nav': True,  # Скрываем лишние пункты меню как в основной интеграции
+        })
+        return context
 
 
 

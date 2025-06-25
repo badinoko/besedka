@@ -357,6 +357,67 @@ const settings = [
         .sidebar-item__link[href*="workspaces"] {
             display: none !important;
         }
+
+        /* 🧪 ТЕСТОВЫЕ REPLY/QUOTE КНОПКИ (Roadmap §2.1) */
+        /* Показываются только в тестовом режиме /chat/test/ */
+        .embedded.test-mode .rcx-message:hover .test-reply-quote-menu {
+            display: flex !important;
+            position: absolute;
+            top: -30px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .embedded.test-mode .rcx-message {
+            position: relative !important;
+        }
+
+        .embedded.test-mode .test-reply-btn,
+        .embedded.test-mode .test-quote-btn {
+            color: white;
+            background: transparent;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .embedded.test-mode .test-reply-btn:hover {
+            background: #007bff;
+        }
+
+        .embedded.test-mode .test-quote-btn:hover {
+            background: #6f42c1;
+        }
+
+        /* Альтернативный метод через CSS псевдоэлементы (fallback) */
+        .embedded.test-mode .rcx-message:hover::after {
+            content: "↩️ Reply  💬 Quote";
+            position: absolute;
+            top: -25px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            z-index: 9999;
+            pointer-events: auto;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Скрываем в основном режиме, показываем только в тестовом */
+        .embedded:not(.test-mode) .rcx-message:hover::after {
+            display: none !important;
+        }
     ` }
 ];
 

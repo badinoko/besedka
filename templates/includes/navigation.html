@@ -42,7 +42,7 @@
             {% endif %}
 
             <!-- ТЕКУЩИЙ КАНАЛ ЧАТА (показывается только в чате) -->
-            {% if request.resolver_match.url_name == 'rocketchat_integrated' %}
+            {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
             <ul class="navbar-nav" style="margin-left: auto; margin-right: 10%;">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle current-channel-nav channel-general" href="#"
@@ -51,16 +51,16 @@
                         <span id="currentChannelName">Общий</span>
                     </a>
                     <ul class="dropdown-menu shadow" aria-labelledby="channelDropdownNav">
-                        <li><a class="dropdown-item channel-option-general" href="{% url 'chat:rocketchat_integrated' %}?channel=general" onclick="switchChannelNav('general')">
+                        <li><a class="dropdown-item channel-option-general" href="{% if request.resolver_match.url_name == 'rocketchat_test' %}{% url 'chat:rocketchat_test' %}{% else %}{% url 'chat:rocketchat_integrated' %}{% endif %}?channel=general" onclick="switchChannelNav('general')">
                             <span class="text-success">⬤</span> Общий
                         </a></li>
                         {% if user.role == 'owner' %}
-                        <li><a class="dropdown-item channel-option-vip" href="{% url 'chat:rocketchat_integrated' %}?channel=vip" onclick="switchChannelNav('vip')">
+                        <li><a class="dropdown-item channel-option-vip" href="{% if request.resolver_match.url_name == 'rocketchat_test' %}{% url 'chat:rocketchat_test' %}{% else %}{% url 'chat:rocketchat_integrated' %}{% endif %}?channel=vip" onclick="switchChannelNav('vip')">
                             <span class="text-warning">⬤</span> VIP
                         </a></li>
                         {% endif %}
                         {% if user.role == 'owner' or user.role == 'moderator' %}
-                        <li><a class="dropdown-item channel-option-moderators" href="{% url 'chat:rocketchat_integrated' %}?channel=moderators" onclick="switchChannelNav('moderators')">
+                        <li><a class="dropdown-item channel-option-moderators" href="{% if request.resolver_match.url_name == 'rocketchat_test' %}{% url 'chat:rocketchat_test' %}{% else %}{% url 'chat:rocketchat_integrated' %}{% endif %}?channel=moderators" onclick="switchChannelNav('moderators')">
                             <span class="text-info">⬤</span> Модераторы
                         </a></li>
                         {% endif %}
