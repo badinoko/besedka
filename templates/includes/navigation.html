@@ -10,7 +10,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavGlobal">
-            <!-- ОСНОВНЫЕ ССЫЛКИ (левая секция) -->
+            <!-- ОСНОВНЫЕ ССЫЛКИ -->
             {% if not hide_extra_nav %}
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
@@ -41,9 +41,9 @@
             </ul>
             {% endif %}
 
-            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: НАЗВАНИЕ КАНАЛА -->
+            <!-- ТЕКУЩИЙ КАНАЛ ЧАТА (показывается только в чате) -->
             {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
-            <ul class="navbar-nav mx-auto">
+            <ul class="navbar-nav" style="margin-left: auto; margin-right: 10%;">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle current-channel-nav channel-general" href="#"
                        id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -66,12 +66,10 @@
                         {% endif %}
                     </ul>
                 </li>
-
-
             </ul>
             {% endif %}
 
-            <!-- ПРАВАЯ СЕКЦИЯ: корзина + пользователь (ТОЧНО КАК В INTEGRATED!) -->
+            <!-- МЕНЮ ПОЛЬЗОВАТЕЛЯ -->
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
