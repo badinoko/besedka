@@ -41,7 +41,7 @@
             </ul>
             {% endif %}
 
-            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: ТЕКУЩИЙ КАНАЛ ЧАТА (только в чате) -->
+            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: ТОЛЬКО НАЗВАНИЕ КАНАЛА (точно по центру) -->
             {% if request.resolver_match.url_name == 'rocketchat_integrated' or request.resolver_match.url_name == 'rocketchat_test' %}
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item dropdown">
@@ -66,10 +66,14 @@
                         {% endif %}
                     </ul>
                 </li>
+            </ul>
+            {% endif %}
 
-                <!-- ДОПОЛНИТЕЛЬНЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы, сразу после названия канала) -->
+            <!-- ПРАВАЯ СЕКЦИЯ: дополнительные кнопки чата + корзина + пользователь -->
+            <ul class="navbar-nav ms-auto">
+                <!-- ДОПОЛНИТЕЛЬНЫЕ КНОПКИ УПРАВЛЕНИЯ ЧАТОМ (только для тестовой страницы) -->
                 {% if request.resolver_match.url_name == 'rocketchat_test' %}
-                <li class="nav-item ms-4">
+                <li class="nav-item me-4">
                     <a class="nav-link nav-link-with-counter chat-control-enlarged" href="#" onclick="return false;" title="Непрочитанные сообщения">
                         <i class="fas fa-envelope nav-icon-enlarged"></i>
                         <span id="unreadBadge" class="nav-counter-badge-enlarged rounded-pill" style="display: none; background: #dc3545;">
@@ -78,22 +82,19 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item me-1">
                     <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToBottom(); return false;" title="К последнему сообщению">
                         <i class="fas fa-arrow-down nav-icon-enlarged"></i>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item me-3">
                     <a class="nav-link chat-control-enlarged" href="#" onclick="scrollToFirstUnread(); return false;" title="К первому непрочитанному">
                         <i class="fas fa-arrow-up nav-icon-enlarged"></i>
                     </a>
                 </li>
                 {% endif %}
-            </ul>
-            {% endif %}
 
-            <!-- ПРАВАЯ СЕКЦИЯ: корзина + пользователь (ТОЧНО КАК В INTEGRATED!) -->
-            <ul class="navbar-nav ms-auto">
+                <!-- КОРЗИНА И ПОЛЬЗОВАТЕЛЬ (как в integrated) -->
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
                         <i class="fas fa-shopping-cart nav-icon"></i>
