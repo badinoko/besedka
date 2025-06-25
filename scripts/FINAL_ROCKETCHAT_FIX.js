@@ -285,20 +285,87 @@ const settings = [
     { _id: 'UI_Allow_room_names_with_special_chars', value: true },
 
     // ===================================================================
-    // OAUTH НАСТРОЙКИ ДЛЯ ПРОВАЙДЕРА "BESEDKA" - ИСПРАВЛЕНИЕ КНОПКИ
+    // OAUTH НАСТРОЙКИ ДЛЯ ПРОВАЙДЕРА \"BESEDKA\" - ПОЛНЫЙ АРХИВНЫЙ НАБОР
+    // Источник: docs/archive/rocketchat_migration/ROCKET_CHAT_COMPLETE_MANUAL.md
     // ===================================================================
+
+    // === ОСНОВНЫЕ НАСТРОЙКИ ===
     { _id: 'Accounts_OAuth_Custom-besedka', value: true },
     { _id: 'Accounts_OAuth_Custom-besedka-id', value: 'BesedkaRocketChat2025' },
     { _id: 'Accounts_OAuth_Custom-besedka-secret', value: 'SecureSecretKey2025BesedkaRocketChatSSO' },
+    { _id: 'Accounts_OAuth_Custom-besedka-url', value: 'http://127.0.0.1:8001' },
     { _id: 'Accounts_OAuth_Custom-besedka-server_url', value: 'http://127.0.0.1:8001' },
-    { _id: 'Accounts_OAuth_Custom-besedka-authorize_path', value: '/o/authorize/' },
+
+    // === ПУТИ ===
+    { _id: 'Accounts_OAuth_Custom-besedka-token_path', value: '/o/token/' },
     { _id: 'Accounts_OAuth_Custom-besedka-access_token_path', value: '/o/token/' },
+    { _id: 'Accounts_OAuth_Custom-besedka-identity_path', value: '/api/v1/auth/rocket/' },
+    { _id: 'Accounts_OAuth_Custom-besedka-authorize_path', value: '/o/authorize/' },
+
+    // === ТОКЕН НАСТРОЙКИ ===
     { _id: 'Accounts_OAuth_Custom-besedka-scope', value: 'read' },
+    { _id: 'Accounts_OAuth_Custom-besedka-access_token_param', value: 'access_token' },
+    { _id: 'Accounts_OAuth_Custom-besedka-token_sent_via', value: 'Header' },
+    { _id: 'Accounts_OAuth_Custom-besedka-identity_token_sent_via', value: 'Default' },
+
+    // === ВНЕШНИЙ ВИД КНОПКИ ===
+    { _id: 'Accounts_OAuth_Custom-besedka-login_style', value: 'redirect' },
     { _id: 'Accounts_OAuth_Custom-besedka-button_label_text', value: 'Войти через Беседку' },
-    { _id: 'Accounts_OAuth_Custom-besedka-show_button', value: false },
+    { _id: 'Accounts_OAuth_Custom-besedka-button_color', value: '#1d74f5' },
+    { _id: 'Accounts_OAuth_Custom-besedka-button_text_color', value: '#FFFFFF' },
+    { _id: 'Accounts_OAuth_Custom-besedka-button_label_color', value: '#FFFFFF' },
+
+    // === ПОЛЯ ПОЛЬЗОВАТЕЛЯ ===
+    { _id: 'Accounts_OAuth_Custom-besedka-username_field', value: 'username' },
+    { _id: 'Accounts_OAuth_Custom-besedka-email_field', value: 'email' },
+    { _id: 'Accounts_OAuth_Custom-besedka-name_field', value: 'full_name' },
+    { _id: 'Accounts_OAuth_Custom-besedka-avatar_field', value: 'avatar_url' },
+    { _id: 'Accounts_OAuth_Custom-besedka-key_field', value: 'id' },
+
+    // === РОЛИ И ГРУППЫ ===
+    { _id: 'Accounts_OAuth_Custom-besedka-roles_field', value: 'roles' },
+    { _id: 'Accounts_OAuth_Custom-besedka-groups_field', value: 'groups' },
+    { _id: 'Accounts_OAuth_Custom-besedka-roles_claim', value: 'roles' },
+    { _id: 'Accounts_OAuth_Custom-besedka-groups_claim', value: 'groups' },
+    { _id: 'Accounts_OAuth_Custom-besedka-roles_to_sync', value: 'admin,moderator,vip,user' },
+
+    // === МАППИНГ КАНАЛОВ ===
+    { _id: 'Accounts_OAuth_Custom-besedka-groups_channel_map', value: '{\"owner\":\"admin,vip\",\"moderator\":\"admin\",\"user\":\"user\"}' },
+    { _id: 'Accounts_OAuth_Custom-besedka-channel_map', value: '{\"owner\":\"admin,vip\",\"moderator\":\"admin\",\"user\":\"user\"}' },
+    { _id: 'Accounts_OAuth_Custom-besedka-groups_map', value: '{\"owner\":\"admin,vip\",\"moderator\":\"admin\",\"user\":\"user\"}' },
+    { _id: 'Accounts_OAuth_Custom-besedka-roles_to_groups_mapping', value: '{\"owner\":\"admin,vip\",\"moderator\":\"admin\",\"user\":\"user\"}' },
+
+    // === КРИТИЧЕСКИ ВАЖНЫЕ ПЕРЕКЛЮЧАТЕЛИ ===
     { _id: 'Accounts_OAuth_Custom-besedka-merge_users', value: true },
-    { _id: 'Accounts_OAuth_Custom-besedka-merge_roles', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-show_button', value: true },
     { _id: 'Accounts_OAuth_Custom-besedka-map_channels', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-merge_roles', value: true },
+    { _id: 'Accounts_OAuth_Custom-besedka-merge_users_distinct_services', value: false },
+
+    // === ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ ===
+    { _id: 'Accounts_OAuth_Custom-besedka-channels_admin', value: 'admin' },
+
+    // === КРИТИЧЕСКИЕ НАСТРОЙКИ СИСТЕМЫ ===
+    // Iframe поддержка
+    { _id: 'Iframe_Integration_send_enable', value: true },
+    { _id: 'Iframe_Restrict_Access', value: false },
+
+    // Отключение 2FA
+    { _id: 'Accounts_RequirePasswordConfirmation', value: false },
+    { _id: 'Accounts_TwoFactorAuthentication_Enabled', value: false },
+
+    // Автоматическое присоединение к каналам
+    { _id: 'Accounts_Default_User_Preferences_joinDefaultChannels', value: true },
+    { _id: 'Accounts_Default_User_Preferences_joinDefaultChannelsSilenced', value: false },
+
+    // Регистрация отключена (только OAuth)
+    { _id: 'Accounts_RegistrationForm', value: 'Disabled' },
+    { _id: 'Accounts_ManuallyApproveNewUsers', value: false },
+
+    // Исправление редиректа /login → /home
+    { _id: 'Accounts_ForceLogin', value: false },
+    { _id: 'Layout_Login_Header', value: '' },
+    { _id: 'Layout_Login_Terms', value: '' },
 
     // === 🔒 8. ОТКЛЮЧАЕМ WORKSPACE REGISTRATION И ЛИЦЕНЗИОННЫЕ ОГРАНИЧЕНИЯ ===
     // Полностью отключаем привязку к облаку Rocket.Chat, чтобы убрать лимит 50 пользователей

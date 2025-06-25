@@ -1055,40 +1055,86 @@ class RocketChatOAuthUserView(View):
 class RocketChatTestView(LoginRequiredMixin, TemplateView):
     """🧪 ИЗОЛИРОВАННЫЙ ТЕСТОВЫЙ VIEW для разработки новой функциональности
 
-    Используется для безопасного тестирования новых возможностей Rocket.Chat
-    без влияния на основной /chat/integrated/ URL.
+    КОПИРУЕТ ТОЧНУЮ ЛОГИКУ RocketChatIntegratedView + добавляет новые функции
+    согласно дорожной карте: §2.1 Reply/Quote функциональность
 
-    Текущая разработка: §2.1 Reply/Quote функциональность (Roadmap)
+    Принцип: ТА ЖЕ авторизация, ТА ЖЕ логика доступа, + новые кнопки/счетчики
     """
     template_name = 'chat/rocketchat_test.html'
+
+    def _ensure_subscriptions(self, request, user):
+        """КОПИЯ метода из RocketChatIntegratedView для обеспечения подписок"""
+        if request.session.get('subs_checked', False):
+            return
+        try:
+            db = MONGO_CLIENT.rocketchat
+            # Определяем список каналов по роли
+            channels = ['general']
+            if user.role == 'owner':
+                channels += ['vip', 'moderators']
+            elif user.role == 'moderator':
+                channels += ['moderators']
+
+            # Получаем rocket user
+            rocket_user = db.users.find_one({'username': user.username})
+            if not rocket_user:
+                return
+
+            for cid in channels:
+                # Проверяем существование канала
+                room = db.rocketchat_room.find_one({'_id': cid})
+                if not room:
+                    continue
+
+                # Проверяем подписку
+                subscription = db.rocketchat_subscription.find_one({'u._id': rocket_user['_id'], 'rid': cid})
+                if subscription:
+                    continue
+
+                # Создаем подписку простым insert (минимальный набор полей)
+                db.rocketchat_subscription.insert_one({
+                    'open': True,
+                    'alert': False,
+                    'u': {
+                        '_id': rocket_user['_id'],
+                        'username': user.username,
+                        'name': rocket_user.get('name', user.username)
+                    },
+                    'rid': cid,
+                    'name': room.get('name', cid),
+                    'fname': room.get('fname', cid),
+                    't': room.get('t', 'c'),
+                    'roles': ['owner'] if user.role == 'owner' else ['user'],
+                    'ts': datetime.utcnow(),
+                    'ls': datetime.utcnow(),
+                    '_updatedAt': datetime.utcnow()
+                })
+        except errors.ServerSelectionTimeoutError:
+            pass
+        finally:
+            request.session['subs_checked'] = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Определяем доступные каналы для тестирования согласно BESEDKA_USER_SYSTEM.md
-        available_channels = []
-        if user.role == 'owner':
-            available_channels = ['general', 'vip', 'moderators']
-        elif user.role == 'moderator':
-            available_channels = ['general', 'moderators']
-        else:
-            available_channels = ['general']
+        # ТОЧНАЯ КОПИЯ логики из RocketChatIntegratedView
+        context['rocketchat_url'] = 'http://127.0.0.1:3000'
+        context['hide_extra_nav'] = True
 
-        # Канал по умолчанию из параметра URL или general
-        current_channel = self.request.GET.get('channel', 'general')
-        if current_channel not in available_channels:
-            current_channel = 'general'
+        # Определение прав доступа к каналам - КОПИЯ из integrated
+        def user_has_vip_access():
+            return user.role == 'owner'
 
+        context['user_has_vip_access'] = user_has_vip_access()
+        self._ensure_subscriptions(self.request, user)
+
+        # ДОПОЛНИТЕЛЬНО: Флаги для новой функциональности согласно дорожной карте
         context.update({
-            'available_channels': available_channels,
-            'current_channel': current_channel,
-            'user': user,
-            'test_mode': True,  # Флаг для шаблона что это тестовая страница
-            'feature_name': 'Reply/Quote Messages',
-            'roadmap_section': '§2.1',
-            'rocketchat_url': 'http://127.0.0.1:3000',  # Прямой URL Rocket.Chat
-            'hide_extra_nav': True,  # Скрываем лишние пункты меню как в основной интеграции
+            'test_mode': True,  # Флаг что это тестовая страница
+            'feature_name': '§2.1 Reply/Quote Messages',  # Текущая разработка
+            'enable_reply_buttons': True,  # Новая функциональность
+            'enable_message_counters': True,  # Новая функциональность
         })
         return context
 
