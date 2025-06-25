@@ -72,6 +72,11 @@
         position: relative;
         min-width: 60px; /* Достаточно места для badge */
     }
+
+    /* Группировка кнопок: счетчик отдален, стрелки близко друг к другу */
+    .chat-control-enlarged + .chat-control-enlarged {
+        margin-left: -0.5rem; /* Сближаем стрелки между собой */
+    }
 </style>
 
 <script>
