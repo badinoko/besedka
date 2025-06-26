@@ -30,7 +30,33 @@ class ChatConsumer(WebsocketConsumer):
         )
 
         self.accept()
+
+        # Отправляем историю сообщений при подключении
+        self.send_message_history()
+
         logger.info(f"User {self.user} connected to room {self.room_name}")
+
+    def send_message_history(self):
+        """Отправка истории сообщений при подключении"""
+        try:
+            # Получаем или создаем комнату
+            room, created = Room.objects.get_or_create(name=self.room_name)
+
+            # Получаем последние 50 сообщений
+            messages = Message.objects.filter(room=room).order_by('-created_at')[:50]
+            messages = list(reversed(messages))  # Обращаем порядок для правильной хронологии
+
+            # Отправляем каждое сообщение
+            for message in messages:
+                self.send(text_data=json.dumps({
+                    "type": "history",
+                    "message": message.content,
+                    "author": message.author.username,
+                    "timestamp": message.created_at.isoformat(),
+                }))
+
+        except Exception as e:
+            logger.error(f"Error sending message history: {e}")
 
     def disconnect(self, close_code):
         """Отключение от WebSocket"""

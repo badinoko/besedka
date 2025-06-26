@@ -60,6 +60,7 @@
         color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
         text-decoration: none;
         transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
     .chat-switch-btn.active {
@@ -159,30 +160,33 @@
         color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
     }
 
-    /* Индикатор подключения */
+    /* Индикатор подключения как значок замок */
     .connection-status {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.875rem;
-        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        margin-left: 1rem;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
     }
 
     .status-connected {
-        background: #d4edda;
-        color: #155724;
+        color: #28a745;
+        filter: drop-shadow(0 0 8px rgba(40, 167, 69, 0.6));
     }
 
     .status-connecting {
-        background: #fff3cd;
-        color: #856404;
+        color: #ffc107;
+        animation: pulse 1.5s infinite;
     }
 
     .status-disconnected {
-        background: #f8d7da;
-        color: #721c24;
+        color: #dc3545;
+        filter: drop-shadow(0 0 8px rgba(220, 53, 69, 0.6));
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
     }
 </style>
 {% endblock %}
@@ -200,6 +204,9 @@
             {% else %}
                 {{ room_name }}
             {% endif %}
+            <span id="connection-status" class="connection-status status-connecting">
+                <i class="fas fa-lock"></i>
+            </span>
         </h1>
 
         <div class="chat-switcher">
@@ -243,10 +250,7 @@
         </div>
     </div>
 
-    <!-- Индикатор статуса подключения -->
-    <div id="connection-status" class="connection-status status-connecting">
-        Подключение...
-    </div>
+
 </div>
 
 {{ room_name|json_script:"room-name" }}
@@ -263,28 +267,34 @@
     // Функция обновления статуса подключения
     function updateConnectionStatus(status) {
         connectionStatus.className = 'connection-status';
+        const icon = connectionStatus.querySelector('i');
+
         switch(status) {
             case 'connected':
                 connectionStatus.classList.add('status-connected');
-                connectionStatus.textContent = 'Подключено';
+                icon.className = 'fas fa-unlock';
                 break;
             case 'connecting':
                 connectionStatus.classList.add('status-connecting');
-                connectionStatus.textContent = 'Подключение...';
+                icon.className = 'fas fa-lock';
                 break;
             case 'disconnected':
                 connectionStatus.classList.add('status-disconnected');
-                connectionStatus.textContent = 'Отключено';
+                icon.className = 'fas fa-lock';
                 break;
         }
     }
+
+    let historyLoaded = false;
 
     chatSocket.onopen = function(e) {
         console.log('✅ WebSocket connected');
         updateConnectionStatus('connected');
 
-        // Очищаем приветственное сообщение
-        chatLog.innerHTML = '';
+        // Очищаем сообщения только при первом подключении
+        if (!historyLoaded) {
+            chatLog.innerHTML = '';
+        }
     };
 
     chatSocket.onmessage = function(e) {
@@ -305,9 +315,14 @@
 
         chatLog.appendChild(messageElement);
 
-        // Автопрокрутка к последнему сообщению
-        const messagesArea = document.getElementById('chat-messages-area');
-        messagesArea.scrollTop = messagesArea.scrollHeight;
+        // Если это историческое сообщение, не скроллим и отмечаем что история загружена
+        if (data.type === 'history') {
+            historyLoaded = true;
+        } else {
+            // Автопрокрутка только для новых сообщений
+            const messagesArea = document.getElementById('chat-messages-area');
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
     };
 
     chatSocket.onclose = function(e) {
