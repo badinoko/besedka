@@ -1,4 +1,4 @@
-/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.7 - ПОЛНАЯ СИСТЕМА ОТВЕТОВ И ЦИТИРОВАНИЯ ===== */
+/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.6 - УВЕЛИЧЕН ЗАГОЛОВОК "ОНЛАЙН" ===== */
 /* ===== ПОЛНЫЙ КАСТОМНЫЙ ЧАТ С СИСТЕМОЙ ОТВЕТОВ - ROCKET.CHAT ПОЛНОСТЬЮ УДАЛЕН ===== */
 
 /* ПОДКЛЮЧЕНИЕ КИРИЛЛИЧЕСКИХ ШРИФТОВ */
@@ -582,58 +582,55 @@
 /* ===== СООБЩЕНИЯ - МАКСИМАЛЬНО КОМПАКТНЫЕ ===== */
 .message {
     cursor: pointer;
-    margin-bottom: 0.75rem; /* Компактные отступы между сообщениями */
-    padding: 0;
-    border-radius: 0;
+    margin-bottom: 0.2rem; /* Компактные отступы между сообщениями */
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
     transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
 }
 
 .message.other-message {
-    align-items: flex-start; /* Выравнивание влево */
+    justify-content: flex-start; /* Выравнивание влево */
 }
 
 .message.other-message .message-bubble {
-    /* СВЕТЛЫЙ ФОН ДЛЯ ЧУЖИХ СООБЩЕНИЙ */
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-    color: #333 !important;
-    border: 2px solid #dee2e6;
+    background: transparent !important; /* УБРАНА ЗАЛИВКА - ТОЛЬКО ГРАНИЦЫ */
+    border: 2px solid var(--chat-border);
     border-radius: 1.25rem;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 0.875rem 1.25rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     position: relative;
     transition: all 0.3s ease;
-    max-width: 75%;
-    min-height: auto; /* Убираем принудительную высоту */
+    max-width: 70%;
+    /* ЛЕВЫЙ УКАЗАТЕЛЬ ДЛЯ ЧУЖИХ СООБЩЕНИЙ */
+    border-left: 4px solid var(--chat-primary);
 }
 
 .message.own-message {
-    align-items: flex-end; /* Выравнивание вправо */
+    justify-content: flex-end; /* Выравнивание вправо */
 }
 
 .message.own-message .message-bubble {
-    /* ЗЕЛЕНЫЙ ФОН ДЛЯ МОИХ СООБЩЕНИЙ */
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
-    color: white !important;
-    border: 2px solid #28a745;
+    background: transparent !important; /* УБРАНА ЗАЛИВКА - ТОЛЬКО ГРАНИЦЫ */
+    color: #333 !important; /* ТЕМНЫЙ ТЕКСТ БЕЗ БЕЛОГО ЦВЕТА */
+    border: 2px solid var(--chat-secondary);
     border-radius: 1.25rem;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.3);
+    padding: 0.875rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     position: relative;
     transition: all 0.3s ease;
-    max-width: 75%;
-    min-height: auto; /* Убираем принудительную высоту */
+    max-width: 70%;
+    /* ПРАВЫЙ УКАЗАТЕЛЬ ДЛЯ МОИХ СООБЩЕНИЙ */
+    border-right: 4px solid var(--chat-secondary);
 }
 
 .message-bubble:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+    cursor: pointer; /* Указывает на то, что сообщение кликабельно для ответов */
 }
 
 .message.own-message .message-bubble:hover {
-    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 /* ===== СИСТЕМА ОТВЕТОВ - ИНТЕРАКТИВНОСТЬ И ПОДСВЕТКА ===== */
@@ -645,8 +642,6 @@
 .message-bubble {
     cursor: pointer; /* Указатель только на области сообщения */
     transition: all 0.3s ease;
-    /* УБИРАЕМ ПРИНУДИТЕЛЬНУЮ ВЫСОТУ */
-    min-height: auto !important;
 }
 
 .message-bubble:hover {

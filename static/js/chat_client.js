@@ -1,6 +1,6 @@
 /**
- * Клиент для WebSocket чата "Беседка" v5.1
- * ПОЛНОСТЬЮ КАСТОМНАЯ РЕАЛИЗАЦИЯ С ПОЛНОЙ ПОДДЕРЖКОЙ СИСТЕМЫ ОТВЕТОВ
+ * Клиент для WebSocket чата "Беседка" v5.0
+ * ПОЛНОСТЬЮ КАСТОМНАЯ РЕАЛИЗАЦИЯ
  */
 class ChatClient {
     constructor(roomName, currentUser) {
@@ -15,9 +15,6 @@ class ChatClient {
         this.userReactedMessages = new Set();
         this.replyToId = null;
         this.replyToSnippet = null;
-
-        // Сохраняем глобальную ссылку для доступа из других функций
-        window.chatClientInstance = this;
     }
 
     init() {
@@ -491,8 +488,7 @@ class ChatClient {
         const statusElement = document.getElementById('connection-status');
         if (!statusElement) return;
 
-        // Исправлено: используем правильные классы для навигационного статуса
-        statusElement.className = 'connection-status-nav ms-2';
+        statusElement.className = 'connection-status-nav';
         const icon = statusElement.querySelector('i');
         if (!icon) return;
 
@@ -503,7 +499,7 @@ class ChatClient {
                 break;
             case 'connecting':
                 statusElement.classList.add('status-connecting');
-                icon.className = 'fas fa-spinner fa-spin';
+                icon.className = 'fas fa-lock';
                 break;
             case 'disconnected':
                 statusElement.classList.add('status-disconnected');
@@ -522,14 +518,13 @@ class ChatClient {
         }
     }
 
-    showReplyIndicator(authorName) {
+    showReplyIndicator(author) {
         const replyIndicator = document.getElementById('reply-indicator');
-        const replyText = document.getElementById('reply-text');
+        const replyAuthor = document.getElementById('reply-author');
 
-        if (replyIndicator && replyText) {
-            replyText.innerHTML = `В ответ на: <strong>@${this.escapeHtml(authorName)}</strong>`;
+        if (replyIndicator && replyAuthor) {
+            replyAuthor.textContent = author;
             replyIndicator.style.display = 'flex';
-            replyIndicator.classList.add('active');
         }
     }
 
@@ -537,7 +532,6 @@ class ChatClient {
         const replyIndicator = document.getElementById('reply-indicator');
         if (replyIndicator) {
             replyIndicator.style.display = 'none';
-            replyIndicator.classList.remove('active');
         }
     }
 
@@ -569,40 +563,6 @@ class ChatClient {
             this.socket = null;
         }
         this.updateConnectionStatus('disconnected');
-    }
-
-    /**
-     * НОВЫЕ МЕТОДЫ ДЛЯ СИСТЕМЫ ОТВЕТОВ
-     */
-
-    // Активация режима ответа на сообщение
-    setReplyMode(messageId, authorName) {
-        this.replyToId = messageId;
-        this.replyToSnippet = authorName;
-        this.showReplyIndicator(authorName);
-
-        // Фокусируем поле ввода
-        const input = document.getElementById('chat-message-input');
-        if (input) {
-            input.focus();
-        }
-
-        console.log(`💬 Reply mode activated for message ${messageId} by ${authorName}`);
-    }
-
-    // Активация режима цитирования (аналогично ответу)
-    setQuoteMode(messageId, authorName) {
-        // В текущей реализации цитирование работает так же как ответ
-        this.setReplyMode(messageId, authorName);
-        console.log(`📝 Quote mode activated for message ${messageId} by ${authorName}`);
-    }
-
-    // Отмена режима ответа
-    cancelReply() {
-        this.replyToId = null;
-        this.replyToSnippet = null;
-        this.hideReplyIndicator();
-        console.log('❌ Reply mode cancelled');
     }
 }
 

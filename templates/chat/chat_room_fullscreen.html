@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}?v=12.8">
 <style>
     /* Полноэкранный чат без отступов */
     .chat-fullscreen-container {
@@ -22,48 +21,7 @@
         flex-direction: column;
     }
 
-    /* Основная область чата */
-    .chat-main-area {
-        flex: 1;
-        display: flex;
-        overflow: hidden;
-    }
-
-    /* Область сообщений */
-    .chat-messages-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        margin-right: 250px; /* Место для правой панели */
-    }
-
-    /* Статистические панели */
-    .chat-stats-row {
-        display: flex;
-        padding: 0.75rem 1rem;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-bottom: 1px solid #dee2e6;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .stat-item {
-        display: flex;
-        align-items: center;
-        font-size: 0.9rem;
-        color: #6c757d;
-    }
-
-    .stat-item i {
-        margin-right: 0.5rem;
-        color: #007bff;
-    }
-
-    .stat-value {
-        font-weight: 600;
-        color: #495057;
-        margin-left: 0.25rem;
-    }
+    /* Убираем заголовок чата - все перенесено в навигацию */
 
     /* Область сообщений */
     .chat-messages-area {
@@ -73,63 +31,55 @@
         background: #f8f9fa;
     }
 
-    /* Индикатор ответа */
-    .reply-indicator-area {
-        display: none;
+    /* Стили сообщений */
+    .chat-message {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .message-content {
+        max-width: 70%;
         padding: 0.75rem 1rem;
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        border-left: 4px solid #2196f3;
-        margin: 0 1rem;
-        border-radius: 0.5rem;
-        animation: slideInFromTop 0.3s ease-out;
+        border-radius: 1rem;
+        word-wrap: break-word;
     }
 
-    .reply-indicator-area.active {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .message-content.own {
+        background: {% if room_name == 'vip' %}linear-gradient(135deg, #ffd700 0%, #ffb347 100%){% else %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% endif %};
+        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
+        margin-left: auto;
     }
 
-    .reply-indicator-text {
-        font-size: 0.9rem;
-        color: #1976d2;
-        display: flex;
-        align-items: center;
+    .message-content.other {
+        background: white;
+        color: #333;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .reply-indicator-text i {
-        margin-right: 0.5rem;
+    .message-author {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
     }
 
-    .cancel-reply-btn {
-        background: none;
-        border: none;
-        color: #1976d2;
-        cursor: pointer;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        transition: all 0.2s ease;
+    .message-text {
+        margin: 0.25rem 0;
     }
 
-    .cancel-reply-btn:hover {
-        background: rgba(33, 150, 243, 0.1);
-        transform: scale(1.1);
+    .message-timestamp {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        text-align: right;
+        margin-top: 0.25rem;
     }
 
-    /* Поле ввода с индикатором типизации */
+    /* Поле ввода */
     .chat-input-area {
         padding: 1rem 2rem;
         background: white;
         border-top: 1px solid #e9ecef;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    }
-
-    .typing-indicator {
-        min-height: 1.5rem;
-        padding: 0.25rem 0;
-        color: #6c757d;
-        font-size: 0.85rem;
-        font-style: italic;
     }
 
     .input-group {
@@ -164,6 +114,47 @@
         color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
     }
 
+    /* Стили статуса подключения теперь в основном CSS файле */
+
+    /* Стили для dropdown в навигации */
+    .current-channel-nav {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff !important;
+        text-decoration: none;
+    }
+
+    .current-channel-nav:hover {
+        color: #e9ecef !important;
+        text-decoration: none;
+    }
+
+    .dropdown-menu {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .dropdown-item {
+        color: #333;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background: #f8f9fa;
+        color: #333;
+        transform: translateX(5px);
+    }
+
+    /* УВЕЛИЧЕННЫЙ ЗАГОЛОВОК "ОНЛАЙН" */
+    .users-header h6 {
+        font-size: 1.6rem !important;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
     /* Правая панель */
     .users-sidebar {
         position: fixed;
@@ -183,12 +174,6 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-
-    .users-header h6 {
-        font-size: 1.6rem !important;
-        margin-bottom: 0;
-        font-weight: 600;
     }
 
     .badge {
@@ -220,380 +205,295 @@
         margin-right: 0.75rem;
     }
 
-    /* Context Menu */
-    .context-menu {
-        position: fixed;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        z-index: 9999;
-        min-width: 150px;
-        padding: 0.5rem 0;
-        display: none;
-    }
-
-    .context-menu-item {
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        color: #495057;
-        border: none;
-        background: none;
-        width: 100%;
-        text-align: left;
-    }
-
-    .context-menu-item:hover {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        color: #007bff;
-        transform: translateX(5px);
-    }
-
-    .context-menu-item i {
-        margin-right: 0.75rem;
-        width: 1rem;
-        text-align: center;
-    }
-
-    /* Mobile gestures */
-    .message.swipe-active {
-        transform: translateX(-50px);
-        transition: transform 0.3s ease;
-    }
-
-    .message.long-press-active {
-        background: rgba(0, 123, 255, 0.1);
-        border-radius: 0.5rem;
-    }
-
-    /* Animations */
-    @keyframes slideInFromTop {
-        from {
-            transform: translateY(-20px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    /* Mobile responsive */
-    @media (max-width: 768px) {
-        .chat-messages-container {
-            margin-right: 0;
-        }
-
-        .users-sidebar {
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .users-sidebar.active {
-            transform: translateX(0);
-        }
+    /* Отступ для правой панели */
+    .chat-messages-area {
+        margin-right: 250px;
     }
 </style>
 {% endblock %}
 
 {% block main_container %}
 <div class="chat-fullscreen-container">
-    <!-- Основная область чата -->
-    <div class="chat-main-area">
-        <!-- Контейнер сообщений -->
-        <div class="chat-messages-container">
-            <!-- Статистические панели -->
-            <div class="chat-stats-row">
-                <div class="stat-item">
-                    <i class="fas fa-comments"></i>
-                    Сообщений: <span class="stat-value" id="messages-count">0</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-clock"></i>
-                    Последнее: <span class="stat-value" id="last-message-time">--:--</span>
-                </div>
-            </div>
-
-            <!-- Область сообщений -->
-            <div class="chat-messages-area" id="chat-messages-area">
-                <div id="chat-messages">
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
-                        <p>Добро пожаловать в чат! Начните общение.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Индикатор ответа -->
-            <div class="reply-indicator-area" id="reply-indicator">
-                <div class="reply-indicator-text">
-                    <i class="fas fa-reply"></i>
-                    <span id="reply-text">В ответ на: @username</span>
-                </div>
-                <button class="cancel-reply-btn" id="cancel-reply-btn" title="Отменить ответ">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <!-- Поле ввода сообщения -->
-            <div class="chat-input-area">
-                <!-- Индикатор печати -->
-                <div class="typing-indicator" id="typing-indicator"></div>
-
-                <div class="input-group">
-                    <input id="chat-message-input"
-                           type="text"
-                           class="form-control"
-                           placeholder="Введите сообщение..."
-                           autocomplete="off">
-                    <button id="chat-message-submit" class="btn btn-send">
-                        <i class="fas fa-paper-plane me-1"></i>
-                        Отправить
-                    </button>
-                </div>
+    <!-- Область сообщений -->
+    <div class="chat-messages-area" id="chat-messages-area">
+        <div id="chat-log">
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                <p>Добро пожаловать в чат! Начните общение.</p>
             </div>
         </div>
+    </div>
 
-        <!-- Правая панель: список пользователей -->
-        <div class="users-sidebar">
-            <!-- Заголовок панели -->
-            <div class="users-header">
-                <h6>Онлайн</h6>
-                <span class="badge" id="online-count">0</span>
-            </div>
+    <!-- Поле ввода сообщения -->
+    <div class="chat-input-area">
+        <div class="input-group">
+            <input id="chat-message-input"
+                   type="text"
+                   class="form-control"
+                   placeholder="Введите сообщение...">
+            <button id="chat-message-submit" class="btn btn-send">
+                <i class="fas fa-paper-plane me-1"></i>
+                Отправить
+            </button>
+        </div>
+    </div>
 
-            <!-- Список онлайн пользователей -->
-            <div class="users-list" id="users-list">
-                <!-- Пользователи загружаются динамически -->
-            </div>
+    <!-- Правая панель: список пользователей -->
+    <div class="users-sidebar">
+        <!-- Заголовок панели -->
+        <div class="users-header">
+            <h6>Онлайн</h6>
+            <span class="badge" id="online-count">0</span>
+        </div>
+
+        <!-- Список онлайн пользователей -->
+        <div class="users-list" id="users-list">
+            <!-- Пользователи загружаются динамически -->
         </div>
     </div>
 </div>
 
-<!-- Context Menu -->
-<div class="context-menu" id="context-menu">
-    <button class="context-menu-item" data-action="reply">
-        <i class="fas fa-reply"></i>
-        Ответить
-    </button>
-    <button class="context-menu-item" data-action="quote">
-        <i class="fas fa-quote-right"></i>
-        Цитировать
-    </button>
-    <button class="context-menu-item" data-action="copy">
-        <i class="fas fa-copy"></i>
-        Копировать
-    </button>
-</div>
-
 {{ room_name|json_script:"room-name" }}
-{{ user.id|json_script:"user-id" }}
-{{ user.username|json_script:"user-name" }}
 
-<script src="{% static 'js/chat_client.js' %}?v=5.1"></script>
 <script>
-    // Инициализация ChatClient v5.1
-    document.addEventListener('DOMContentLoaded', function() {
-        const roomName = JSON.parse(document.getElementById('room-name').textContent);
-        const userId = JSON.parse(document.getElementById('user-id').textContent);
-        const userName = JSON.parse(document.getElementById('user-name').textContent);
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
 
-        const currentUser = {
-            id: userId,
-            username: userName
-        };
+    const chatLog = document.querySelector('#chat-log');
+    const onlineCountElement = document.getElementById('online-count');
+    const usersListElement = document.getElementById('users-list');
+    const connectionStatus = document.getElementById('connection-status');
 
-        // Создаем экземпляр ChatClient
-        window.chatClient = new ChatClient(roomName, currentUser);
-        window.chatClient.init();
+    // Функция обновления статуса подключения
+    function updateConnectionStatus(status) {
+        if (!connectionStatus) return;
+        connectionStatus.className = 'connection-status-nav';
+        const icon = connectionStatus.querySelector('i');
 
-        // Context Menu Handlers
-        const contextMenu = document.getElementById('context-menu');
-        let contextMenuTarget = null;
+        switch(status) {
+            case 'connected':
+                connectionStatus.classList.add('status-connected');
+                if (icon) icon.className = 'fas fa-unlock';
+                break;
+            case 'connecting':
+                connectionStatus.classList.add('status-connecting');
+                if (icon) icon.className = 'fas fa-lock';
+                break;
+            case 'disconnected':
+                connectionStatus.classList.add('status-disconnected');
+                if (icon) icon.className = 'fas fa-lock';
+                break;
+        }
+    }
 
-        // Desktop: Right-click context menu
-        document.addEventListener('contextmenu', function(e) {
-            const messageElement = e.target.closest('.message');
-            if (messageElement && !messageElement.classList.contains('own-message')) {
-                e.preventDefault();
-                contextMenuTarget = messageElement;
-                contextMenu.style.display = 'block';
-                contextMenu.style.left = e.pageX + 'px';
-                contextMenu.style.top = e.pageY + 'px';
-
-                // Add highlight to target message
-                messageElement.classList.add('context-menu-target');
-            }
+    // Функция прокрутки к последнему сообщению
+    function scrollToBottom() {
+        const messagesArea = document.getElementById('chat-messages-area');
+        requestAnimationFrame(() => {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
         });
+    }
 
-        // Hide context menu on click outside
-        document.addEventListener('click', function(e) {
-            if (!contextMenu.contains(e.target)) {
-                contextMenu.style.display = 'none';
-                document.querySelectorAll('.context-menu-target').forEach(el => {
-                    el.classList.remove('context-menu-target');
-                });
-                contextMenuTarget = null;
-            }
-        });
+    let historyLoaded = false;
 
-        // Context menu actions
-        contextMenu.addEventListener('click', function(e) {
-            const action = e.target.closest('.context-menu-item')?.dataset.action;
-            if (action && contextMenuTarget) {
-                const messageId = contextMenuTarget.dataset.messageId;
-                const author = contextMenuTarget.dataset.author;
+    chatSocket.onopen = function(e) {
+        console.log('✅ WebSocket connected');
+        updateConnectionStatus('connected');
 
-                switch(action) {
-                    case 'reply':
-                        window.chatClient.setReplyMode(messageId, author);
-                        break;
-                    case 'quote':
-                        window.chatClient.setQuoteMode(messageId, author);
-                        break;
-                    case 'copy':
-                        const messageText = contextMenuTarget.querySelector('.message-content').textContent;
-                        navigator.clipboard.writeText(messageText).then(() => {
-                            // Show notification
-                            const notification = document.createElement('div');
-                            notification.className = 'alert alert-success position-fixed';
-                            notification.style.cssText = 'top: 70px; right: 20px; z-index: 10000; animation: fadeInOut 2s ease-in-out;';
-                            notification.innerHTML = '<i class="fas fa-check me-2"></i>Сообщение скопировано';
-                            document.body.appendChild(notification);
-                            setTimeout(() => notification.remove(), 2000);
-                        });
-                        break;
-                }
-
-                // Hide context menu
-                contextMenu.style.display = 'none';
-                contextMenuTarget.classList.remove('context-menu-target');
-                contextMenuTarget = null;
-            }
-        });
-
-        // Mobile: Swipe gestures
-        let startX, startY, startTime;
-        let isLongPress = false;
-        let longPressTimer;
-
-        document.addEventListener('touchstart', function(e) {
-            const messageElement = e.target.closest('.message');
-            if (messageElement && !messageElement.classList.contains('own-message')) {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                startTime = Date.now();
-                isLongPress = false;
-
-                // Start long press detection
-                longPressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    messageElement.classList.add('long-press-active');
-
-                    // Vibrate if available
-                    if (navigator.vibrate) {
-                        navigator.vibrate(50);
-                    }
-
-                    // Show context menu
-                    contextMenuTarget = messageElement;
-                    const rect = messageElement.getBoundingClientRect();
-                    contextMenu.style.display = 'block';
-                    contextMenu.style.left = Math.min(rect.left, window.innerWidth - 150) + 'px';
-                    contextMenu.style.top = (rect.top - 150) + 'px';
-                    messageElement.classList.add('context-menu-target');
-                }, 500);
-            }
-        }, { passive: true });
-
-        document.addEventListener('touchmove', function(e) {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-
-            const messageElement = e.target.closest('.message');
-            if (messageElement && !messageElement.classList.contains('own-message') && !isLongPress) {
-                const currentX = e.touches[0].clientX;
-                const deltaX = startX - currentX;
-
-                if (deltaX > 30) { // Swipe left threshold
-                    messageElement.classList.add('swipe-active');
-                }
-            }
-        }, { passive: true });
-
-        document.addEventListener('touchend', function(e) {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-
-            const messageElement = e.target.closest('.message');
-            if (messageElement) {
-                if (messageElement.classList.contains('swipe-active') && !isLongPress) {
-                    // Quick reply on swipe left
-                    const messageId = messageElement.dataset.messageId;
-                    const author = messageElement.dataset.author;
-                    window.chatClient.setReplyMode(messageId, author);
-                }
-
-                // Clean up classes
-                messageElement.classList.remove('swipe-active', 'long-press-active');
-            }
-
-            isLongPress = false;
-        }, { passive: true });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Escape to cancel reply
-            if (e.key === 'Escape') {
-                window.chatClient.cancelReply();
-            }
-
-            // Ctrl+R to reply to last message
-            if (e.ctrlKey && e.key === 'r') {
-                e.preventDefault();
-                const lastMessage = document.querySelector('.message:not(.own-message):last-child');
-                if (lastMessage) {
-                    const messageId = lastMessage.dataset.messageId;
-                    const author = lastMessage.dataset.author;
-                    window.chatClient.setReplyMode(messageId, author);
-                }
-            }
-        });
-
-        // Update last message time periodically
-        setInterval(() => {
-            const lastTimeElement = document.getElementById('last-message-time');
-            const lastMessage = document.querySelector('.message:last-child .message-time');
-            if (lastMessage && lastTimeElement) {
-                lastTimeElement.textContent = lastMessage.textContent;
-            }
-        }, 30000); // Update every 30 seconds
-    });
-
-    // CSS for notifications
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(-20px); }
-            20% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
+        // Очищаем сообщения только при первом подключении
+        if (!historyLoaded) {
+            chatLog.innerHTML = '';
         }
 
-        .context-menu-target {
-            background: rgba(0, 123, 255, 0.1) !important;
-            border-left: 3px solid #007bff !important;
-            border-radius: 0.5rem !important;
+        // Запрашиваем историю сообщений и онлайн пользователей
+        chatSocket.send(JSON.stringify({
+            type: 'fetch_messages'
+        }));
+
+        chatSocket.send(JSON.stringify({
+            type: 'fetch_online_users'
+        }));
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log('Received message:', data);
+
+        switch(data.type) {
+            case 'new_message':
+                displayMessage(data.message);
+                break;
+            case 'messages_history':
+                displayMessages(data.messages);
+                break;
+            case 'online_users':
+                updateOnlineUsers(data.users, data.count);
+                break;
+            case 'user_joined':
+                console.log('User joined:', data.user);
+                // Обновляем список пользователей
+                chatSocket.send(JSON.stringify({
+                    type: 'fetch_online_users'
+                }));
+                break;
+            case 'user_left':
+                console.log('User left:', data.user);
+                // Обновляем список пользователей
+                chatSocket.send(JSON.stringify({
+                    type: 'fetch_online_users'
+                }));
+                break;
+            default:
+                console.log('Unknown message type:', data.type);
         }
-    `;
-    document.head.appendChild(style);
+    };
+
+    function displayMessage(message) {
+        // Если это первое сообщение, очистим placeholder
+        const placeholder = chatLog.querySelector('.text-center');
+        if (placeholder) {
+            chatLog.innerHTML = '';
+        }
+
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message');
+
+        const timestamp = new Date(message.created).toLocaleTimeString();
+        const isOwn = message.is_own;
+
+        messageElement.innerHTML = `
+            <div class="message-content ${isOwn ? 'own' : 'other'}">
+                <div class="message-author">
+                    ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
+                </div>
+                <div class="message-text">${message.content}</div>
+                <div class="message-timestamp">${timestamp}</div>
+            </div>
+        `;
+
+        chatLog.appendChild(messageElement);
+
+        // Автопрокрутка для новых сообщений
+        setTimeout(scrollToBottom, 100);
+    }
+
+    function displayMessages(messages) {
+        // Очищаем контейнер
+        chatLog.innerHTML = '';
+
+        if (messages.length === 0) {
+            chatLog.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                    <p>Пока нет сообщений. Начните общение!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Добавляем сообщения
+        messages.forEach(message => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message');
+
+            const timestamp = new Date(message.created).toLocaleTimeString();
+            const isOwn = message.is_own;
+
+            messageElement.innerHTML = `
+                <div class="message-content ${isOwn ? 'own' : 'other'}">
+                    <div class="message-author">
+                        ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
+                    </div>
+                    <div class="message-text">${message.content}</div>
+                    <div class="message-timestamp">${timestamp}</div>
+                </div>
+            `;
+
+            chatLog.appendChild(messageElement);
+        });
+
+        historyLoaded = true;
+        // Прокручиваем к последнему сообщению с задержкой для истории
+        setTimeout(scrollToBottom, 200);
+    }
+
+    function updateOnlineUsers(users, count) {
+        // Обновляем счетчик
+        if (onlineCountElement) {
+            onlineCountElement.textContent = count || users.length;
+        }
+
+        // Обновляем список пользователей
+        if (!usersListElement) return;
+
+        if (users.length === 0) {
+            usersListElement.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-user-slash mb-2"></i>
+                    <p class="small mb-0">Нет пользователей онлайн</p>
+                </div>
+            `;
+            return;
+        }
+
+        usersListElement.innerHTML = '';
+        users.forEach(user => {
+            const userElement = document.createElement('div');
+            userElement.className = 'online-user';
+            userElement.innerHTML = `
+                <div class="status-dot"></div>
+                <span class="user-name">
+                    ${user.role_icon || '👤'} ${user.display_name || user.username}
+                </span>
+            `;
+            usersListElement.appendChild(userElement);
+        });
+    }
+
+    chatSocket.onclose = function(e) {
+        console.error('❌ Chat socket closed unexpectedly');
+        updateConnectionStatus('disconnected');
+
+        const errorElement = document.createElement('div');
+        errorElement.classList.add('text-danger', 'text-center', 'my-3');
+        errorElement.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Соединение с чатом потеряно. Обновите страницу для переподключения.
+        `;
+        chatLog.appendChild(errorElement);
+    };
+
+    chatSocket.onerror = function(e) {
+        console.error('WebSocket error:', e);
+        updateConnectionStatus('disconnected');
+    };
+
+    // Обработчики ввода
+    document.querySelector('#chat-message-input').focus();
+
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value.trim();
+
+        if (message !== '' && chatSocket.readyState === WebSocket.OPEN) {
+            // ИСПРАВЛЕНО: Отправляем правильный JSON с полем type
+            chatSocket.send(JSON.stringify({
+                type: 'message',  // ← ВОТ ЭТО БЫЛО ПРОБЛЕМОЙ!
+                message: message
+            }));
+            messageInputDom.value = '';
+        } else if (chatSocket.readyState !== WebSocket.OPEN) {
+            alert('Нет соединения с сервером чата');
+        }
+    };
 </script>
 {% endblock %}
 
