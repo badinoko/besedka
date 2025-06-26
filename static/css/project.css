@@ -536,33 +536,78 @@ body.besedka-admin .chat-option-card .card-title {
   margin-top: 0.5rem !important;
 }
 
-/* Стили для статуса подключения в навигации */
+/* ===== СТАТУС ПОДКЛЮЧЕНИЯ В НАВИГАЦИИ ===== */
 .connection-status-nav {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 0.75rem;
-  font-size: 1.1rem;
-  transition: color 0.3s ease; /* Только переход цвета */
-  background: transparent; /* Убираем подложку полностью */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* УМЕНЬШЕН РАЗМЕР как просил пользователь */
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    /* ЧЕРНАЯ ЗАЛИВКА КАК У КНОПОК ЧАТА */
+    background: linear-gradient(135deg, #495057 0%, #343a40 50%, #212529 100%);
+    border: 2px solid #495057;
+    /* ОБЪЕМНЫЕ ТЕНИ В СТИЛЕ КНОПОК ЧАТА */
+    box-shadow:
+        0 6px 20px rgba(73, 80, 87, 0.4),
+        0 3px 10px rgba(73, 80, 87, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
 }
 
+.connection-status-nav i {
+    font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ЦВЕТОВЫЕ ВАРИАНТЫ ДЛЯ НАВИГАЦИОННОГО СТАТУСА */
 .connection-status-nav.status-connected {
-  color: #28a745;
-  filter: drop-shadow(0 0 8px rgba(40, 167, 69, 0.6));
+    box-shadow:
+        0 0 12px #28a745,
+        0 0 24px #28a745,
+        0 6px 20px rgba(73, 80, 87, 0.4),
+        0 3px 10px rgba(73, 80, 87, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.connection-status-nav.status-connected i {
+    color: #28a745;
 }
 
 .connection-status-nav.status-connecting {
-  color: #ffc107;
-  animation: pulse 1.5s infinite;
+    box-shadow:
+        0 0 12px #ffc107,
+        0 0 24px #ffc107,
+        0 6px 20px rgba(73, 80, 87, 0.4),
+        0 3px 10px rgba(73, 80, 87, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.connection-status-nav.status-connecting i {
+    color: #ffc107;
 }
 
 .connection-status-nav.status-disconnected {
-  color: #dc3545;
-  filter: drop-shadow(0 0 8px rgba(220, 53, 69, 0.6));
+    box-shadow:
+        0 0 12px #dc3545,
+        0 0 24px #dc3545,
+        0 6px 20px rgba(73, 80, 87, 0.4),
+        0 3px 10px rgba(73, 80, 87, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Анимация пульсации для статуса подключения */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.connection-status-nav.status-disconnected i {
+    color: #dc3545;
 }
+
+/* Версия CSS обновлена до v2025062624 для применения изменений статуса подключения */

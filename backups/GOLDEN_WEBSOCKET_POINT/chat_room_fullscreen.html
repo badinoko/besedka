@@ -23,8 +23,6 @@
 
     /* Убираем заголовок чата - все перенесено в навигацию */
 
-
-
     /* Область сообщений */
     .chat-messages-area {
         flex: 1;
@@ -149,14 +147,73 @@
         color: #333;
         transform: translateX(5px);
     }
+
+    /* УВЕЛИЧЕННЫЙ ЗАГОЛОВОК "ОНЛАЙН" */
+    .users-header h6 {
+        font-size: 1.6rem !important;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    /* Правая панель */
+    .users-sidebar {
+        position: fixed;
+        top: 60px;
+        right: 0;
+        width: 250px;
+        height: calc(100vh - 60px);
+        background: white;
+        border-left: 1px solid #e9ecef;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .users-header {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .badge {
+        background: #007bff;
+        color: white;
+        padding: 0.5rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .users-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .online-user {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #28a745;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+    }
+
+    /* Отступ для правой панели */
+    .chat-messages-area {
+        margin-right: 250px;
+    }
 </style>
 {% endblock %}
 
 {% block main_container %}
 <div class="chat-fullscreen-container">
-    <!-- Заголовок чата с кнопками переключения -->
-
-
     <!-- Область сообщений -->
     <div class="chat-messages-area" id="chat-messages-area">
         <div id="chat-log">
@@ -181,7 +238,19 @@
         </div>
     </div>
 
+    <!-- Правая панель: список пользователей -->
+    <div class="users-sidebar">
+        <!-- Заголовок панели -->
+        <div class="users-header">
+            <h6>Онлайн</h6>
+            <span class="badge" id="online-count">0</span>
+        </div>
 
+        <!-- Список онлайн пользователей -->
+        <div class="users-list" id="users-list">
+            <!-- Пользователи загружаются динамически -->
+        </div>
+    </div>
 </div>
 
 {{ room_name|json_script:"room-name" }}
@@ -193,27 +262,38 @@
     );
 
     const chatLog = document.querySelector('#chat-log');
+    const onlineCountElement = document.getElementById('online-count');
+    const usersListElement = document.getElementById('users-list');
     const connectionStatus = document.getElementById('connection-status');
 
-        // Функция обновления статуса подключения
+    // Функция обновления статуса подключения
     function updateConnectionStatus(status) {
+        if (!connectionStatus) return;
         connectionStatus.className = 'connection-status-nav';
         const icon = connectionStatus.querySelector('i');
 
         switch(status) {
             case 'connected':
                 connectionStatus.classList.add('status-connected');
-                icon.className = 'fas fa-unlock';
+                if (icon) icon.className = 'fas fa-unlock';
                 break;
             case 'connecting':
                 connectionStatus.classList.add('status-connecting');
-                icon.className = 'fas fa-lock';
+                if (icon) icon.className = 'fas fa-lock';
                 break;
             case 'disconnected':
                 connectionStatus.classList.add('status-disconnected');
-                icon.className = 'fas fa-lock';
+                if (icon) icon.className = 'fas fa-lock';
                 break;
         }
+    }
+
+    // Функция прокрутки к последнему сообщению
+    function scrollToBottom() {
+        const messagesArea = document.getElementById('chat-messages-area');
+        requestAnimationFrame(() => {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        });
     }
 
     let historyLoaded = false;
@@ -226,35 +306,151 @@
         if (!historyLoaded) {
             chatLog.innerHTML = '';
         }
+
+        // Запрашиваем историю сообщений и онлайн пользователей
+        chatSocket.send(JSON.stringify({
+            type: 'fetch_messages'
+        }));
+
+        chatSocket.send(JSON.stringify({
+            type: 'fetch_online_users'
+        }));
     };
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
+        console.log('Received message:', data);
+
+        switch(data.type) {
+            case 'new_message':
+                displayMessage(data.message);
+                break;
+            case 'messages_history':
+                displayMessages(data.messages);
+                break;
+            case 'online_users':
+                updateOnlineUsers(data.users, data.count);
+                break;
+            case 'user_joined':
+                console.log('User joined:', data.user);
+                // Обновляем список пользователей
+                chatSocket.send(JSON.stringify({
+                    type: 'fetch_online_users'
+                }));
+                break;
+            case 'user_left':
+                console.log('User left:', data.user);
+                // Обновляем список пользователей
+                chatSocket.send(JSON.stringify({
+                    type: 'fetch_online_users'
+                }));
+                break;
+            default:
+                console.log('Unknown message type:', data.type);
+        }
+    };
+
+    function displayMessage(message) {
+        // Если это первое сообщение, очистим placeholder
+        const placeholder = chatLog.querySelector('.text-center');
+        if (placeholder) {
+            chatLog.innerHTML = '';
+        }
+
         const messageElement = document.createElement('div');
         messageElement.classList.add('chat-message');
 
-        const timestamp = new Date(data.timestamp || Date.now()).toLocaleTimeString();
-        const isOwn = data.author === "{{ request.user.username }}";
+        const timestamp = new Date(message.created).toLocaleTimeString();
+        const isOwn = message.is_own;
 
         messageElement.innerHTML = `
             <div class="message-content ${isOwn ? 'own' : 'other'}">
-                <div class="message-author">${isOwn ? 'Вы' : data.author}</div>
-                <div class="message-text">${data.message}</div>
+                <div class="message-author">
+                    ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
+                </div>
+                <div class="message-text">${message.content}</div>
                 <div class="message-timestamp">${timestamp}</div>
             </div>
         `;
 
         chatLog.appendChild(messageElement);
 
-        // Если это историческое сообщение, не скроллим и отмечаем что история загружена
-        if (data.type === 'history') {
-            historyLoaded = true;
-        } else {
-            // Автопрокрутка только для новых сообщений
-            const messagesArea = document.getElementById('chat-messages-area');
-            messagesArea.scrollTop = messagesArea.scrollHeight;
+        // Автопрокрутка для новых сообщений
+        setTimeout(scrollToBottom, 100);
+    }
+
+    function displayMessages(messages) {
+        // Очищаем контейнер
+        chatLog.innerHTML = '';
+
+        if (messages.length === 0) {
+            chatLog.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                    <p>Пока нет сообщений. Начните общение!</p>
+                </div>
+            `;
+            return;
         }
-    };
+
+        // Добавляем сообщения
+        messages.forEach(message => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message');
+
+            const timestamp = new Date(message.created).toLocaleTimeString();
+            const isOwn = message.is_own;
+
+            messageElement.innerHTML = `
+                <div class="message-content ${isOwn ? 'own' : 'other'}">
+                    <div class="message-author">
+                        ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
+                    </div>
+                    <div class="message-text">${message.content}</div>
+                    <div class="message-timestamp">${timestamp}</div>
+                </div>
+            `;
+
+            chatLog.appendChild(messageElement);
+        });
+
+        historyLoaded = true;
+        // Прокручиваем к последнему сообщению с задержкой для истории
+        setTimeout(scrollToBottom, 200);
+    }
+
+    function updateOnlineUsers(users, count) {
+        // Обновляем счетчик
+        if (onlineCountElement) {
+            onlineCountElement.textContent = count || users.length;
+        }
+
+        // Обновляем список пользователей
+        if (!usersListElement) return;
+
+        if (users.length === 0) {
+            usersListElement.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-user-slash mb-2"></i>
+                    <p class="small mb-0">Нет пользователей онлайн</p>
+                </div>
+            `;
+            return;
+        }
+
+        usersListElement.innerHTML = '';
+        users.forEach(user => {
+            const userElement = document.createElement('div');
+            userElement.className = 'online-user';
+            userElement.innerHTML = `
+                <div class="status-dot"></div>
+                <span class="user-name">
+                    ${user.role_icon || '👤'} ${user.display_name || user.username}
+                </span>
+            `;
+            usersListElement.appendChild(userElement);
+        });
+    }
 
     chatSocket.onclose = function(e) {
         console.error('❌ Chat socket closed unexpectedly');
@@ -288,8 +484,10 @@
         const message = messageInputDom.value.trim();
 
         if (message !== '' && chatSocket.readyState === WebSocket.OPEN) {
+            // ИСПРАВЛЕНО: Отправляем правильный JSON с полем type
             chatSocket.send(JSON.stringify({
-                'message': message
+                type: 'message',  // ← ВОТ ЭТО БЫЛО ПРОБЛЕМОЙ!
+                message: message
             }));
             messageInputDom.value = '';
         } else if (chatSocket.readyState !== WebSocket.OPEN) {

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+Беседка - Чат
+</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="this.onerror=null;this.href='/static/css/fontawesome.min.css';">
+    
+    <link href="/static/css/chat_modal.css?v=2025060104" rel="stylesheet">
+    <link href="/static/css/project.css?v=2025062623" rel="stylesheet">
+    <!-- НОВАЯ УНИФИЦИРОВАННАЯ СИСТЕМА ЗАГОЛОВКОВ -->
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+
+    <!-- МОИ СТИЛИ -->
+    
+    <link rel="stylesheet" href="/static/css/unified_hero_buttons.css?v=202506120400">
+    <link rel="stylesheet" href="/static/css/unified_cards.css?v=202506130010">
+    <link rel="stylesheet" href="/static/css/unified_styles.css?v=202506150730">
+
+    
+<link href="/static/css/chat_styles.css?v=12.6" rel="stylesheet">
+
+</head>
+<body class="page-container">
+    
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
+    <div class="container-fluid px-3 px-lg-4">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="fas fa-home"></i> Беседка
+            
+            <span id="connection-status" class="connection-status-nav status-connecting">
+                <i class="fas fa-lock"></i>
+            </span>
+            
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavGlobal">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavGlobal">
+            <!-- ЛЕВАЯ СЕКЦИЯ: ОСНОВНЫЕ ССЫЛКИ (скрыты в чате) -->
+            
+
+            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: НАЗВАНИЕ ЧАТА (только на страницах чата) -->
+            
+            <div class="d-flex justify-content-center flex-grow-1">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle current-channel-nav
+                           channel-general"
+                           href="#" id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-comments me-1"></i>
+                            <span id="currentChannelName">
+                                
+                                    Беседка
+                                
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu shadow" aria-labelledby="channelDropdownNav">
+                            <li><a class="dropdown-item channel-option-general" href="/chat/general/">
+                                <span class="text-success">⬤</span> Беседка
+                            </a></li>
+                            
+                            
+                            
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-with-counter" href="/store/cart/">
+                        <i class="fas fa-shopping-cart nav-icon"></i>
+                        <span class="nav-counter-badge cart-badge rounded-pill" style="display: none;">
+                            0
+                            <span class="visually-hidden">товаров в корзине</span>
+                        </span>
+                    </a>
+                </li>
+                
+    <li class="nav-item">
+        <a class="nav-link" href="/accounts/login/">
+            <i class="fas fa-sign-in-alt"></i> Войти
+        </a>
+    </li>
+
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+    <!-- ИСПОЛЬЗУЕМ НОВЫЙ УНИФИЦИРОВАННЫЙ ЗАГОЛОВОК -->
+    
+
+    
+<div class="chat-wrapper">
+    <div class="chat-container">
+        <!-- Основная область чата -->
+        <div class="chat-body">
+            <!-- Левая часть: область сообщений -->
+            <div class="chat-messages-area">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Сообщения загружаются динамически через WebSocket -->
+                </div>
+
+                <!-- Индикатор набора текста -->
+                <div class="typing-indicator" id="typing-indicator"></div>
+
+                <!-- Поле ввода сообщения -->
+                <div class="chat-input-area">
+                    <!-- Индикатор ответа -->
+                    <div class="reply-indicator" id="reply-indicator" style="display: none;">
+                        <div class="reply-indicator-text">
+                            <span id="reply-to-text">В ответ на: <strong id="reply-author"></strong></span>
+                        </div>
+                        <button class="cancel-reply-btn" id="cancel-reply-btn">&times;</button>
+                    </div>
+
+                    <!-- Поле ввода -->
+                    <div class="input-group-optimized">
+                        <input type="text"
+                               id="chat-message-input"
+                               class="form-control-optimized"
+                               placeholder="Введите сообщение..."
+                               maxlength="1000"
+                               autocomplete="off">
+                        <button id="chat-message-submit" class="btn-send-optimized">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая панель: список пользователей -->
+            <div class="users-sidebar">
+                <!-- Заголовок панели -->
+                <div class="users-header">
+                    <h6>Онлайн</h6>
+                    <span class="badge" id="online-count">0</span>
+                </div>
+
+                <!-- Список онлайн пользователей -->
+                <div class="users-list" id="users-list">
+                    <!-- Пользователи загружаются динамически -->
+                </div>
+
+                <!-- Панель статистики -->
+                <div class="chat-stats-panel">
+                    <div class="stats-content">
+                        <div class="stat-item">
+                            <span class="stat-label">Сообщений:</span>
+                            <span class="stat-value" id="messages-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Данные для JavaScript -->
+<script id="room-name" type="application/json">"general"</script>
+<script id="current-user" type="application/json">""</script>
+
+
+    
+
+    <!-- ЗАКОММЕНТИРОВАНО ПО ПРОСЬБЕ ПОЛЬЗОВАТЕЛЯ - модальное окно сохранено для будущего -->
+    
+
+    <!-- Глобальный контейнер для toast уведомлений -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;" id="global-toast-container">
+        <!-- Toast уведомления будут добавляться сюда -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Унифицированные анимации -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="/static/js/unified_ajax_handler.js" defer></script>
+    <script src="/static/js/unified_animations.js" defer></script>
+    <script src="/static/js/unified_comment.js?v=20250613120" defer></script>
+    <script src="/static/js/unified_notifications.js?v=202506160220" defer></script>
+    <!-- УНИФИЦИРОВАННАЯ СИСТЕМА ЛАЙКОВ (SSOT) -->
+    <script src="/static/js/unified_like_handler.js?v=202506160350" defer></script>
+
+    <!-- Автозакрытие сообщений -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматически закрывать сообщения через 4 секунды
+        const autoCloseAlerts = document.querySelectorAll('.alert[data-auto-dismiss="true"]');
+        autoCloseAlerts.forEach(function(alert) {
+            setTimeout(function() {
+                if (alert && alert.parentNode) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 4000); // 4 секунды
+        });
+    });
+    </script>
+
+    
+</body>
+</html>

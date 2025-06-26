@@ -1,4 +1,4 @@
-/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.6 - УВЕЛИЧЕН ЗАГОЛОВОК "ОНЛАЙН" ===== */
+/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.7 - ПОЛНАЯ СИСТЕМА ОТВЕТОВ И ЦИТИРОВАНИЯ ===== */
 /* ===== ПОЛНЫЙ КАСТОМНЫЙ ЧАТ С СИСТЕМОЙ ОТВЕТОВ - ROCKET.CHAT ПОЛНОСТЬЮ УДАЛЕН ===== */
 
 /* ПОДКЛЮЧЕНИЕ КИРИЛЛИЧЕСКИХ ШРИФТОВ */
@@ -582,55 +582,58 @@
 /* ===== СООБЩЕНИЯ - МАКСИМАЛЬНО КОМПАКТНЫЕ ===== */
 .message {
     cursor: pointer;
-    margin-bottom: 0.2rem; /* Компактные отступы между сообщениями */
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
+    margin-bottom: 0.75rem; /* Компактные отступы между сообщениями */
+    padding: 0;
+    border-radius: 0;
     transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .message.other-message {
-    justify-content: flex-start; /* Выравнивание влево */
+    align-items: flex-start; /* Выравнивание влево */
 }
 
 .message.other-message .message-bubble {
-    background: transparent !important; /* УБРАНА ЗАЛИВКА - ТОЛЬКО ГРАНИЦЫ */
-    border: 2px solid var(--chat-border);
+    /* СВЕТЛЫЙ ФОН ДЛЯ ЧУЖИХ СООБЩЕНИЙ */
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    color: #333 !important;
+    border: 2px solid #dee2e6;
     border-radius: 1.25rem;
-    padding: 0.875rem 1.25rem;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     position: relative;
     transition: all 0.3s ease;
-    max-width: 70%;
-    /* ЛЕВЫЙ УКАЗАТЕЛЬ ДЛЯ ЧУЖИХ СООБЩЕНИЙ */
-    border-left: 4px solid var(--chat-primary);
+    max-width: 75%;
+    min-height: auto; /* Убираем принудительную высоту */
 }
 
 .message.own-message {
-    justify-content: flex-end; /* Выравнивание вправо */
+    align-items: flex-end; /* Выравнивание вправо */
 }
 
 .message.own-message .message-bubble {
-    background: transparent !important; /* УБРАНА ЗАЛИВКА - ТОЛЬКО ГРАНИЦЫ */
-    color: #333 !important; /* ТЕМНЫЙ ТЕКСТ БЕЗ БЕЛОГО ЦВЕТА */
-    border: 2px solid var(--chat-secondary);
+    /* ЗЕЛЕНЫЙ ФОН ДЛЯ МОИХ СООБЩЕНИЙ */
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    color: white !important;
+    border: 2px solid #28a745;
     border-radius: 1.25rem;
-    padding: 0.875rem 1.25rem;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    padding: 0.75rem 1rem;
+    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.3);
     position: relative;
     transition: all 0.3s ease;
-    max-width: 70%;
-    /* ПРАВЫЙ УКАЗАТЕЛЬ ДЛЯ МОИХ СООБЩЕНИЙ */
-    border-right: 4px solid var(--chat-secondary);
+    max-width: 75%;
+    min-height: auto; /* Убираем принудительную высоту */
 }
 
 .message-bubble:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
-    cursor: pointer; /* Указывает на то, что сообщение кликабельно для ответов */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
 }
 
 .message.own-message .message-bubble:hover {
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
 }
 
 /* ===== СИСТЕМА ОТВЕТОВ - ИНТЕРАКТИВНОСТЬ И ПОДСВЕТКА ===== */
@@ -642,6 +645,8 @@
 .message-bubble {
     cursor: pointer; /* Указатель только на области сообщения */
     transition: all 0.3s ease;
+    /* УБИРАЕМ ПРИНУДИТЕЛЬНУЮ ВЫСОТУ */
+    min-height: auto !important;
 }
 
 .message-bubble:hover {
@@ -2647,5 +2652,317 @@
     box-shadow:
         0 4px 15px rgba(0, 0, 0, 0.15) !important,
         0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.7 - СИСТЕМА ОТВЕТОВ И КОНТЕКСТНОЕ МЕНЮ ===== */
+/* ===== ПОЛНЫЙ КАСТОМНЫЙ ЧАТ С СИСТЕМОЙ ОТВЕТОВ - ROCKET.CHAT ПОЛНОСТЬЮ УДАЛЕН ===== */
+
+/* ===== КОНТЕКСТНОЕ МЕНЮ ДЛЯ DESKTOP ===== */
+.context-menu {
+    position: fixed;
+    z-index: 10000;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    min-width: 180px;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    animation: contextMenuSlideIn 0.2s ease-out;
+}
+
+.context-menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    color: #333;
+    user-select: none;
+}
+
+.context-menu-item:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #007bff;
+    transform: translateX(5px);
+}
+
+.context-menu-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: #dee2e6;
+    margin: 0.5rem 0;
+}
+
+@keyframes contextMenuSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ===== ИНДИКАТОР РЕЖИМА ОТВЕТА ===== */
+.reply-indicator {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #2196f3;
+    border-radius: 0.75rem;
+    margin: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    animation: replyIndicatorSlideIn 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.reply-indicator.active {
+    display: flex !important;
+}
+
+.reply-indicator-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.reply-indicator-text {
+    display: flex;
+    align-items: center;
+    color: #1976d2;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reply-indicator-text i {
+    color: #2196f3;
+    margin-right: 0.5rem;
+}
+
+.cancel-reply-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.cancel-reply-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    transform: scale(1.1);
+}
+
+@keyframes replyIndicatorSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 100px;
+    }
+}
+
+/* ===== ОБНОВЛЕННАЯ СТРУКТУРА НИЖНЕЙ ПАНЕЛИ ===== */
+.chat-bottom-area {
+    display: flex;
+    min-height: 120px;
+}
+
+.chat-stats-panel {
+    background: #f8f9fa;
+    border-top: 3px solid var(--chat-border);
+    border-right: 3px solid var(--chat-border);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+    flex-shrink: 0;
+}
+
+.stats-info {
+    text-align: center;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.stats-info i {
+    color: var(--chat-primary);
+    margin-right: 0.5rem;
+}
+
+/* ===== МОБИЛЬНЫЕ ЖЕСТЫ - ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ===== */
+.message.swipe-reply {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.message.swipe-reply::after {
+    content: '💬';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    opacity: 0.7;
+    animation: swipeReplyPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes swipeReplyPulse {
+    0%, 100% { opacity: 0.7; transform: translateY(-50%) scale(1); }
+    50% { opacity: 1; transform: translateY(-50%) scale(1.1); }
+}
+
+/* ===== УЛУЧШЕННАЯ ПОДСВЕТКА ЦИТАТ ===== */
+.quoted-message {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid var(--chat-primary);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quoted-message:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-left-color: #2196f3;
+    transform: translateX(5px);
+}
+
+.quote-author {
+    font-weight: 700;
+    color: var(--chat-primary);
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.quote-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* ===== КНОПКА НАВИГАЦИИ К ИСХОДНОМУ СООБЩЕНИЮ ===== */
+.quote-nav-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--chat-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+}
+
+.quote-nav-btn:hover {
+    background: #2196f3;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* ===== КЛАВИАТУРНЫЕ ПОДСКАЗКИ ===== */
+.keyboard-hints {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.keyboard-hints.show {
+    opacity: 1;
+}
+
+.keyboard-hints div {
+    margin-bottom: 0.5rem;
+}
+
+.keyboard-hints kbd {
+    background: #333;
+    color: #fff;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    margin: 0 0.25rem;
+}
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ ===== */
+@media (max-width: 768px) {
+    .context-menu {
+        min-width: 200px;
+        padding: 0.75rem 0;
+    }
+
+    .context-menu-item {
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+    }
+
+    .reply-indicator {
+        margin: 0.5rem;
+        padding: 1rem;
+    }
+
+    .reply-indicator-text {
+        font-size: 1rem;
+    }
+
+    .cancel-reply-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+    }
+
+    .chat-bottom-area {
+        flex-direction: column;
+    }
+
+    .chat-stats-panel {
+        border-right: none;
+        border-bottom: 3px solid var(--chat-border);
+        min-height: 60px;
+        padding: 1rem;
+    }
+
+    .keyboard-hints {
+        display: none; /* Скрываем на мобильных */
+    }
 }
 
