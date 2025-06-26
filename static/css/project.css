@@ -40,11 +40,23 @@ body {
 
 .navbar-brand {
   font-size: 1.25rem !important;
-  padding-top: 0.25rem !important;
-  padding-bottom: 0.25rem !important;
+  padding: 0.5rem 1rem !important;
   line-height: 1.2 !important;
   font-weight: bold;
-  color: var(--primary-color) !important;
+  color: var(--dark-color) !important;
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+}
+
+.navbar-brand:hover {
+  color: var(--dark-color) !important;
+  background: #f8f9fa !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  text-decoration: none !important;
 }
 
 .navbar .nav-link {
@@ -503,6 +515,10 @@ body.besedka-admin .chat-option-card .card-title {
   box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
   border: none !important;
   padding: 0.5rem !important;
+  /* Центрирование относительно кнопки */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  min-width: 200px !important;
 }
 
 .navbar .dropdown-item {
@@ -510,19 +526,28 @@ body.besedka-admin .chat-option-card .card-title {
   margin: 0.25rem 0 !important;
   font-weight: 600 !important;
   transition: all 0.25s ease !important;
+  text-align: center !important;
 }
 
 .navbar .dropdown-item:hover {
   transform: scale(1.03);
 }
 
+/* Центрирование dropdown для чат-каналов */
+#channelDropdownNav + .dropdown-menu {
+  margin-top: 0.5rem !important;
+}
+
 /* Стили для статуса подключения в навигации */
 .connection-status-nav {
   display: inline-flex;
   align-items: center;
-  margin-left: 0.5rem;
-  font-size: 1rem;
+  margin-left: 0.75rem;
+  font-size: 1.1rem;
   transition: all 0.3s ease;
+  padding: 0.2rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
 }
 
 .connection-status-nav.status-connected {
