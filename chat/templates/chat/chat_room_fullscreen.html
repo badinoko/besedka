@@ -21,22 +21,7 @@
         flex-direction: column;
     }
 
-    /* Красивый заголовок чата */
-    .chat-header {
-        background: {% if room_name == 'vip' %}linear-gradient(135deg, #ffd700 0%, #ffb347 100%){% else %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% endif %};
-        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
-        padding: 1rem 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .chat-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0;
-    }
+    /* Убираем заголовок чата - все перенесено в навигацию */
 
 
 
@@ -131,34 +116,7 @@
         color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
     }
 
-    /* Индикатор подключения как значок замок */
-    .connection-status {
-        display: inline-flex;
-        align-items: center;
-        margin-left: 1rem;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
-    }
-
-    .status-connected {
-        color: #28a745;
-        filter: drop-shadow(0 0 8px rgba(40, 167, 69, 0.6));
-    }
-
-    .status-connecting {
-        color: #ffc107;
-        animation: pulse 1.5s infinite;
-    }
-
-    .status-disconnected {
-        color: #dc3545;
-        filter: drop-shadow(0 0 8px rgba(220, 53, 69, 0.6));
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
+    /* Стили статуса подключения теперь в основном CSS файле */
 
     /* Стили для dropdown в навигации */
     .current-channel-nav {
@@ -197,21 +155,7 @@
 {% block main_container %}
 <div class="chat-fullscreen-container">
     <!-- Заголовок чата с кнопками переключения -->
-    <div class="chat-header">
-        <h1 class="chat-title">
-            <i class="fas fa-{% if room_name == 'vip' %}crown{% else %}comments{% endif %} me-2"></i>
-            {% if room_name == 'general' %}
-                Беседка
-            {% elif room_name == 'vip' %}
-                Беседка - VIP
-            {% else %}
-                {{ room_name }}
-            {% endif %}
-            <span id="connection-status" class="connection-status status-connecting">
-                <i class="fas fa-lock"></i>
-            </span>
-        </h1>
-    </div>
+
 
     <!-- Область сообщений -->
     <div class="chat-messages-area" id="chat-messages-area">
@@ -251,9 +195,9 @@
     const chatLog = document.querySelector('#chat-log');
     const connectionStatus = document.getElementById('connection-status');
 
-    // Функция обновления статуса подключения
+        // Функция обновления статуса подключения
     function updateConnectionStatus(status) {
-        connectionStatus.className = 'connection-status';
+        connectionStatus.className = 'connection-status-nav';
         const icon = connectionStatus.querySelector('i');
 
         switch(status) {
