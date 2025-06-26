@@ -2,9 +2,9 @@
 {% load static %}
 
 {% comment %}
-🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - ТОЧНАЯ КОПИЯ INTEGRATED + 3 простые кнопки
+🧪 ТЕСТОВАЯ СТРАНИЦА Rocket.Chat - TELEGRAM HOVER КНОПКИ
 Последнее обновление: 26 июня 2025 г.
-Статус: ВОССТАНОВЛЕНО - убраны все наложения и фантазии
+Статус: ДОБАВЛЕНЫ TELEGRAM HOVER КНОПКИ - ЭТАП 1 дорожной карты §2.5
 {% endcomment %}
 
 {% block title %}🧪 Чат (тест) - Беседка{% endblock %}
@@ -48,6 +48,70 @@
         font-weight: 500;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
+
+    /* 🎯 REPLY MODE OVERLAY - НАДСТРОЙКА НАД ПОЛЕМ ВВОДА */
+    .reply-mode-overlay {
+        position: fixed;
+        bottom: 80px;
+        left: 20px;
+        right: 20px;
+        background: rgba(0, 123, 255, 0.95);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 10000;
+        box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+        animation: slideUpReply 0.3s ease;
+    }
+
+    .reply-mode-overlay.active {
+        display: flex;
+    }
+
+    .reply-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .reply-arrow {
+        font-size: 16px;
+    }
+
+    .reply-text {
+        font-weight: 600;
+    }
+
+    .reply-snippet {
+        opacity: 0.8;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .reply-cancel {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        transition: background 0.2s ease;
+    }
+
+    .reply-cancel:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes slideUpReply {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
 </style>
 
 <script>
@@ -57,14 +121,15 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED + простые функции навигации --- #}
+{# --- ТОЧНАЯ КОПИЯ JS ИЗ INTEGRATED + Telegram overlay --- #}
 {% block extra_js %}
 <script src="{% static 'js/auto_join_fix.js' %}"></script>
+<script src="{% static 'js/telegram_chat_overlay.js' %}"></script>
 <script>
 let isSwitching=false;
 function switchChannel(name){
  if(isSwitching)return;isSwitching=true;
- const frame=document.getElementById('rocketChatFrame');
+ const frame=document.getElementById('rocketchat-iframe');
  const t=Date.now();
  frame.src=`{{ rocketchat_url }}/channel/${name}?layout=embedded&t=${t}`;
  frame.onload=()=>{
@@ -110,7 +175,7 @@ function updateChannelNavTitle(channel) {
 
 // ПРОСТЫЕ ФУНКЦИИ ДЛЯ КНОПОК НАВИГАЦИИ
 function scrollToBottom() {
-    const iframe = document.getElementById('rocketChatFrame');
+    const iframe = document.getElementById('rocketchat-iframe');
     if (iframe && iframe.contentWindow) {
         try {
             iframe.contentWindow.postMessage({type: 'scroll-to-bottom'}, 'http://127.0.0.1:3000');
@@ -121,13 +186,53 @@ function scrollToBottom() {
 }
 
 function scrollToFirstUnread() {
-    const iframe = document.getElementById('rocketChatFrame');
+    const iframe = document.getElementById('rocketchat-iframe');
     if (iframe && iframe.contentWindow) {
         try {
             iframe.contentWindow.postMessage({type: 'scroll-to-first-unread'}, 'http://127.0.0.1:3000');
         } catch(e) {
             console.log('Скролл к первому непрочитанному (demo)');
         }
+    }
+}
+
+// 🎯 ОБРАБОТЧИК TELEGRAM OVERLAY СОБЫТИЙ
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'telegram-reply-mode') {
+        showReplyModeOverlay(event.data);
+    } else if (event.data.type === 'telegram-add-reaction') {
+        addReactionToMessage(event.data);
+    }
+});
+
+// 📝 ПОКАЗАТЬ РЕЖИМ ОТВЕТА КАК В TELEGRAM
+function showReplyModeOverlay(data) {
+    const overlay = document.getElementById('reply-mode-overlay');
+    const authorEl = overlay.querySelector('.reply-author');
+    const snippetEl = overlay.querySelector('.reply-snippet');
+
+    authorEl.textContent = data.messageAuthor || 'Пользователь';
+    snippetEl.textContent = data.messageText.substring(0, 50) + (data.messageText.length > 50 ? '...' : '');
+
+    overlay.classList.add('active');
+
+    console.log('📝 Режим ответа активирован:', data);
+}
+
+// ❌ ОТМЕНА РЕЖИМА ОТВЕТА
+function cancelReplyMode() {
+    const overlay = document.getElementById('reply-mode-overlay');
+    overlay.classList.remove('active');
+}
+
+// 👍 ДОБАВИТЬ РЕАКЦИЮ К СООБЩЕНИЮ
+function addReactionToMessage(data) {
+    console.log('👍 Добавление реакции:', data.emoji, 'к сообщению:', data.messageId);
+
+    // В будущем здесь будет интеграция с Rocket.Chat API
+    // Пока показываем уведомление
+    if (window.showNotification) {
+        window.showNotification(`Реакция ${data.emoji} добавлена!`, 'success');
     }
 }
 
@@ -164,14 +269,24 @@ document.addEventListener('keydown', function(event) {
 </script>
 {% endblock %}
 
-{# --- ТОЧНАЯ КОПИЯ КОНТЕЙНЕРА ИЗ INTEGRATED --- #}
+{# --- ТОЧНАЯ КОПИЯ КОНТЕЙНЕРА ИЗ INTEGRATED + Reply overlay --- #}
 {% block main_container %}
     <div class="chat-container">
-        <iframe id="rocketChatFrame" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
+        <iframe id="rocketchat-iframe" src="{{ rocketchat_url }}/channel/general?layout=embedded" allow="camera; microphone; clipboard-write"></iframe>
+
+        <!-- 📝 РЕЖИМ ОТВЕТА КАК В TELEGRAM -->
+        <div id="reply-mode-overlay" class="reply-mode-overlay">
+            <div class="reply-info">
+                <span class="reply-arrow">↩️</span>
+                <span class="reply-text">В ответ <strong class="reply-author">Пользователь</strong></span>
+                <span class="reply-snippet">Текст сообщения...</span>
+            </div>
+            <button class="reply-cancel" onclick="cancelReplyMode()">✕</button>
+        </div>
 
         <!-- МАЛЕНЬКИЙ ТЕСТОВЫЙ ИНДИКАТОР -->
         <div class="test-indicator">
-            🧪 Тест навигации v1.0
+            🧪 Telegram Hover v1.0
         </div>
     </div>
 {% endblock %}
