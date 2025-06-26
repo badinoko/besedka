@@ -8,12 +8,12 @@
 {% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/chat_styles.css' %}?v=12.1" rel="stylesheet">
+<link href="{% static 'css/chat_styles.css' %}?v=12.4" rel="stylesheet">
 {% endblock %}
 
 {% block main_container %}
 <div class="chat-container {% if room_name == 'vip' %}vip-chat{% endif %}">
-    <!-- Заголовок чата -->
+    <!-- Заголовок чата БЕЗ ДУБЛИРУЮЩЕЙ ПЛАШКИ -->
     <div class="chat-header {% if room_name == 'vip' %}vip-header{% endif %}">
         <div class="chat-title-section">
             <div class="chat-icon">
@@ -31,10 +31,6 @@
                 {% endif %}
             </h1>
         </div>
-
-        <div class="chat-stats-info">
-            <span id="online-count">0</span> участников
-        </div>
     </div>
 
     <!-- Основная область чата -->
@@ -43,23 +39,20 @@
             <!-- Сообщения -->
             <div id="chat-messages" class="chat-messages">
                 <div class="text-center text-muted py-4">
-                    <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                    <i class="fas fa-comments fa-2x mb-3 opacity-50"></i>
                     <p>Пока нет сообщений. Начните общение!</p>
                 </div>
             </div>
-
-            <!-- Индикатор печати -->
-            <div id="typing-indicator" class="typing-indicator"></div>
         </div>
 
         <!-- Боковая панель с участниками -->
         <div class="users-sidebar">
             <div class="users-header">
-                <h3>
+                <h4>
                     <i class="fas fa-users me-2"></i>
-                    {% if room_name == 'vip' %}VIP Участники{% else %}Участники{% endif %}
+                    Онлайн
                     <span id="online-count-badge" class="badge">0</span>
-                </h3>
+                </h4>
             </div>
             <div id="online-users-list" class="users-list">
                 <div class="text-center text-muted py-3">
@@ -87,20 +80,6 @@
             </button>
         </div>
     </div>
-
-    <!-- Статистическая панель -->
-    <div class="chat-stats-panel">
-        <div class="stats-content">
-            <div class="stat-item">
-                <i class="fas fa-message"></i>
-                <span>Сообщений: <span id="messages-count">-</span></span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-clock"></i>
-                <span>Время: <span id="current-time">-</span></span>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
@@ -123,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function ensureScrollToBottom() {
         const messagesContainer = document.getElementById('chat-messages');
         if (messagesContainer) {
-            // Принудительная прокрутка с несколькими попытками
             setTimeout(() => {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }, 300);
@@ -141,39 +119,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Запускаем принудительную прокрутку
     ensureScrollToBottom();
 
-    // Обновляем время каждую секунду
-    function updateTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-        const timeElement = document.getElementById('current-time');
-        if (timeElement) {
-            timeElement.textContent = timeString;
-        }
-    }
-
-    updateTime();
-    setInterval(updateTime, 1000);
-
-    // Счетчик сообщений
-    function updateMessagesCount() {
-        const messagesContainer = document.getElementById('chat-messages');
-        if (messagesContainer) {
-            const messageCount = messagesContainer.querySelectorAll('.message').length;
-            const countElement = document.getElementById('messages-count');
-            if (countElement) {
-                countElement.textContent = messageCount;
-            }
-        }
-    }
-
-    // Обновляем счетчик при изменении DOM
+    // Счетчик сообщений и обновление при изменениях
     const observer = new MutationObserver(() => {
-        updateMessagesCount();
-        // ДОПОЛНИТЕЛЬНАЯ ПРОКРУТКА при добавлении новых сообщений
         ensureScrollToBottom();
     });
     const messagesContainer = document.getElementById('chat-messages');
