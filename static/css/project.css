@@ -38,25 +38,24 @@ body {
   padding-bottom: 0.5rem !important;
 }
 
+/* 🎯 SSOT УНИФИКАЦИЯ: Логотип в стиле nav-link кнопок */
 .navbar-brand {
   font-size: 1.25rem !important;
   padding: 0.5rem 1rem !important;
   line-height: 1.2 !important;
   font-weight: bold;
-  color: var(--dark-color) !important;
-  background: white !important;
+  color: rgba(255, 255, 255, 0.9) !important; /* Белый цвет как у nav-link */
+  background: transparent !important; /* Прозрачный фон */
   border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
   transition: all 0.3s ease !important;
   text-decoration: none !important;
 }
 
 .navbar-brand:hover {
-  color: var(--dark-color) !important;
-  background: #f8f9fa !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  color: #28a745 !important; /* Зеленый hover как у nav-link */
+  background: rgba(255, 255, 255, 0.1) !important; /* Легкая подсветка */
   text-decoration: none !important;
+  transform: none !important; /* Убираем смещение для консистентности */
 }
 
 .navbar .nav-link {
