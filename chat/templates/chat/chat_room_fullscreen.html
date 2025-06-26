@@ -38,36 +38,7 @@
         margin: 0;
     }
 
-    /* Кнопки переключения чатов */
-    .chat-switcher {
-        display: flex;
-        gap: 0.5rem;
-    }
 
-    .chat-switch-btn {
-        padding: 0.5rem 1rem;
-        border: 2px solid rgba(255,255,255,0.3);
-        background: rgba(255,255,255,0.1);
-        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
-        text-decoration: none;
-        border-radius: 0.5rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .chat-switch-btn:hover {
-        background: rgba(255,255,255,0.2);
-        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
-        text-decoration: none;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .chat-switch-btn.active {
-        background: white;
-        color: {% if room_name == 'vip' %}#ffa500{% else %}#28a745{% endif %};
-        border-color: white;
-    }
 
     /* Область сообщений */
     .chat-messages-area {
@@ -188,6 +159,38 @@
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
+
+    /* Стили для dropdown в навигации */
+    .current-channel-nav {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff !important;
+        text-decoration: none;
+    }
+
+    .current-channel-nav:hover {
+        color: #e9ecef !important;
+        text-decoration: none;
+    }
+
+    .dropdown-menu {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .dropdown-item {
+        color: #333;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background: #f8f9fa;
+        color: #333;
+        transform: translateX(5px);
+    }
 </style>
 {% endblock %}
 
@@ -208,22 +211,6 @@
                 <i class="fas fa-lock"></i>
             </span>
         </h1>
-
-        <div class="chat-switcher">
-            <a href="{% url 'chat:room' 'general' %}"
-               class="chat-switch-btn {% if room_name == 'general' %}active{% endif %}">
-                <i class="fas fa-comments me-1"></i>
-                Беседка
-            </a>
-            {% can_access_vip_chat request.user as vip_access %}
-            {% if vip_access %}
-            <a href="{% url 'chat:room' 'vip' %}"
-               class="chat-switch-btn {% if room_name == 'vip' %}active{% endif %}">
-                <i class="fas fa-crown me-1"></i>
-                Беседка - VIP
-            </a>
-            {% endif %}
-        </div>
     </div>
 
     <!-- Область сообщений -->

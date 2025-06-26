@@ -9,6 +9,8 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavGlobal">
+            <!-- ЛЕВАЯ СЕКЦИЯ: ОСНОВНЫЕ ССЫЛКИ (скрыты в чате) -->
+            {% if request.resolver_match.url_name != 'room' and request.resolver_match.url_name != 'chat_test' %}
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'news:home' %}">
@@ -36,6 +38,42 @@
                     </a>
                 </li>
             </ul>
+            {% endif %}
+
+            <!-- ЦЕНТРАЛЬНАЯ СЕКЦИЯ: НАЗВАНИЕ ЧАТА (только на страницах чата) -->
+            {% if request.resolver_match.url_name == 'room' or request.resolver_match.url_name == 'chat_test' %}
+            <div class="d-flex justify-content-center flex-grow-1">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle current-channel-nav" href="#"
+                           id="channelDropdownNav" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-comments me-1"></i>
+                            <span id="currentChannelName">
+                                {% if request.resolver_match.kwargs.room_name == 'general' %}
+                                    Беседка
+                                {% elif request.resolver_match.kwargs.room_name == 'vip' %}
+                                    Беседка - VIP
+                                {% else %}
+                                    Чат
+                                {% endif %}
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu shadow" aria-labelledby="channelDropdownNav">
+                            <li><a class="dropdown-item channel-option-general" href="{% url 'chat:room' 'general' %}">
+                                <span class="text-success">⬤</span> Беседка
+                            </a></li>
+                            {% load chat_extras %}
+                            {% can_access_vip_chat request.user as vip_access %}
+                            {% if vip_access %}
+                            <li><a class="dropdown-item channel-option-vip" href="{% url 'chat:room' 'vip' %}">
+                                <span class="text-warning">⬤</span> Беседка - VIP
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
