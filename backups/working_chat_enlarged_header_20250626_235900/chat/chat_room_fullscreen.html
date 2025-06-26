@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+{% load chat_extras %}
+
+{% block title %}
+{% if room_name == 'general' %}Беседка - Чат{% elif room_name == 'vip' %}Беседка - VIP{% else %}Чат: {{ room_name }}{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/chat_styles.css' %}?v=12.6" rel="stylesheet">
+{% endblock %}
+
+{% block main_container %}
+<div class="chat-wrapper">
+    <div class="chat-container">
+        <!-- Основная область чата -->
+        <div class="chat-body">
+            <!-- Левая часть: область сообщений -->
+            <div class="chat-messages-area">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Сообщения загружаются динамически через WebSocket -->
+                </div>
+
+                <!-- Индикатор набора текста -->
+                <div class="typing-indicator" id="typing-indicator"></div>
+
+                <!-- Поле ввода сообщения -->
+                <div class="chat-input-area">
+                    <!-- Индикатор ответа -->
+                    <div class="reply-indicator" id="reply-indicator" style="display: none;">
+                        <div class="reply-indicator-text">
+                            <span id="reply-to-text">В ответ на: <strong id="reply-author"></strong></span>
+                        </div>
+                        <button class="cancel-reply-btn" id="cancel-reply-btn">&times;</button>
+                    </div>
+
+                    <!-- Поле ввода -->
+                    <div class="input-group-optimized">
+                        <input type="text"
+                               id="chat-message-input"
+                               class="form-control-optimized"
+                               placeholder="Введите сообщение..."
+                               maxlength="1000"
+                               autocomplete="off">
+                        <button id="chat-message-submit" class="btn-send-optimized">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая панель: список пользователей -->
+            <div class="users-sidebar">
+                <!-- Заголовок панели -->
+                <div class="users-header">
+                    <h6>Онлайн</h6>
+                    <span class="badge" id="online-count">0</span>
+                </div>
+
+                <!-- Список онлайн пользователей -->
+                <div class="users-list" id="users-list">
+                    <!-- Пользователи загружаются динамически -->
+                </div>
+
+                <!-- Панель статистики -->
+                <div class="chat-stats-panel">
+                    <div class="stats-content">
+                        <div class="stat-item">
+                            <span class="stat-label">Сообщений:</span>
+                            <span class="stat-value" id="messages-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Данные для JavaScript -->
+{{ room_name|json_script:"room-name" }}
+{{ request.user.username|json_script:"current-user" }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/chat_client.js' %}?v=5.0"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const currentUser = JSON.parse(document.getElementById('current-user').textContent);
+
+    // Инициализируем чат
+    window.chatClient = new ChatClient(roomName, currentUser);
+    window.chatClient.init();
+});
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock %}
