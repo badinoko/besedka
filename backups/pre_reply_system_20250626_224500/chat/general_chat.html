@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load chat_extras %}
+
+{% block title %}Чат Беседка - Беседка{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/chat_styles.css' %}?v=11.61" rel="stylesheet">
+{% endblock %}
+
+{# КРИТИЧНО: Полностью переопределяем main контейнер для чата #}
+{% block main_container %}
+<div id="rocketchat-container" class="chat-wrapper"></div>
+{% endblock %}
+
+{# КРИТИЧНО: Полностью убираем футер из чатов #}
+{% block footer %}{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/rc_embed.js?v=2' %}"></script>
+<link rel="stylesheet" href="{% static 'css/rc_overrides.css?v=1' %}" />
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_container %}
+<div id="rocketchat-container" class="chat-wrapper"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/rc_embed.js?v=2' %}"></script>
+<link rel="stylesheet" href="{% static 'css/rc_overrides.css?v=1' %}" />
+<script>window.RC_TARGET_CHANNEL = 'vip';</script>
+{% endblock %}
