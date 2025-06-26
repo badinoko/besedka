@@ -46,14 +46,13 @@ body {
   font-weight: bold;
   color: rgba(255, 255, 255, 0.9) !important; /* Белый цвет как у nav-link */
   background: transparent !important; /* Прозрачный фон */
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
+  transition: color 0.3s ease !important; /* Только переход цвета */
   text-decoration: none !important;
 }
 
 .navbar-brand:hover {
   color: #28a745 !important; /* Зеленый hover как у nav-link */
-  background: rgba(255, 255, 255, 0.1) !important; /* Легкая подсветка */
+  background: transparent !important; /* Убираем подложку полностью */
   text-decoration: none !important;
   transform: none !important; /* Убираем смещение для консистентности */
 }
@@ -543,10 +542,8 @@ body.besedka-admin .chat-option-card .card-title {
   align-items: center;
   margin-left: 0.75rem;
   font-size: 1.1rem;
-  transition: all 0.3s ease;
-  padding: 0.2rem;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
+  transition: color 0.3s ease; /* Только переход цвета */
+  background: transparent; /* Убираем подложку полностью */
 }
 
 .connection-status-nav.status-connected {
