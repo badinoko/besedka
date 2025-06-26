@@ -8,7 +8,6 @@ from core.admin_site import store_owner_site, store_admin_site, owner_admin_site
 from core.views import admin_selector, admin_redirect
 from core import ajax_views as core_ajax
 from oauth2_provider import urls as oauth2_urls
-import chat.views
 
 urlpatterns = [
     # Главная страница (плейсхолдер). Позднее будет заменена полноценным представлением.
@@ -41,9 +40,6 @@ urlpatterns = [
     path("users/", include("users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
 
-    # Custom OAuth2 authorization for Rocket.Chat
-    re_path(r'^o/authorize/$', chat.views.RocketChatOAuthView.as_view(), name='oauth2_provider:authorize'),
-
     # OAuth2 Provider endpoints (остальные эндпоинты)
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
 
@@ -61,9 +57,6 @@ urlpatterns = [
 
     # Chat - ru-RU.dj-chat_1.0
     path("chat/", include("chat.urls", namespace="chat")),
-
-    # HOTFIX: Альтернативный маршрут для API чата (исправление ошибки 404)
-    path("api/chat/auth/", chat.views.RocketChatAuthAPIView.as_view(), name="chat_auth_api_alternative"),
 
     # API urls
     path("api/", include("config.api_router")),

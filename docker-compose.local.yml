@@ -1,67 +1,47 @@
-version: '3'
+version: '3.8'
+
+volumes:
+  magic_beans_new_local_postgres_data: {}
+  magic_beans_new_local_postgres_data_backups: {}
 
 services:
-  postgres:
-    image: postgres:13
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=besedka
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-
-  web:
+  django:
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
-    image: besedka_local_web
-    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
-    volumes:
-      - .:/app
-    ports:
-      - "8001:8001"
-    env_file:
-      - ./.env
+    image: magic_beans_new_local_django
+    container_name: magic_beans_new_local_django
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "8001:8000"
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: magic_beans_new_production_postgres
+    container_name: magic_beans_new_local_postgres
+    volumes:
+      - magic_beans_new_local_postgres_data:/var/lib/postgresql/data
+      - magic_beans_new_local_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.local/.postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:6
-    ports:
-      - "6379:6379"
-
-  # 🚀 Rocket.Chat stack (added for migration)
-  mongo:
-    image: mongo:5.0
-    command: >
-      mongod --replSet rs0 --oplogSize 128 --bind_ip_all
-    volumes:
-      - mongo_data:/data/db
-    ports:
-      - "27017:27017"  # Публикуем порт для прямого доступа к MongoDB
-    restart: unless-stopped
-
-  rocketchat:
-    image: rocketchat/rocket.chat:6.4.8
-    depends_on:
-      - mongo
-    ports:
-      - "3000:3000"  # Публикуем для разработки
-    environment:
-      - MONGO_URL=mongodb://mongo:27017/rocketchat?replicaSet=rs0
-      - ROOT_URL=http://127.0.0.1:3000
-      - PORT=3000
-      - OVERWRITE_SETTING_Show_Setup_Wizard=completed  # отключаем мастер-настройку
-      - INITIAL_USER=true                              # включаем авто-создание учётки
-      - ADMIN_USERNAME=owner
-      - ADMIN_PASS=owner123secure
-      - ADMIN_EMAIL=owner@besedka.local
-    command: node main.js
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
-  mongo_data:
+    container_name: magic_beans_new_local_redis

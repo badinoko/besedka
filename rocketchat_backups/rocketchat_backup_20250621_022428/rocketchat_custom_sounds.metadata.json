@@ -1,1 +1,0 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"name":{"$numberInt":"1"}},"name":"name_1"}],"uuid":"63a999fe8d274822ac95afa33c8d27ec","collectionName":"rocketchat_custom_sounds","type":"collection"}

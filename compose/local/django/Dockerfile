@@ -17,6 +17,11 @@ RUN pip install -r /requirements/local.txt
 
 WORKDIR /app
 
+# Copy entrypoint script
+COPY ./compose/local/django/start /start
+RUN sed -i 's/\r$//g' /start
+RUN chmod +x /start
+
 # Copy project
 COPY . /app/
 

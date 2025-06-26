@@ -10,10 +10,10 @@ SECRET_KEY = env(
 )
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "testserver"]
 
-# РЕШЕНИЕ ПРОБЛЕМЫ 404 ОШИБОК ROCKET.CHAT
-MIDDLEWARE = [
-    "core.middleware.RocketChatProxyMiddleware",  # 🚀 ПРОКСИРОВАНИЕ ROCKET.CHAT ФАЙЛОВ
-] + MIDDLEWARE
+# СТАРЫЙ MIDDLEWARE ОТ ROCKET.CHAT ИНТЕГРАЦИИ - УДАЛЕН
+# MIDDLEWARE = [
+#     "core.middleware.RocketChatProxyMiddleware",  # 🚀 ПРОКСИРОВАНИЕ ROCKET.CHAT ФАЙЛОВ
+# ] + MIDDLEWARE
 
 # FILE UPLOAD SETTINGS
 # ------------------------------------------------------------------------------
@@ -31,24 +31,13 @@ CACHES = {
     }
 }
 
-# CHANNELS (Redis для стабильной работы WebSocket)
+# CHANNELS
 # ------------------------------------------------------------------------------
-# In-memory для быстрого тестирования
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
-
-# Redis вариант (для продакшена)
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("redis", 6379)],  # Используем имя сервиса из docker-compose
-#         },
-#     },
-# }
 
 # EMAIL
 # ------------------------------------------------------------------------------

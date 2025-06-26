@@ -23,7 +23,7 @@
                         <!-- Общий чат -->
                         <div class="col-md-6">
                             <div class="card chat-option-card chat-card-hover h-100 border-0 shadow-sm"
-                                 onclick="location.href='{% url 'chat:general' %}'">
+                                 onclick="location.href='{% url 'chat:room' 'general' %}'">
                                 <div class="card-body text-center p-4">
                                     <div class="chat-icon mb-3">
                                         <i class="fas fa-users fa-3x text-site-primary"></i>
@@ -51,7 +51,7 @@
                             {% can_access_vip_chat user as vip_access %}
                             {% if vip_access %}
                             <div class="card chat-option-card chat-card-hover vip-card h-100 border-0 shadow-sm"
-                                 onclick="location.href='{% url 'chat:vip' %}'">
+                                 onclick="location.href='{% url 'chat:room' 'vip' %}'">
                                 <div class="card-body text-center p-4">
                                     <div class="chat-icon mb-3">
                                         <i class="fas fa-crown fa-3x text-warning"></i>

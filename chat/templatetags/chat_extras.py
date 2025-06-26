@@ -55,15 +55,15 @@ def can_access_vip_chat(user):
     """
     Проверить, может ли пользователь получить доступ к VIP чату
     Использование: {% can_access_vip_chat request.user as vip_access %}
+
+    ВРЕМЕННО: VIP чат отключен до реализации кастомного чата
     """
     if not user or not user.is_authenticated:
         return False
 
-    try:
-        from chat.models import VIPChatRoom
-        vip_chat = VIPChatRoom.objects.get(is_active=True)
-        return vip_chat.can_access(user)
-    except VIPChatRoom.DoesNotExist:
-        return False
-    except Exception:
-        return False
+    # Проверяем роль пользователя для доступа к VIP чату
+    # Пока что разрешаем доступ владельцам и администраторам
+    if hasattr(user, 'role'):
+        return user.role in ['owner', 'store_owner', 'moderator']
+
+    return False

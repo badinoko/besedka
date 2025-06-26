@@ -1,0 +1,122 @@
+<!-- chat/templates/chat/room.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Чат: {{ room_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid chat-fullscreen-container">
+    <div class="row vh-100">
+        <div class="col-12 d-flex flex-column p-0">
+            <!-- Header -->
+            <div class="chat-header p-3 shadow-sm">
+                <h4 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    Чат: <strong>{{ room_name }}</strong>
+                </h4>
+            </div>
+
+            <!-- Chat Log -->
+            <div class="chat-log-wrapper flex-grow-1 p-3">
+                <div id="chat-log" class="d-flex flex-column">
+                    <!-- Messages will be appended here -->
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="chat-input-wrapper p-3 bg-light">
+                <div class="input-group">
+                    <input id="chat-message-input" type="text" class="form-control" placeholder="Введите сообщение...">
+                    <button id="chat-message-submit" class="btn btn-primary">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ room_name|json_script:"room-name" }}
+
+<script>
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    const chatLog = document.querySelector('#chat-log');
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message', 'mb-2');
+
+        const timestamp = new Date(data.timestamp).toLocaleTimeString();
+
+        // Simple distinction for "own" messages
+        if (data.author === "{{ request.user.username }}") {
+            messageElement.classList.add('own-message', 'align-self-end');
+            messageElement.innerHTML = `
+                <div class="message-content own p-2 rounded">
+                    <strong>Вы:</strong>
+                    <p class="mb-0">${data.message}</p>
+                    <small class="text-muted timestamp">${timestamp}</small>
+                </div>`;
+        } else {
+            messageElement.classList.add('other-message', 'align-self-start');
+            messageElement.innerHTML = `
+                <div class="message-content other p-2 rounded">
+                    <strong>${data.author}:</strong>
+                    <p class="mb-0">${data.message}</p>
+                    <small class="text-muted timestamp">${timestamp}</small>
+                </div>`;
+        }
+
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll to bottom
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+        const errorElement = document.createElement('div');
+        errorElement.classList.add('text-danger', 'text-center', 'my-2');
+        errorElement.innerText = 'ОШИБКА: Соединение с чатом разорвано.';
+        chatLog.appendChild(errorElement);
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        if (message.trim() !== '') {
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        }
+    };
+</script>
+<style>
+    .chat-fullscreen-container {
+        overflow: hidden;
+    }
+    .chat-log-wrapper {
+        overflow-y: auto;
+    }
+    .message-content.own {
+        background-color: #dcf8c6;
+    }
+    .message-content.other {
+        background-color: #f1f0f0;
+    }
+    .timestamp {
+        font-size: 0.75rem;
+        display: block;
+        text-align: right;
+    }
+</style>
+{% endblock %}

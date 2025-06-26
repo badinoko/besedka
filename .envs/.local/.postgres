@@ -1,5 +1,6 @@
 # .envs/.local/.postgres
 
+POSTGRES_HOST=postgres
 POSTGRES_USER=magicbeans
 POSTGRES_PASSWORD=magicbeans
 POSTGRES_DB=magicbeans

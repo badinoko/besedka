@@ -1,1 +1,0 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"shortcut":{"$numberInt":"1"}},"name":"shortcut_1","unique":true}],"uuid":"bbfd635263d94c19999649e3c7bfe8f2","collectionName":"rocketchat_canned_response","type":"collection"}
