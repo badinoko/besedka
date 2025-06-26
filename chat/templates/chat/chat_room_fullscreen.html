@@ -8,30 +8,12 @@
 {% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/chat_styles.css' %}?v=12.4" rel="stylesheet">
+<link href="{% static 'css/chat_styles.css' %}?v=12.5" rel="stylesheet">
 {% endblock %}
 
 {% block main_container %}
 <div class="chat-container {% if room_name == 'vip' %}vip-chat{% endif %}">
-    <!-- Заголовок чата БЕЗ ДУБЛИРУЮЩЕЙ ПЛАШКИ -->
-    <div class="chat-header {% if room_name == 'vip' %}vip-header{% endif %}">
-        <div class="chat-title-section">
-            <div class="chat-icon">
-                {% if room_name == 'vip' %}
-                    <i class="fas fa-crown"></i>
-                {% else %}
-                    <i class="fas fa-comments"></i>
-                {% endif %}
-            </div>
-            <h1 class="chat-title">
-                {% if room_name == 'vip' %}
-                    Беседка - VIP
-                {% else %}
-                    Беседка
-                {% endif %}
-            </h1>
-        </div>
-    </div>
+    <!-- ФИОЛЕТОВАЯ ПЛАШКА ПОЛНОСТЬЮ УДАЛЕНА ПО ТРЕБОВАНИЮ ПОЛЬЗОВАТЕЛЯ -->
 
     <!-- Основная область чата -->
     <div class="chat-body">
