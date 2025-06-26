@@ -2564,3 +2564,88 @@
 .message-bubble{min-height:5.5rem!important;}
 /* ============================================================= */
 
+/* ===== УЛУЧШЕННЫЕ КНОПКИ ОТВЕТА И РЕАКЦИЙ v12.1 ===== */
+
+/* КНОПКИ РЕАКЦИЙ И ОТВЕТА - УВЕЛИЧЕННЫЕ И ЗАМЕТНЫЕ */
+.message-reactions {
+    display: flex !important;
+    gap: 0.5rem !important; /* УВЕЛИЧЕН ОТСТУП для лучшей видимости */
+    align-items: center !important;
+    margin-top: 0.5rem !important; /* УВЕЛИЧЕН ОТСТУП сверху */
+    /* ЛЕГКАЯ ПОДЛОЖКА для лучшей видимости */
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 0.3rem 0.5rem !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.reaction-btn {
+    width: 3.5rem !important; /* УВЕЛИЧЕНО с 3rem */
+    height: 3.5rem !important; /* УВЕЛИЧЕНО с 3rem */
+    font-size: 1.6rem !important; /* УВЕЛИЧЕНО с 1.4rem */
+    border: 3px solid #d4a574 !important; /* УВЕЛИЧЕНА ТОЛЩИНА границы */
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #d4a574 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important; /* ЯВНЫЙ УКАЗАТЕЛЬ */
+    /* УСИЛЕННЫЕ ТЕНИ для лучшей видимости */
+    box-shadow:
+        0 4px 12px rgba(212, 165, 116, 0.3) !important,
+        0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.reaction-btn:hover {
+    transform: scale(1.15) !important; /* УВЕЛИЧЕНО с 1.12 */
+    box-shadow:
+        0 6px 18px rgba(212, 165, 116, 0.5) !important,
+        0 3px 10px rgba(0, 0, 0, 0.2) !important;
+    border-width: 4px !important; /* УТОЛЩЕНИЕ границы при hover */
+}
+
+/* КНОПКА ОТВЕТА - СПЕЦИАЛЬНЫЕ СТИЛИ */
+.reply-set-btn {
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    font-size: 1.6rem !important;
+    border: 3px solid #007bff !important; /* СИНЯЯ ГРАНИЦА для ответа */
+    border-radius: 50% !important;
+    background: rgba(0, 123, 255, 0.1) !important; /* ЛЕГКИЙ СИНИЙ ФОН */
+    color: #007bff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important;
+    /* СИНИЕ ТЕНИ для ответа */
+    box-shadow:
+        0 4px 12px rgba(0, 123, 255, 0.3) !important,
+        0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.reply-set-btn:hover {
+    transform: scale(1.15) !important;
+    background: rgba(0, 123, 255, 0.2) !important; /* УСИЛЕННЫЙ СИНИЙ ФОН */
+    box-shadow:
+        0 6px 18px rgba(0, 123, 255, 0.5) !important,
+        0 3px 10px rgba(0, 0, 0, 0.2) !important;
+    border-width: 4px !important;
+}
+
+/* ВСЕГДА ПОКАЗЫВАТЬ КНОПКИ - УБИРАЕМ СКРЫТИЕ */
+.message-header .message-reactions {
+    opacity: 1 !important; /* ВСЕГДА ВИДИМЫЕ */
+    visibility: visible !important;
+}
+
+/* ДОПОЛНИТЕЛЬНАЯ ПОДСВЕТКА ПРИ HOVER НА СООБЩЕНИЕ */
+.message:hover .message-reactions {
+    background: rgba(255, 255, 255, 1) !important; /* ПОЛНАЯ БЕЛАЯ ПОДЛОЖКА */
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.15) !important,
+        0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+

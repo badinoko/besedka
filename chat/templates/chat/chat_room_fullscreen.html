@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/chat_styles.css' %}?v=12.0" rel="stylesheet">
+<link href="{% static 'css/chat_styles.css' %}?v=12.1" rel="stylesheet">
 {% endblock %}
 
 {% block main_container %}
@@ -119,6 +119,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatType = '{{ room_name }}';
     window.chatClient = initChat(chatType);
 
+    // ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА К ПОСЛЕДНЕМУ СООБЩЕНИЮ ПРИ ЗАГРУЗКЕ
+    function ensureScrollToBottom() {
+        const messagesContainer = document.getElementById('chat-messages');
+        if (messagesContainer) {
+            // Принудительная прокрутка с несколькими попытками
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 300);
+
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 600);
+
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1000);
+        }
+    }
+
+    // Запускаем принудительную прокрутку
+    ensureScrollToBottom();
+
     // Обновляем время каждую секунду
     function updateTime() {
         const now = new Date();
@@ -149,7 +171,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Обновляем счетчик при изменении DOM
-    const observer = new MutationObserver(updateMessagesCount);
+    const observer = new MutationObserver(() => {
+        updateMessagesCount();
+        // ДОПОЛНИТЕЛЬНАЯ ПРОКРУТКА при добавлении новых сообщений
+        ensureScrollToBottom();
+    });
     const messagesContainer = document.getElementById('chat-messages');
     if (messagesContainer) {
         observer.observe(messagesContainer, { childList: true });
