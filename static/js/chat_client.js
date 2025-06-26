@@ -130,10 +130,8 @@ class ChatClient {
         const messageElement = this.createMessageElement(message);
         messagesContainer.appendChild(messageElement);
 
-        // УЛУЧШЕННАЯ АВТОПРОКРУТКА С ЗАДЕРЖКОЙ
-        setTimeout(() => {
-            this.scrollToBottom();
-        }, 100);
+        // Прокручиваем к последнему сообщению
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     displayMessages(messages) {
@@ -159,10 +157,8 @@ class ChatClient {
             messagesContainer.appendChild(messageElement);
         });
 
-        // УЛУЧШЕННАЯ АВТОПРОКРУТКА С ЗАДЕРЖКОЙ ДЛЯ ИСТОРИИ
-        setTimeout(() => {
-            this.scrollToBottom();
-        }, 200);
+        // Прокручиваем к последнему сообщению
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     createMessageElement(message) {
@@ -571,20 +567,6 @@ class ChatClient {
             indicator.style.display = 'none';
             indicator.innerHTML = '';
         }
-    }
-
-    // НОВЫЙ МЕТОД ДЛЯ ПРИНУДИТЕЛЬНОЙ ПРОКРУТКИ К ПОСЛЕДНЕМУ СООБЩЕНИЮ
-    scrollToBottom() {
-        const messagesContainer = document.getElementById('chat-messages');
-        if (!messagesContainer) return;
-
-        // Принудительная прокрутка к самому низу
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        // Дополнительная принудительная прокрутка через requestAnimationFrame
-        requestAnimationFrame(() => {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        });
     }
 }
 
