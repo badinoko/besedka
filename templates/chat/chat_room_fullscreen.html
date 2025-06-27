@@ -41,18 +41,21 @@
 
     .message-content {
         max-width: 70%;
-        padding: 0.75rem 1rem;
+        min-width: 180px; /* ИСПРАВЛЕНО: минимальная ширина для предотвращения наложения */
+        padding: 0.75rem 1rem 2.5rem 1rem; /* ИСПРАВЛЕНО: нижний отступ для времени */
         border-radius: 1rem;
         word-wrap: break-word;
         position: relative;
     }
 
+    /* ЭКСПЕРИМЕНТ A: ВОЗВРАТ К ЦВЕТНЫМ С УЛУЧШЕННЫМИ ЦИТАТАМИ */
     .message-content.own {
-        background: {% if room_name == 'vip' %}linear-gradient(135deg, #ffd700 0%, #ffb347 100%){% else %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% endif %};
-        color: white !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%); /* Зеленый градиент */
+        color: white !important; /* Белый текст на зеленом фоне */
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Тень для читаемости */
         margin-left: auto;
-        border: 2px solid {% if room_name == 'vip' %}#e6c200{% else %}#1e7e34{% endif %};
+        border: 2px solid #1e7e34; /* Темно-зеленая граница */
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
     }
 
     .message-content.other {
@@ -62,18 +65,19 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* Унифицированные цвета для всех элементов сообщений */
+    /* ЭКСПЕРИМЕНТ A: Белый текст на зеленом, черный текст на белом */
     .message-content.own .message-author,
     .message-content.own .message-text,
     .message-content.own .message-timestamp {
-        color: white !important;
+        color: white !important; /* Белый текст на зеленом фоне */
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     .message-content.other .message-author,
     .message-content.other .message-text,
     .message-content.other .message-timestamp {
-        color: #333 !important;
+        color: #333 !important; /* Черный текст на белом фоне */
+        text-shadow: none;
     }
 
     .message-author {
@@ -91,13 +95,30 @@
         line-height: 1.4;
     }
 
+    /* ИСПРАВЛЕНО: Время в правый нижний угол */
     .message-timestamp {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 0.5rem;
         font-size: 0.7rem;
         font-weight: 600;
-        opacity: 0.8;
-        text-align: left;
-        margin-top: 0.5rem;
         letter-spacing: 0.3px;
+        color: inherit;
+        text-shadow: none;
+    }
+
+    .timestamp-text {
+        flex-shrink: 0;
+    }
+
+    .message-reactions {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-left: auto;
+        padding-left: 1rem;
     }
 
     /* Поле ввода */
@@ -126,18 +147,20 @@
     }
 
     .btn-send {
-        background: {% if room_name == 'vip' %}linear-gradient(135deg, #ffd700 0%, #ffb347 100%){% else %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% endif %};
-        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
-        border: none;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: 2px solid #0056b3;
         padding: 1rem 2rem;
         font-weight: 600;
         transition: all 0.3s ease;
+        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.25);
     }
 
     .btn-send:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.35);
+        color: white;
+        border-color: #004085;
     }
 
     /* Стили статуса подключения теперь в основном CSS файле */
@@ -297,111 +320,154 @@
         z-index: 5;
     }
 
-    /* Кнопки реакций всегда видны - hover убран */
-
+    /* УЛУЧШЕНЫ для лучшей видимости на светлом фоне */
     .reaction-btn {
-        background: rgba(255, 255, 255, 0.9);
-        border: 2px solid #dee2e6;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
-        width: 28px;
-        height: 28px;
+        border: 2px solid transparent;
+        background: rgba(255, 255, 255, 0.95) !important; /* Белый фон для видимости */
+        color: #666 !important; /* Серый цвет иконки по умолчанию */
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
         cursor: pointer;
-        font-size: 0.8rem;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
+        position: relative;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .reaction-btn:hover {
-        background: white;
-        transform: scale(1.1);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-    }
-
     .reaction-btn.like-btn {
-        color: #28a745;
         border-color: #28a745;
     }
 
     .reaction-btn.like-btn:hover {
-        background: #28a745;
-        color: white;
-    }
-
-    .reaction-btn.like-btn.reacted {
-        background: #28a745;
-        color: white;
-        border-color: #1e7e34;
-        opacity: 0.7;
-        cursor: not-allowed;
+        background: rgba(40, 167, 69, 0.1) !important;
+        color: #28a745 !important;
+        transform: scale(1.1);
     }
 
     .reaction-btn.dislike-btn {
-        color: #dc3545;
         border-color: #dc3545;
     }
 
     .reaction-btn.dislike-btn:hover {
-        background: #dc3545;
-        color: white;
+        background: rgba(220, 53, 69, 0.1) !important;
+        color: #dc3545 !important;
+        transform: scale(1.1);
     }
 
-    .reaction-btn.dislike-btn.reacted {
-        background: #dc3545;
-        color: white;
-        border-color: #c82333;
+    /* Стили для отреагировавших кнопок */
+    .reaction-btn.reacted {
         opacity: 0.7;
         cursor: not-allowed;
+        transform: none !important;
     }
 
-    /* СЧЕТЧИКИ РЕАКЦИЙ */
+    .reaction-btn.reacted.like-btn {
+        background: rgba(40, 167, 69, 0.2) !important;
+        color: #28a745 !important;
+        border-color: #28a745;
+    }
+
+    .reaction-btn.reacted.dislike-btn {
+        background: rgba(220, 53, 69, 0.2) !important;
+        color: #dc3545 !important;
+        border-color: #dc3545;
+    }
+
     .reaction-count {
-        font-size: 0.75rem;
+        margin-left: 0.25rem;
+        font-size: 0.65rem;
         font-weight: 600;
         color: inherit;
-        opacity: 0.8;
-        min-width: 1rem;
-        text-align: center;
     }
 
-    /* Блок цитаты в ответе - УЛУЧШЕНА ВИДИМОСТЬ НА ЦВЕТНЫХ ФОНАХ */
+    /* ЭКСПЕРИМЕНТ A: ЦИТАТЫ С БЕЛОЙ ПОДЛОЖКОЙ ДЛЯ ЧИТАЕМОСТИ НА ЛЮБОМ ФОНЕ */
     .reply-quote {
-        background: transparent !important;
+        background: transparent !important; /* Убрать белый фон */
         border: none !important;
-        border-left: 4px solid #007bff !important;
-        border-radius: 0;
-        padding: 0.5rem 0 0.5rem 0.75rem;
+        border-left: 4px solid #007bff !important; /* Только синяя полоска */
+        padding: 0.5rem 0 0.5rem 1rem;
         margin-bottom: 0.75rem;
-        font-size: 0.875rem;
+        color: inherit !important;
+        font-style: italic;
         cursor: pointer;
-        transition: none;
-        box-shadow: none;
-        position: relative;
+        transition: border-left-width 0.3s ease;
     }
 
     .reply-quote:hover {
-        /* УБРАНЫ все hover эффекты - статичная цитата */
+        border-left-width: 6px;
     }
 
     .reply-quote-author {
+        color: inherit !important; /* Наследуем цвет от родителя */
         font-weight: 700;
-        color: inherit !important;
-        margin-bottom: 0.25rem;
-        font-size: 0.8rem;
+        text-shadow: none !important;
+        font-size: 0.85rem;
+    }
+
+    .reply-quote-text {
+        color: inherit !important; /* Наследуем цвет от родителя */
+        font-weight: 500;
         text-shadow: none !important;
         opacity: 0.9;
     }
 
-    .reply-quote-text {
-        color: inherit !important;
-        line-height: 1.3;
-        font-weight: 400;
-        text-shadow: none !important;
-        opacity: 0.8;
-        font-style: italic;
+    /* Иконки ролей в цитатах */
+    .reply-quote .role-icon {
+        font-size: 0.9rem;
+        margin-right: 0.25rem;
     }
+
+        /* === АЛЬТЕРНАТИВНЫЕ ЦВЕТОВЫЕ СХЕМЫ ДЛЯ ЭКСПЕРИМЕНТОВ === */
+
+    /* ВАРИАНТ B: СВЕТЛО-ЗЕЛЕНЫЙ С ЧЕРНЫМ ТЕКСТОМ
+    .message-content.own {
+        background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+        color: #333 !important;
+        border: 2px solid #b3d9b3;
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+    }
+    .message-content.own .message-author,
+    .message-content.own .message-text,
+    .message-content.own .message-timestamp {
+        color: #333 !important;
+        text-shadow: none;
+    }
+    */
+
+    /* ВАРИАНТ C: ГРАДАЦИИ СЕРОГО
+    .message-content.own {
+        background: linear-gradient(135deg, #f1f3f4 0%, #e9ecef 100%);
+        color: #333 !important;
+        border: 2px solid #ced4da;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.15);
+    }
+    .message-content.own .message-author,
+    .message-content.own .message-text,
+    .message-content.own .message-timestamp {
+        color: #333 !important;
+        text-shadow: none;
+    }
+    */
+
+    /* ВАРИАНТ D: ГОЛУБОЙ С ЧЕРНЫМ ТЕКСТОМ
+    .message-content.own {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #333 !important;
+        border: 2px solid #90caf9;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+    }
+    .message-content.own .message-author,
+    .message-content.own .message-text,
+    .message-content.own .message-timestamp {
+        color: #333 !important;
+        text-shadow: none;
+    }
+    */
 
     /* Режим ответа над полем ввода */
     .reply-mode {
@@ -650,7 +716,10 @@
         if (message.reply_to) {
             messageHTML += `
                 <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                    <div class="reply-quote-author">${message.reply_to.author_role_icon || '👤'} ${message.reply_to.author_name}</div>
+                    <div class="reply-quote-author">
+                        <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                        ${message.reply_to.author_name}
+                    </div>
                     <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
                 </div>
             `;
@@ -661,19 +730,19 @@
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
                 <div class="message-text">${message.content}</div>
-                <div class="message-timestamp">${timestamp}</div>
+                <div class="message-timestamp">
+                    <span class="timestamp-text">${timestamp}</span>
+                    <div class="message-reactions">
+                        <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        <span class="reaction-count" id="likes-${message.id}">0</span>
 
-                <!-- Система реакций всегда видна ниже текста -->
-                <div class="message-reactions">
-                    <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
-                        <i class="fas fa-thumbs-up"></i>
-                    </button>
-                    <span class="reaction-count" id="likes-${message.id}">0</span>
-
-                    <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
-                        <i class="fas fa-thumbs-down"></i>
-                    </button>
-                    <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                        <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
+                            <i class="fas fa-thumbs-down"></i>
+                        </button>
+                        <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                    </div>
                 </div>
 
                 <!-- Кнопка ответить привязана к контенту -->
@@ -724,7 +793,10 @@
             if (message.reply_to) {
                 messageHTML += `
                     <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                        <div class="reply-quote-author">${message.reply_to.author_role_icon || '👤'} ${message.reply_to.author_name}</div>
+                        <div class="reply-quote-author">
+                            <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                            ${message.reply_to.author_name}
+                        </div>
                         <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
                     </div>
                 `;
@@ -735,19 +807,19 @@
                         ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
                     <div class="message-text">${message.content}</div>
-                    <div class="message-timestamp">${timestamp}</div>
+                    <div class="message-timestamp">
+                        <span class="timestamp-text">${timestamp}</span>
+                        <div class="message-reactions">
+                            <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
+                                <i class="fas fa-thumbs-up"></i>
+                            </button>
+                            <span class="reaction-count" id="likes-${message.id}">0</span>
 
-                    <!-- Система реакций всегда видна ниже текста -->
-                    <div class="message-reactions">
-                        <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
-                            <i class="fas fa-thumbs-up"></i>
-                        </button>
-                        <span class="reaction-count" id="likes-${message.id}">0</span>
-
-                        <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
-                            <i class="fas fa-thumbs-down"></i>
-                        </button>
-                        <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                            <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
+                                <i class="fas fa-thumbs-down"></i>
+                            </button>
+                            <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                        </div>
                     </div>
 
                     <!-- Кнопка ответить привязана к контенту -->
