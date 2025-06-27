@@ -1198,26 +1198,40 @@
         currentMessageData: null
     };
 
-    // Инициализация нового контекстного меню
-    document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация нового контекстного меню - НЕМЕДЛЕННО, БЕЗ ОЖИДАНИЯ DOMContentLoaded
+    function initContextMenu() {
         newContextMenu.element = document.getElementById('message-context-menu');
+        console.log('🔧 Инициализация контекстного меню:', newContextMenu.element ? 'УСПЕШНО' : 'ОШИБКА - элемент не найден');
+    }
+
+    // Пытаемся инициализировать сразу (элемент уже должен быть в DOM)
+    initContextMenu();
+
+    // Если элемент не найден, пробуем через DOMContentLoaded
+    if (!newContextMenu.element) {
+        document.addEventListener('DOMContentLoaded', initContextMenu);
+    }
+
+    // Обработчики событий
 
         // Обработчик правого клика ТОЛЬКО на блоке сообщения
         document.addEventListener('contextmenu', function(e) {
-            // Ищем именно .message-content (блок сообщения), а НЕ всю ширину
-            const messageContentElement = e.target.closest('.message-content');
+            // Ищем именно .message-bubble (блок сообщения), а НЕ всю ширину
+            const messageBubbleElement = e.target.closest('.message-bubble');
 
-            if (messageContentElement) {
+            if (messageBubbleElement) {
                 e.preventDefault(); // Отменяем стандартное меню браузера
 
-                // Найдем родительский элемент с ID сообщения
-                const messageElement = messageContentElement.closest('.chat-message');
+                // Найдем родительский элемент с data-message-id
+                const messageElement = messageBubbleElement.closest('[data-message-id]');
 
                 if (messageElement) {
                     const messageId = messageElement.dataset.messageId;
-                    const messageText = messageElement.querySelector('.message-text').textContent;
-                    const messageAuthor = messageElement.querySelector('.message-author').textContent;
-                    const isOwnMessage = messageContentElement.classList.contains('own');
+                    const messageTextElement = messageElement.querySelector('.message-text') || messageElement.querySelector('.message-content');
+                    const messageAuthorElement = messageElement.querySelector('.message-author');
+                    const messageText = messageTextElement ? messageTextElement.textContent : 'Текст сообщения';
+                    const messageAuthor = messageAuthorElement ? messageAuthorElement.textContent : 'Неизвестный автор';
+                    const isOwnMessage = messageElement.classList.contains('own-message');
 
                     console.log('🎯 Новое контекстное меню - клик на сообщении:', messageId);
                     console.log('Своё сообщение:', isOwnMessage);
@@ -1232,21 +1246,22 @@
             }
         });
 
-        // Скрываем меню при клике вне его
-        document.addEventListener('click', function(e) {
-            if (newContextMenu.element && !newContextMenu.element.contains(e.target)) {
-                hideNewContextMenu();
-            }
-        });
+    // Скрываем меню при клике вне его
+    document.addEventListener('click', function(e) {
+        if (newContextMenu.element && !newContextMenu.element.contains(e.target)) {
+            hideNewContextMenu();
+        }
+    });
 
-        // Скрываем меню при нажатии Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideNewContextMenu();
-            }
-        });
+    // Скрываем меню при нажатии Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideNewContextMenu();
+        }
+    });
 
-        // Обработчики кликов по пунктам меню
+    // Обработчики кликов по пунктам меню - добавляем только если элемент существует
+    if (newContextMenu.element) {
         newContextMenu.element.addEventListener('click', function(e) {
             const menuItem = e.target.closest('.menu-item');
             if (menuItem) {
@@ -1255,7 +1270,9 @@
                 hideNewContextMenu();
             }
         });
-    });
+    } else {
+        console.error('❌ Контекстное меню не найдено - обработчики не добавлены');
+    }
 
     // ИСПРАВЛЕННОЕ позиционирование в пределах окна чата
     function showNewContextMenu(x, y, messageData) {
