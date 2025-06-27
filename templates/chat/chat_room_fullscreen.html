@@ -48,13 +48,13 @@
          word-wrap: break-word;
      }
 
-    /* Имя автора - выделено жирностью и размером */
+    /* Имя автора - обычными буквами, меньший размер */
     .message-author {
         color: inherit !important;
-        font-weight: 700 !important;
-        font-size: 0.9rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        text-transform: none !important; /* Убираю uppercase */
+        letter-spacing: 0.3px;
         margin-bottom: 0.5rem;
     }
 
@@ -67,7 +67,7 @@
         margin-bottom: 0.5rem;
     }
 
-    /* ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ (как было) */
+    /* ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ */
     .message-timestamp {
         position: absolute;
         bottom: 0.5rem;
@@ -75,10 +75,10 @@
         font-size: 0.7rem;
         font-weight: 600;
         letter-spacing: 0.3px;
-        color: #007bff !important; /* Синий цвет времени для выделения */
+        color: #007bff !important;
     }
 
-    /* КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ (как было) */
+    /* КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ - ВИДИМЫЕ НА ЗЕЛЕНОМ ФОНЕ */
     .message-reactions {
         position: absolute;
         bottom: 0.5rem;
@@ -89,13 +89,14 @@
         align-items: center;
     }
 
-    /* Увеличенные кнопки реакций (как было) */
+    /* Кнопки реакций - темные для видимости на зеленом */
     .reaction-btn {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        border: 2px solid transparent;
+        border: 2px solid #333;
         background: rgba(255, 255, 255, 0.95);
+        color: #333 !important; /* Темный цвет для видимости */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -107,75 +108,65 @@
     }
 
     .reaction-btn.like-btn {
-        color: #28a745;
         border-color: #28a745;
     }
 
     .reaction-btn.like-btn:hover {
-        background: rgba(255, 255, 255, 1) !important; /* Белый фон при hover */
-        color: #28a745 !important;
+        background: rgba(40, 167, 69, 0.2);
+        color: #1e7e34 !important;
         border-color: #1e7e34;
-        transform: scale(1.15);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        transform: scale(1.1);
     }
 
     .reaction-btn.like-btn.reacted {
-        background: rgba(255, 255, 255, 0.9) !important; /* Белый фон после реакции */
-        color: #28a745 !important;
+        background: rgba(40, 167, 69, 0.3);
+        color: #1e7e34 !important;
         border-color: #1e7e34;
         opacity: 0.8;
         cursor: not-allowed;
     }
 
     .reaction-btn.dislike-btn {
-        color: #dc3545;
         border-color: #dc3545;
     }
 
     .reaction-btn.dislike-btn:hover {
-        background: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
+        background: rgba(220, 53, 69, 0.2);
+        color: #c82333 !important;
         border-color: #c82333;
-        transform: scale(1.15);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        transform: scale(1.1);
     }
 
     .reaction-btn.dislike-btn.reacted {
-        background: rgba(220, 53, 69, 0.2);
-        color: #dc3545;
+        background: rgba(220, 53, 69, 0.3);
+        color: #c82333 !important;
         border-color: #c82333;
         opacity: 0.8;
         cursor: not-allowed;
     }
 
-    /* Счетчики реакций (увеличенные) */
     .reaction-count {
         font-size: 0.8rem;
         font-weight: 700;
         color: inherit;
         margin-left: 0.25rem;
-        min-width: 1rem;
-        text-align: center;
     }
 
-    /* ЦИТАТА В РАМОЧКЕ (как было) */
+    /* ЦИТАТА С ВИДИМОЙ ОКАНТОВКОЙ БЕЗ РАДИКАЛЬНОГО HOVER */
     .reply-quote {
-        background: rgba(255, 255, 255, 0.95) !important;
+        background: rgba(0, 123, 255, 0.05) !important; /* Легкая синяя подложка */
         border: 2px solid #007bff !important;
         border-radius: 0.5rem !important;
         padding: 0.75rem;
         margin-bottom: 0.75rem;
         font-size: 0.875rem;
         cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 3px 10px rgba(0, 123, 255, 0.15);
+        transition: border-color 0.2s ease; /* Только цвет границы меняется */
     }
 
     .reply-quote:hover {
-        background: rgba(255, 255, 255, 1) !important;
-        border-color: #0056b3 !important;
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.25);
-        transform: translateY(-1px);
+        border-color: #0056b3 !important; /* Только граница темнеет */
+        /* Убираю изменение фона при hover */
     }
 
     .reply-quote-author {
@@ -192,6 +183,7 @@
         font-weight: 400;
         text-shadow: none !important;
         font-style: italic;
+        opacity: 0.8;
     }
 
     /* ЭКСПЕРИМЕНТ A: ВОЗВРАТ К ЦВЕТНЫМ С УЛУЧШЕННЫМИ ЦИТАТАМИ */
