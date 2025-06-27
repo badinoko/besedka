@@ -1293,6 +1293,13 @@
                 const messageAuthor = messageElement.querySelector('.message-author').textContent;
                 const isOwnMessage = messageElement.querySelector('.message-content').classList.contains('own');
 
+                // 🔧 ОТЛАДКА: Добавим логирование для диагностики
+                console.log('🐛 DEBUG контекстное меню:');
+                console.log('messageId:', messageId);
+                console.log('messageElement:', messageElement);
+                console.log('messageContent classes:', messageElement.querySelector('.message-content').classList);
+                console.log('isOwnMessage:', isOwnMessage);
+
                 showContextMenu(e.clientX, e.clientY, {
                     id: messageId,
                     content: messageContent,
@@ -1336,12 +1343,20 @@
         const editItem = contextMenu.element.querySelector('[data-action="edit"]');
         const deleteItem = contextMenu.element.querySelector('[data-action="delete"]');
 
+        // 🔧 ОТЛАДКА: Логируем состояние кнопок
+        console.log('🐛 showContextMenu DEBUG:');
+        console.log('messageData.isOwn:', messageData.isOwn);
+        console.log('editItem найден:', !!editItem);
+        console.log('deleteItem найден:', !!deleteItem);
+
         if (messageData.isOwn) {
             editItem.style.display = 'flex';
             deleteItem.style.display = 'flex';
+            console.log('🐛 Показываем кнопки edit/delete (свое сообщение)');
         } else {
             editItem.style.display = 'none';
             deleteItem.style.display = 'none';
+            console.log('🐛 Скрываем кнопки edit/delete (чужое сообщение)');
         }
 
         // 🔧 ИСПРАВЛЕНИЕ: Показываем меню НЕВИДИМО для измерения размеров
@@ -1386,7 +1401,6 @@
 
         console.log(`Context menu shown at (${finalX}, ${finalY}) for message:`, messageData);
         console.log(`Menu size: ${menuRect.width}x${menuRect.height}`);
-        console.log(`Chat area bounds:`, chatRect);
     }
 
     function hideContextMenu() {
