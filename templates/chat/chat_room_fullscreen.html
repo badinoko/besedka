@@ -80,17 +80,17 @@
     }
 
     .message-content.other {
-        background: white;
+        background: rgba(219, 234, 254, 0.7) !important; /* ЛЕГКАЯ ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ВСЕХ ЧУЖИХ СООБЩЕНИЙ - ПРИНЦИП SSOT! */
         color: #333;
         border: 2px solid #1e3a8a !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА ПОТОНЬШЕ */
         box-shadow: 0 3px 8px rgba(30, 58, 138, 0.15) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
     }
 
-    /* Овальная рамочка на белом фоне (чужие сообщения) */
+    /* Овальная рамочка на голубом фоне (чужие сообщения) */
     .message-content.other .message-author {
-        background: rgba(0, 123, 255, 0.1);
-        border-color: rgba(0, 123, 255, 0.2);
-        color: #0056b3 !important;
+        background: rgba(30, 58, 138, 0.15) !important; /* БОЛЕЕ НАСЫЩЕННАЯ ПОДЛОЖКА ДЛЯ ИМЕНИ */
+        border-color: rgba(30, 58, 138, 0.3) !important;
+        color: #1e3a8a !important; /* ТЕМНО-СИНИЙ ЦВЕТ ТЕКСТА */
     }
 
     /* === ТЕКСТ СООБЩЕНИЙ === */
@@ -218,25 +218,24 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === ЦИТАТЫ С ЛЕГКИМ ГОЛУБЫМ ФОНОМ КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ === */
+    /* === ЦИТАТЫ ТЕПЕРЬ АВТОМАТИЧЕСКИ НАСЛЕДУЮТ ГОЛУБОЙ ФОН ОТ ЧУЖИХ СООБЩЕНИЙ === */
     .message-content .reply-quote,
     .message-content.own .reply-quote,
     .message-content.other .reply-quote {
-        background: rgba(219, 234, 254, 0.7) !important; /* ЛЕГКИЙ ГОЛУБОЙ ФОН КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ */
-        border: 2px solid #1e3a8a !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА ПОТОНЬШЕ */
-        border-radius: 0.75rem !important; /* ЧУТЬ БОЛЬШЕ СКРУГЛЕНИЯ */
-        padding: 0.875rem !important; /* НЕМНОГО БОЛЬШЕ ОТСТУПЫ */
+        /* УБИРАЕМ ДУБЛИРУЮЩИЕ СТИЛИ - ОНИ НАСЛЕДУЮТСЯ ОТ .message-content.other */
+        border: 2px solid #1e3a8a !important; /* ТОЛЬКО ГРАНИЦА ОСТАЕТСЯ */
+        border-radius: 0.75rem !important;
+        padding: 0.875rem !important;
         margin-bottom: 1rem !important;
         font-size: 0.875rem !important;
         cursor: pointer !important;
-        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.2) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
+        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.2) !important;
         transition: all 0.2s ease !important;
     }
 
     .message-content .reply-quote:hover,
     .message-content.own .reply-quote:hover,
     .message-content.other .reply-quote:hover {
-        background: rgba(219, 234, 254, 0.9) !important; /* УСИЛЕННЫЙ ГОЛУБОЙ ПРИ HOVER */
         border-color: #2563eb !important; /* ЧУТЬ СВЕТЛЕЕ ПРИ HOVER */
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3) !important;
@@ -244,7 +243,7 @@
 
     .reply-quote-author {
         font-weight: 700;
-        color: #0056b3 !important;
+        color: #1e3a8a !important; /* ТЕМНО-СИНИЙ ДЛЯ ЛУЧШЕГО КОНТРАСТА */
         margin-bottom: 0.25rem;
         font-size: 0.8rem;
     }
@@ -515,12 +514,18 @@
 
     .reply-mode-info {
         flex: 1;
+        display: flex; /* РАЗМЕЩАЕМ ИКОНКУ И ТЕКСТ НА ОДНОМ УРОВНЕ */
+        align-items: center; /* ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ */
+        gap: 0.5rem; /* ОТСТУП МЕЖДУ ИКОНКОЙ И ТЕКСТОМ */
     }
 
     .reply-mode-label {
-        font-size: 0.7rem;
-        color: #666;
-        margin-bottom: 0.2rem;
+        font-size: 1rem; /* УВЕЛИЧИВАЕМ РАЗМЕР ДЛЯ ИКОНКИ */
+        color: #007bff; /* СИНИЙ ЦВЕТ ДЛЯ ИКОНКИ */
+        margin-bottom: 0; /* УБИРАЕМ НИЖНИЙ ОТСТУП */
+        display: flex;
+        align-items: center;
+        flex-shrink: 0; /* НЕ СЖИМАЕТСЯ */
     }
 
     .reply-mode-content {
@@ -528,6 +533,7 @@
         color: #333;
         font-weight: 500;
         line-height: 1.3;
+        flex: 1; /* ЗАНИМАЕТ ОСТАВШЕЕСЯ ПРОСТРАНСТВО */
     }
 
     .reply-mode-cancel {
@@ -654,7 +660,9 @@
     <div class="reply-zone" id="reply-zone" style="display: none;">
         <div class="reply-mode" id="reply-mode">
             <div class="reply-mode-info">
-                <div class="reply-mode-label">В ответ на:</div>
+                <div class="reply-mode-label">
+                    <i class="fas fa-reply"></i> <!-- ИКОНКА СТРЕЛКИ ОТВЕТА ВМЕСТО ТЕКСТА -->
+                </div>
                 <div class="reply-mode-content" id="reply-mode-content"></div>
             </div>
             <button class="reply-mode-cancel" id="reply-mode-cancel" title="Отменить ответ">
