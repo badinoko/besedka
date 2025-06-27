@@ -132,8 +132,10 @@
         gap: 0.25rem; /* Маленький отступ между кнопкой и счетчиком */
         background: rgba(255, 255, 255, 0.1);
         border-radius: 1rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.25rem 0.4rem 0.25rem 0.5rem; /* Левый отступ больше для кнопки, правый адаптивный */
         backdrop-filter: blur(5px);
+        min-width: fit-content; /* Автоматическое расширение под контент */
+        white-space: nowrap; /* Предотвращаем перенос строки */
     }
 
     .reaction-btn {
@@ -196,6 +198,10 @@
         font-weight: 700;
         color: inherit; /* Наследует цвет от родителя */
         margin: 0; /* Убираем margin, gap уже задан в .reaction-group */
+        min-width: 1ch; /* Минимальная ширина для одной цифры */
+        text-align: center; /* Центрируем текст */
+        display: inline-block; /* Для правильного позиционирования */
+        line-height: 1; /* Убираем лишние отступы */
     }
 
     /* === ЦИТАТЫ С ОКАНТОВКОЙ === */
@@ -1040,6 +1046,40 @@
         `;
         document.head.appendChild(style);
     }
+
+    // ТЕСТОВАЯ ФУНКЦИЯ для проверки больших чисел в счетчиках
+    // Вызывается из консоли: testBigNumbers()
+    window.testBigNumbers = function() {
+        const allLikesCounters = document.querySelectorAll('[id^="likes-"]');
+        const allDislikesCounters = document.querySelectorAll('[id^="dislikes-"]');
+
+        // Тестируем разные размеры чисел
+        const testNumbers = [9, 42, 157, 999, 1234];
+
+        allLikesCounters.forEach((counter, index) => {
+            const testNumber = testNumbers[index % testNumbers.length];
+            counter.textContent = testNumber;
+        });
+
+        allDislikesCounters.forEach((counter, index) => {
+            const testNumber = testNumbers[(index + 2) % testNumbers.length];
+            counter.textContent = testNumber;
+        });
+
+        console.log('🧪 Тест больших чисел применен! Проверьте как выглядят мини-блоки.');
+        console.log('📊 Тестовые числа:', testNumbers);
+        showTemporaryFeedback('🧪 Тест больших чисел применен! Проверьте мини-блоки', 'info');
+    };
+
+    // ФУНКЦИЯ СБРОСА счетчиков обратно к нулю
+    window.resetCounters = function() {
+        const allCounters = document.querySelectorAll('.reaction-count');
+        allCounters.forEach(counter => {
+            counter.textContent = '0';
+        });
+        console.log('🔄 Счетчики сброшены к нулю');
+        showTemporaryFeedback('🔄 Счетчики сброшены', 'success');
+    };
 </script>
 {% endblock %}
 
