@@ -182,6 +182,7 @@ class BaseChatConsumer(WebsocketConsumer):
             reply_data = {
                 'id': str(message.parent.id),
                 'author_name': message.parent.author.display_name,
+                'author_role_icon': message.parent.author.get_role_icon,
                 'content_snippet': message.parent.content[:100] + ('...' if len(message.parent.content) > 100 else '')
             }
 
