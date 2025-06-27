@@ -280,9 +280,19 @@
         transform: scale(1.15);
     }
 
-    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА С ФИОЛЕТОВОЙ ГРАНИЦЕЙ */
+    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА */
+    .reply-zone {
+        margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
+        margin-left: var(--border-width);
+        background: white;
+        border-left: var(--border-width) solid var(--border-color);
+        border-right: var(--border-width) solid var(--border-color);
+        padding: 0.5rem;
+    }
+
+    /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
     .chat-input-area {
-        padding: 0.5rem; /* УМЕНЬШЕНО с 1.5rem до 0.5rem */
+        padding: 0.75rem; /* УВЕЛИЧИВАЕМ для лучшего комфорта */
         background: white;
         border-top: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА ДЛЯ РАЗДЕЛЕНИЯ С ЧАТОМ */
         margin: 0; /* Убираем все отступы */
@@ -290,7 +300,7 @@
         margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
         margin-bottom: var(--border-width); /* ОТСТУП ОТ НИЖНЕЙ ГРАНИЦЫ */
         position: relative;
-        height: 100px; /* УМЕНЬШЕННАЯ ВЫСОТА ДЛЯ КОМПАКТНОСТИ */
+        height: 120px; /* УВЕЛИЧЕНА ВЫСОТА ДЛЯ ДВУХ СТРОК */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -313,11 +323,11 @@
 
     .form-control {
         border: none;
-        padding: 0.75rem 1rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
+        padding: 0.75rem 1rem;
         font-size: 1rem;
         resize: none; /* УБИРАЕМ РУЧНОЕ ИЗМЕНЕНИЕ РАЗМЕРА */
-        height: 60px; /* УМЕНЬШЕННАЯ ВЫСОТА */
-        overflow-y: auto; /* СКРОЛЛИНГ ВНУТРИ ПОЛЯ */
+        height: 80px; /* ОПТИМАЛЬНАЯ ВЫСОТА ДЛЯ 2 СТРОК */
+        overflow-y: auto; /* СКРОЛЛИНГ С 3-Й СТРОКИ */
         line-height: 1.4; /* Удобная высота строки */
     }
 
@@ -481,20 +491,16 @@
         margin-top: var(--border-width);
     }
 
-    /* Режим ответа над полем ввода */
+    /* 💬 СТИЛИ ДЛЯ РЕЖИМА ОТВЕТА В ОТДЕЛЬНОЙ ЗОНЕ */
     .reply-mode {
-        display: none;
+        display: flex;
         background: #f8f9fa;
         border: 1px solid #dee2e6;
         border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-        margin-bottom: 0.25rem; /* УМЕНЬШЕННЫЙ ОТСТУП */
+        padding: 0.75rem;
         align-items: center;
         justify-content: space-between;
-    }
-
-    .reply-mode.active {
-        display: flex;
+        box-shadow: 0 2px 8px rgba(111, 66, 193, 0.1);
     }
 
     .reply-mode-info {
@@ -634,9 +640,8 @@
         </div>
     </div>
 
-    <!-- Поле ввода сообщения -->
-    <div class="chat-input-area">
-        <!-- Режим ответа (скрытый по умолчанию) -->
+    <!-- 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА -->
+    <div class="reply-zone" id="reply-zone" style="display: none;">
         <div class="reply-mode" id="reply-mode">
             <div class="reply-mode-info">
                 <div class="reply-mode-label">В ответ на:</div>
@@ -646,12 +651,15 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
+    </div>
 
+    <!-- 📝 ПОЛЕ ВВОДА СООБЩЕНИЯ -->
+    <div class="chat-input-area">
         <div class="input-group">
             <textarea id="chat-message-input"
                       class="form-control"
                       placeholder="Введите сообщение... (Shift+Enter для отправки)"
-                      rows="3"></textarea>
+                      rows="2"></textarea>
             <button id="chat-message-submit" class="btn btn-send">
                 <i class="fas fa-paper-plane me-1"></i>
                 Отправить
@@ -687,14 +695,14 @@
             <i class="fas fa-edit"></i>
             <span>Редактировать</span>
         </div>
-        <div class="context-menu-item" data-action="delete" style="display: none;">
-            <i class="fas fa-trash-alt"></i>
-            <span>Удалить</span>
-        </div>
-        <div class="context-menu-separator"></div>
         <div class="context-menu-item" data-action="copy">
             <i class="fas fa-copy"></i>
             <span>Копировать текст</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="delete" style="display: none;">
+            <i class="fas fa-trash-alt"></i>
+            <span>Удалить</span>
         </div>
     </div>
 </div>
@@ -1030,20 +1038,21 @@
         }
     };
 
-    // Функции для системы ответов
+    // 💬 ФУНКЦИИ ДЛЯ СИСТЕМЫ ОТВЕТОВ С НОВОЙ ЗОНОЙ
     function startReplyMode(messageId, authorName, content) {
         replyMode.active = true;
         replyMode.messageId = messageId;
         replyMode.messageData = { authorName, content };
 
-        const replyModeElement = document.getElementById('reply-mode');
+        const replyZoneElement = document.getElementById('reply-zone');
         const replyContentElement = document.getElementById('reply-mode-content');
 
         // Укорачиваем текст если слишком длинный
         const shortContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
         replyContentElement.innerHTML = `<strong>${authorName}</strong>: ${shortContent}`;
 
-        replyModeElement.classList.add('active');
+        // Показываем зону ответа
+        replyZoneElement.style.display = 'block';
 
         // Фокус на поле ввода
         document.getElementById('chat-message-input').focus();
@@ -1054,8 +1063,9 @@
         replyMode.messageId = null;
         replyMode.messageData = null;
 
-        const replyModeElement = document.getElementById('reply-mode');
-        replyModeElement.classList.remove('active');
+        // Скрываем зону ответа
+        const replyZoneElement = document.getElementById('reply-zone');
+        replyZoneElement.style.display = 'none';
     }
 
     function scrollToMessage(messageId) {
@@ -1288,7 +1298,7 @@
         });
     });
 
-    // Умное позиционирование контекстного меню
+        // Умное позиционирование контекстного меню
     function showContextMenu(x, y, messageData) {
         contextMenu.currentMessageId = messageData.id;
         contextMenu.currentMessageData = messageData;
@@ -1308,15 +1318,24 @@
         // Показываем меню
         contextMenu.element.style.display = 'block';
 
-        // Получаем размеры меню и окна
+        // Получаем размеры меню и области чата
         const menuRect = contextMenu.element.getBoundingClientRect();
-        const windowWidth = window.innerWidth;
+        const chatArea = document.getElementById('chat-messages-area');
+        const chatRect = chatArea.getBoundingClientRect();
         const windowHeight = window.innerHeight;
 
-        // Умное позиционирование по горизонтали
+        // 🎯 УМНОЕ ПОЗИЦИОНИРОВАНИЕ ПО ГОРИЗОНТАЛИ - ОГРАНИЧИВАЕМ ОБЛАСТЬЮ ЧАТА
         let finalX = x;
-        if (x + menuRect.width > windowWidth - 20) {
+        const chatRightEdge = chatRect.right - 20; // 20px отступ от края чата
+
+        if (x + menuRect.width > chatRightEdge) {
             finalX = x - menuRect.width; // Показываем слева от курсора
+        }
+
+        // Убеждаемся что меню не выходит за левый край чата
+        const chatLeftEdge = chatRect.left + 10;
+        if (finalX < chatLeftEdge) {
+            finalX = chatLeftEdge;
         }
 
         // Умное позиционирование по вертикали
@@ -1325,8 +1344,7 @@
             finalY = y - menuRect.height; // Показываем сверху от курсора
         }
 
-        // Убеждаемся что меню не выходит за левый и верхний края
-        finalX = Math.max(10, finalX);
+        // Убеждаемся что меню не выходит за верхний край
         finalY = Math.max(10, finalY);
 
         // Позиционируем меню
@@ -1334,6 +1352,7 @@
         contextMenu.element.style.top = finalY + 'px';
 
         console.log(`Context menu shown at (${finalX}, ${finalY}) for message:`, messageData);
+        console.log(`Chat area bounds:`, chatRect);
     }
 
     function hideContextMenu() {
