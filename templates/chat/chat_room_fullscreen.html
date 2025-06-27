@@ -1349,24 +1349,22 @@
         contextMenu.element.style.visibility = 'hidden';
         contextMenu.element.style.position = 'fixed';
 
-        // Получаем размеры меню и области чата ПОСЛЕ того как сделали его видимым
+        // Получаем размеры меню и окна ПОСЛЕ того как сделали его видимым
         const menuRect = contextMenu.element.getBoundingClientRect();
-        const chatArea = document.getElementById('chat-messages-area');
-        const chatRect = chatArea.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
 
-        // 🎯 УМНОЕ ПОЗИЦИОНИРОВАНИЕ ПО ГОРИЗОНТАЛИ - ОГРАНИЧИВАЕМ ОБЛАСТЬЮ ЧАТА
+        // 🎯 SSOT ПОЗИЦИОНИРОВАНИЕ - МЕНЮ МОЖЕТ ОТОБРАЖАТЬСЯ НА ВСЕМ ЭКРАНЕ
         let finalX = x;
-        const chatRightEdge = chatRect.right - 20; // 20px отступ от края чата
 
-        if (x + menuRect.width > chatRightEdge) {
+        // Проверяем только границы ОКНА БРАУЗЕРА, не области чата
+        if (x + menuRect.width > windowWidth - 20) {
             finalX = x - menuRect.width; // Показываем слева от курсора
         }
 
-        // Убеждаемся что меню не выходит за левый край чата
-        const chatLeftEdge = chatRect.left + 10;
-        if (finalX < chatLeftEdge) {
-            finalX = chatLeftEdge;
+        // Убеждаемся что меню не выходит за левый край ЭКРАНА
+        if (finalX < 10) {
+            finalX = 10;
         }
 
         // 🔧 УЛУЧШЕННОЕ ПОЗИЦИОНИРОВАНИЕ ПО ВЕРТИКАЛИ
