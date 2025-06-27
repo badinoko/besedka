@@ -410,15 +410,15 @@
         z-index: 20; /* Выше чем поле ввода */
     }
 
-    /* 🌟 РЕВОЛЮЦИОННЫЙ ДИЗАЙН ЗАГОЛОВКА "ONLINE" */
+    /* 🌟 ГОЛУБОЙ ДИЗАЙН ЗАГОЛОВКА "ONLINE" КАК У ЧУЖИХ СООБЩЕНИЙ */
     .users-header {
         padding: 0.75rem 0.5rem; /* КОМПАКТНЫЕ ОТСТУПЫ */
         border-bottom: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА СНИЗУ */
-        background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); /* КРАСИВЫЙ ФИОЛЕТОВЫЙ ГРАДИЕНТ */
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); /* ГОЛУБОЙ ГРАДИЕНТ КАК У ЧУЖИХ СООБЩЕНИЙ */
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.25); /* ОБЪЕМНАЯ ТЕНЬ */
+        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25); /* ГОЛУБАЯ ТЕНЬ ВМЕСТО ФИОЛЕТОВОЙ */
     }
 
     .users-header h6 {
@@ -503,13 +503,13 @@
     /* 💬 СТИЛИ ДЛЯ РЕЖИМА ОТВЕТА В ОТДЕЛЬНОЙ ЗОНЕ */
     .reply-mode {
         display: flex;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
+        background: rgba(219, 234, 254, 0.7) !important; /* ТАКАЯ ЖЕ ГОЛУБАЯ ПОДЛОЖКА КАК У ЧУЖИХ СООБЩЕНИЙ */
+        border: 2px solid #1e3a8a; /* ТАКАЯ ЖЕ ТЕМНО-СИНЯЯ ГРАНИЦА */
         border-radius: 0.5rem;
         padding: 0.75rem;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 2px 8px rgba(111, 66, 193, 0.1);
+        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.2); /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
     }
 
     .reply-mode-info {
