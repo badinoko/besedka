@@ -121,8 +121,19 @@
         left: 0.75rem;
         display: flex;
         flex-direction: row;
-        gap: 0.5rem;
+        gap: 1rem; /* Увеличенный отступ между мини-блоками */
         align-items: center;
+    }
+
+    /* Мини-блоки кнопка + счетчик */
+    .reaction-group {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem; /* Маленький отступ между кнопкой и счетчиком */
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        padding: 0.25rem 0.5rem;
+        backdrop-filter: blur(5px);
     }
 
     .reaction-btn {
@@ -183,7 +194,8 @@
     .reaction-count {
         font-size: 0.8rem;
         font-weight: 700;
-        margin-left: 0.25rem;
+        color: inherit; /* Наследует цвет от родителя */
+        margin: 0; /* Убираем margin, gap уже задан в .reaction-group */
     }
 
     /* === ЦИТАТЫ С ОКАНТОВКОЙ === */
@@ -256,6 +268,7 @@
         background: white;
         border-top: 1px solid #e9ecef;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        margin-right: 250px; /* Отступ под правую панель пользователей */
     }
 
     .input-group {
@@ -652,15 +665,19 @@
 
                 <!-- Кнопки реакций в левом нижнем углу -->
                 <div class="message-reactions">
-                    <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
-                        <i class="fas fa-thumbs-up"></i>
-                    </button>
-                    <span class="reaction-count" id="likes-${message.id}">0</span>
+                    <div class="reaction-group">
+                        <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        <span class="reaction-count" id="likes-${message.id}">0</span>
+                    </div>
 
-                    <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
-                        <i class="fas fa-thumbs-down"></i>
-                    </button>
-                    <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                    <div class="reaction-group">
+                        <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
+                            <i class="fas fa-thumbs-down"></i>
+                        </button>
+                        <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                    </div>
                 </div>
 
                 <!-- Кнопка ответить привязана к контенту -->
@@ -731,15 +748,19 @@
 
                     <!-- Кнопки реакций в левом нижнем углу -->
                     <div class="message-reactions">
-                        <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
-                            <i class="fas fa-thumbs-up"></i>
-                        </button>
-                        <span class="reaction-count" id="likes-${message.id}">0</span>
+                        <div class="reaction-group">
+                            <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
+                                <i class="fas fa-thumbs-up"></i>
+                            </button>
+                            <span class="reaction-count" id="likes-${message.id}">0</span>
+                        </div>
 
-                        <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
-                            <i class="fas fa-thumbs-down"></i>
-                        </button>
-                        <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                        <div class="reaction-group">
+                            <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
+                                <i class="fas fa-thumbs-down"></i>
+                            </button>
+                            <span class="reaction-count" id="dislikes-${message.id}">0</span>
+                        </div>
                     </div>
 
                     <!-- Кнопка ответить привязана к контенту -->
