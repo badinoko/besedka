@@ -569,7 +569,7 @@
         100% { background: rgba(0, 123, 255, 0.1) !important; }
     }
 
-    /* 🖱️ КОНТЕКСТНОЕ МЕНЮ ПО ПРАВОМУ КЛИКУ */
+    /* 🖱️ КОНТЕКСТНОЕ МЕНЮ ПО ПРАВОМУ КЛИКУ - SSOT ПРИНЦИПЫ */
     .context-menu {
         position: fixed;
         background: white;
@@ -579,14 +579,19 @@
             0 10px 30px rgba(111, 66, 193, 0.3),
             0 5px 15px rgba(0, 0, 0, 0.15),
             0 2px 8px rgba(0, 0, 0, 0.1);
-        z-index: 9999; /* УВЕЛИЧЕН Z-INDEX ДЛЯ ГАРАНТИРОВАННОЙ ВИДИМОСТИ */
+        z-index: 99999; /* МАКСИМАЛЬНЫЙ Z-INDEX ДЛЯ ПОЛНОЙ НЕЗАВИСИМОСТИ */
         min-width: 200px;
-        max-height: none; /* УБИРАЕМ ОГРАНИЧЕНИЯ ВЫСОТЫ */
+        width: auto !important; /* АВТОМАТИЧЕСКАЯ ШИРИНА ПОД СОДЕРЖИМОЕ */
+        height: auto !important; /* АВТОМАТИЧЕСКАЯ ВЫСОТА ПОД СОДЕРЖИМОЕ */
+        max-width: none !important; /* УБИРАЕМ ВСЕ ОГРАНИЧЕНИЯ ШИРИНЫ */
+        max-height: none !important; /* УБИРАЕМ ВСЕ ОГРАНИЧЕНИЯ ВЫСОТЫ */
+        min-height: auto !important; /* УБИРАЕМ МИНИМАЛЬНУЮ ВЫСОТУ */
         padding: 0.5rem 0;
         backdrop-filter: blur(10px);
         user-select: none;
         animation: contextMenuFadeIn 0.2s ease-out;
-        overflow: visible; /* УБЕЖДАЕМСЯ ЧТО СОДЕРЖИМОЕ ВИДИМО */
+        overflow: visible !important; /* ПРИНУДИТЕЛЬНО ВИДИМОЕ СОДЕРЖИМОЕ */
+        display: none; /* ПО УМОЛЧАНИЮ СКРЫТО */
     }
 
     @keyframes contextMenuFadeIn {
@@ -700,30 +705,30 @@
             <!-- Пользователи загружаются динамически -->
         </div>
     </div>
+</div>
 
-    <!-- 🖱️ КОНТЕКСТНОЕ МЕНЮ ПО ПРАВОМУ КЛИКУ -->
-    <div id="context-menu" class="context-menu" style="display: none;">
-        <div class="context-menu-item" data-action="reply">
-            <i class="fas fa-reply"></i>
-            <span>Ответить</span>
-        </div>
-        <div class="context-menu-item" data-action="forward">
-            <i class="fas fa-share"></i>
-            <span>Переслать</span>
-        </div>
-        <div class="context-menu-item" data-action="edit" style="display: none;">
-            <i class="fas fa-edit"></i>
-            <span>Редактировать</span>
-        </div>
-        <div class="context-menu-item" data-action="copy">
-            <i class="fas fa-copy"></i>
-            <span>Копировать текст</span>
-        </div>
-        <div class="context-menu-separator"></div>
-        <div class="context-menu-item" data-action="delete" style="display: none;">
-            <i class="fas fa-trash-alt"></i>
-            <span>Удалить</span>
-        </div>
+<!-- 🖱️ КОНТЕКСТНОЕ МЕНЮ ВНЕ КОНТЕЙНЕРА ЧАТА ДЛЯ SSOT ПРИНЦИПОВ -->
+<div id="context-menu" class="context-menu" style="display: none;">
+    <div class="context-menu-item" data-action="reply">
+        <i class="fas fa-reply"></i>
+        <span>Ответить</span>
+    </div>
+    <div class="context-menu-item" data-action="forward">
+        <i class="fas fa-share"></i>
+        <span>Переслать</span>
+    </div>
+    <div class="context-menu-item" data-action="edit" style="display: none;">
+        <i class="fas fa-edit"></i>
+        <span>Редактировать</span>
+    </div>
+    <div class="context-menu-item" data-action="copy">
+        <i class="fas fa-copy"></i>
+        <span>Копировать текст</span>
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" data-action="delete" style="display: none;">
+        <i class="fas fa-trash-alt"></i>
+        <span>Удалить</span>
     </div>
 </div>
 
