@@ -218,11 +218,11 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === ЦИТАТЫ С ТЕМНО-СИНЕЙ ОКАНТОВКОЙ ПОТОНЬШЕ === */
+    /* === ЦИТАТЫ С ЛЕГКИМ ГОЛУБЫМ ФОНОМ КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ === */
     .message-content .reply-quote,
     .message-content.own .reply-quote,
     .message-content.other .reply-quote {
-        background: rgba(30, 58, 138, 0.05) !important; /* ЛЕГКАЯ ТЕМНО-СИНЯЯ ПОДЛОЖКА */
+        background: rgba(219, 234, 254, 0.7) !important; /* ЛЕГКИЙ ГОЛУБОЙ ФОН КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ */
         border: 2px solid #1e3a8a !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА ПОТОНЬШЕ */
         border-radius: 0.75rem !important; /* ЧУТЬ БОЛЬШЕ СКРУГЛЕНИЯ */
         padding: 0.875rem !important; /* НЕМНОГО БОЛЬШЕ ОТСТУПЫ */
@@ -236,7 +236,7 @@
     .message-content .reply-quote:hover,
     .message-content.own .reply-quote:hover,
     .message-content.other .reply-quote:hover {
-        background: rgba(30, 58, 138, 0.1) !important;
+        background: rgba(219, 234, 254, 0.9) !important; /* УСИЛЕННЫЙ ГОЛУБОЙ ПРИ HOVER */
         border-color: #2563eb !important; /* ЧУТЬ СВЕТЛЕЕ ПРИ HOVER */
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3) !important;
@@ -292,15 +292,12 @@
         transform: scale(1.15);
     }
 
-    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА - С ЛЕГКИМ ГОЛУБЫМ ФОНОМ */
+    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА */
     .reply-zone {
         margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
         margin-left: var(--border-width);
-        background: rgba(219, 234, 254, 0.8) !important; /* ЛЕГКИЙ ГОЛУБОЙ ФОН КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ */
+        background: white;
         padding: 0.5rem;
-        border-radius: 0.5rem; /* НЕБОЛЬШИЕ СКРУГЛЕНИЯ */
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15); /* ГОЛУБАЯ ТЕНЬ */
-        border: 1px solid rgba(59, 130, 246, 0.2); /* ЛЕГКАЯ ГОЛУБАЯ ГРАНИЦА */
     }
 
     /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
