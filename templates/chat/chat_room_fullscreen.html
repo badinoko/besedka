@@ -33,9 +33,18 @@
 
     /* Стили сообщений */
     .chat-message {
+        position: relative;
         margin-bottom: 1rem;
         display: flex;
         align-items: flex-start;
+        transition: all 0.3s ease;
+    }
+
+    .chat-message:hover {
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+        margin: 0.75rem -0.25rem;
     }
 
     .message-content {
@@ -43,6 +52,7 @@
         padding: 0.75rem 1rem;
         border-radius: 1rem;
         word-wrap: break-word;
+        position: relative;
     }
 
     .message-content.own {
@@ -209,6 +219,144 @@
     .chat-messages-area {
         margin-right: 250px;
     }
+
+    /* === СИСТЕМА ОТВЕТОВ И HOVER-ЭФФЕКТЫ === */
+
+    /* Кнопки действий появляются при hover */
+    .message-actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: none;
+        flex-direction: row;
+        gap: 0.25rem;
+        z-index: 10;
+    }
+
+    .chat-message:hover .message-actions {
+        display: flex;
+    }
+
+    .action-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #dee2e6;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.75rem;
+        color: #666;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .action-btn:hover {
+        background: #f8f9fa;
+        color: #333;
+        transform: scale(1.1);
+    }
+
+    .reply-btn:hover {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    /* Блок цитаты в ответе */
+    .reply-quote {
+        background: rgba(0, 0, 0, 0.05);
+        border-left: 3px solid #007bff;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .reply-quote:hover {
+        background: rgba(0, 0, 0, 0.08);
+        border-left-color: #0056b3;
+    }
+
+    .reply-quote-author {
+        font-weight: 600;
+        color: #007bff;
+        margin-bottom: 0.25rem;
+    }
+
+    .reply-quote-text {
+        color: #666;
+        line-height: 1.3;
+    }
+
+    /* Режим ответа над полем ввода */
+    .reply-mode {
+        display: none;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .reply-mode.active {
+        display: flex;
+    }
+
+    .reply-mode-info {
+        flex: 1;
+    }
+
+    .reply-mode-label {
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .reply-mode-content {
+        font-size: 0.875rem;
+        color: #333;
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    .reply-mode-cancel {
+        background: none;
+        border: none;
+        color: #999;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .reply-mode-cancel:hover {
+        background: #e9ecef;
+        color: #666;
+    }
+
+    /* Подсветка сообщения при ответе */
+    .message-highlighted {
+        background: rgba(0, 123, 255, 0.1) !important;
+        border-radius: 0.5rem !important;
+        animation: highlight-pulse 2s ease-out;
+    }
+
+    @keyframes highlight-pulse {
+        0% { background: rgba(0, 123, 255, 0.2) !important; }
+        100% { background: rgba(0, 123, 255, 0.1) !important; }
+    }
 </style>
 {% endblock %}
 
@@ -226,6 +374,17 @@
 
     <!-- Поле ввода сообщения -->
     <div class="chat-input-area">
+        <!-- Режим ответа (скрытый по умолчанию) -->
+        <div class="reply-mode" id="reply-mode">
+            <div class="reply-mode-info">
+                <div class="reply-mode-label">В ответ на:</div>
+                <div class="reply-mode-content" id="reply-mode-content"></div>
+            </div>
+            <button class="reply-mode-cancel" id="reply-mode-cancel" title="Отменить ответ">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
         <div class="input-group">
             <input id="chat-message-input"
                    type="text"
@@ -265,6 +424,13 @@
     const onlineCountElement = document.getElementById('online-count');
     const usersListElement = document.getElementById('users-list');
     const connectionStatus = document.getElementById('connection-status');
+
+    // Переменные для режима ответа
+    let replyMode = {
+        active: false,
+        messageId: null,
+        messageData: null
+    };
 
     // Функция обновления статуса подключения
     function updateConnectionStatus(status) {
@@ -359,20 +525,41 @@
 
         const messageElement = document.createElement('div');
         messageElement.classList.add('chat-message');
+        messageElement.dataset.messageId = message.id;
 
         const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
 
-        messageElement.innerHTML = `
+        // Формируем HTML сообщения с поддержкой ответов
+        let messageHTML = `
             <div class="message-content ${isOwn ? 'own' : 'other'}">
+        `;
+
+        // Добавляем блок цитаты если это ответ
+        if (message.reply_to) {
+            messageHTML += `
+                <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                    <div class="reply-quote-author">${message.reply_to.author_name}</div>
+                    <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
+                </div>
+            `;
+        }
+
+        messageHTML += `
                 <div class="message-author">
                     ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
                 </div>
                 <div class="message-text">${message.content}</div>
                 <div class="message-timestamp">${timestamp}</div>
             </div>
+            <div class="message-actions">
+                <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
+                    <i class="fas fa-reply"></i>
+                </button>
+            </div>
         `;
 
+        messageElement.innerHTML = messageHTML;
         chatLog.appendChild(messageElement);
 
         // Автопрокрутка для новых сообщений
@@ -397,20 +584,41 @@
         messages.forEach(message => {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message');
+            messageElement.dataset.messageId = message.id;
 
             const timestamp = new Date(message.created).toLocaleTimeString();
             const isOwn = message.is_own;
 
-            messageElement.innerHTML = `
+            // Формируем HTML сообщения с поддержкой ответов
+            let messageHTML = `
                 <div class="message-content ${isOwn ? 'own' : 'other'}">
+            `;
+
+            // Добавляем блок цитаты если это ответ
+            if (message.reply_to) {
+                messageHTML += `
+                    <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                        <div class="reply-quote-author">${message.reply_to.author_name}</div>
+                        <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
+                    </div>
+                `;
+            }
+
+            messageHTML += `
                     <div class="message-author">
                         ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
                     </div>
                     <div class="message-text">${message.content}</div>
                     <div class="message-timestamp">${timestamp}</div>
                 </div>
+                <div class="message-actions">
+                    <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                </div>
             `;
 
+            messageElement.innerHTML = messageHTML;
             chatLog.appendChild(messageElement);
         });
 
@@ -479,17 +687,75 @@
         }
     };
 
+    // Функции для системы ответов
+    function startReplyMode(messageId, authorName, content) {
+        replyMode.active = true;
+        replyMode.messageId = messageId;
+        replyMode.messageData = { authorName, content };
+
+        const replyModeElement = document.getElementById('reply-mode');
+        const replyContentElement = document.getElementById('reply-mode-content');
+
+        // Укорачиваем текст если слишком длинный
+        const shortContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        replyContentElement.innerHTML = `<strong>${authorName}</strong>: ${shortContent}`;
+
+        replyModeElement.classList.add('active');
+
+        // Фокус на поле ввода
+        document.getElementById('chat-message-input').focus();
+    }
+
+    function cancelReplyMode() {
+        replyMode.active = false;
+        replyMode.messageId = null;
+        replyMode.messageData = null;
+
+        const replyModeElement = document.getElementById('reply-mode');
+        replyModeElement.classList.remove('active');
+    }
+
+    function scrollToMessage(messageId) {
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Подсвечиваем сообщение
+            messageElement.classList.add('message-highlighted');
+            setTimeout(() => {
+                messageElement.classList.remove('message-highlighted');
+            }, 3000);
+        }
+    }
+
+    // Обработчик отмены режима ответа
+    document.getElementById('reply-mode-cancel').onclick = function() {
+        cancelReplyMode();
+    };
+
+    // Обновленная отправка сообщений с поддержкой ответов
     document.querySelector('#chat-message-submit').onclick = function(e) {
         const messageInputDom = document.querySelector('#chat-message-input');
         const message = messageInputDom.value.trim();
 
         if (message !== '' && chatSocket.readyState === WebSocket.OPEN) {
-            // ИСПРАВЛЕНО: Отправляем правильный JSON с полем type
-            chatSocket.send(JSON.stringify({
-                type: 'message',  // ← ВОТ ЭТО БЫЛО ПРОБЛЕМОЙ!
+            const messageData = {
+                type: 'message',
                 message: message
-            }));
+            };
+
+            // Добавляем ID сообщения для ответа если активен режим ответа
+            if (replyMode.active && replyMode.messageId) {
+                messageData.reply_to_id = replyMode.messageId;
+            }
+
+            chatSocket.send(JSON.stringify(messageData));
             messageInputDom.value = '';
+
+            // Отменяем режим ответа после отправки
+            if (replyMode.active) {
+                cancelReplyMode();
+            }
         } else if (chatSocket.readyState !== WebSocket.OPEN) {
             alert('Нет соединения с сервером чата');
         }
