@@ -579,12 +579,14 @@
             0 10px 30px rgba(111, 66, 193, 0.3),
             0 5px 15px rgba(0, 0, 0, 0.15),
             0 2px 8px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
+        z-index: 9999; /* УВЕЛИЧЕН Z-INDEX ДЛЯ ГАРАНТИРОВАННОЙ ВИДИМОСТИ */
         min-width: 200px;
+        max-height: none; /* УБИРАЕМ ОГРАНИЧЕНИЯ ВЫСОТЫ */
         padding: 0.5rem 0;
         backdrop-filter: blur(10px);
         user-select: none;
         animation: contextMenuFadeIn 0.2s ease-out;
+        overflow: visible; /* УБЕЖДАЕМСЯ ЧТО СОДЕРЖИМОЕ ВИДИМО */
     }
 
     @keyframes contextMenuFadeIn {
@@ -1337,10 +1339,12 @@
             deleteItem.style.display = 'none';
         }
 
-        // Показываем меню
+        // 🔧 ИСПРАВЛЕНИЕ: Показываем меню НЕВИДИМО для измерения размеров
         contextMenu.element.style.display = 'block';
+        contextMenu.element.style.visibility = 'hidden';
+        contextMenu.element.style.position = 'fixed';
 
-        // Получаем размеры меню и области чата
+        // Получаем размеры меню и области чата ПОСЛЕ того как сделали его видимым
         const menuRect = contextMenu.element.getBoundingClientRect();
         const chatArea = document.getElementById('chat-messages-area');
         const chatRect = chatArea.getBoundingClientRect();
@@ -1360,26 +1364,32 @@
             finalX = chatLeftEdge;
         }
 
-        // Умное позиционирование по вертикали
+        // 🔧 УЛУЧШЕННОЕ ПОЗИЦИОНИРОВАНИЕ ПО ВЕРТИКАЛИ
         let finalY = y;
+
+        // Проверяем, поместится ли меню вниз от курсора
         if (y + menuRect.height > windowHeight - 20) {
-            finalY = y - menuRect.height; // Показываем сверху от курсора
+            // Если не помещается вниз, показываем сверху
+            finalY = y - menuRect.height - 10;
         }
 
         // Убеждаемся что меню не выходит за верхний край
         finalY = Math.max(10, finalY);
 
-        // Позиционируем меню
+        // 🔧 ФИНАЛЬНОЕ ПОЗИЦИОНИРОВАНИЕ И ПОКАЗ
         contextMenu.element.style.left = finalX + 'px';
         contextMenu.element.style.top = finalY + 'px';
+        contextMenu.element.style.visibility = 'visible'; // Делаем видимым
 
         console.log(`Context menu shown at (${finalX}, ${finalY}) for message:`, messageData);
+        console.log(`Menu size: ${menuRect.width}x${menuRect.height}`);
         console.log(`Chat area bounds:`, chatRect);
     }
 
     function hideContextMenu() {
         if (contextMenu.element) {
             contextMenu.element.style.display = 'none';
+            contextMenu.element.style.visibility = 'visible'; // Сбрасываем visibility
             contextMenu.currentMessageId = null;
             contextMenu.currentMessageData = null;
         }
