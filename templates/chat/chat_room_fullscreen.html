@@ -16,9 +16,10 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: white;
+        background: #f8f9fa; /* Светло-серый фон для контраста */
         display: flex;
         flex-direction: column;
+        gap: 0; /* Убираем промежутки для четких границ */
     }
 
     /* Убираем заголовок чата - все перенесено в навигацию */
@@ -27,8 +28,13 @@
     .chat-messages-area {
         flex: 1;
         overflow-y: auto;
-        padding: 1rem;
-        background: #f8f9fa;
+        padding: 1.5rem;
+        background: white;
+        border: 3px solid #dee2e6;
+        border-bottom: 2px solid #dee2e6; /* Более тонкая граница снизу */
+        border-right: none; /* Убираем правую границу, она будет у sidebar */
+        border-radius: 0; /* Убираем скругления для четкого разделения */
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
     }
 
     /* Стили сообщений */
@@ -270,17 +276,30 @@
 
     /* === ПОЛЕ ВВОДА === */
     .chat-input-area {
-        padding: 1rem 2rem;
+        padding: 1.5rem 2rem;
         background: white;
-        border-top: 1px solid #e9ecef;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        border: 3px solid #dee2e6;
+        border-top: 3px solid #007bff; /* Синяя верхняя граница для выделения */
+        border-radius: 1rem 1rem 0 0; /* Скругления сверху */
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
         margin-right: 250px; /* Отступ под правую панель пользователей */
+        position: relative;
+        z-index: 10; /* Поднимаем над другими элементами */
     }
 
     .input-group {
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        border: 2px solid #dee2e6;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .input-group:focus-within {
+        border-color: #007bff;
+        box-shadow: 0 4px 25px rgba(0, 123, 255, 0.25);
+        transform: translateY(-2px); /* Легкое всплытие при фокусе */
     }
 
     .form-control {
@@ -351,17 +370,23 @@
         width: 250px;
         height: calc(100vh - 60px);
         background: white;
-        border-left: 1px solid #e9ecef;
+        border: 3px solid #dee2e6;
+        border-right: none; /* Убираем правую границу у края экрана */
+        border-top: 3px solid #28a745; /* Зеленая верхняя граница */
         display: flex;
         flex-direction: column;
+        box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+        z-index: 20; /* Выше чем поле ввода */
     }
 
     .users-header {
-        padding: 1rem;
-        border-bottom: 1px solid #e9ecef;
+        padding: 1.25rem 1rem;
+        border-bottom: 3px solid #dee2e6;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .users-header h6 {
@@ -402,6 +427,10 @@
     /* Отступ для правой панели */
     .chat-messages-area {
         margin-right: 250px;
+        margin-left: 0;
+        margin-top: 0;
+        border-left: 3px solid #dee2e6; /* Левая граница для четкого разделения */
+        border-top: 3px solid #dee2e6; /* Верхняя граница */
     }
 
     /* Режим ответа над полем ввода */
@@ -1047,39 +1076,7 @@
         document.head.appendChild(style);
     }
 
-    // ТЕСТОВАЯ ФУНКЦИЯ для проверки больших чисел в счетчиках
-    // Вызывается из консоли: testBigNumbers()
-    window.testBigNumbers = function() {
-        const allLikesCounters = document.querySelectorAll('[id^="likes-"]');
-        const allDislikesCounters = document.querySelectorAll('[id^="dislikes-"]');
 
-        // Тестируем разные размеры чисел
-        const testNumbers = [9, 42, 157, 999, 1234];
-
-        allLikesCounters.forEach((counter, index) => {
-            const testNumber = testNumbers[index % testNumbers.length];
-            counter.textContent = testNumber;
-        });
-
-        allDislikesCounters.forEach((counter, index) => {
-            const testNumber = testNumbers[(index + 2) % testNumbers.length];
-            counter.textContent = testNumber;
-        });
-
-        console.log('🧪 Тест больших чисел применен! Проверьте как выглядят мини-блоки.');
-        console.log('📊 Тестовые числа:', testNumbers);
-        showTemporaryFeedback('🧪 Тест больших чисел применен! Проверьте мини-блоки', 'info');
-    };
-
-    // ФУНКЦИЯ СБРОСА счетчиков обратно к нулю
-    window.resetCounters = function() {
-        const allCounters = document.querySelectorAll('.reaction-count');
-        allCounters.forEach(counter => {
-            counter.textContent = '0';
-        });
-        console.log('🔄 Счетчики сброшены к нулю');
-        showTemporaryFeedback('🔄 Счетчики сброшены', 'success');
-    };
 </script>
 {% endblock %}
 
