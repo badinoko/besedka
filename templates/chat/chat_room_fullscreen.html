@@ -57,31 +57,54 @@
 
     .message-content.own {
         background: {% if room_name == 'vip' %}linear-gradient(135deg, #ffd700 0%, #ffb347 100%){% else %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% endif %};
-        color: {% if room_name == 'vip' %}#333{% else %}white{% endif %};
+        color: #333 !important;
         margin-left: auto;
+        border: 2px solid {% if room_name == 'vip' %}#e6c200{% else %}#1e7e34{% endif %};
     }
 
     .message-content.other {
         background: white;
         color: #333;
-        border: 1px solid #e9ecef;
+        border: 2px solid #e9ecef;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
+    /* Унифицированные цвета для всех элементов сообщений */
+    .message-content.own .message-author,
+    .message-content.own .message-text,
+    .message-content.own .message-timestamp {
+        color: #333 !important;
+    }
+
+    .message-content.other .message-author,
+    .message-content.other .message-text,
+    .message-content.other .message-timestamp {
+        color: #333 !important;
+    }
+
     .message-author {
-        font-weight: 600;
-        margin-bottom: 0.25rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        opacity: 0.9;
     }
 
     .message-text {
         margin: 0.25rem 0;
+        font-size: 1rem;
+        font-weight: 500;
+        line-height: 1.4;
     }
 
     .message-timestamp {
-        font-size: 0.75rem;
-        opacity: 0.7;
+        font-size: 0.7rem;
+        font-weight: 600;
+        opacity: 0.8;
         text-align: right;
-        margin-top: 0.25rem;
+        margin-top: 0.4rem;
+        letter-spacing: 0.3px;
     }
 
     /* Поле ввода */
@@ -222,7 +245,7 @@
 
     /* === СИСТЕМА ОТВЕТОВ И HOVER-ЭФФЕКТЫ === */
 
-    /* Кнопки действий появляются при hover - ИСПРАВЛЕНО ПОЗИЦИОНИРОВАНИЕ */
+    /* ИСПРАВЛЕНО: Кнопка привязана к визуальному сообщению, а не к невидимой плитке */
     .message-actions {
         position: absolute;
         top: 0.5rem;
@@ -233,8 +256,8 @@
         z-index: 10;
     }
 
-    /* ВАЖНО: Устанавливаем position: relative для родительского элемента */
-    .chat-message {
+    /* ВАЖНО: position: relative для ВИЗУАЛЬНОГО сообщения, а не всей плитки */
+    .message-content {
         position: relative;
     }
 
@@ -271,32 +294,40 @@
         color: white;
     }
 
-    /* Блок цитаты в ответе */
+    /* Блок цитаты в ответе - УЛУЧШЕНА ВИДИМОСТЬ НА ЦВЕТНЫХ ФОНАХ */
     .reply-quote {
-        background: rgba(0, 0, 0, 0.05);
-        border-left: 3px solid #007bff;
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 2px solid #007bff;
+        border-left: 4px solid #007bff;
         border-radius: 0.5rem;
         padding: 0.5rem 0.75rem;
         margin-bottom: 0.5rem;
         font-size: 0.875rem;
         cursor: pointer;
         transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
     }
 
     .reply-quote:hover {
-        background: rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: #0056b3;
         border-left-color: #0056b3;
+        box-shadow: 0 3px 12px rgba(0, 86, 179, 0.2);
     }
 
     .reply-quote-author {
-        font-weight: 600;
-        color: #007bff;
+        font-weight: 700;
+        color: #0056b3 !important;
         margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+        text-shadow: none !important;
     }
 
     .reply-quote-text {
-        color: #666;
+        color: #333 !important;
         line-height: 1.3;
+        font-weight: 500;
+        text-shadow: none !important;
     }
 
     /* Режим ответа над полем ввода */
@@ -554,7 +585,7 @@
 
         messageHTML += `
                 <div class="message-author">
-                    ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
+                    ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
                 <div class="message-text">${message.content}</div>
                 <div class="message-timestamp">${timestamp}</div>
@@ -613,7 +644,7 @@
 
             messageHTML += `
                     <div class="message-author">
-                        ${message.author_role_icon || '👤'} ${isOwn ? 'Вы' : message.author_name}
+                        ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
                     <div class="message-text">${message.content}</div>
                     <div class="message-timestamp">${timestamp}</div>
