@@ -82,8 +82,8 @@
     .message-content.other {
         background: white;
         color: #333;
-        border: 3px solid #b8c5d1; /* БОЛЕЕ АКЦЕНТИРОВАННАЯ ГРАНИЦА */
-        box-shadow: 0 3px 8px rgba(108, 117, 125, 0.15); /* УСИЛЕННАЯ ТЕНЬ */
+        border: 3px solid #2c3e50 !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ */
+        box-shadow: 0 3px 8px rgba(44, 62, 80, 0.15) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
     }
 
     /* Овальная рамочка на белом фоне (чужие сообщения) */
@@ -218,24 +218,28 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === ЦИТАТЫ С АКЦЕНТИРОВАННОЙ ОКАНТОВКОЙ === */
-    .reply-quote {
-        background: rgba(173, 216, 230, 0.15) !important; /* ЛЕГКАЯ ГОЛУБАЯ ПОДЛОЖКА */
-        border: 3px solid #87CEEB !important; /* БОЛЕЕ АКЦЕНТИРОВАННАЯ ГРАНИЦА */
+    /* === ЦИТАТЫ С ТЕМНО-СИНЕЙ ОКАНТОВКОЙ КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ === */
+    .message-content .reply-quote,
+    .message-content.own .reply-quote,
+    .message-content.other .reply-quote {
+        background: rgba(44, 62, 80, 0.05) !important; /* ЛЕГКАЯ ТЕМНО-СИНЯЯ ПОДЛОЖКА */
+        border: 3px solid #2c3e50 !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА КАК У СООБЩЕНИЙ */
         border-radius: 0.75rem !important; /* ЧУТЬ БОЛЬШЕ СКРУГЛЕНИЯ */
-        padding: 0.875rem; /* НЕМНОГО БОЛЬШЕ ОТСТУПЫ */
-        margin-bottom: 1rem;
-        font-size: 0.875rem;
-        cursor: pointer;
-        box-shadow: 0 3px 10px rgba(135, 206, 235, 0.2); /* ЛЕГКАЯ ТЕНЬ */
-        transition: all 0.2s ease;
+        padding: 0.875rem !important; /* НЕМНОГО БОЛЬШЕ ОТСТУПЫ */
+        margin-bottom: 1rem !important;
+        font-size: 0.875rem !important;
+        cursor: pointer !important;
+        box-shadow: 0 3px 10px rgba(44, 62, 80, 0.2) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
+        transition: all 0.2s ease !important;
     }
 
-    .reply-quote:hover {
-        background: rgba(173, 216, 230, 0.25) !important;
-        border-color: #4FC3F7 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
+    .message-content .reply-quote:hover,
+    .message-content.own .reply-quote:hover,
+    .message-content.other .reply-quote:hover {
+        background: rgba(44, 62, 80, 0.1) !important;
+        border-color: #34495e !important; /* ЧУТЬ СВЕТЛЕЕ ПРИ HOVER */
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3) !important;
     }
 
     .reply-quote-author {
@@ -288,13 +292,14 @@
         transform: scale(1.15);
     }
 
-    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА */
+    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА - С ПОДЛОЖКОЙ ДЛЯ ЧИТАЕМОСТИ */
     .reply-zone {
         margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
         margin-left: var(--border-width);
-        background: white;
+        background: rgba(248, 249, 250, 0.95); /* ЛЕГКАЯ СЕРАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ ЧЕРНОГО ТЕКСТА */
         padding: 0.5rem;
-        /* УБИРАЕМ ИЗБЫТОЧНЫЕ ФИОЛЕТОВЫЕ ГРАНИЦЫ */
+        border-radius: 0.5rem; /* НЕБОЛЬШИЕ СКРУГЛЕНИЯ */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ЛЕГКАЯ ТЕНЬ */
     }
 
     /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
@@ -888,6 +893,8 @@
         messageElement.innerHTML = messageHTML;
         chatLog.appendChild(messageElement);
 
+
+
         // Автопрокрутка для новых сообщений
         setTimeout(scrollToBottom, 100);
     }
@@ -970,6 +977,8 @@
 
             messageElement.innerHTML = messageHTML;
             chatLog.appendChild(messageElement);
+
+
         });
 
         historyLoaded = true;
