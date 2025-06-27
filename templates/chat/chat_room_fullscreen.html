@@ -39,160 +39,22 @@
         align-items: flex-start;
     }
 
-         .message-content {
-         position: relative;
-         max-width: 70%;
-         min-width: 300px; /* Минимальная ширина чтобы элементы не пересекались */
-         padding: 1rem 1rem 3rem 1rem; /* Отступ снизу для кнопок и времени */
-         border-radius: 1rem;
-         word-wrap: break-word;
-     }
-
-    /* Имя автора - обычными буквами, меньший размер */
-    .message-author {
-        color: inherit !important;
-        font-weight: 600 !important;
-        font-size: 0.85rem !important;
-        text-transform: none !important; /* Убираю uppercase */
-        letter-spacing: 0.3px;
-        margin-bottom: 0.5rem;
+    /* === ОСНОВНЫЕ СТИЛИ СООБЩЕНИЙ === */
+    .message-content {
+        position: relative;
+        max-width: 70%;
+        min-width: 300px;
+        padding: 1rem 1rem 3rem 1rem; /* Отступ снизу для кнопок и времени */
+        border-radius: 1rem;
+        word-wrap: break-word;
     }
 
-    /* Текст сообщения - обычный размер */
-    .message-text {
-        color: inherit !important;
-        font-weight: 400 !important;
-        font-size: 1rem !important;
-        line-height: 1.4;
-        margin-bottom: 0.5rem;
-    }
-
-    /* ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ */
-    .message-timestamp {
-        position: absolute;
-        bottom: 0.5rem;
-        right: 0.75rem;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        color: #007bff !important;
-    }
-
-    /* КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ - ВИДИМЫЕ НА ЗЕЛЕНОМ ФОНЕ */
-    .message-reactions {
-        position: absolute;
-        bottom: 0.5rem;
-        left: 0.75rem;
-        display: flex;
-        flex-direction: row;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    /* Кнопки реакций - темные для видимости на зеленом */
-    .reaction-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 2px solid #333;
-        background: rgba(255, 255, 255, 0.95);
-        color: #333 !important; /* Темный цвет для видимости */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .reaction-btn.like-btn {
-        border-color: #28a745;
-    }
-
-    .reaction-btn.like-btn:hover {
-        background: rgba(40, 167, 69, 0.2);
-        color: #1e7e34 !important;
-        border-color: #1e7e34;
-        transform: scale(1.1);
-    }
-
-    .reaction-btn.like-btn.reacted {
-        background: rgba(40, 167, 69, 0.3);
-        color: #1e7e34 !important;
-        border-color: #1e7e34;
-        opacity: 0.8;
-        cursor: not-allowed;
-    }
-
-    .reaction-btn.dislike-btn {
-        border-color: #dc3545;
-    }
-
-    .reaction-btn.dislike-btn:hover {
-        background: rgba(220, 53, 69, 0.2);
-        color: #c82333 !important;
-        border-color: #c82333;
-        transform: scale(1.1);
-    }
-
-    .reaction-btn.dislike-btn.reacted {
-        background: rgba(220, 53, 69, 0.3);
-        color: #c82333 !important;
-        border-color: #c82333;
-        opacity: 0.8;
-        cursor: not-allowed;
-    }
-
-    .reaction-count {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: inherit;
-        margin-left: 0.25rem;
-    }
-
-    /* ЦИТАТА С ВИДИМОЙ ОКАНТОВКОЙ БЕЗ РАДИКАЛЬНОГО HOVER */
-    .reply-quote {
-        background: rgba(0, 123, 255, 0.05) !important; /* Легкая синяя подложка */
-        border: 2px solid #007bff !important;
-        border-radius: 0.5rem !important;
-        padding: 0.75rem;
-        margin-bottom: 0.75rem;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: border-color 0.2s ease; /* Только цвет границы меняется */
-    }
-
-    .reply-quote:hover {
-        border-color: #0056b3 !important; /* Только граница темнеет */
-        /* Убираю изменение фона при hover */
-    }
-
-    .reply-quote-author {
-        font-weight: 700;
-        color: #0056b3 !important;
-        margin-bottom: 0.25rem;
-        font-size: 0.8rem;
-        text-shadow: none !important;
-    }
-
-    .reply-quote-text {
-        color: #333 !important;
-        line-height: 1.3;
-        font-weight: 400;
-        text-shadow: none !important;
-        font-style: italic;
-        opacity: 0.8;
-    }
-
-    /* ЭКСПЕРИМЕНТ A: ВОЗВРАТ К ЦВЕТНЫМ С УЛУЧШЕННЫМИ ЦИТАТАМИ */
     .message-content.own {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%); /* Зеленый градиент */
-        color: white !important; /* Белый текст на зеленом фоне */
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Тень для читаемости */
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         margin-left: auto;
-        border: 2px solid #1e7e34; /* Темно-зеленая граница */
+        border: 2px solid #1e7e34;
         box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
     }
 
@@ -203,29 +65,13 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* ЭКСПЕРИМЕНТ A: Белый текст на зеленом, черный текст на белом */
-         .message-content.own .message-author,
-     .message-content.own .message-text,
-     .message-content.own .message-timestamp {
-         color: white !important;
-         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-     }
-
-     /* Убираю все другие старые стили которые мешают новому дизайну */
-
-    .message-content.other .message-author,
-    .message-content.other .message-text,
-    .message-content.other .message-timestamp {
-        color: #333 !important; /* Черный текст на белом фоне */
-        text-shadow: none;
-    }
-
+    /* === ТЕКСТ СООБЩЕНИЙ === */
     .message-author {
         font-weight: 600;
         font-size: 0.85rem;
         margin-bottom: 0.4rem;
         letter-spacing: 0.3px;
-        opacity: 0.9;
+        text-transform: none; /* Обычными буквами, не заглавными */
     }
 
     .message-text {
@@ -235,33 +81,153 @@
         line-height: 1.4;
     }
 
-    /* ИСПРАВЛЕНО: Время в правый нижний угол */
+    /* === ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ === */
     .message-timestamp {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        margin-top: 0.5rem;
+        position: absolute;
+        bottom: 0.5rem;
+        right: 0.75rem;
         font-size: 0.7rem;
         font-weight: 600;
-        letter-spacing: 0.3px;
-        color: inherit;
-        text-shadow: none;
+        color: #007bff !important;
     }
 
-    .timestamp-text {
-        flex-shrink: 0;
-    }
-
+    /* === КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ === */
     .message-reactions {
+        position: absolute;
+        bottom: 0.5rem;
+        left: 0.75rem;
         display: flex;
         flex-direction: row;
         gap: 0.5rem;
-        margin-left: auto;
-        padding-left: 1rem;
+        align-items: center;
     }
 
-    /* Поле ввода */
+    .reaction-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        background: rgba(255, 255, 255, 0.95) !important; /* Белый фон */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Зеленый палец вверх */
+    .reaction-btn.like-btn {
+        color: #28a745 !important;
+        border-color: #28a745;
+    }
+
+    .reaction-btn.like-btn:hover {
+        background: rgba(255, 255, 255, 1) !important;
+        color: #1e7e34 !important;
+        border-color: #1e7e34;
+        transform: scale(1.1);
+    }
+
+    .reaction-btn.like-btn.reacted {
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: #1e7e34 !important;
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+
+    /* Красный палец вниз */
+    .reaction-btn.dislike-btn {
+        color: #dc3545 !important;
+        border-color: #dc3545;
+    }
+
+    .reaction-btn.dislike-btn:hover {
+        background: rgba(255, 255, 255, 1) !important;
+        color: #c82333 !important;
+        border-color: #c82333;
+        transform: scale(1.1);
+    }
+
+    .reaction-btn.dislike-btn.reacted {
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: #c82333 !important;
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+
+    .reaction-count {
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-left: 0.25rem;
+    }
+
+    /* === ЦИТАТЫ С ОКАНТОВКОЙ === */
+    .reply-quote {
+        background: rgba(0, 123, 255, 0.05) !important;
+        border: 2px solid #007bff !important;
+        border-radius: 0.5rem !important;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        border-bottom: 1px solid #ddd; /* Горизонтальная полоса разделения */
+    }
+
+    .reply-quote-author {
+        font-weight: 700;
+        color: #0056b3 !important;
+        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    .reply-quote-text {
+        color: #333 !important;
+        line-height: 1.3;
+        font-weight: 400;
+        font-style: italic;
+        opacity: 0.8;
+    }
+
+    /* === КНОПКА ОТВЕТИТЬ === */
+    .message-actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: none;
+        z-index: 10;
+    }
+
+    .chat-message:hover .message-actions {
+        display: flex;
+    }
+
+    .action-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid #007bff;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #007bff;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+    }
+
+    .action-btn:hover {
+        background: #007bff;
+        color: white;
+        transform: scale(1.15);
+    }
+
+    /* Стили статуса подключения теперь в основном CSS файле */
+
+    /* === ПОЛЕ ВВОДА === */
     .chat-input-area {
         padding: 1rem 2rem;
         background: white;
@@ -303,9 +269,7 @@
         border-color: #004085;
     }
 
-    /* Стили статуса подключения теперь в основном CSS файле */
-
-    /* Стили для dropdown в навигации */
+    /* === НАВИГАЦИЯ И DROPDOWN === */
     .current-channel-nav {
         font-size: 1.1rem;
         font-weight: 600;
@@ -337,14 +301,7 @@
         transform: translateX(5px);
     }
 
-    /* УВЕЛИЧЕННЫЙ ЗАГОЛОВОК "ОНЛАЙН" */
-    .users-header h6 {
-        font-size: 1.6rem !important;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-    }
-
-    /* Правая панель */
+    /* === ПРАВАЯ ПАНЕЛЬ === */
     .users-sidebar {
         position: fixed;
         top: 60px;
@@ -363,6 +320,12 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+
+    .users-header h6 {
+        font-size: 1.6rem !important;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
     }
 
     .badge {
@@ -398,216 +361,6 @@
     .chat-messages-area {
         margin-right: 250px;
     }
-
-    /* === СИСТЕМА ОТВЕТОВ И HOVER-ЭФФЕКТЫ === */
-
-    /* ИСПРАВЛЕНО: Кнопка привязана к визуальному сообщению, а не к невидимой плитке */
-    .message-actions {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        display: none;
-        flex-direction: row;
-        gap: 0.25rem;
-        z-index: 10;
-    }
-
-    /* ВАЖНО: position: relative для ВИЗУАЛЬНОГО сообщения, а не всей плитки */
-    .message-content {
-        position: relative;
-    }
-
-    .chat-message:hover .message-actions {
-        display: flex;
-    }
-
-    .action-btn {
-        background: rgba(255, 255, 255, 0.95);
-        border: 2px solid #007bff;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 0.8rem;
-        color: #007bff;
-        transition: all 0.2s ease;
-        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
-        font-weight: 600;
-    }
-
-    .action-btn:hover {
-        background: #007bff;
-        color: white;
-        transform: scale(1.15);
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
-    }
-
-    .reply-btn:hover {
-        background: #007bff;
-        color: white;
-    }
-
-    /* === НОВЫЕ КНОПКИ ЛАЙК/ДИЗЛАЙК В ЛЕВОМ НИЖНЕМ УГЛУ === */
-    .message-reactions {
-        margin-top: 0.5rem;
-        display: flex;
-        flex-direction: row;
-        gap: 0.75rem;
-        align-items: center;
-        z-index: 5;
-    }
-
-    /* УЛУЧШЕНЫ для лучшей видимости на светлом фоне */
-    .reaction-btn {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        background: rgba(255, 255, 255, 0.95) !important; /* Белый фон для видимости */
-        color: #666 !important; /* Серый цвет иконки по умолчанию */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .reaction-btn.like-btn {
-        border-color: #28a745;
-    }
-
-    .reaction-btn.like-btn:hover {
-        background: rgba(40, 167, 69, 0.1) !important;
-        color: #28a745 !important;
-        transform: scale(1.1);
-    }
-
-    .reaction-btn.dislike-btn {
-        border-color: #dc3545;
-    }
-
-    .reaction-btn.dislike-btn:hover {
-        background: rgba(220, 53, 69, 0.1) !important;
-        color: #dc3545 !important;
-        transform: scale(1.1);
-    }
-
-    /* Стили для отреагировавших кнопок */
-    .reaction-btn.reacted {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none !important;
-    }
-
-    .reaction-btn.reacted.like-btn {
-        background: rgba(40, 167, 69, 0.2) !important;
-        color: #28a745 !important;
-        border-color: #28a745;
-    }
-
-    .reaction-btn.reacted.dislike-btn {
-        background: rgba(220, 53, 69, 0.2) !important;
-        color: #dc3545 !important;
-        border-color: #dc3545;
-    }
-
-    .reaction-count {
-        margin-left: 0.25rem;
-        font-size: 0.65rem;
-        font-weight: 600;
-        color: inherit;
-    }
-
-    /* ЭКСПЕРИМЕНТ A: ЦИТАТЫ С БЕЛОЙ ПОДЛОЖКОЙ ДЛЯ ЧИТАЕМОСТИ НА ЛЮБОМ ФОНЕ */
-    .reply-quote {
-        background: transparent !important; /* Убрать белый фон */
-        border: none !important;
-        border-left: 4px solid #007bff !important; /* Только синяя полоска */
-        padding: 0.5rem 0 0.5rem 1rem;
-        margin-bottom: 0.75rem;
-        color: inherit !important;
-        font-style: italic;
-        cursor: pointer;
-        transition: border-left-width 0.3s ease;
-    }
-
-    .reply-quote:hover {
-        border-left-width: 6px;
-    }
-
-    .reply-quote-author {
-        color: inherit !important; /* Наследуем цвет от родителя */
-        font-weight: 700;
-        text-shadow: none !important;
-        font-size: 0.85rem;
-    }
-
-    .reply-quote-text {
-        color: inherit !important; /* Наследуем цвет от родителя */
-        font-weight: 500;
-        text-shadow: none !important;
-        opacity: 0.9;
-    }
-
-    /* Иконки ролей в цитатах */
-    .reply-quote .role-icon {
-        font-size: 0.9rem;
-        margin-right: 0.25rem;
-    }
-
-        /* === АЛЬТЕРНАТИВНЫЕ ЦВЕТОВЫЕ СХЕМЫ ДЛЯ ЭКСПЕРИМЕНТОВ === */
-
-    /* ВАРИАНТ B: СВЕТЛО-ЗЕЛЕНЫЙ С ЧЕРНЫМ ТЕКСТОМ
-    .message-content.own {
-        background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
-        color: #333 !important;
-        border: 2px solid #b3d9b3;
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
-    }
-    .message-content.own .message-author,
-    .message-content.own .message-text,
-    .message-content.own .message-timestamp {
-        color: #333 !important;
-        text-shadow: none;
-    }
-    */
-
-    /* ВАРИАНТ C: ГРАДАЦИИ СЕРОГО
-    .message-content.own {
-        background: linear-gradient(135deg, #f1f3f4 0%, #e9ecef 100%);
-        color: #333 !important;
-        border: 2px solid #ced4da;
-        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.15);
-    }
-    .message-content.own .message-author,
-    .message-content.own .message-text,
-    .message-content.own .message-timestamp {
-        color: #333 !important;
-        text-shadow: none;
-    }
-    */
-
-    /* ВАРИАНТ D: ГОЛУБОЙ С ЧЕРНЫМ ТЕКСТОМ
-    .message-content.own {
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        color: #333 !important;
-        border: 2px solid #90caf9;
-        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
-    }
-    .message-content.own .message-author,
-    .message-content.own .message-text,
-    .message-content.own .message-timestamp {
-        color: #333 !important;
-        text-shadow: none;
-    }
-    */
 
     /* Режим ответа над полем ввода */
     .reply-mode {
@@ -1118,7 +871,7 @@
         }
     };
 
-        // Система для отслеживания реакций пользователя (безотзывная)
+    // Система для отслеживания реакций пользователя (безотзывная)
     let userReactions = new Set();
 
     // Функции для лайков и дизлайков
