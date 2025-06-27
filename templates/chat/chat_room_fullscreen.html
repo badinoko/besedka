@@ -82,8 +82,8 @@
     .message-content.other {
         background: white;
         color: #333;
-        border: 3px solid #2c3e50 !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ */
-        box-shadow: 0 3px 8px rgba(44, 62, 80, 0.15) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
+        border: 2px solid #1e3a8a !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА ПОТОНЬШЕ */
+        box-shadow: 0 3px 8px rgba(30, 58, 138, 0.15) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
     }
 
     /* Овальная рамочка на белом фоне (чужие сообщения) */
@@ -218,28 +218,28 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === ЦИТАТЫ С ТЕМНО-СИНЕЙ ОКАНТОВКОЙ КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ === */
+    /* === ЦИТАТЫ С ТЕМНО-СИНЕЙ ОКАНТОВКОЙ ПОТОНЬШЕ === */
     .message-content .reply-quote,
     .message-content.own .reply-quote,
     .message-content.other .reply-quote {
-        background: rgba(44, 62, 80, 0.05) !important; /* ЛЕГКАЯ ТЕМНО-СИНЯЯ ПОДЛОЖКА */
-        border: 3px solid #2c3e50 !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА КАК У СООБЩЕНИЙ */
+        background: rgba(30, 58, 138, 0.05) !important; /* ЛЕГКАЯ ТЕМНО-СИНЯЯ ПОДЛОЖКА */
+        border: 2px solid #1e3a8a !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА ПОТОНЬШЕ */
         border-radius: 0.75rem !important; /* ЧУТЬ БОЛЬШЕ СКРУГЛЕНИЯ */
         padding: 0.875rem !important; /* НЕМНОГО БОЛЬШЕ ОТСТУПЫ */
         margin-bottom: 1rem !important;
         font-size: 0.875rem !important;
         cursor: pointer !important;
-        box-shadow: 0 3px 10px rgba(44, 62, 80, 0.2) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
+        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.2) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
         transition: all 0.2s ease !important;
     }
 
     .message-content .reply-quote:hover,
     .message-content.own .reply-quote:hover,
     .message-content.other .reply-quote:hover {
-        background: rgba(44, 62, 80, 0.1) !important;
-        border-color: #34495e !important; /* ЧУТЬ СВЕТЛЕЕ ПРИ HOVER */
+        background: rgba(30, 58, 138, 0.1) !important;
+        border-color: #2563eb !important; /* ЧУТЬ СВЕТЛЕЕ ПРИ HOVER */
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3) !important;
+        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3) !important;
     }
 
     .reply-quote-author {
@@ -292,14 +292,15 @@
         transform: scale(1.15);
     }
 
-    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА - С ПОДЛОЖКОЙ ДЛЯ ЧИТАЕМОСТИ */
+    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА - С ЛЕГКИМ ГОЛУБЫМ ФОНОМ */
     .reply-zone {
         margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
         margin-left: var(--border-width);
-        background: rgba(248, 249, 250, 0.95); /* ЛЕГКАЯ СЕРАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ ЧЕРНОГО ТЕКСТА */
+        background: rgba(219, 234, 254, 0.8) !important; /* ЛЕГКИЙ ГОЛУБОЙ ФОН КАК ТРЕБУЕТ ПОЛЬЗОВАТЕЛЬ */
         padding: 0.5rem;
         border-radius: 0.5rem; /* НЕБОЛЬШИЕ СКРУГЛЕНИЯ */
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ЛЕГКАЯ ТЕНЬ */
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15); /* ГОЛУБАЯ ТЕНЬ */
+        border: 1px solid rgba(59, 130, 246, 0.2); /* ЛЕГКАЯ ГОЛУБАЯ ГРАНИЦА */
     }
 
     /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
