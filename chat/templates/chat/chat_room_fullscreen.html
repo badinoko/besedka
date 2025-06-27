@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}?v=12.7">
+<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}?v=12.9">
 {% endblock %}
 
 {% block main_container %}
@@ -114,6 +114,10 @@
             <i class="fas fa-quote-right me-2"></i>Цитировать
         </div>
         <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="pin">
+            <i class="fas fa-thumbtack me-2"></i>Закрепить
+        </div>
+        <div class="context-menu-separator"></div>
         <div class="context-menu-item" data-action="copy">
             <i class="fas fa-copy me-2"></i>Копировать
         </div>
@@ -184,6 +188,9 @@ function setupContextMenu() {
                 break;
             case 'quote':
                 window.chatClientInstance?.setQuoteMode(currentMessageId, currentMessageAuthor);
+                break;
+            case 'pin':
+                pinMessage(currentMessageId);
                 break;
             case 'copy':
                 copyMessageText(currentMessageId);
@@ -328,6 +335,15 @@ function copyMessageText(messageId) {
             window.showNotification('Текст скопирован в буфер обмена', 'info');
         }
     });
+}
+
+// Функция-заглушка для закрепления сообщения
+function pinMessage(messageId) {
+    // Пока просто показываем уведомление
+    if (window.showNotification) {
+        window.showNotification('Функция закрепления сообщений в разработке', 'info');
+    }
+    console.log('Pin message:', messageId);
 }
 </script>
 {% endblock %}

@@ -519,17 +519,17 @@ class ChatClient {
     }
 
     showReplyIndicator(author) {
-        const replyIndicator = document.getElementById('reply-indicator');
-        const replyAuthor = document.getElementById('reply-author');
+        const replyIndicator = document.getElementById('reply-indicator-area');
+        const replyToText = document.getElementById('reply-to-text');
 
-        if (replyIndicator && replyAuthor) {
-            replyAuthor.textContent = author;
-            replyIndicator.style.display = 'flex';
+        if (replyIndicator && replyToText) {
+            replyToText.innerHTML = `<i class="fas fa-reply me-2"></i>В ответ на: <strong>${this.escapeHtml(author)}</strong>`;
+            replyIndicator.style.display = 'block';
         }
     }
 
     hideReplyIndicator() {
-        const replyIndicator = document.getElementById('reply-indicator');
+        const replyIndicator = document.getElementById('reply-indicator-area');
         if (replyIndicator) {
             replyIndicator.style.display = 'none';
         }
