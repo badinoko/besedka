@@ -16,10 +16,9 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: #f8f9fa; /* Светло-серый фон для контраста */
+        background: white; /* Белый фон */
         display: flex;
         flex-direction: column;
-        gap: 0; /* Убираем промежутки для четких границ */
     }
 
     /* Убираем заголовок чата - все перенесено в навигацию */
@@ -30,11 +29,9 @@
         overflow-y: auto;
         padding: 1.5rem;
         background: white;
-        border: 3px solid #dee2e6;
-        border-bottom: 2px solid #dee2e6; /* Более тонкая граница снизу */
-        border-right: none; /* Убираем правую границу, она будет у sidebar */
-        border-radius: 0; /* Убираем скругления для четкого разделения */
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        border: none; /* Убираем все границы */
+        border-right: 4px solid #495057; /* Только темная правая граница для разделения */
+        box-shadow: none; /* Убираем тени */
     }
 
     /* Стили сообщений */
@@ -276,13 +273,13 @@
 
     /* === ПОЛЕ ВВОДА === */
     .chat-input-area {
-        padding: 1.5rem 2rem;
+        padding: 2rem;
         background: white;
-        border: 3px solid #dee2e6;
-        border-top: 3px solid #007bff; /* Синяя верхняя граница для выделения */
-        border-radius: 1rem 1rem 0 0; /* Скругления сверху */
-        box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-        margin-right: 250px; /* Отступ под правую панель пользователей */
+        border: 3px solid #007bff; /* Синяя рамка вокруг всего поля */
+        border-radius: 1.5rem; /* Красивые скругления вокруг */
+        box-shadow: 0 4px 20px rgba(0, 123, 255, 0.15); /* Синяя тень */
+        margin: 1rem; /* Отступы со всех сторон */
+        margin-right: 270px; /* Больший отступ справа под панель пользователей */
         position: relative;
         z-index: 10; /* Поднимаем над другими элементами */
     }
@@ -370,23 +367,21 @@
         width: 250px;
         height: calc(100vh - 60px);
         background: white;
-        border: 3px solid #dee2e6;
-        border-right: none; /* Убираем правую границу у края экрана */
-        border-top: 3px solid #28a745; /* Зеленая верхняя граница */
+        border: none; /* Убираем все границы */
+        border-left: 4px solid #495057; /* Только темная левая граница для разделения */
         display: flex;
         flex-direction: column;
-        box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+        box-shadow: none; /* Убираем тени */
         z-index: 20; /* Выше чем поле ввода */
     }
 
     .users-header {
         padding: 1.25rem 1rem;
-        border-bottom: 3px solid #dee2e6;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 2px solid #495057; /* Темная граница снизу */
+        background: white; /* Белый фон */
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .users-header h6 {
@@ -429,8 +424,6 @@
         margin-right: 250px;
         margin-left: 0;
         margin-top: 0;
-        border-left: 3px solid #dee2e6; /* Левая граница для четкого разделения */
-        border-top: 3px solid #dee2e6; /* Верхняя граница */
     }
 
     /* Режим ответа над полем ввода */
