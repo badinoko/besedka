@@ -222,7 +222,7 @@
 
     /* === СИСТЕМА ОТВЕТОВ И HOVER-ЭФФЕКТЫ === */
 
-    /* Кнопки действий появляются при hover */
+    /* Кнопки действий появляются при hover - ИСПРАВЛЕНО ПОЗИЦИОНИРОВАНИЕ */
     .message-actions {
         position: absolute;
         top: 0.5rem;
@@ -233,35 +233,42 @@
         z-index: 10;
     }
 
+    /* ВАЖНО: Устанавливаем position: relative для родительского элемента */
+    .chat-message {
+        position: relative;
+    }
+
     .chat-message:hover .message-actions {
         display: flex;
     }
 
     .action-btn {
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #dee2e6;
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid #007bff;
         border-radius: 50%;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 0.75rem;
-        color: #666;
+        font-size: 0.8rem;
+        color: #007bff;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+        font-weight: 600;
     }
 
     .action-btn:hover {
-        background: #f8f9fa;
-        color: #333;
-        transform: scale(1.1);
+        background: #007bff;
+        color: white;
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
     }
 
     .reply-btn:hover {
-        background: #e3f2fd;
-        color: #1976d2;
+        background: #007bff;
+        color: white;
     }
 
     /* Блок цитаты в ответе */
