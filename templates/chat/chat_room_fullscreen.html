@@ -1303,9 +1303,13 @@
         });
     });
 
-    // Простое позиционирование без обрезания
+    // ИСПРАВЛЕННОЕ позиционирование в пределах окна чата
     function showNewContextMenu(x, y, messageData) {
         newContextMenu.currentMessageData = messageData;
+
+        console.log('🐛 DEBUG контекстное меню:');
+        console.log('messageId:', messageData.id);
+        console.log('isOwnMessage:', messageData.isOwn);
 
         // Показываем/скрываем пункты меню
         const editItem = newContextMenu.element.querySelector('[data-action="edit"]');
@@ -1324,34 +1328,48 @@
         newContextMenu.element.style.left = '0px';
         newContextMenu.element.style.top = '0px';
 
-        // Получаем размеры меню и окна
+        // Получаем размеры меню и ГРАНИЦЫ ОБЛАСТИ СООБЩЕНИЙ
         const menuRect = newContextMenu.element.getBoundingClientRect();
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
+        const messagesArea = document.querySelector('.chat-messages-area') || document.querySelector('#chat-messages-area');
+        let constraintRect;
 
-        // ПРОСТОЕ позиционирование
+        if (messagesArea) {
+            constraintRect = messagesArea.getBoundingClientRect();
+        } else {
+            // Fallback - используем размеры окна браузера
+            constraintRect = {
+                left: 0,
+                top: 0,
+                right: window.innerWidth,
+                bottom: window.innerHeight
+            };
+        }
+
+        // ПОЗИЦИОНИРОВАНИЕ В ПРЕДЕЛАХ ОБЛАСТИ СООБЩЕНИЙ
         let finalX = x;
         let finalY = y;
 
-        // Если меню выходит за правый край - показываем слева от курсора
-        if (x + menuRect.width > windowWidth - 10) {
+        // Если меню выходит за правую границу - показываем слева от курсора
+        if (x + menuRect.width > constraintRect.right - 10) {
             finalX = x - menuRect.width;
         }
 
-        // Если меню выходит за нижний край - показываем сверху от курсора
-        if (y + menuRect.height > windowHeight - 10) {
+        // Если меню выходит за нижнюю границу - показываем сверху от курсора
+        if (y + menuRect.height > constraintRect.bottom - 10) {
             finalY = y - menuRect.height;
         }
 
-        // Убеждаемся что меню не выходит за левый и верхний края
-        finalX = Math.max(10, finalX);
-        finalY = Math.max(10, finalY);
+        // Убеждаемся что меню не выходит за левую и верхнюю границы
+        finalX = Math.max(constraintRect.left + 10, finalX);
+        finalY = Math.max(constraintRect.top + 10, finalY);
 
         // Устанавливаем финальную позицию
         newContextMenu.element.style.left = finalX + 'px';
         newContextMenu.element.style.top = finalY + 'px';
 
-        console.log(`Новое меню показано в позиции (${finalX}, ${finalY})`);
+        console.log(`🎯 showContextMenu DEBUG:`);
+        console.log('messageData.isOwn:', messageData.isOwn);
+        console.log(`Меню показано в позиции (${finalX}, ${finalY}) в пределах области сообщений`);
     }
 
     function hideNewContextMenu() {
