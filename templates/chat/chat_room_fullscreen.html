@@ -569,85 +569,54 @@
         100% { background: rgba(0, 123, 255, 0.1) !important; }
     }
 
-    /* 🖱️ КОНТЕКСТНОЕ МЕНЮ ПО ПРАВОМУ КЛИКУ - SSOT ПРИНЦИПЫ */
-    .context-menu {
+    /* 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ - ПРОСТЫЕ СТИЛИ БЕЗ ОБРЕЗАНИЯ */
+    .message-context-menu {
         position: fixed;
         background: white;
-        border: 2px solid #6f42c1; /* ФИОЛЕТОВАЯ ГРАНИЦА */
-        border-radius: 0.75rem;
-        box-shadow:
-            0 10px 30px rgba(111, 66, 193, 0.3),
-            0 5px 15px rgba(0, 0, 0, 0.15),
-            0 2px 8px rgba(0, 0, 0, 0.1);
-        z-index: 99999; /* МАКСИМАЛЬНЫЙ Z-INDEX ДЛЯ ПОЛНОЙ НЕЗАВИСИМОСТИ */
-        min-width: 200px;
-        width: auto !important; /* АВТОМАТИЧЕСКАЯ ШИРИНА ПОД СОДЕРЖИМОЕ */
-        height: auto !important; /* АВТОМАТИЧЕСКАЯ ВЫСОТА ПОД СОДЕРЖИМОЕ */
-        max-width: none !important; /* УБИРАЕМ ВСЕ ОГРАНИЧЕНИЯ ШИРИНЫ */
-        max-height: none !important; /* УБИРАЕМ ВСЕ ОГРАНИЧЕНИЯ ВЫСОТЫ */
-        min-height: auto !important; /* УБИРАЕМ МИНИМАЛЬНУЮ ВЫСОТУ */
-        padding: 0.5rem 0;
-        backdrop-filter: blur(10px);
-        user-select: none;
-        animation: contextMenuFadeIn 0.2s ease-out;
-        overflow: visible !important; /* ПРИНУДИТЕЛЬНО ВИДИМОЕ СОДЕРЖИМОЕ */
-        display: none; /* ПО УМОЛЧАНИЮ СКРЫТО */
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        padding: 4px 0;
+        min-width: 180px;
+        max-width: 250px;
+        font-size: 14px;
     }
 
-    @keyframes contextMenuFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .context-menu-item {
+    .menu-item {
         display: flex;
         align-items: center;
-        padding: 0.75rem 1rem;
+        padding: 8px 12px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: background 0.2s;
         color: #333;
-        font-size: 0.9rem;
-        font-weight: 500;
     }
 
-    .context-menu-item:hover {
-        background: rgba(111, 66, 193, 0.1);
-        transform: translateX(3px);
-        color: #6f42c1;
+    .menu-item:hover {
+        background: #f8f9fa;
     }
 
-    .context-menu-item i {
-        width: 20px;
-        margin-right: 0.75rem;
-        color: inherit;
+    .menu-item i {
+        width: 16px;
+        margin-right: 8px;
         text-align: center;
+        color: #6c757d;
     }
 
-    .context-menu-item[data-action="delete"]:hover {
-        background: rgba(220, 53, 69, 0.1);
+    .menu-item[data-action="delete"] {
         color: #dc3545;
     }
 
-    .context-menu-item[data-action="delete"] i {
-        color: #dc3545;
+    .menu-item[data-action="delete"]:hover {
+        background: #ffeaea;
     }
 
-    .context-menu-separator {
+    .menu-separator {
         height: 1px;
         background: #e9ecef;
-        margin: 0.5rem 0;
+        margin: 4px 0;
     }
 
-    /* Запрет выделения текста в контекстном меню */
-    .context-menu * {
-        user-select: none;
-    }
 </style>
 {% endblock %}
 
@@ -707,27 +676,27 @@
     </div>
 </div>
 
-<!-- 🖱️ КОНТЕКСТНОЕ МЕНЮ ВНЕ КОНТЕЙНЕРА ЧАТА ДЛЯ SSOT ПРИНЦИПОВ -->
-<div id="context-menu" class="context-menu" style="display: none;">
-    <div class="context-menu-item" data-action="reply">
+<!-- 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ С ПРАВИЛЬНОЙ ЛОГИКОЙ -->
+<div id="message-context-menu" class="message-context-menu" style="display: none;">
+    <div class="menu-item" data-action="reply">
         <i class="fas fa-reply"></i>
         <span>Ответить</span>
     </div>
-    <div class="context-menu-item" data-action="forward">
+    <div class="menu-item" data-action="forward">
         <i class="fas fa-share"></i>
         <span>Переслать</span>
     </div>
-    <div class="context-menu-item" data-action="edit" style="display: none;">
-        <i class="fas fa-edit"></i>
-        <span>Редактировать</span>
-    </div>
-    <div class="context-menu-item" data-action="copy">
+    <div class="menu-item" data-action="copy">
         <i class="fas fa-copy"></i>
         <span>Копировать текст</span>
     </div>
-    <div class="context-menu-separator"></div>
-    <div class="context-menu-item" data-action="delete" style="display: none;">
-        <i class="fas fa-trash-alt"></i>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="edit" style="display: none;">
+        <i class="fas fa-edit"></i>
+        <span>Редактировать</span>
+    </div>
+    <div class="menu-item" data-action="delete" style="display: none;">
+        <i class="fas fa-trash"></i>
         <span>Удалить</span>
     </div>
 </div>
@@ -1269,154 +1238,134 @@
         document.head.appendChild(style);
     }
 
-    // 🖱️ СИСТЕМА КОНТЕКСТНОГО МЕНЮ ПО ПРАВОМУ КЛИКУ
-    let contextMenu = {
+    // 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ С ПРАВИЛЬНОЙ ЛОГИКОЙ
+    let newContextMenu = {
         element: null,
-        currentMessageId: null,
         currentMessageData: null
     };
 
-    // Инициализация контекстного меню
+    // Инициализация нового контекстного меню
     document.addEventListener('DOMContentLoaded', function() {
-        contextMenu.element = document.getElementById('context-menu');
+        newContextMenu.element = document.getElementById('message-context-menu');
 
-        // Обработчик правого клика на сообщениях
+        // Обработчик правого клика ТОЛЬКО на блоке сообщения
         document.addEventListener('contextmenu', function(e) {
-            // Ищем ближайшее сообщение
-            const messageElement = e.target.closest('.chat-message');
+            // Ищем именно .message-content (блок сообщения), а НЕ всю ширину
+            const messageContentElement = e.target.closest('.message-content');
 
-            if (messageElement) {
-                e.preventDefault(); // Отменяем стандартное контекстное меню
+            if (messageContentElement) {
+                e.preventDefault(); // Отменяем стандартное меню браузера
 
-                const messageId = messageElement.dataset.messageId;
-                const messageContent = messageElement.querySelector('.message-text').textContent;
-                const messageAuthor = messageElement.querySelector('.message-author').textContent;
-                const isOwnMessage = messageElement.querySelector('.message-content').classList.contains('own');
+                // Найдем родительский элемент с ID сообщения
+                const messageElement = messageContentElement.closest('.chat-message');
 
-                // 🔧 ОТЛАДКА: Добавим логирование для диагностики
-                console.log('🐛 DEBUG контекстное меню:');
-                console.log('messageId:', messageId);
-                console.log('messageElement:', messageElement);
-                console.log('messageContent classes:', messageElement.querySelector('.message-content').classList);
-                console.log('isOwnMessage:', isOwnMessage);
+                if (messageElement) {
+                    const messageId = messageElement.dataset.messageId;
+                    const messageText = messageElement.querySelector('.message-text').textContent;
+                    const messageAuthor = messageElement.querySelector('.message-author').textContent;
+                    const isOwnMessage = messageContentElement.classList.contains('own');
 
-                showContextMenu(e.clientX, e.clientY, {
-                    id: messageId,
-                    content: messageContent,
-                    author: messageAuthor,
-                    isOwn: isOwnMessage
-                });
+                    console.log('🎯 Новое контекстное меню - клик на сообщении:', messageId);
+                    console.log('Своё сообщение:', isOwnMessage);
+
+                    showNewContextMenu(e.clientX, e.clientY, {
+                        id: messageId,
+                        content: messageText,
+                        author: messageAuthor,
+                        isOwn: isOwnMessage
+                    });
+                }
             }
         });
 
         // Скрываем меню при клике вне его
         document.addEventListener('click', function(e) {
-            if (contextMenu.element && !contextMenu.element.contains(e.target)) {
-                hideContextMenu();
+            if (newContextMenu.element && !newContextMenu.element.contains(e.target)) {
+                hideNewContextMenu();
             }
         });
 
         // Скрываем меню при нажатии Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                hideContextMenu();
+                hideNewContextMenu();
             }
         });
 
         // Обработчики кликов по пунктам меню
-        contextMenu.element.addEventListener('click', function(e) {
-            const menuItem = e.target.closest('.context-menu-item');
+        newContextMenu.element.addEventListener('click', function(e) {
+            const menuItem = e.target.closest('.menu-item');
             if (menuItem) {
                 const action = menuItem.dataset.action;
-                handleContextMenuAction(action);
-                hideContextMenu();
+                handleNewMenuAction(action);
+                hideNewContextMenu();
             }
         });
     });
 
-        // Умное позиционирование контекстного меню
-    function showContextMenu(x, y, messageData) {
-        contextMenu.currentMessageId = messageData.id;
-        contextMenu.currentMessageData = messageData;
+    // Простое позиционирование без обрезания
+    function showNewContextMenu(x, y, messageData) {
+        newContextMenu.currentMessageData = messageData;
 
-        // Показываем/скрываем пункты меню в зависимости от типа сообщения
-        const editItem = contextMenu.element.querySelector('[data-action="edit"]');
-        const deleteItem = contextMenu.element.querySelector('[data-action="delete"]');
-
-        // 🔧 ОТЛАДКА: Логируем состояние кнопок
-        console.log('🐛 showContextMenu DEBUG:');
-        console.log('messageData.isOwn:', messageData.isOwn);
-        console.log('editItem найден:', !!editItem);
-        console.log('deleteItem найден:', !!deleteItem);
+        // Показываем/скрываем пункты меню
+        const editItem = newContextMenu.element.querySelector('[data-action="edit"]');
+        const deleteItem = newContextMenu.element.querySelector('[data-action="delete"]');
 
         if (messageData.isOwn) {
             editItem.style.display = 'flex';
             deleteItem.style.display = 'flex';
-            console.log('🐛 Показываем кнопки edit/delete (свое сообщение)');
         } else {
             editItem.style.display = 'none';
             deleteItem.style.display = 'none';
-            console.log('🐛 Скрываем кнопки edit/delete (чужое сообщение)');
         }
 
-        // 🔧 ИСПРАВЛЕНИЕ: Показываем меню НЕВИДИМО для измерения размеров
-        contextMenu.element.style.display = 'block';
-        contextMenu.element.style.visibility = 'hidden';
-        contextMenu.element.style.position = 'fixed';
+        // Показываем меню для измерения размеров
+        newContextMenu.element.style.display = 'block';
+        newContextMenu.element.style.left = '0px';
+        newContextMenu.element.style.top = '0px';
 
-        // Получаем размеры меню и окна ПОСЛЕ того как сделали его видимым
-        const menuRect = contextMenu.element.getBoundingClientRect();
+        // Получаем размеры меню и окна
+        const menuRect = newContextMenu.element.getBoundingClientRect();
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
 
-        // 🎯 SSOT ПОЗИЦИОНИРОВАНИЕ - МЕНЮ МОЖЕТ ОТОБРАЖАТЬСЯ НА ВСЕМ ЭКРАНЕ
+        // ПРОСТОЕ позиционирование
         let finalX = x;
-
-        // Проверяем только границы ОКНА БРАУЗЕРА, не области чата
-        if (x + menuRect.width > windowWidth - 20) {
-            finalX = x - menuRect.width; // Показываем слева от курсора
-        }
-
-        // Убеждаемся что меню не выходит за левый край ЭКРАНА
-        if (finalX < 10) {
-            finalX = 10;
-        }
-
-        // 🔧 УЛУЧШЕННОЕ ПОЗИЦИОНИРОВАНИЕ ПО ВЕРТИКАЛИ
         let finalY = y;
 
-        // Проверяем, поместится ли меню вниз от курсора
-        if (y + menuRect.height > windowHeight - 20) {
-            // Если не помещается вниз, показываем сверху
-            finalY = y - menuRect.height - 10;
+        // Если меню выходит за правый край - показываем слева от курсора
+        if (x + menuRect.width > windowWidth - 10) {
+            finalX = x - menuRect.width;
         }
 
-        // Убеждаемся что меню не выходит за верхний край
+        // Если меню выходит за нижний край - показываем сверху от курсора
+        if (y + menuRect.height > windowHeight - 10) {
+            finalY = y - menuRect.height;
+        }
+
+        // Убеждаемся что меню не выходит за левый и верхний края
+        finalX = Math.max(10, finalX);
         finalY = Math.max(10, finalY);
 
-        // 🔧 ФИНАЛЬНОЕ ПОЗИЦИОНИРОВАНИЕ И ПОКАЗ
-        contextMenu.element.style.left = finalX + 'px';
-        contextMenu.element.style.top = finalY + 'px';
-        contextMenu.element.style.visibility = 'visible'; // Делаем видимым
+        // Устанавливаем финальную позицию
+        newContextMenu.element.style.left = finalX + 'px';
+        newContextMenu.element.style.top = finalY + 'px';
 
-        console.log(`Context menu shown at (${finalX}, ${finalY}) for message:`, messageData);
-        console.log(`Menu size: ${menuRect.width}x${menuRect.height}`);
+        console.log(`Новое меню показано в позиции (${finalX}, ${finalY})`);
     }
 
-    function hideContextMenu() {
-        if (contextMenu.element) {
-            contextMenu.element.style.display = 'none';
-            contextMenu.element.style.visibility = 'visible'; // Сбрасываем visibility
-            contextMenu.currentMessageId = null;
-            contextMenu.currentMessageData = null;
+    function hideNewContextMenu() {
+        if (newContextMenu.element) {
+            newContextMenu.element.style.display = 'none';
+            newContextMenu.currentMessageData = null;
         }
     }
 
-    // Обработка действий контекстного меню
-    function handleContextMenuAction(action) {
-        if (!contextMenu.currentMessageData) return;
+    // Обработка действий нового меню
+    function handleNewMenuAction(action) {
+        if (!newContextMenu.currentMessageData) return;
 
-        const messageData = contextMenu.currentMessageData;
+        const messageData = newContextMenu.currentMessageData;
 
         switch(action) {
             case 'reply':
@@ -1426,16 +1375,22 @@
                 break;
 
             case 'forward':
-                // TODO: Реализовать пересылку сообщений
                 showTemporaryFeedback('📤 Функция пересылки в разработке', 'warning');
-                console.log('Forward message:', messageData);
+                break;
+
+            case 'copy':
+                // Копируем текст сообщения в буфер обмена
+                navigator.clipboard.writeText(messageData.content).then(() => {
+                    showTemporaryFeedback('📋 Текст скопирован', 'success');
+                }).catch((err) => {
+                    console.error('Ошибка копирования:', err);
+                    showTemporaryFeedback('❌ Ошибка копирования', 'error');
+                });
                 break;
 
             case 'edit':
                 if (messageData.isOwn) {
-                    // TODO: Реализовать редактирование сообщений
                     showTemporaryFeedback('✏️ Функция редактирования в разработке', 'warning');
-                    console.log('Edit message:', messageData);
                 } else {
                     showTemporaryFeedback('❌ Можно редактировать только свои сообщения', 'error');
                 }
@@ -1443,31 +1398,18 @@
 
             case 'delete':
                 if (messageData.isOwn) {
-                    // TODO: Реализовать удаление сообщений
-                    if (confirm('Вы уверены, что хотите удалить это сообщение?')) {
+                    if (confirm('Удалить сообщение?')) {
                         showTemporaryFeedback('🗑️ Функция удаления в разработке', 'warning');
-                        console.log('Delete message:', messageData);
                     }
                 } else {
                     showTemporaryFeedback('❌ Можно удалять только свои сообщения', 'error');
                 }
                 break;
 
-            case 'copy':
-                // Копируем текст сообщения в буфер обмена
-                navigator.clipboard.writeText(messageData.content).then(() => {
-                    showTemporaryFeedback('📋 Текст скопирован в буфер обмена', 'success');
-                }).catch((err) => {
-                    console.error('Ошибка копирования:', err);
-                    showTemporaryFeedback('❌ Ошибка копирования текста', 'error');
-                });
-                break;
-
             default:
-                console.log('Unknown context menu action:', action);
+                console.log('Неизвестное действие:', action);
         }
     }
-
 
 </script>
 {% endblock %}
