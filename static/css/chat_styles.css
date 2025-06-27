@@ -2659,58 +2659,7 @@
 /* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.7 - СИСТЕМА ОТВЕТОВ И КОНТЕКСТНОЕ МЕНЮ ===== */
 /* ===== ПОЛНЫЙ КАСТОМНЫЙ ЧАТ С СИСТЕМОЙ ОТВЕТОВ - ROCKET.CHAT ПОЛНОСТЬЮ УДАЛЕН ===== */
 
-/* ===== КОНТЕКСТНОЕ МЕНЮ ДЛЯ DESKTOP ===== */
-.context-menu {
-    position: fixed;
-    z-index: 10000;
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    min-width: 180px;
-    padding: 0.5rem 0;
-    font-size: 0.9rem;
-    backdrop-filter: blur(10px);
-    animation: contextMenuSlideIn 0.2s ease-out;
-}
-
-.context-menu-item {
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    color: #333;
-    user-select: none;
-}
-
-.context-menu-item:hover {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    color: #007bff;
-    transform: translateX(5px);
-}
-
-.context-menu-item i {
-    width: 20px;
-    text-align: center;
-}
-
-.context-menu-separator {
-    height: 1px;
-    background: #dee2e6;
-    margin: 0.5rem 0;
-}
-
-@keyframes contextMenuSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
+/* УДАЛЕНО - ДУБЛИРУЮЩЕЕ ОПРЕДЕЛЕНИЕ context-menu (НАРУШЕНИЕ SSOT) */
 
 /* ===== ИНДИКАТОР РЕЖИМА ОТВЕТА ===== */
 .reply-indicator {
@@ -2927,15 +2876,7 @@
 
 /* ===== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ ===== */
 @media (max-width: 768px) {
-    .context-menu {
-        min-width: 200px;
-        padding: 0.75rem 0;
-    }
-
-    .context-menu-item {
-        padding: 1rem 1.25rem;
-        font-size: 1rem;
-    }
+    /* УДАЛЕНО - дублирующие правила .context-menu (НАРУШЕНИЕ SSOT) */
 
     .reply-indicator {
         margin: 0.5rem;
@@ -3110,5 +3051,71 @@
 .reaction-btn.disabled {
     opacity: 0.4 !important;
     pointer-events: none !important;
+}
+
+/* УДАЛЕН ДУБЛИРУЮЩИЙ .context-menu - НАРУШЕНИЕ SSOT
+   Реальное контекстное меню определено как .message-context-menu в HTML шаблоне */
+
+/* ===== КОНТЕКСТНОЕ МЕНЮ ЧАТА - ЕДИНСТВЕННОЕ ОПРЕДЕЛЕНИЕ ===== */
+.message-context-menu {
+    position: fixed;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    padding: 4px 0;
+    min-width: 180px;
+    max-width: 250px;
+    font-size: 14px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #333;
+}
+
+.menu-item:hover {
+    background: #f8f9fa;
+}
+
+.menu-item i {
+    width: 16px;
+    margin-right: 8px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.menu-item[data-action="delete"] {
+    color: #dc3545;
+}
+
+.menu-item[data-action="delete"]:hover {
+    background: #ffeaea;
+}
+
+.menu-separator {
+    height: 1px;
+    background: #e9ecef;
+    margin: 4px 0;
+}
+
+/* МОБИЛЬНАЯ АДАПТИВНОСТЬ */
+@media (max-width: 768px) {
+    .message-context-menu {
+        min-width: 200px;
+        max-width: 300px;
+        padding: 0.75rem 0;
+        font-size: 1rem;
+    }
+
+    .menu-item {
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+    }
 }
 

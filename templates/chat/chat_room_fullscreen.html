@@ -569,53 +569,7 @@
         100% { background: rgba(0, 123, 255, 0.1) !important; }
     }
 
-    /* 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ - ПРОСТЫЕ СТИЛИ БЕЗ ОБРЕЗАНИЯ */
-    .message-context-menu {
-        position: fixed;
-        background: white;
-        border: 2px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 10000;
-        padding: 4px 0;
-        min-width: 180px;
-        max-width: 250px;
-        font-size: 14px;
-    }
-
-    .menu-item {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        cursor: pointer;
-        transition: background 0.2s;
-        color: #333;
-    }
-
-    .menu-item:hover {
-        background: #f8f9fa;
-    }
-
-    .menu-item i {
-        width: 16px;
-        margin-right: 8px;
-        text-align: center;
-        color: #6c757d;
-    }
-
-    .menu-item[data-action="delete"] {
-        color: #dc3545;
-    }
-
-    .menu-item[data-action="delete"]:hover {
-        background: #ffeaea;
-    }
-
-    .menu-separator {
-        height: 1px;
-        background: #e9ecef;
-        margin: 4px 0;
-    }
+    /* КОНТЕКСТНОЕ МЕНЮ - СТИЛИ ПЕРЕНЕСЕНЫ В ОСНОВНОЙ CSS ФАЙЛ */
 
 </style>
 {% endblock %}
