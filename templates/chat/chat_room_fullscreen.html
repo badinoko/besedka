@@ -82,8 +82,8 @@
     .message-content.other {
         background: white;
         color: #333;
-        border: 2px solid #e9ecef;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 3px solid #b8c5d1; /* БОЛЕЕ АКЦЕНТИРОВАННАЯ ГРАНИЦА */
+        box-shadow: 0 3px 8px rgba(108, 117, 125, 0.15); /* УСИЛЕННАЯ ТЕНЬ */
     }
 
     /* Овальная рамочка на белом фоне (чужие сообщения) */
@@ -218,16 +218,24 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === ЦИТАТЫ С ОКАНТОВКОЙ === */
+    /* === ЦИТАТЫ С АКЦЕНТИРОВАННОЙ ОКАНТОВКОЙ === */
     .reply-quote {
-        background: rgba(0, 123, 255, 0.05) !important;
-        border: 2px solid #007bff !important;
-        border-radius: 0.5rem !important;
-        padding: 0.75rem;
+        background: rgba(173, 216, 230, 0.15) !important; /* ЛЕГКАЯ ГОЛУБАЯ ПОДЛОЖКА */
+        border: 3px solid #87CEEB !important; /* БОЛЕЕ АКЦЕНТИРОВАННАЯ ГРАНИЦА */
+        border-radius: 0.75rem !important; /* ЧУТЬ БОЛЬШЕ СКРУГЛЕНИЯ */
+        padding: 0.875rem; /* НЕМНОГО БОЛЬШЕ ОТСТУПЫ */
         margin-bottom: 1rem;
         font-size: 0.875rem;
         cursor: pointer;
-        border-bottom: 1px solid #ddd; /* Горизонтальная полоса разделения */
+        box-shadow: 0 3px 10px rgba(135, 206, 235, 0.2); /* ЛЕГКАЯ ТЕНЬ */
+        transition: all 0.2s ease;
+    }
+
+    .reply-quote:hover {
+        background: rgba(173, 216, 230, 0.25) !important;
+        border-color: #4FC3F7 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
     }
 
     .reply-quote-author {
@@ -285,9 +293,8 @@
         margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
         margin-left: var(--border-width);
         background: white;
-        border-left: var(--border-width) solid var(--border-color);
-        border-right: var(--border-width) solid var(--border-color);
         padding: 0.5rem;
+        /* УБИРАЕМ ИЗБЫТОЧНЫЕ ФИОЛЕТОВЫЕ ГРАНИЦЫ */
     }
 
     /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
