@@ -37,14 +37,6 @@
         margin-bottom: 1rem;
         display: flex;
         align-items: flex-start;
-        transition: all 0.3s ease;
-    }
-
-    .chat-message:hover {
-        background: rgba(0, 0, 0, 0.02);
-        border-radius: 0.5rem;
-        padding: 0.25rem;
-        margin: 0.75rem -0.25rem;
     }
 
     .message-content {
@@ -57,7 +49,8 @@
 
     .message-content.own {
         background: {% if room_name == 'vip' %}linear-gradient(135deg, #ffd700 0%, #ffb347 100%){% else %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% endif %};
-        color: #333 !important;
+        color: white !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         margin-left: auto;
         border: 2px solid {% if room_name == 'vip' %}#e6c200{% else %}#1e7e34{% endif %};
     }
@@ -84,18 +77,17 @@
     }
 
     .message-author {
-        font-weight: 700;
+        font-weight: 600;
         font-size: 0.85rem;
         margin-bottom: 0.4rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         opacity: 0.9;
     }
 
     .message-text {
-        margin: 0.25rem 0;
+        margin: 0.25rem 0 0.75rem 0;
         font-size: 1rem;
-        font-weight: 500;
+        font-weight: 400;
         line-height: 1.4;
     }
 
@@ -103,10 +95,9 @@
         font-size: 0.7rem;
         font-weight: 600;
         opacity: 0.8;
-        text-align: right;
-        margin-top: 0.4rem;
+        text-align: left;
+        margin-top: 0.5rem;
         letter-spacing: 0.3px;
-        position: relative;
     }
 
     /* Поле ввода */
@@ -298,30 +289,27 @@
 
     /* === НОВЫЕ КНОПКИ ЛАЙК/ДИЗЛАЙК В ЛЕВОМ НИЖНЕМ УГЛУ === */
     .message-reactions {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        display: none;
+        margin-top: 0.5rem;
+        display: flex;
         flex-direction: row;
-        gap: 0.5rem;
+        gap: 0.75rem;
+        align-items: center;
         z-index: 5;
     }
 
-    .chat-message:hover .message-reactions {
-        display: flex;
-    }
+    /* Кнопки реакций всегда видны - hover убран */
 
     .reaction-btn {
         background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #dee2e6;
+        border: 2px solid #dee2e6;
         border-radius: 50%;
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         transition: all 0.2s ease;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
@@ -342,6 +330,14 @@
         color: white;
     }
 
+    .reaction-btn.like-btn.reacted {
+        background: #28a745;
+        color: white;
+        border-color: #1e7e34;
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
     .reaction-btn.dislike-btn {
         color: #dc3545;
         border-color: #dc3545;
@@ -350,6 +346,24 @@
     .reaction-btn.dislike-btn:hover {
         background: #dc3545;
         color: white;
+    }
+
+    .reaction-btn.dislike-btn.reacted {
+        background: #dc3545;
+        color: white;
+        border-color: #c82333;
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* СЧЕТЧИКИ РЕАКЦИЙ */
+    .reaction-count {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: inherit;
+        opacity: 0.8;
+        min-width: 1rem;
+        text-align: center;
     }
 
     /* Блок цитаты в ответе - УЛУЧШЕНА ВИДИМОСТЬ НА ЦВЕТНЫХ ФОНАХ */
@@ -362,14 +376,13 @@
         margin-bottom: 0.75rem;
         font-size: 0.875rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: none;
         box-shadow: none;
         position: relative;
     }
 
     .reply-quote:hover {
-        border-left-color: #0056b3 !important;
-        padding-left: 1rem;
+        /* УБРАНЫ все hover эффекты - статичная цитата */
     }
 
     .reply-quote-author {
@@ -637,7 +650,7 @@
         if (message.reply_to) {
             messageHTML += `
                 <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                    <div class="reply-quote-author">${message.reply_to.author_name}</div>
+                    <div class="reply-quote-author">${message.reply_to.author_role_icon || '👤'} ${message.reply_to.author_name}</div>
                     <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
                 </div>
             `;
@@ -648,24 +661,27 @@
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
                 <div class="message-text">${message.content}</div>
-                <div class="message-timestamp">
-                    ${timestamp}
-                    <!-- Кнопки лайк/дизлайк в левом нижнем углу -->
-                    <div class="message-reactions">
-                        <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится">
-                            <i class="fas fa-thumbs-up"></i>
-                        </button>
-                        <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится">
-                            <i class="fas fa-thumbs-down"></i>
-                        </button>
-                    </div>
+                <div class="message-timestamp">${timestamp}</div>
+
+                <!-- Система реакций всегда видна ниже текста -->
+                <div class="message-reactions">
+                    <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
+                        <i class="fas fa-thumbs-up"></i>
+                    </button>
+                    <span class="reaction-count" id="likes-${message.id}">0</span>
+
+                    <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
+                        <i class="fas fa-thumbs-down"></i>
+                    </button>
+                    <span class="reaction-count" id="dislikes-${message.id}">0</span>
                 </div>
-            </div>
-            <!-- Кнопка ответить привязана к контенту -->
-            <div class="message-actions">
-                <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
-                    <i class="fas fa-reply"></i>
-                </button>
+
+                <!-- Кнопка ответить привязана к контенту -->
+                <div class="message-actions">
+                    <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                </div>
             </div>
         `;
 
@@ -708,7 +724,7 @@
             if (message.reply_to) {
                 messageHTML += `
                     <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                        <div class="reply-quote-author">${message.reply_to.author_name}</div>
+                        <div class="reply-quote-author">${message.reply_to.author_role_icon || '👤'} ${message.reply_to.author_name}</div>
                         <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
                     </div>
                 `;
@@ -719,24 +735,27 @@
                         ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
                     <div class="message-text">${message.content}</div>
-                    <div class="message-timestamp">
-                        ${timestamp}
-                        <!-- Кнопки лайк/дизлайк в левом нижнем углу -->
-                        <div class="message-reactions">
-                            <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится">
-                                <i class="fas fa-thumbs-up"></i>
-                            </button>
-                            <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится">
-                                <i class="fas fa-thumbs-down"></i>
-                            </button>
-                        </div>
+                    <div class="message-timestamp">${timestamp}</div>
+
+                    <!-- Система реакций всегда видна ниже текста -->
+                    <div class="message-reactions">
+                        <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        <span class="reaction-count" id="likes-${message.id}">0</span>
+
+                        <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
+                            <i class="fas fa-thumbs-down"></i>
+                        </button>
+                        <span class="reaction-count" id="dislikes-${message.id}">0</span>
                     </div>
-                </div>
-                <!-- Кнопка ответить привязана к контенту -->
-                <div class="message-actions">
-                    <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
-                        <i class="fas fa-reply"></i>
-                    </button>
+
+                    <!-- Кнопка ответить привязана к контенту -->
+                    <div class="message-actions">
+                        <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
+                            <i class="fas fa-reply"></i>
+                        </button>
+                    </div>
                 </div>
             `;
 
@@ -883,40 +902,98 @@
         }
     };
 
+        // Система для отслеживания реакций пользователя (безотзывная)
+    let userReactions = new Set();
+
     // Функции для лайков и дизлайков
     function likeMessage(messageId) {
-        console.log('Like message:', messageId);
-        // TODO: Отправить лайк на сервер
+        const reactionKey = `${messageId}-like`;
+        const button = document.querySelector(`[data-message-id="${messageId}"][data-reaction="like"]`);
+        const counter = document.getElementById(`likes-${messageId}`);
+
+        // Проверяем, не реагировал ли пользователь уже на это сообщение
+        if (userReactions.has(`${messageId}-like`) || userReactions.has(`${messageId}-dislike`)) {
+            showTemporaryFeedback('❌ Вы уже реагировали на это сообщение', 'warning');
+            return;
+        }
+
+        // Добавляем реакцию
+        userReactions.add(reactionKey);
+
+        // Обновляем визуал кнопки
+        button.classList.add('reacted');
+        button.title = 'Вы уже лайкнули это сообщение';
+
+        // Увеличиваем счетчик
+        let currentCount = parseInt(counter.textContent) || 0;
+        counter.textContent = currentCount + 1;
+
+        // Блокируем обе кнопки реакций для этого сообщения
+        const dislikeButton = document.querySelector(`[data-message-id="${messageId}"][data-reaction="dislike"]`);
+        dislikeButton.classList.add('reacted');
+        dislikeButton.title = 'Вы уже реагировали на это сообщение';
+
+        showTemporaryFeedback('👍 Лайк засчитан!', 'success');
+
+        console.log('Like added for message:', messageId);
+        // TODO: Отправить на сервер
         // chatSocket.send(JSON.stringify({
         //     type: 'reaction',
         //     message_id: messageId,
         //     reaction: 'like'
         // }));
-
-        // Временная заглушка
-        showTemporaryFeedback('👍 Лайк отправлен!', 'success');
     }
 
     function dislikeMessage(messageId) {
-        console.log('Dislike message:', messageId);
-        // TODO: Отправить дизлайк на сервер
+        const reactionKey = `${messageId}-dislike`;
+        const button = document.querySelector(`[data-message-id="${messageId}"][data-reaction="dislike"]`);
+        const counter = document.getElementById(`dislikes-${messageId}`);
+
+        // Проверяем, не реагировал ли пользователь уже на это сообщение
+        if (userReactions.has(`${messageId}-like`) || userReactions.has(`${messageId}-dislike`)) {
+            showTemporaryFeedback('❌ Вы уже реагировали на это сообщение', 'warning');
+            return;
+        }
+
+        // Добавляем реакцию
+        userReactions.add(reactionKey);
+
+        // Обновляем визуал кнопки
+        button.classList.add('reacted');
+        button.title = 'Вы уже дизлайкнули это сообщение';
+
+        // Увеличиваем счетчик
+        let currentCount = parseInt(counter.textContent) || 0;
+        counter.textContent = currentCount + 1;
+
+        // Блокируем обе кнопки реакций для этого сообщения
+        const likeButton = document.querySelector(`[data-message-id="${messageId}"][data-reaction="like"]`);
+        likeButton.classList.add('reacted');
+        likeButton.title = 'Вы уже реагировали на это сообщение';
+
+        showTemporaryFeedback('👎 Дизлайк засчитан!', 'info');
+
+        console.log('Dislike added for message:', messageId);
+        // TODO: Отправить на сервер
         // chatSocket.send(JSON.stringify({
         //     type: 'reaction',
         //     message_id: messageId,
         //     reaction: 'dislike'
         // }));
-
-        // Временная заглушка
-        showTemporaryFeedback('👎 Дизлайк отправлен!', 'info');
     }
 
     function showTemporaryFeedback(message, type) {
         const feedback = document.createElement('div');
+        let bgColor = '#007bff'; // default info
+        if (type === 'success') bgColor = '#28a745';
+        else if (type === 'warning') bgColor = '#fd7e14';
+        else if (type === 'error') bgColor = '#dc3545';
+
         feedback.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: ${type === 'success' ? '#28a745' : '#007bff'};
+            background: ${bgColor};
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
