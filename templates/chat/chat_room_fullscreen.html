@@ -60,14 +60,19 @@
         min-width: 300px;
         padding: 1rem 1rem 3rem 1rem; /* Отступ снизу для кнопок и времени */
         border-radius: 1rem;
-        word-wrap: break-word;
+        /* 🔧 ПРАВИЛЬНЫЕ ПЕРЕНОСЫ ТЕКСТА ДЛЯ ВСЕХ СООБЩЕНИЙ */
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important; /* Переносит длинные слова */
+        white-space: pre-wrap !important; /* Сохраняет пробелы и переносы строк */
+        hyphens: auto; /* Автоматические переносы */
     }
 
-    /* 🔧 ТОЛЬКО ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ - ПЕРЕНОСЫ СТРОК */
+    /* 🔧 ДОПОЛНИТЕЛЬНО ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ */
     .message-content.forwarded-message {
-        white-space: pre-line !important;
-        overflow-wrap: break-word !important;
+        white-space: pre-line !important; /* Отображает \n как переносы строк */
     }
+
+
 
     .message-content.own {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -224,19 +229,31 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === ЦИТАТЫ ТЕПЕРЬ АВТОМАТИЧЕСКИ НАСЛЕДУЮТ ГОЛУБОЙ ФОН ОТ ЧУЖИХ СООБЩЕНИЙ === */
+    /* === УЛУЧШЕННЫЕ ЦИТАТЫ С ЛУЧШИМ ВЫДЕЛЕНИЕМ === */
     .message-content .reply-quote,
     .message-content.own .reply-quote,
     .message-content.other .reply-quote {
-        /* УБИРАЕМ ДУБЛИРУЮЩИЕ СТИЛИ - ОНИ НАСЛЕДУЮТСЯ ОТ .message-content.other */
-        border: 2px solid #1e3a8a !important; /* ТОЛЬКО ГРАНИЦА ОСТАЕТСЯ */
+        background: rgba(173, 216, 230, 0.3) !important; /* БОЛЕЕ ЯРКАЯ ГОЛУБАЯ ПОДЛОЖКА */
+        border: 3px solid #87CEEB !important; /* БОЛЕЕ АКЦЕНТИРОВАННАЯ ГРАНИЦА */
+        border-left: 6px solid #1e3a8a !important; /* ТОЛСТАЯ ЛЕВАЯ ГРАНИЦА КАК МАРКЕР ЦИТАТЫ */
         border-radius: 0.75rem !important;
-        padding: 0.875rem !important;
+        padding: 1rem !important; /* УВЕЛИЧЕННЫЕ ОТСТУПЫ */
         margin-bottom: 1rem !important;
         font-size: 0.875rem !important;
         cursor: pointer !important;
-        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.2) !important;
+        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25) !important; /* УСИЛЕННАЯ ТЕНЬ */
         transition: all 0.2s ease !important;
+        position: relative;
+    }
+
+    /* ИКОНКА ЦИТАТЫ В ЛЕВОМ ВЕРХНЕМ УГЛУ */
+    .message-content .reply-quote:before {
+        content: "💬";
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        font-size: 1.2rem;
+        opacity: 0.7;
     }
 
     .message-content .reply-quote:hover,
@@ -297,12 +314,33 @@
         transform: scale(1.15);
     }
 
-    /* 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА */
+    /* 💬 УЛУЧШЕННАЯ ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА */
     .reply-zone {
         margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
         margin-left: var(--border-width);
         background: white;
         padding: 0.5rem;
+    }
+
+    /* ЦИТАТА В РЕЖИМЕ ОТВЕТА С ТЕМ ЖЕ ДИЗАЙНОМ */
+    .reply-mode {
+        background: rgba(173, 216, 230, 0.3) !important; /* ТАКАЯ ЖЕ ГОЛУБАЯ ПОДЛОЖКА */
+        border: 3px solid #87CEEB !important; /* ТАКАЯ ЖЕ ГРАНИЦА */
+        border-left: 6px solid #1e3a8a !important; /* ТОЛСТАЯ ЛЕВАЯ ГРАНИЦА */
+        border-radius: 0.75rem !important;
+        padding: 1rem !important;
+        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25) !important;
+        position: relative;
+    }
+
+    /* ИКОНКА ЦИТАТЫ ДЛЯ РЕЖИМА ОТВЕТА */
+    .reply-mode:before {
+        content: "↩️";
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        font-size: 1.2rem;
+        opacity: 0.7;
     }
 
     /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
@@ -1090,13 +1128,9 @@
         const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
 
-        // Проверяем, является ли сообщение пересланным
-        const isForwarded = message.content.includes('📤 Переслано');
-        const forwardedClass = isForwarded ? ' forwarded-message' : '';
-
         // Формируем HTML сообщения с поддержкой ответов
         let messageHTML = `
-            <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
+            <div class="message-content ${isOwn ? 'own' : 'other'}">
         `;
 
         // Добавляем блок цитаты если это ответ
@@ -1184,13 +1218,9 @@
             const timestamp = new Date(message.created).toLocaleTimeString();
             const isOwn = message.is_own;
 
-            // Проверяем, является ли сообщение пересланным
-            const isForwarded = message.content.includes('📤 Переслано');
-            const forwardedClass = isForwarded ? ' forwarded-message' : '';
-
             // Формируем HTML сообщения с поддержкой ответов
             let messageHTML = `
-                <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
+                <div class="message-content ${isOwn ? 'own' : 'other'}">
             `;
 
             // Добавляем блок цитаты если это ответ

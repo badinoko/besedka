@@ -130,8 +130,11 @@ class BaseChatConsumer(WebsocketConsumer):
         try:
             room, created = Room.objects.get_or_create(name=self.room_name)
 
-            # Получаем последние 50 сообщений с related данными
-            messages = Message.objects.filter(room=room).select_related(
+            # ИСПРАВЛЕНО: Получаем только НЕ удаленные сообщения
+            messages = Message.objects.filter(
+                room=room,
+                is_deleted=False  # КРИТИЧЕСКИ ВАЖНО - НЕ загружаем удаленные сообщения!
+            ).select_related(
                 'author', 'parent', 'parent__author'
             ).order_by('-created_at')[:50]
 
@@ -310,12 +313,13 @@ class BaseChatConsumer(WebsocketConsumer):
                 'vip': 'Беседка - VIP',
                 'moderator': 'Модераторы'
             }
+
             source_room_display = room_display_names.get(self.room_name, self.room_name)
 
-            # Создаем четко структурированное пересланное сообщение в соответствии с базовым дизайном
-            forwarded_content = f"""📤 Переслано из «{source_room_display}»
-👤 {source_author}
-{clean_content}"""
+            # Создаем пересланное сообщение как обычное сообщение с цитатой (SSOT принцип)
+            forwarded_content = f"""Переслано из «{source_room_display}»
+
+{source_author}: {clean_content}"""
 
             forwarded_message = Message.objects.create(
                 room=target_room,
@@ -342,26 +346,27 @@ class BaseChatConsumer(WebsocketConsumer):
     def extract_clean_content(self, content):
         """Извлекает чистый контент из пересланного сообщения"""
         # Если сообщение уже пересланное, извлекаем оригинальный контент
-        if content.startswith('📤'):
+        if content.startswith('Переслано из «') or content.startswith('📤'):
             lines = content.split('\n')
             if len(lines) >= 3:
-                # Новый формат: "📤 Переслано из...", "👤 автор", "контент"
-                # Ищем строку с автором (👤) и берем все что после неё
-                for i, line in enumerate(lines):
-                    if line.startswith('👤 ') and i + 1 < len(lines):
-                        # Берем все строки начиная со следующей после автора
-                        return '\n'.join(lines[i + 1:])
+                # Новый формат: "Переслано из...", "", "автор: контент"
+                # Ищем строку с автором и двоеточием
+                for i, line in enumerate(lines[2:], 2):  # Начинаем с 3-й строки
+                    if ': ' in line:
+                        # Берем все после двоеточия
+                        return line.split(': ', 1)[1]
 
         return content
 
     def extract_original_author(self, content, fallback_author):
         """Извлекает оригинального автора из пересланного сообщения"""
         # Если сообщение уже пересланное, извлекаем оригинального автора
-        if content.startswith('📤'):
+        if content.startswith('Переслано из «') or content.startswith('📤'):
             lines = content.split('\n')
-            for line in lines:
-                if line.startswith('👤 '):
-                    return line[2:].strip()  # Убираем "👤 " и пробелы
+            for line in lines[2:]:  # Начинаем с 3-й строки
+                if ': ' in line:
+                    # Берем все до двоеточия как имя автора
+                    return line.split(': ', 1)[0]
 
         return fallback_author
 
