@@ -60,18 +60,8 @@
         min-width: 300px;
         padding: 1rem 1rem 3rem 1rem; /* Отступ снизу для кнопок и времени */
         border-radius: 1rem;
-        /* 🔧 ПРАВИЛЬНЫЕ ПЕРЕНОСЫ ТОЛЬКО ДЛИННЫХ СЛОВ */
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important; /* Переносит длинные слова */
-        hyphens: auto; /* Автоматические переносы */
+        word-wrap: break-word;
     }
-
-    /* 🔧 ДОПОЛНИТЕЛЬНО ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ */
-    .message-content.forwarded-message {
-        white-space: pre-line !important; /* Отображает \n как переносы строк */
-    }
-
-
 
     .message-content.own {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -90,17 +80,17 @@
     }
 
     .message-content.other {
-        background: rgba(219, 234, 254, 0.7) !important; /* ЛЕГКАЯ ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ВСЕХ ЧУЖИХ СООБЩЕНИЙ - ПРИНЦИП SSOT! */
+        background: white;
         color: #333;
-        border: 2px solid #1e3a8a !important; /* ТЕМНО-СИНЯЯ ГРАНИЦА ПОТОНЬШЕ */
-        box-shadow: 0 3px 8px rgba(30, 58, 138, 0.15) !important; /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
+        border: 2px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* Овальная рамочка на голубом фоне (чужие сообщения) */
+    /* Овальная рамочка на белом фоне (чужие сообщения) */
     .message-content.other .message-author {
-        background: rgba(30, 58, 138, 0.15) !important; /* БОЛЕЕ НАСЫЩЕННАЯ ПОДЛОЖКА ДЛЯ ИМЕНИ */
-        border-color: rgba(30, 58, 138, 0.3) !important;
-        color: #1e3a8a !important; /* ТЕМНО-СИНИЙ ЦВЕТ ТЕКСТА */
+        background: rgba(0, 123, 255, 0.1);
+        border-color: rgba(0, 123, 255, 0.2);
+        color: #0056b3 !important;
     }
 
     /* === ТЕКСТ СООБЩЕНИЙ === */
@@ -228,44 +218,21 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === УЛУЧШЕННЫЕ ЦИТАТЫ С ЛУЧШИМ ВЫДЕЛЕНИЕМ === */
-    .message-content .reply-quote,
-    .message-content.own .reply-quote,
-    .message-content.other .reply-quote {
-        background: rgba(173, 216, 230, 0.3) !important; /* БОЛЕЕ ЯРКАЯ ГОЛУБАЯ ПОДЛОЖКА */
-        border: 3px solid #87CEEB !important; /* БОЛЕЕ АКЦЕНТИРОВАННАЯ ГРАНИЦА */
-        border-left: 6px solid #1e3a8a !important; /* ТОЛСТАЯ ЛЕВАЯ ГРАНИЦА КАК МАРКЕР ЦИТАТЫ */
-        border-radius: 0.75rem !important;
-        padding: 1rem !important; /* УВЕЛИЧЕННЫЕ ОТСТУПЫ */
-        margin-bottom: 1rem !important;
-        font-size: 0.875rem !important;
-        cursor: pointer !important;
-        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25) !important; /* УСИЛЕННАЯ ТЕНЬ */
-        transition: all 0.2s ease !important;
-        position: relative;
-    }
-
-    /* ИКОНКА ЦИТАТЫ В ЛЕВОМ ВЕРХНЕМ УГЛУ */
-    .message-content .reply-quote:before {
-        content: "💬";
-        position: absolute;
-        top: 0.5rem;
-        left: 0.5rem;
-        font-size: 1.2rem;
-        opacity: 0.7;
-    }
-
-    .message-content .reply-quote:hover,
-    .message-content.own .reply-quote:hover,
-    .message-content.other .reply-quote:hover {
-        border-color: #2563eb !important; /* ЧУТЬ СВЕТЛЕЕ ПРИ HOVER */
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3) !important;
+    /* === ЦИТАТЫ С ОКАНТОВКОЙ === */
+    .reply-quote {
+        background: rgba(0, 123, 255, 0.05) !important;
+        border: 2px solid #007bff !important;
+        border-radius: 0.5rem !important;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        border-bottom: 1px solid #ddd; /* Горизонтальная полоса разделения */
     }
 
     .reply-quote-author {
         font-weight: 700;
-        color: #1e3a8a !important; /* ТЕМНО-СИНИЙ ДЛЯ ЛУЧШЕГО КОНТРАСТА */
+        color: #0056b3 !important;
         margin-bottom: 0.25rem;
         font-size: 0.8rem;
     }
@@ -313,38 +280,9 @@
         transform: scale(1.15);
     }
 
-    /* 💬 УЛУЧШЕННАЯ ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА */
-    .reply-zone {
-        margin-right: calc(240px + var(--border-width)); /* ТАКИЕ ЖЕ ОТСТУПЫ КАК У ПОЛЯ ВВОДА */
-        margin-left: var(--border-width);
-        background: white;
-        padding: 0.5rem;
-    }
-
-    /* ЦИТАТА В РЕЖИМЕ ОТВЕТА С ТЕМ ЖЕ ДИЗАЙНОМ */
-    .reply-mode {
-        background: rgba(173, 216, 230, 0.3) !important; /* ТАКАЯ ЖЕ ГОЛУБАЯ ПОДЛОЖКА */
-        border: 3px solid #87CEEB !important; /* ТАКАЯ ЖЕ ГРАНИЦА */
-        border-left: 6px solid #1e3a8a !important; /* ТОЛСТАЯ ЛЕВАЯ ГРАНИЦА */
-        border-radius: 0.75rem !important;
-        padding: 1rem !important;
-        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25) !important;
-        position: relative;
-    }
-
-    /* ИКОНКА ЦИТАТЫ ДЛЯ РЕЖИМА ОТВЕТА */
-    .reply-mode:before {
-        content: "↩️";
-        position: absolute;
-        top: 0.5rem;
-        left: 0.5rem;
-        font-size: 1.2rem;
-        opacity: 0.7;
-    }
-
-    /* 📝 ПОЛЕ ВВОДА С ОПТИМАЛЬНОЙ ВЫСОТОЙ ДЛЯ 2 СТРОК */
+    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА С ФИОЛЕТОВОЙ ГРАНИЦЕЙ */
     .chat-input-area {
-        padding: 0.75rem; /* УВЕЛИЧИВАЕМ для лучшего комфорта */
+        padding: 0.5rem; /* УМЕНЬШЕНО с 1.5rem до 0.5rem */
         background: white;
         border-top: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА ДЛЯ РАЗДЕЛЕНИЯ С ЧАТОМ */
         margin: 0; /* Убираем все отступы */
@@ -352,7 +290,7 @@
         margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
         margin-bottom: var(--border-width); /* ОТСТУП ОТ НИЖНЕЙ ГРАНИЦЫ */
         position: relative;
-        height: 120px; /* УВЕЛИЧЕНА ВЫСОТА ДЛЯ ДВУХ СТРОК */
+        height: 100px; /* УМЕНЬШЕННАЯ ВЫСОТА ДЛЯ КОМПАКТНОСТИ */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -375,11 +313,11 @@
 
     .form-control {
         border: none;
-        padding: 0.75rem 1rem;
+        padding: 0.75rem 1rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
         font-size: 1rem;
         resize: none; /* УБИРАЕМ РУЧНОЕ ИЗМЕНЕНИЕ РАЗМЕРА */
-        height: 80px; /* ОПТИМАЛЬНАЯ ВЫСОТА ДЛЯ 2 СТРОК */
-        overflow-y: auto; /* СКРОЛЛИНГ С 3-Й СТРОКИ */
+        height: 60px; /* УМЕНЬШЕННАЯ ВЫСОТА */
+        overflow-y: auto; /* СКРОЛЛИНГ ВНУТРИ ПОЛЯ */
         line-height: 1.4; /* Удобная высота строки */
     }
 
@@ -453,15 +391,15 @@
         z-index: 20; /* Выше чем поле ввода */
     }
 
-    /* 🌟 ГОЛУБОЙ ДИЗАЙН ЗАГОЛОВКА "ONLINE" КАК У ЧУЖИХ СООБЩЕНИЙ */
+    /* 🌟 РЕВОЛЮЦИОННЫЙ ДИЗАЙН ЗАГОЛОВКА "ONLINE" */
     .users-header {
         padding: 0.75rem 0.5rem; /* КОМПАКТНЫЕ ОТСТУПЫ */
         border-bottom: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА СНИЗУ */
-        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); /* ГОЛУБОЙ ГРАДИЕНТ КАК У ЧУЖИХ СООБЩЕНИЙ */
+        background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); /* КРАСИВЫЙ ФИОЛЕТОВЫЙ ГРАДИЕНТ */
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25); /* ГОЛУБАЯ ТЕНЬ ВМЕСТО ФИОЛЕТОВОЙ */
+        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.25); /* ОБЪЕМНАЯ ТЕНЬ */
     }
 
     .users-header h6 {
@@ -543,32 +481,30 @@
         margin-top: var(--border-width);
     }
 
-    /* 💬 СТИЛИ ДЛЯ РЕЖИМА ОТВЕТА В ОТДЕЛЬНОЙ ЗОНЕ */
+    /* Режим ответа над полем ввода */
     .reply-mode {
-        display: flex;
-        background: rgba(219, 234, 254, 0.7) !important; /* ТАКАЯ ЖЕ ГОЛУБАЯ ПОДЛОЖКА КАК У ЧУЖИХ СООБЩЕНИЙ */
-        border: 2px solid #1e3a8a; /* ТАКАЯ ЖЕ ТЕМНО-СИНЯЯ ГРАНИЦА */
+        display: none;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
         border-radius: 0.5rem;
-        padding: 0.75rem;
+        padding: 0.5rem 0.75rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
+        margin-bottom: 0.25rem; /* УМЕНЬШЕННЫЙ ОТСТУП */
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.2); /* СООТВЕТСТВУЮЩАЯ ТЕНЬ */
+    }
+
+    .reply-mode.active {
+        display: flex;
     }
 
     .reply-mode-info {
         flex: 1;
-        display: flex; /* РАЗМЕЩАЕМ ИКОНКУ И ТЕКСТ НА ОДНОМ УРОВНЕ */
-        align-items: center; /* ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ */
-        gap: 0.5rem; /* ОТСТУП МЕЖДУ ИКОНКОЙ И ТЕКСТОМ */
     }
 
     .reply-mode-label {
-        font-size: 1rem; /* УВЕЛИЧИВАЕМ РАЗМЕР ДЛЯ ИКОНКИ */
-        color: #007bff; /* СИНИЙ ЦВЕТ ДЛЯ ИКОНКИ */
-        margin-bottom: 0; /* УБИРАЕМ НИЖНИЙ ОТСТУП */
-        display: flex;
-        align-items: center;
-        flex-shrink: 0; /* НЕ СЖИМАЕТСЯ */
+        font-size: 0.7rem;
+        color: #666;
+        margin-bottom: 0.2rem;
     }
 
     .reply-mode-content {
@@ -576,7 +512,6 @@
         color: #333;
         font-weight: 500;
         line-height: 1.3;
-        flex: 1; /* ЗАНИМАЕТ ОСТАВШЕЕСЯ ПРОСТРАНСТВО */
     }
 
     .reply-mode-cancel {
@@ -611,232 +546,6 @@
         0% { background: rgba(0, 123, 255, 0.2) !important; }
         100% { background: rgba(0, 123, 255, 0.1) !important; }
     }
-
-    /* 🖱️ КОНТЕКСТНОЕ МЕНЮ СООБЩЕНИЙ */
-    .message-context-menu {
-        position: fixed;
-        background: white;
-        border: 2px solid #6f42c1;
-        border-radius: 0.75rem;
-        padding: 0.5rem 0;
-        box-shadow:
-            0 8px 25px rgba(111, 66, 193, 0.25),
-            0 4px 12px rgba(0, 0, 0, 0.15);
-        backdrop-filter: blur(10px);
-        z-index: 9999;
-        min-width: 180px;
-        display: none;
-        animation: contextMenuFadeIn 0.2s ease-out;
-    }
-
-    @keyframes contextMenuFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.95) translateY(-5px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .menu-item {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.9rem;
-        color: #333;
-        gap: 0.5rem;
-    }
-
-    .menu-item:hover {
-        background: rgba(111, 66, 193, 0.1);
-        transform: translateX(3px);
-    }
-
-    .menu-item i {
-        width: 16px;
-        text-align: center;
-        color: #6f42c1;
-    }
-
-    .menu-item[data-action="delete"] {
-        color: #dc3545;
-    }
-
-    .menu-item[data-action="delete"]:hover {
-        background: rgba(220, 53, 69, 0.1);
-    }
-
-    .menu-item[data-action="delete"] i {
-        color: #dc3545;
-    }
-
-    /* 💎 СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН */
-    .chat-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: modalFadeIn 0.3s ease;
-    }
-
-    @keyframes modalFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    .chat-modal-backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(3px);
-    }
-
-    .chat-modal-content {
-        position: relative;
-        background: white;
-        border-radius: 1rem;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        width: 90%;
-        max-width: 500px;
-        overflow: hidden;
-        animation: modalSlideIn 0.3s ease;
-    }
-
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .chat-modal-header {
-        padding: 1.5rem;
-        border-bottom: 2px solid #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: linear-gradient(135deg, #6f42c1, #5a32a3);
-        color: white;
-    }
-
-    .chat-modal-header h5 {
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .chat-modal-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.2rem;
-        cursor: pointer;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s ease;
-    }
-
-    .chat-modal-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .chat-modal-body {
-        padding: 1.5rem;
-    }
-
-    .chat-modal-footer {
-        padding: 1rem 1.5rem;
-        border-top: 2px solid #f8f9fa;
-        display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-        background: #f8f9fa;
-    }
-
-    .message-preview {
-        background: rgba(111, 66, 193, 0.1);
-        border: 2px solid #6f42c1;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        margin-top: 1rem;
-    }
-
-    .message-preview .preview-author {
-        font-weight: 600;
-        color: #6f42c1;
-        margin-bottom: 0.5rem;
-    }
-
-    .message-preview .preview-text {
-        font-style: italic;
-        color: #333;
-    }
-
-    /* СТИЛИ ДЛЯ СПИСКА ЧАТОВ */
-    .chat-list {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .chat-option {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border: 2px solid #e9ecef;
-        border-radius: 0.5rem;
-        margin-bottom: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .chat-option:hover {
-        background: rgba(111, 66, 193, 0.1);
-        border-color: #6f42c1;
-    }
-
-    .chat-option.selected {
-        background: rgba(111, 66, 193, 0.2);
-        border-color: #6f42c1;
-        color: #6f42c1;
-    }
-
-    .chat-option-icon {
-        font-size: 1.5rem;
-        margin-right: 1rem;
-        width: 2rem;
-        text-align: center;
-    }
-
-    .chat-option-info h6 {
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .chat-option-info p {
-        margin: 0;
-        color: #666;
-        font-size: 0.9rem;
-    }
-
 </style>
 {% endblock %}
 
@@ -852,28 +561,24 @@
         </div>
     </div>
 
-    <!-- 💬 ЗОНА ОТВЕТА НАД ПОЛЕМ ВВОДА -->
-    <div class="reply-zone" id="reply-zone" style="display: none;">
+    <!-- Поле ввода сообщения -->
+    <div class="chat-input-area">
+        <!-- Режим ответа (скрытый по умолчанию) -->
         <div class="reply-mode" id="reply-mode">
             <div class="reply-mode-info">
-                <div class="reply-mode-label">
-                    <i class="fas fa-reply"></i> <!-- ИКОНКА СТРЕЛКИ ОТВЕТА ВМЕСТО ТЕКСТА -->
-                </div>
+                <div class="reply-mode-label">В ответ на:</div>
                 <div class="reply-mode-content" id="reply-mode-content"></div>
             </div>
             <button class="reply-mode-cancel" id="reply-mode-cancel" title="Отменить ответ">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    </div>
 
-    <!-- 📝 ПОЛЕ ВВОДА СООБЩЕНИЯ -->
-    <div class="chat-input-area">
         <div class="input-group">
             <textarea id="chat-message-input"
                       class="form-control"
                       placeholder="Введите сообщение... (Shift+Enter для отправки)"
-                      rows="2"></textarea>
+                      rows="3"></textarea>
             <button id="chat-message-submit" class="btn btn-send">
                 <i class="fas fa-paper-plane me-1"></i>
                 Отправить
@@ -896,117 +601,10 @@
     </div>
 </div>
 
-<!-- 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ С ПРАВИЛЬНОЙ ЛОГИКОЙ -->
-<div id="message-context-menu" class="message-context-menu" style="display: none;">
-    <div class="menu-item" data-action="reply">
-        <i class="fas fa-reply"></i>
-        <span>Ответить</span>
-    </div>
-    <div class="menu-item" data-action="forward">
-        <i class="fas fa-share"></i>
-        <span>Переслать</span>
-    </div>
-    <div class="menu-item" data-action="copy">
-        <i class="fas fa-copy"></i>
-        <span>Копировать текст</span>
-    </div>
-    <div class="menu-item" data-action="edit" style="display: none;">
-        <i class="fas fa-edit"></i>
-        <span>Редактировать</span>
-    </div>
-    <div class="menu-item" data-action="delete" style="display: none;">
-        <i class="fas fa-trash"></i>
-        <span>Удалить</span>
-    </div>
-</div>
-
-<!-- 🗑️ МОДАЛЬНОЕ ОКНО ДЛЯ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ -->
-<div id="delete-modal" class="chat-modal" style="display: none;">
-    <div class="chat-modal-backdrop"></div>
-    <div class="chat-modal-content">
-        <div class="chat-modal-header">
-            <h5><i class="fas fa-trash text-danger me-2"></i>Удалить сообщение</h5>
-            <button class="chat-modal-close" onclick="hideDeleteModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="chat-modal-body">
-            <p>Вы действительно хотите удалить это сообщение?</p>
-            <div class="message-preview" id="delete-message-preview">
-                <!-- Предпросмотр сообщения -->
-            </div>
-        </div>
-        <div class="chat-modal-footer">
-            <button class="btn btn-secondary" onclick="hideDeleteModal()">
-                <i class="fas fa-times me-1"></i>Отмена
-            </button>
-            <button class="btn btn-danger" onclick="confirmDeleteMessage()">
-                <i class="fas fa-trash me-1"></i>Удалить
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ✏️ МОДАЛЬНОЕ ОКНО ДЛЯ РЕДАКТИРОВАНИЯ -->
-<div id="edit-modal" class="chat-modal" style="display: none;">
-    <div class="chat-modal-backdrop"></div>
-    <div class="chat-modal-content">
-        <div class="chat-modal-header">
-            <h5><i class="fas fa-edit text-primary me-2"></i>Редактировать сообщение</h5>
-            <button class="chat-modal-close" onclick="hideEditModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="chat-modal-body">
-            <div class="form-group">
-                <label for="edit-message-text">Текст сообщения:</label>
-                <textarea id="edit-message-text" class="form-control" rows="3"></textarea>
-            </div>
-        </div>
-        <div class="chat-modal-footer">
-            <button class="btn btn-secondary" onclick="hideEditModal()">
-                <i class="fas fa-times me-1"></i>Отмена
-            </button>
-            <button class="btn btn-primary" onclick="confirmEditMessage()">
-                <i class="fas fa-save me-1"></i>Сохранить
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- 📤 МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРЕСЫЛКИ -->
-<div id="forward-modal" class="chat-modal" style="display: none;">
-    <div class="chat-modal-backdrop"></div>
-    <div class="chat-modal-content">
-        <div class="chat-modal-header">
-            <h5><i class="fas fa-share text-success me-2"></i>Переслать сообщение</h5>
-            <button class="chat-modal-close" onclick="hideForwardModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="chat-modal-body">
-            <p>Выберите чат для пересылки:</p>
-            <div class="chat-list" id="forward-chat-list">
-                <!-- Список доступных чатов -->
-            </div>
-        </div>
-        <div class="chat-modal-footer">
-            <button class="btn btn-secondary" onclick="hideForwardModal()">
-                <i class="fas fa-times me-1"></i>Отмена
-            </button>
-            <button class="btn btn-success" onclick="confirmForwardMessage()" disabled>
-                <i class="fas fa-paper-plane me-1"></i>Переслать
-            </button>
-        </div>
-    </div>
-</div>
-
 {{ room_name|json_script:"room-name" }}
-{{ user.role|json_script:"user-role" }}
 
 <script>
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
-    const userRole = JSON.parse(document.getElementById('user-role').textContent);
     const chatSocket = new WebSocket(
         'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
     );
@@ -1102,12 +700,6 @@
                     type: 'fetch_online_users'
                 }));
                 break;
-            case 'message_deleted':
-                handleMessageDeleted(data);
-                break;
-            case 'message_edited':
-                handleMessageEdited(data);
-                break;
             default:
                 console.log('Unknown message type:', data.type);
         }
@@ -1127,11 +719,6 @@
         const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
 
-        // 📤 ПРОВЕРЯЕМ ЯВЛЯЕТСЯ ЛИ СООБЩЕНИЕ ПЕРЕСЛАННЫМ
-        const isForwarded = message.content.includes('📤 Переслано') ||
-                           message.content.includes('Переслано из «') ||
-                           message.content.includes('**Переслано из чата');
-
         // Формируем HTML сообщения с поддержкой ответов
         let messageHTML = `
             <div class="message-content ${isOwn ? 'own' : 'other'}">
@@ -1150,29 +737,11 @@
             `;
         }
 
-        // 📤 ПРАВИЛЬНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ КАК У ОБЫЧНЫХ
-        if (isForwarded) {
-            // Парсим пересланное сообщение
-            const forwardedInfo = parseForwardedMessage(message.content);
-
-            messageHTML += `
-                <div class="message-author">
-                    ${forwardedInfo.originalAuthor}
-                </div>
-                <div class="message-text">
-                    <div style="color: #666; font-size: 0.9em; margin-bottom: 0.3rem;">
-                        ${forwardedInfo.forwardInfo}
-                    </div>
-                    ${forwardedInfo.content}${message.is_edited ? generateEditIndicator(message) : ''}
-                </div>`;
-        } else {
-            // Обычные сообщения как раньше
-            messageHTML += `
+        messageHTML += `
                 <div class="message-author">
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
-                <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>`;
-        }
+                <div class="message-text">${message.content}</div>
 
                 <!-- Время в правом нижнем углу -->
                 <div class="message-timestamp">${timestamp}</div>
@@ -1206,13 +775,6 @@
         messageElement.innerHTML = messageHTML;
         chatLog.appendChild(messageElement);
 
-        // Инициализируем tooltips для нового сообщения
-        if (message.is_edited) {
-            setTimeout(() => {
-                initTooltipsInContainer(messageElement);
-            }, 50);
-        }
-
         // Автопрокрутка для новых сообщений
         setTimeout(scrollToBottom, 100);
     }
@@ -1240,14 +802,9 @@
             const timestamp = new Date(message.created).toLocaleTimeString();
             const isOwn = message.is_own;
 
-            // 📤 ПРОВЕРЯЕМ ЯВЛЯЕТСЯ ЛИ СООБЩЕНИЕ ПЕРЕСЛАННЫМ
-            const isForwarded = message.content.includes('📤 Переслано') ||
-                               message.content.includes('Переслано из «') ||
-                               message.content.includes('**Переслано из чата');
-
             // Формируем HTML сообщения с поддержкой ответов
             let messageHTML = `
-                <div class="message-content ${isOwn ? 'own' : 'other'}
+                <div class="message-content ${isOwn ? 'own' : 'other'}">
             `;
 
             // Добавляем блок цитаты если это ответ
@@ -1263,29 +820,11 @@
                 `;
             }
 
-            // 📤 ПРАВИЛЬНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ КАК У ОБЫЧНЫХ
-            if (isForwarded) {
-                // Парсим пересланное сообщение
-                const forwardedInfo = parseForwardedMessage(message.content);
-
-                messageHTML += `
-                    <div class="message-author">
-                        ${forwardedInfo.originalAuthor}
-                    </div>
-                    <div class="message-text">
-                        <div style="color: #666; font-size: 0.9em; margin-bottom: 0.3rem;">
-                            ${forwardedInfo.forwardInfo}
-                        </div>
-                        ${forwardedInfo.content}${message.is_edited ? generateEditIndicator(message) : ''}
-                    </div>`;
-            } else {
-                // Обычные сообщения как раньше
-                messageHTML += `
+            messageHTML += `
                     <div class="message-author">
                         ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
-                    <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>`;
-            }
+                    <div class="message-text">${message.content}</div>
 
                     <!-- Время в правом нижнем углу -->
                     <div class="message-timestamp">${timestamp}</div>
@@ -1318,18 +857,11 @@
 
             messageElement.innerHTML = messageHTML;
             chatLog.appendChild(messageElement);
-
-
         });
 
         historyLoaded = true;
         // Прокручиваем к последнему сообщению с задержкой для истории
         setTimeout(scrollToBottom, 200);
-
-        // Инициализируем tooltips для всех загруженных сообщений
-        setTimeout(() => {
-            initTooltipsInContainer(document.getElementById('chat-log'));
-        }, 250);
     }
 
     function updateOnlineUsers(users, count) {
@@ -1400,21 +932,20 @@
         }
     };
 
-    // 💬 ФУНКЦИИ ДЛЯ СИСТЕМЫ ОТВЕТОВ С НОВОЙ ЗОНОЙ
+    // Функции для системы ответов
     function startReplyMode(messageId, authorName, content) {
         replyMode.active = true;
         replyMode.messageId = messageId;
         replyMode.messageData = { authorName, content };
 
-        const replyZoneElement = document.getElementById('reply-zone');
+        const replyModeElement = document.getElementById('reply-mode');
         const replyContentElement = document.getElementById('reply-mode-content');
 
         // Укорачиваем текст если слишком длинный
         const shortContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
         replyContentElement.innerHTML = `<strong>${authorName}</strong>: ${shortContent}`;
 
-        // Показываем зону ответа
-        replyZoneElement.style.display = 'block';
+        replyModeElement.classList.add('active');
 
         // Фокус на поле ввода
         document.getElementById('chat-message-input').focus();
@@ -1425,9 +956,8 @@
         replyMode.messageId = null;
         replyMode.messageData = null;
 
-        // Скрываем зону ответа
-        const replyZoneElement = document.getElementById('reply-zone');
-        replyZoneElement.style.display = 'none';
+        const replyModeElement = document.getElementById('reply-mode');
+        replyModeElement.classList.remove('active');
     }
 
     function scrollToMessage(messageId) {
@@ -1602,656 +1132,7 @@
         document.head.appendChild(style);
     }
 
-    // 📤 ФУНКЦИЯ ПАРСИНГА ПЕРЕСЛАННЫХ СООБЩЕНИЙ КАК У ОБЫЧНЫХ
-    function parseForwardedMessage(content) {
-        // По умолчанию
-        let forwardInfo = 'Переслано';
-        let originalAuthor = '👤 Неизвестный автор';
-        let messageContent = content;
 
-        try {
-            // Новый формат: "Переслано из «чат» автор контент"
-            if (content.includes('Переслано из «')) {
-                const lines = content.split('\n');
-                if (lines.length >= 3) {
-                    forwardInfo = lines[0]; // "Переслано из «...»"
-                    originalAuthor = lines[1]; // "👑 Buddy"
-                    messageContent = lines.slice(2).join('\n'); // остальное
-                }
-            }
-            // Старый markdown формат: "📤 **Переслано из чата "general"**"
-            else if (content.includes('📤 **Переслано из чата')) {
-                const lines = content.split('\n');
-                forwardInfo = lines[0] ? lines[0].replace(/\*\*/g, '') : 'Переслано';
-
-                // Ищем строку с автором
-                for (let i = 1; i < lines.length; i++) {
-                    if (lines[i].includes('**Автор:**')) {
-                        originalAuthor = lines[i].replace('**Автор:**', '').trim();
-                        messageContent = lines.slice(i + 2).join('\n'); // после "---"
-                        break;
-                    }
-                }
-            }
-            // Старый формат: "Переслано из «чат» Автор: автор"
-            else if (content.includes('Автор:')) {
-                const lines = content.split('\n');
-                if (lines.length >= 1) {
-                    const firstLine = lines[0];
-                    const authorMatch = firstLine.match(/Автор:\s*(.+?)(?:\s|$)/);
-                    if (authorMatch) {
-                        forwardInfo = firstLine.split('Автор:')[0].trim();
-                        originalAuthor = authorMatch[1];
-                        const remainingText = firstLine.replace(forwardInfo, '').replace(/Автор:\s*.+?/, '').trim();
-                        messageContent = remainingText + '\n' + lines.slice(1).join('\n');
-                        messageContent = messageContent.trim();
-                    }
-                }
-            }
-            // Убираем лишние пробелы
-            messageContent = messageContent.trim();
-        } catch (error) {
-            console.warn('Ошибка парсинга пересланного сообщения:', error);
-        }
-
-        return {
-            forwardInfo: forwardInfo,
-            originalAuthor: originalAuthor,
-            content: messageContent
-        };
-    }
-
-    // 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ С ПРАВИЛЬНОЙ ЛОГИКОЙ
-    let newContextMenu = {
-        element: null,
-        currentMessageData: null
-    };
-
-    // Инициализация нового контекстного меню - НЕМЕДЛЕННО, БЕЗ ОЖИДАНИЯ DOMContentLoaded
-    function initContextMenu() {
-        newContextMenu.element = document.getElementById('message-context-menu');
-        console.log('🔧 Инициализация контекстного меню:', newContextMenu.element ? 'УСПЕШНО' : 'ОШИБКА - элемент не найден');
-    }
-
-    // Пытаемся инициализировать сразу (элемент уже должен быть в DOM)
-    initContextMenu();
-
-    // Если элемент не найден, пробуем через DOMContentLoaded
-    if (!newContextMenu.element) {
-        document.addEventListener('DOMContentLoaded', initContextMenu);
-    }
-
-    // Обработчики событий
-
-        // Обработчик правого клика ТОЛЬКО на блоке сообщения
-        document.addEventListener('contextmenu', function(e) {
-            // Ищем именно .message-content (блок сообщения), а НЕ всю ширину
-            const messageContentElement = e.target.closest('.message-content');
-
-            if (messageContentElement) {
-                e.preventDefault(); // Отменяем стандартное меню браузера
-
-                // Найдем родительский элемент с data-message-id
-                const messageElement = messageContentElement.closest('[data-message-id]');
-
-                if (messageElement) {
-                    const messageId = messageElement.dataset.messageId;
-                    const messageTextElement = messageElement.querySelector('.message-text') || messageElement.querySelector('.message-content');
-                    const messageAuthorElement = messageElement.querySelector('.message-author');
-                    const messageText = messageTextElement ? messageTextElement.textContent : 'Текст сообщения';
-                    const messageAuthor = messageAuthorElement ? messageAuthorElement.textContent : 'Неизвестный автор';
-                    const isOwnMessage = messageContentElement.classList.contains('own');
-
-
-
-                    showNewContextMenu(e.clientX, e.clientY, {
-                        id: messageId,
-                        content: messageText,
-                        author: messageAuthor,
-                        isOwn: isOwnMessage
-                    });
-                }
-            }
-        });
-
-    // Скрываем меню при клике вне его
-    document.addEventListener('click', function(e) {
-        if (newContextMenu.element && !newContextMenu.element.contains(e.target)) {
-            hideNewContextMenu();
-        }
-    });
-
-    // Скрываем меню при нажатии Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            hideNewContextMenu();
-        }
-    });
-
-    // Обработчики кликов по пунктам меню - добавляем только если элемент существует
-    if (newContextMenu.element) {
-        newContextMenu.element.addEventListener('click', function(e) {
-            const menuItem = e.target.closest('.menu-item');
-            if (menuItem) {
-                const action = menuItem.dataset.action;
-                handleNewMenuAction(action);
-                hideNewContextMenu();
-            }
-        });
-    } else {
-        console.error('❌ Контекстное меню не найдено - обработчики не добавлены');
-    }
-
-    // ИСПРАВЛЕННОЕ позиционирование в пределах окна чата
-    function showNewContextMenu(x, y, messageData) {
-        newContextMenu.currentMessageData = messageData;
-
-        console.log('🐛 DEBUG контекстное меню:');
-        console.log('messageId:', messageData.id);
-        console.log('isOwnMessage:', messageData.isOwn);
-
-        // Показываем/скрываем пункты меню
-        const editItem = newContextMenu.element.querySelector('[data-action="edit"]');
-        const deleteItem = newContextMenu.element.querySelector('[data-action="delete"]');
-
-        // ПРАВИЛЬНАЯ ЛОГИКА РОЛЕЙ: владелец и модераторы могут модерировать любые сообщения
-        const canModerate = messageData.isOwn || userRole === 'owner' || userRole === 'moderator';
-
-        if (canModerate) {
-            if (editItem) editItem.style.display = 'flex';
-            if (deleteItem) deleteItem.style.display = 'flex';
-        } else {
-            if (editItem) editItem.style.display = 'none';
-            if (deleteItem) deleteItem.style.display = 'none';
-        }
-
-        // Показываем меню для измерения размеров
-        newContextMenu.element.style.display = 'block';
-        newContextMenu.element.style.left = '0px';
-        newContextMenu.element.style.top = '0px';
-
-        // Получаем размеры меню и ГРАНИЦЫ ОБЛАСТИ СООБЩЕНИЙ
-        const menuRect = newContextMenu.element.getBoundingClientRect();
-        const messagesArea = document.querySelector('.chat-messages-area') || document.querySelector('#chat-messages-area');
-        let constraintRect;
-
-        if (messagesArea) {
-            constraintRect = messagesArea.getBoundingClientRect();
-        } else {
-            // Fallback - используем размеры окна браузера
-            constraintRect = {
-                left: 0,
-                top: 0,
-                right: window.innerWidth,
-                bottom: window.innerHeight
-            };
-        }
-
-        // ПОЗИЦИОНИРОВАНИЕ В ПРЕДЕЛАХ ОБЛАСТИ СООБЩЕНИЙ
-        let finalX = x;
-        let finalY = y;
-
-        // Если меню выходит за правую границу - показываем слева от курсора
-        if (x + menuRect.width > constraintRect.right - 10) {
-            finalX = x - menuRect.width;
-        }
-
-        // Если меню выходит за нижнюю границу - показываем сверху от курсора
-        if (y + menuRect.height > constraintRect.bottom - 10) {
-            finalY = y - menuRect.height;
-        }
-
-        // Убеждаемся что меню не выходит за левую и верхнюю границы
-        finalX = Math.max(constraintRect.left + 10, finalX);
-        finalY = Math.max(constraintRect.top + 10, finalY);
-
-        // Устанавливаем финальную позицию
-        newContextMenu.element.style.left = finalX + 'px';
-        newContextMenu.element.style.top = finalY + 'px';
-
-
-    }
-
-    function hideNewContextMenu() {
-        if (newContextMenu.element) {
-            newContextMenu.element.style.display = 'none';
-            newContextMenu.currentMessageData = null;
-        }
-    }
-
-    // Обработка действий нового меню
-    function handleNewMenuAction(action) {
-        if (!newContextMenu.currentMessageData) return;
-
-        const messageData = newContextMenu.currentMessageData;
-
-        switch(action) {
-            case 'reply':
-                // Используем существующую функцию ответа
-                startReplyMode(messageData.id, messageData.author.trim(), messageData.content);
-                break;
-
-            case 'forward':
-                showForwardModal(messageData);
-                break;
-
-            case 'copy':
-                // Копируем текст сообщения в буфер обмена
-                navigator.clipboard.writeText(messageData.content).then(() => {
-                    showTemporaryFeedback('📋 Текст скопирован', 'success');
-                }).catch((err) => {
-                    console.error('Ошибка копирования:', err);
-                    showTemporaryFeedback('❌ Ошибка копирования', 'error');
-                });
-                break;
-
-            case 'edit':
-                showEditModal(messageData);
-                break;
-
-            case 'delete':
-                showDeleteModal(messageData);
-                break;
-
-            default:
-                console.log('Неизвестное действие:', action);
-        }
-    }
-
-    // 🗑️ ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА УДАЛЕНИЯ
-    let currentDeleteData = null;
-
-    function showDeleteModal(messageData) {
-        currentDeleteData = messageData;
-
-        // Заполняем предпросмотр сообщения
-        const preview = document.getElementById('delete-message-preview');
-        preview.innerHTML = `
-            <div class="preview-author">${messageData.author}</div>
-            <div class="preview-text">${messageData.content}</div>
-        `;
-
-        // Показываем модальное окно
-        document.getElementById('delete-modal').style.display = 'flex';
-    }
-
-    function hideDeleteModal() {
-        document.getElementById('delete-modal').style.display = 'none';
-        currentDeleteData = null;
-    }
-
-    function confirmDeleteMessage() {
-        if (!currentDeleteData) return;
-
-        // TODO: Отправить запрос на сервер для удаления
-        chatSocket.send(JSON.stringify({
-            type: 'delete_message',
-            message_id: currentDeleteData.id
-        }));
-
-        // Удаляем сообщение из DOM
-        const messageElement = document.querySelector(`[data-message-id="${currentDeleteData.id}"]`);
-        if (messageElement) {
-            messageElement.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                messageElement.remove();
-            }, 300);
-        }
-
-        showTemporaryFeedback('🗑️ Сообщение удалено', 'success');
-        hideDeleteModal();
-    }
-
-    // ✏️ ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА РЕДАКТИРОВАНИЯ
-    let currentEditData = null;
-
-    function showEditModal(messageData) {
-        currentEditData = messageData;
-
-        // Заполняем поле редактирования текущим текстом
-        document.getElementById('edit-message-text').value = messageData.content;
-
-        // Показываем модальное окно
-        document.getElementById('edit-modal').style.display = 'flex';
-
-        // Фокус на поле ввода
-        setTimeout(() => {
-            document.getElementById('edit-message-text').focus();
-        }, 100);
-    }
-
-    function hideEditModal() {
-        document.getElementById('edit-modal').style.display = 'none';
-        currentEditData = null;
-    }
-
-    function confirmEditMessage() {
-        if (!currentEditData) return;
-
-        const newText = document.getElementById('edit-message-text').value.trim();
-        if (!newText) {
-            showTemporaryFeedback('❌ Сообщение не может быть пустым', 'error');
-            return;
-        }
-
-        // TODO: Отправить запрос на сервер для редактирования
-        chatSocket.send(JSON.stringify({
-            type: 'edit_message',
-            message_id: currentEditData.id,
-            new_content: newText
-        }));
-
-        // Обновляем сообщение в DOM
-        const messageElement = document.querySelector(`[data-message-id="${currentEditData.id}"]`);
-        if (messageElement) {
-            const messageTextElement = messageElement.querySelector('.message-text');
-            if (messageTextElement) {
-                messageTextElement.textContent = newText;
-
-                // Добавляем индикатор редактирования с улучшенным tooltip
-                const editIndicator = messageElement.querySelector('.edit-indicator') || document.createElement('span');
-                editIndicator.className = 'edit-indicator';
-
-                // Определяем роль редактора для tooltip
-                let editorTitle = "отредактировано";
-                if (currentEditData.isOwn) {
-                    editorTitle = "отредактировано вами";
-                } else {
-                    // Если редактировал не автор, показываем роль
-                    editorTitle = `отредактировано ${getRoleDisplayName(userRole)}`;
-                }
-
-                editIndicator.innerHTML = ` <i class="fas fa-edit text-muted edit-icon" title="${editorTitle}"></i>`;
-                messageTextElement.appendChild(editIndicator);
-
-                // Подсвечиваем отредактированное сообщение
-                messageElement.classList.add('message-highlighted');
-                setTimeout(() => {
-                    messageElement.classList.remove('message-highlighted');
-                }, 3000);
-            }
-        }
-
-        showTemporaryFeedback('✏️ Сообщение отредактировано', 'success');
-        hideEditModal();
-    }
-
-    // 📤 ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ПЕРЕСЫЛКИ
-    let currentForwardData = null;
-    let selectedForwardChat = null;
-
-    function showForwardModal(messageData) {
-        currentForwardData = messageData;
-        selectedForwardChat = null;
-
-        // Заполняем список доступных чатов
-        populateForwardChatList();
-
-        // Отключаем кнопку пересылки до выбора чата
-        document.querySelector('#forward-modal .btn-success').disabled = true;
-
-        // Показываем модальное окно
-        document.getElementById('forward-modal').style.display = 'flex';
-    }
-
-    function hideForwardModal() {
-        document.getElementById('forward-modal').style.display = 'none';
-        currentForwardData = null;
-        selectedForwardChat = null;
-    }
-
-    function populateForwardChatList() {
-        const chatList = document.getElementById('forward-chat-list');
-        chatList.innerHTML = '';
-
-        // Определяем доступные чаты на основе роли пользователя
-        const availableChats = [];
-
-        // Все пользователи могут отправить в общий чат (если сейчас не в нем)
-        if (roomName !== 'general') {
-            availableChats.push({
-                id: 'general',
-                name: 'Беседка (Общий чат)',
-                icon: '💬',
-                description: 'Открытый чат для всех пользователей'
-            });
-        }
-
-        // Owner и модераторы могут отправить в VIP чат
-        if ((userRole === 'owner' || userRole === 'moderator') && roomName !== 'vip') {
-            availableChats.push({
-                id: 'vip',
-                name: 'Беседка - VIP',
-                icon: '👑',
-                description: 'Эксклюзивный чат для VIP пользователей'
-            });
-        }
-
-        // Модераторы могут отправить в модераторский чат (когда он будет создан)
-        if (userRole === 'moderator' && roomName !== 'moderator') {
-            availableChats.push({
-                id: 'moderator',
-                name: 'Модераторы',
-                icon: '🛡️',
-                description: 'Приватный чат для модераторов'
-            });
-        }
-
-        if (availableChats.length === 0) {
-            chatList.innerHTML = `
-                <div class="text-center text-muted py-3">
-                    <i class="fas fa-info-circle mb-2"></i>
-                    <p>Нет доступных чатов для пересылки</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Создаем элементы для каждого доступного чата
-        availableChats.forEach(chat => {
-            const chatOption = document.createElement('div');
-            chatOption.className = 'chat-option';
-            chatOption.dataset.chatId = chat.id;
-            chatOption.innerHTML = `
-                <div class="chat-option-icon">${chat.icon}</div>
-                <div class="chat-option-info">
-                    <h6>${chat.name}</h6>
-                    <p>${chat.description}</p>
-                </div>
-            `;
-
-            // Обработчик выбора чата
-            chatOption.addEventListener('click', function() {
-                // Убираем выделение с других чатов
-                document.querySelectorAll('.chat-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
-
-                // Выделяем выбранный чат
-                this.classList.add('selected');
-                selectedForwardChat = chat;
-
-                // Активируем кнопку пересылки
-                document.querySelector('#forward-modal .btn-success').disabled = false;
-            });
-
-            chatList.appendChild(chatOption);
-        });
-    }
-
-    function confirmForwardMessage() {
-        if (!currentForwardData || !selectedForwardChat) return;
-
-        // TODO: Отправить запрос на сервер для пересылки
-        chatSocket.send(JSON.stringify({
-            type: 'forward_message',
-            message_id: currentForwardData.id,
-            target_room: selectedForwardChat.id,
-            original_content: currentForwardData.content,
-            original_author: currentForwardData.author
-        }));
-
-        showTemporaryFeedback(`📤 Сообщение переслано в "${selectedForwardChat.name}"`, 'success');
-        hideForwardModal();
-    }
-
-    // Обработчики закрытия модальных окон по клику на backdrop
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('chat-modal-backdrop')) {
-            if (e.target.closest('#delete-modal')) hideDeleteModal();
-            if (e.target.closest('#edit-modal')) hideEditModal();
-            if (e.target.closest('#forward-modal')) hideForwardModal();
-        }
-    });
-
-    // Обработчики закрытия модальных окон по Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            hideDeleteModal();
-            hideEditModal();
-            hideForwardModal();
-        }
-    });
-
-    // 🔧 ОБРАБОТЧИКИ СОБЫТИЙ ОТ СЕРВЕРА
-    function handleMessageDeleted(data) {
-        const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
-        if (messageElement) {
-            // Анимация исчезновения
-            messageElement.style.animation = 'fadeOut 0.3s ease';
-            setTimeout(() => {
-                messageElement.remove();
-            }, 300);
-
-            // Показываем уведомление если удалил не текущий пользователь
-            if (data.deleted_by && data.deleted_by !== '{{ user.username }}') {
-                showTemporaryFeedback(`🗑️ Сообщение удалено пользователем ${data.deleted_by}`, 'info');
-            }
-        }
-    }
-
-    function handleMessageEdited(data) {
-        const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
-        if (messageElement) {
-            const messageTextElement = messageElement.querySelector('.message-text');
-            if (messageTextElement) {
-                // Обновляем текст сообщения
-                messageTextElement.textContent = data.new_content;
-
-                // Добавляем/обновляем индикатор редактирования
-                let editIndicator = messageElement.querySelector('.edit-indicator');
-                if (!editIndicator) {
-                    editIndicator = document.createElement('span');
-                    editIndicator.className = 'edit-indicator';
-                    messageTextElement.appendChild(editIndicator);
-                }
-
-                // Определяем tooltip в зависимости от того, кто редактировал
-                let editorTitle = "отредактировано";
-                if (data.edited_by === '{{ user.username }}') {
-                    editorTitle = "отредактировано вами";
-                } else {
-                    const editorRole = getRoleDisplayName(data.edited_by_role);
-                    editorTitle = `отредактировано ${editorRole}`;
-                }
-
-                editIndicator.innerHTML = ` <i class="fas fa-edit text-muted edit-icon"
-                                               title="${editorTitle}"
-                                               data-bs-toggle="tooltip"
-                                               data-bs-placement="left"
-                                               data-bs-container=".chat-messages-area"></i>`;
-
-                // Подсвечиваем отредактированное сообщение
-                messageElement.classList.add('message-highlighted');
-                setTimeout(() => {
-                    messageElement.classList.remove('message-highlighted');
-                }, 3000);
-
-                // Показываем уведомление если редактировал не текущий пользователь
-                if (data.edited_by && data.edited_by !== '{{ user.username }}') {
-                    showTemporaryFeedback(`✏️ Сообщение отредактировано пользователем ${data.edited_by}`, 'info');
-                }
-
-                // Инициализируем tooltip для нового элемента
-                initTooltipsInContainer(messageElement);
-            }
-        }
-    }
-
-    // 🎯 HELPER ФУНКЦИИ
-    function getRoleDisplayName(role) {
-        const roleNames = {
-            'owner': 'владельцем',
-            'moderator': 'модератором',
-            'store_owner': 'владельцем магазина',
-            'store_admin': 'администратором магазина',
-            'user': 'пользователем'
-        };
-        return roleNames[role] || 'пользователем';
-    }
-
-    function generateEditIndicator(message) {
-        if (!message.is_edited) return '';
-
-        // Определяем tooltip в зависимости от того, кто редактировал
-        let editorTitle = "отредактировано";
-        if (message.edited_by === '{{ user.username }}') {
-            editorTitle = "отредактировано вами";
-        } else if (message.edited_by_role) {
-            const editorRole = getRoleDisplayName(message.edited_by_role);
-            editorTitle = `отредактировано ${editorRole}`;
-        }
-
-        return ` <span class="edit-indicator">
-                    <i class="fas fa-edit text-muted edit-icon"
-                       title="${editorTitle}"
-                       data-bs-toggle="tooltip"
-                       data-bs-placement="left"
-                       data-bs-container=".chat-messages-area"></i>
-                 </span>`;
-    }
-
-    function initTooltipsInContainer(container) {
-        // Инициализируем tooltips только для элементов внутри области чата
-        const tooltipElements = container.querySelectorAll('.edit-icon[data-bs-toggle="tooltip"]');
-        tooltipElements.forEach(element => {
-            // Убеждаемся что tooltip позиционируется внутри области чата
-            new bootstrap.Tooltip(element, {
-                boundary: '.chat-messages-area',
-                placement: 'left',
-                container: '.chat-messages-area'
-            });
-        });
-    }
-
-    // Добавляем CSS анимации для удаления сообщений и улучшенные стили
-    if (!document.querySelector('#message-animations')) {
-        const style = document.createElement('style');
-        style.id = 'message-animations';
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: scale(1); }
-                to { opacity: 0; transform: scale(0.95); }
-            }
-            .edit-indicator {
-                font-size: 0.8rem;
-                opacity: 0.7;
-            }
-            .edit-icon {
-                cursor: help;
-                transition: all 0.2s ease;
-            }
-            .edit-icon:hover {
-                opacity: 1;
-                transform: scale(1.1);
-            }
-            /* Стили для tooltips внутри чата */
-            .tooltip {
-                z-index: 9999;
-            }
-        `;
-        document.head.appendChild(style);
-    }
 </script>
 {% endblock %}
 

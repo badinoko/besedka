@@ -1,4 +1,4 @@
-/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.8 - СВЕТЛО-ГОЛУБОЙ ONLINE ЗАГОЛОВОК ===== */
+/* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.7 - ЭКСПЕРИМЕНТ С ОРАНЖЕВЫМИ ГРАНИЦАМИ ===== */
 /* ===== ПОЛНЫЙ КАСТОМНЫЙ ЧАТ С СИСТЕМОЙ ОТВЕТОВ - ROCKET.CHAT ПОЛНОСТЬЮ УДАЛЕН ===== */
 
 /* ПОДКЛЮЧЕНИЕ КИРИЛЛИЧЕСКИХ ШРИФТОВ */
@@ -940,14 +940,13 @@
     margin-right: 0.25rem;
     font-size: 1.4rem; /* УВЕЛИЧЕН размер счетчика для лучшей видимости */
     padding: 0.6rem 0.9rem; /* УВЕЛИЧЕН padding для крупного счетчика */
-    background: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%) !important; /* СВЕТЛО-ГОЛУБОЙ ГРАДИЕНТ */
-    color: #2c3e50 !important; /* ТЕМНЫЙ ТЕКСТ НА СВЕТЛОМ ФОНЕ */
+    background: linear-gradient(135deg, var(--chat-primary) 0%, var(--chat-secondary) 100%) !important;
     border-radius: 16px; /* Увеличено скругление */
     font-weight: 700; /* Более жирный шрифт */
     /* УСИЛЕННЫЕ ОБЪЕМНЫЕ ТЕНИ ДЛЯ КРУПНОГО СЧЕТЧИКА */
     box-shadow:
-        0 6px 18px rgba(135, 206, 235, 0.35),
-        0 3px 10px rgba(135, 206, 235, 0.25),
+        0 6px 18px rgba(102, 126, 234, 0.35),
+        0 3px 10px rgba(102, 126, 234, 0.25),
         0 2px 6px rgba(0, 0, 0, 0.15),
         inset 0 2px 0 rgba(255, 255, 255, 0.3),
         inset 0 -1px 0 rgba(0, 0, 0, 0.15);
@@ -1252,26 +1251,14 @@
 }
 
 /* ЦИТИРУЕМОЕ СООБЩЕНИЕ В ОТВЕТЕ */
-.quoted-message,
-.reply-quote {
-    background: rgba(173, 216, 230, 0.15) !important;
-    border: 3px solid #87CEEB !important;
-    border-radius: 0.75rem !important;
-    padding: 0.875rem !important;
-    margin-bottom: 1rem !important;
-    font-size: 0.875rem !important;
-    cursor: pointer !important;
-    box-shadow: 0 3px 10px rgba(135, 206, 235, 0.2) !important;
-    transition: all 0.2s ease !important;
+.quoted-message {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid var(--chat-primary);
+    font-size: 0.85rem;
     position: relative;
-}
-
-.quoted-message:hover,
-.reply-quote:hover {
-    background: rgba(173, 216, 230, 0.25) !important;
-    border-color: #4FC3F7 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3) !important;
 }
 
 .quoted-message::before {
@@ -1290,21 +1277,17 @@
     font-size: 0.6rem;
 }
 
-.quote-author,
-.reply-quote-author {
-    font-weight: 700 !important;
-    color: #0056b3 !important;
-    margin-bottom: 0.25rem !important;
-    font-size: 0.8rem !important;
+.quote-author {
+    font-weight: 600;
+    color: var(--chat-primary);
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
 }
 
-.quote-text,
-.reply-quote-text {
-    color: #000 !important; /* Черный цвет текста как просил пользователь */
-    line-height: 1.3 !important;
-    font-weight: 400 !important;
-    font-style: normal !important; /* Убираем курсив */
-    opacity: 1 !important; /* Убираем прозрачность */
+.quote-text {
+    color: #6c757d;
+    font-style: italic;
+    line-height: 1.3;
     max-height: 60px; /* Ограничиваем высоту цитаты */
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2659,7 +2642,58 @@
 /* ===== УНИФИЦИРОВАННЫЕ СТИЛИ ЧАТОВ БЕСЕДКИ v12.7 - СИСТЕМА ОТВЕТОВ И КОНТЕКСТНОЕ МЕНЮ ===== */
 /* ===== ПОЛНЫЙ КАСТОМНЫЙ ЧАТ С СИСТЕМОЙ ОТВЕТОВ - ROCKET.CHAT ПОЛНОСТЬЮ УДАЛЕН ===== */
 
-/* УДАЛЕНО - ДУБЛИРУЮЩЕЕ ОПРЕДЕЛЕНИЕ context-menu (НАРУШЕНИЕ SSOT) */
+/* ===== КОНТЕКСТНОЕ МЕНЮ ДЛЯ DESKTOP ===== */
+.context-menu {
+    position: fixed;
+    z-index: 10000;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    min-width: 180px;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    animation: contextMenuSlideIn 0.2s ease-out;
+}
+
+.context-menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    color: #333;
+    user-select: none;
+}
+
+.context-menu-item:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #007bff;
+    transform: translateX(5px);
+}
+
+.context-menu-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: #dee2e6;
+    margin: 0.5rem 0;
+}
+
+@keyframes contextMenuSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
 
 /* ===== ИНДИКАТОР РЕЖИМА ОТВЕТА ===== */
 .reply-indicator {
@@ -2876,7 +2910,15 @@
 
 /* ===== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ ===== */
 @media (max-width: 768px) {
-    /* УДАЛЕНО - дублирующие правила .context-menu (НАРУШЕНИЕ SSOT) */
+    .context-menu {
+        min-width: 200px;
+        padding: 0.75rem 0;
+    }
+
+    .context-menu-item {
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+    }
 
     .reply-indicator {
         margin: 0.5rem;
@@ -3051,71 +3093,5 @@
 .reaction-btn.disabled {
     opacity: 0.4 !important;
     pointer-events: none !important;
-}
-
-/* УДАЛЕН ДУБЛИРУЮЩИЙ .context-menu - НАРУШЕНИЕ SSOT
-   Реальное контекстное меню определено как .message-context-menu в HTML шаблоне */
-
-/* ===== КОНТЕКСТНОЕ МЕНЮ ЧАТА - ЕДИНСТВЕННОЕ ОПРЕДЕЛЕНИЕ ===== */
-.message-context-menu {
-    position: fixed;
-    background: white;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 10000;
-    padding: 4px 0;
-    min-width: 180px;
-    max-width: 250px;
-    font-size: 14px;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-    color: #333;
-}
-
-.menu-item:hover {
-    background: #f8f9fa;
-}
-
-.menu-item i {
-    width: 16px;
-    margin-right: 8px;
-    text-align: center;
-    color: #6c757d;
-}
-
-.menu-item[data-action="delete"] {
-    color: #dc3545;
-}
-
-.menu-item[data-action="delete"]:hover {
-    background: #ffeaea;
-}
-
-.menu-separator {
-    height: 1px;
-    background: #e9ecef;
-    margin: 4px 0;
-}
-
-/* МОБИЛЬНАЯ АДАПТИВНОСТЬ */
-@media (max-width: 768px) {
-    .message-context-menu {
-        min-width: 200px;
-        max-width: 300px;
-        padding: 0.75rem 0;
-        font-size: 1rem;
-    }
-
-    .menu-item {
-        padding: 1rem 1.25rem;
-        font-size: 1rem;
-    }
 }
 
