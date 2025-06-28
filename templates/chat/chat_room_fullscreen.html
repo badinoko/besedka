@@ -63,6 +63,12 @@
         word-wrap: break-word;
     }
 
+    /* 🔧 ТОЛЬКО ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ - ПЕРЕНОСЫ СТРОК */
+    .message-content.forwarded-message {
+        white-space: pre-line !important;
+        overflow-wrap: break-word !important;
+    }
+
     .message-content.own {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         color: white !important;
@@ -1084,9 +1090,13 @@
         const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
 
+        // Проверяем, является ли сообщение пересланным
+        const isForwarded = message.content.includes('📤 Переслано');
+        const forwardedClass = isForwarded ? ' forwarded-message' : '';
+
         // Формируем HTML сообщения с поддержкой ответов
         let messageHTML = `
-            <div class="message-content ${isOwn ? 'own' : 'other'}">
+            <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
         `;
 
         // Добавляем блок цитаты если это ответ
@@ -1174,9 +1184,13 @@
             const timestamp = new Date(message.created).toLocaleTimeString();
             const isOwn = message.is_own;
 
+            // Проверяем, является ли сообщение пересланным
+            const isForwarded = message.content.includes('📤 Переслано');
+            const forwardedClass = isForwarded ? ' forwarded-message' : '';
+
             // Формируем HTML сообщения с поддержкой ответов
             let messageHTML = `
-                <div class="message-content ${isOwn ? 'own' : 'other'}">
+                <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
             `;
 
             // Добавляем блок цитаты если это ответ
