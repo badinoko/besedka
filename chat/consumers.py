@@ -300,13 +300,22 @@ class BaseChatConsumer(WebsocketConsumer):
                 logger.warning(f"User {self.user.username} tried to forward to {target_room_name} without access")
                 return
 
-            # Создаем улучшенное пересланное сообщение с четким разделением
-            forwarded_content = f"""📤 **Переслано из чата "{self.room_name}"**
-👤 **Автор:** {original_author}
+            # Улучшенная логика: извлекаем чистый контент если сообщение уже пересланное
+            clean_content = self.extract_clean_content(original_content)
+            source_author = self.extract_original_author(original_content, original_author)
 
----
+            # Определяем название источника для дисплея
+            room_display_names = {
+                'general': 'Беседка',
+                'vip': 'Беседка - VIP',
+                'moderator': 'Модераторы'
+            }
+            source_room_display = room_display_names.get(self.room_name, self.room_name)
 
-{original_content}"""
+            # Создаем четко структурированное пересланное сообщение
+            forwarded_content = f"""📤 Переслано из «{source_room_display}»
+
+{source_author}: {clean_content}"""
 
             forwarded_message = Message.objects.create(
                 room=target_room,
@@ -329,6 +338,32 @@ class BaseChatConsumer(WebsocketConsumer):
 
         except Message.DoesNotExist:
             logger.warning(f"Attempted to forward non-existent message {message_id}")
+
+    def extract_clean_content(self, content):
+        """Извлекает чистый контент из пересланного сообщения"""
+        # Если сообщение уже пересланное, извлекаем оригинальный контент
+        if content.startswith('📤'):
+            # Ищем последнее двоеточие после имени автора
+            lines = content.split('\n')
+            if len(lines) >= 3:
+                # Формат: "📤 Переслано из...", "", "Автор: контент"
+                author_line = lines[2]  # Третья строка с автором и контентом
+                if ': ' in author_line:
+                    return author_line.split(': ', 1)[1]  # Берем все после первого ": "
+
+        return content
+
+    def extract_original_author(self, content, fallback_author):
+        """Извлекает оригинального автора из пересланного сообщения"""
+        # Если сообщение уже пересланное, извлекаем оригинального автора
+        if content.startswith('📤'):
+            lines = content.split('\n')
+            if len(lines) >= 3:
+                author_line = lines[2]  # Третья строка с автором и контентом
+                if ': ' in author_line:
+                    return author_line.split(': ', 1)[0]  # Берем все до первого ": "
+
+        return fallback_author
 
     def check_room_access(self, room_name):
         """Проверка доступа пользователя к комнате"""
