@@ -1127,9 +1127,15 @@
         const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
 
+        // 📤 ПРОВЕРЯЕМ ЯВЛЯЕТСЯ ЛИ СООБЩЕНИЕ ПЕРЕСЛАННЫМ
+        const isForwarded = message.content.includes('📤 Переслано') ||
+                           message.content.includes('Переслано из «') ||
+                           message.content.includes('**Переслано из чата');
+        const forwardedClass = isForwarded ? ' forwarded-message' : '';
+
         // Формируем HTML сообщения с поддержкой ответов
         let messageHTML = `
-            <div class="message-content ${isOwn ? 'own' : 'other'}">
+            <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
         `;
 
         // Добавляем блок цитаты если это ответ
@@ -1217,9 +1223,15 @@
             const timestamp = new Date(message.created).toLocaleTimeString();
             const isOwn = message.is_own;
 
+            // 📤 ПРОВЕРЯЕМ ЯВЛЯЕТСЯ ЛИ СООБЩЕНИЕ ПЕРЕСЛАННЫМ
+            const isForwarded = message.content.includes('📤 Переслано') ||
+                               message.content.includes('Переслано из «') ||
+                               message.content.includes('**Переслано из чата');
+            const forwardedClass = isForwarded ? ' forwarded-message' : '';
+
             // Формируем HTML сообщения с поддержкой ответов
             let messageHTML = `
-                <div class="message-content ${isOwn ? 'own' : 'other'}">
+                <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
             `;
 
             // Добавляем блок цитаты если это ответ
