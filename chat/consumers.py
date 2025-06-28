@@ -300,8 +300,13 @@ class BaseChatConsumer(WebsocketConsumer):
                 logger.warning(f"User {self.user.username} tried to forward to {target_room_name} without access")
                 return
 
-            # Создаем пересланное сообщение
-            forwarded_content = f"📤 Переслано из чата '{self.room_name}'\n👤 Автор: {original_author}\n\n{original_content}"
+            # Создаем улучшенное пересланное сообщение с четким разделением
+            forwarded_content = f"""📤 **Переслано из чата "{self.room_name}"**
+👤 **Автор:** {original_author}
+
+---
+
+{original_content}"""
 
             forwarded_message = Message.objects.create(
                 room=target_room,

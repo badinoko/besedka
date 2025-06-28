@@ -90,6 +90,12 @@ class ChatClient {
             case 'reaction_update':
                 this.applyReactionUpdate(data);
                 break;
+            case 'message_deleted':
+                this.handleMessageDeleted(data);
+                break;
+            case 'message_edited':
+                this.handleMessageEdited(data);
+                break;
             default:
                 console.log('Unknown message type:', data.type);
         }
@@ -118,8 +124,12 @@ class ChatClient {
         const messagesContainer = document.getElementById('chat-messages');
         if (!messagesContainer) return;
 
-        // Очищаем контейнер
-        messagesContainer.innerHTML = '';
+        // Очищаем контейнер ТОЛЬКО если нет сообщений
+        if (messagesContainer.querySelector('.message')) {
+            console.log('Сообщения уже есть, не очищаем контейнер');
+        } else {
+            messagesContainer.innerHTML = '';
+        }
 
         if (messages.length === 0) {
             messagesContainer.innerHTML = `
@@ -131,8 +141,8 @@ class ChatClient {
             return;
         }
 
-        // Добавляем сообщения (они приходят в обратном порядке)
-        messages.reverse().forEach(message => {
+        // Добавляем сообщения в правильном порядке (backend уже отправляет в правильном порядке)
+        messages.forEach(message => {
             const messageElement = this.createMessageElement(message);
             messagesContainer.appendChild(messageElement);
         });
@@ -543,6 +553,59 @@ class ChatClient {
 
             if (likeCount) likeCount.textContent = likes;
             if (dislikeCount) dislikeCount.textContent = dislikes;
+        }
+    }
+
+    handleMessageDeleted(data) {
+        const messageElement = document.querySelector(`.message[data-message-id="${data.message_id}"]`);
+        if (messageElement) {
+            // Обновляем содержимое сообщения на [Сообщение удалено]
+            const contentArea = messageElement.querySelector('.message-content');
+            if (contentArea) {
+                contentArea.textContent = '[Сообщение удалено]';
+                contentArea.style.fontStyle = 'italic';
+                contentArea.style.opacity = '0.6';
+            }
+
+            // Добавляем класс для визуального отображения удаленного сообщения
+            messageElement.classList.add('deleted-message');
+        }
+    }
+
+    handleMessageEdited(data) {
+        const messageElement = document.querySelector(`.message[data-message-id="${data.message_id}"]`);
+        if (messageElement) {
+            // Обновляем содержимое сообщения
+            const contentArea = messageElement.querySelector('.message-content');
+            if (contentArea) {
+                contentArea.textContent = data.new_content;
+            }
+
+            // Добавляем индикатор редактирования
+            const messageHeader = messageElement.querySelector('.message-header');
+            if (messageHeader) {
+                // Убираем старый индикатор если есть
+                const oldIndicator = messageHeader.querySelector('.edit-indicator');
+                if (oldIndicator) {
+                    oldIndicator.remove();
+                }
+
+                // Добавляем новый индикатор
+                const editIndicator = document.createElement('span');
+                editIndicator.className = 'edit-indicator';
+                editIndicator.innerHTML = '<i class="fas fa-edit" title="Отредактировано"></i>';
+                editIndicator.style.color = '#6c757d';
+                editIndicator.style.fontSize = '0.8rem';
+                editIndicator.style.marginLeft = '0.5rem';
+
+                const metaSection = messageHeader.querySelector('.message-meta');
+                if (metaSection) {
+                    metaSection.appendChild(editIndicator);
+                }
+            }
+
+            // Добавляем класс для визуального отображения редактированного сообщения
+            messageElement.classList.add('edited-message');
         }
     }
 
