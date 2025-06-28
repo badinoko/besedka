@@ -80,7 +80,7 @@
     }
 
     .message-content.other {
-        background: white;
+        background: rgba(219, 234, 254, 0.7); /* ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ЧУЖИХ СООБЩЕНИЙ */
         color: #333;
         border: 2px solid #e9ecef;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -481,20 +481,18 @@
         margin-top: var(--border-width);
     }
 
-    /* Режим ответа над полем ввода */
-    .reply-mode {
-        display: none;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-        margin-bottom: 0.25rem; /* УМЕНЬШЕННЫЙ ОТСТУП */
+    /* Зона ответа В ОКНЕ ЧАТА */
+    .reply-zone {
+        background: rgba(219, 234, 254, 0.7); /* ГОЛУБАЯ ПОДЛОЖКА КАК У ЧУЖИХ СООБЩЕНИЙ */
+        border: 2px solid #007bff;
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        margin: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
         align-items: center;
         justify-content: space-between;
-    }
-
-    .reply-mode.active {
-        display: flex;
+        box-shadow: 0 3px 10px rgba(0, 123, 255, 0.2);
     }
 
     .reply-mode-info {
@@ -502,37 +500,34 @@
     }
 
     .reply-mode-label {
-        font-size: 0.7rem;
-        color: #666;
-        margin-bottom: 0.2rem;
-    }
-
-    .reply-mode-content {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         color: #333;
-        font-weight: 500;
-        line-height: 1.3;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
     }
 
     .reply-mode-cancel {
-        background: none;
-        border: none;
-        color: #999;
-        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.8);
+        border: 2px solid #007bff;
+        color: #007bff;
+        font-size: 1rem;
         cursor: pointer;
-        padding: 0.2rem;
+        padding: 0.25rem;
         border-radius: 50%;
-        width: 1.5rem;
-        height: 1.5rem;
+        width: 2rem;
+        height: 2rem;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
+        margin-left: 1rem;
     }
 
     .reply-mode-cancel:hover {
-        background: #e9ecef;
-        color: #666;
+        background: #007bff;
+        color: white;
+        transform: scale(1.1);
     }
 
     /* Подсветка сообщения при ответе */
@@ -553,6 +548,19 @@
 <div class="chat-fullscreen-container">
     <!-- Область сообщений -->
     <div class="chat-messages-area" id="chat-messages-area">
+        <!-- Режим ответа В ОКНЕ ЧАТА -->
+        <div class="reply-zone" id="reply-zone" style="display: none;">
+            <div class="reply-mode-info">
+                <div class="reply-mode-label">
+                    <i class="fas fa-reply" style="color: #007bff; font-size: 1rem; margin-right: 0.5rem;"></i>
+                    <span id="reply-mode-content"></span>
+                </div>
+            </div>
+            <button class="reply-mode-cancel" id="reply-mode-cancel" title="Отменить ответ">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
         <div id="chat-log">
             <div class="text-center text-muted py-4">
                 <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
@@ -563,17 +571,6 @@
 
     <!-- Поле ввода сообщения -->
     <div class="chat-input-area">
-        <!-- Режим ответа (скрытый по умолчанию) -->
-        <div class="reply-mode" id="reply-mode">
-            <div class="reply-mode-info">
-                <div class="reply-mode-label">В ответ на:</div>
-                <div class="reply-mode-content" id="reply-mode-content"></div>
-            </div>
-            <button class="reply-mode-cancel" id="reply-mode-cancel" title="Отменить ответ">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
         <div class="input-group">
             <textarea id="chat-message-input"
                       class="form-control"
@@ -938,14 +935,14 @@
         replyMode.messageId = messageId;
         replyMode.messageData = { authorName, content };
 
-        const replyModeElement = document.getElementById('reply-mode');
+        const replyZoneElement = document.getElementById('reply-zone');
         const replyContentElement = document.getElementById('reply-mode-content');
 
         // Укорачиваем текст если слишком длинный
         const shortContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
         replyContentElement.innerHTML = `<strong>${authorName}</strong>: ${shortContent}`;
 
-        replyModeElement.classList.add('active');
+        replyZoneElement.style.display = 'flex';
 
         // Фокус на поле ввода
         document.getElementById('chat-message-input').focus();
@@ -956,8 +953,8 @@
         replyMode.messageId = null;
         replyMode.messageData = null;
 
-        const replyModeElement = document.getElementById('reply-mode');
-        replyModeElement.classList.remove('active');
+        const replyZoneElement = document.getElementById('reply-zone');
+        replyZoneElement.style.display = 'none';
     }
 
     function scrollToMessage(messageId) {
