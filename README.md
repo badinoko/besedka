@@ -135,8 +135,10 @@ python manage.py runserver
 
 ### WebSocket сервер (для чата)
 
+WebSocket сервер автоматически запускается в Docker контейнере. Для локальной разработки без Docker:
+
 ```bash
-# Запуск Daphne для WebSocket поддержки
+# ТОЛЬКО для локальной разработки без Docker
 daphne -p 8001 config.asgi:application
 ```
 

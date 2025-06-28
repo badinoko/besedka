@@ -367,8 +367,8 @@ class BaseChatConsumer(WebsocketConsumer):
             'dislikes_count': 0,  # Заглушка для реакций
             'is_forwarded': getattr(message, 'is_forwarded', False),
             'is_edited': getattr(message, 'is_edited', False),
-            'edited_by': getattr(message, 'edited_by', None),
-            'edited_by_role': getattr(message.edited_by, 'role', None) if hasattr(message, 'edited_by') and message.edited_by else None,
+            'edited_by': getattr(message, 'edited_by', None).username if getattr(message, 'edited_by', None) else None,
+            'edited_by_role': getattr(message, 'edited_by', None).role if getattr(message, 'edited_by', None) else None,
         }
 
     def message_to_json(self, message, is_history=False):
@@ -395,9 +395,9 @@ class BaseChatConsumer(WebsocketConsumer):
             'likes_count': 0,  # Заглушка для реакций
             'dislikes_count': 0,  # Заглушка для реакций
             'is_edited': getattr(message, 'is_edited', False),
-            'edited_by': getattr(message, 'edited_by', None),
-            'edited_by_role': getattr(message.edited_by, 'role', None) if hasattr(message, 'edited_by') and message.edited_by else None,
-            'edited_at': getattr(message, 'edited_at', None),
+            'edited_by': getattr(message, 'edited_by', None).username if getattr(message, 'edited_by', None) else None,
+            'edited_by_role': getattr(message, 'edited_by', None).role if getattr(message, 'edited_by', None) else None,
+            'edited_at': getattr(message, 'edited_at', None).isoformat() if getattr(message, 'edited_at', None) else None,
         }
 
     def user_to_json(self, user):
