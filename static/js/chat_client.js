@@ -124,13 +124,6 @@ class ChatClient {
         const messagesContainer = document.getElementById('chat-messages');
         if (!messagesContainer) return;
 
-        // Очищаем контейнер ТОЛЬКО если нет сообщений
-        if (messagesContainer.querySelector('.message')) {
-            console.log('Сообщения уже есть, не очищаем контейнер');
-        } else {
-            messagesContainer.innerHTML = '';
-        }
-
         if (messages.length === 0) {
             messagesContainer.innerHTML = `
                 <div class="text-center text-muted py-4">
@@ -140,6 +133,10 @@ class ChatClient {
             `;
             return;
         }
+
+        // ИСПРАВЛЕНО: Всегда очищаем контейнер перед загрузкой истории сообщений
+        // Это устраняет проблему с остающимися placeholder'ами и дублированием
+        messagesContainer.innerHTML = '';
 
         // Добавляем сообщения в правильном порядке (backend уже отправляет в правильном порядке)
         messages.forEach(message => {
