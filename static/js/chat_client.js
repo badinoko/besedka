@@ -159,13 +159,7 @@ class ChatClient {
             messageDiv.classList.add('other-message');
         }
 
-        // 📤 ПРОВЕРЯЕМ ЯВЛЯЕТСЯ ЛИ СООБЩЕНИЕ ПЕРЕСЛАННЫМ
-        const isForwarded = message.content.includes('📤 Переслано') ||
-                           message.content.includes('Переслано из «') ||
-                           message.content.includes('**Переслано из чата');
-        if (isForwarded) {
-            messageDiv.classList.add('forwarded-message');
-        }
+        // Старая логика пересланных сообщений убрана - обрабатывается в шаблоне
 
         // Базовые data-атрибуты для систем ответов и реакций
         messageDiv.setAttribute('data-message-id', message.id);
@@ -238,7 +232,7 @@ class ChatClient {
                 </div>
                 <div class="message-content-area">
                     ${quoteSection}
-                    <div class="message-content ${isForwarded ? 'forwarded-message' : ''} ${message.is_own ? 'own' : 'other'}">${this.escapeHtml(message.content)}</div>
+                    <div class="message-content ${message.is_own ? 'own' : 'other'}">${this.escapeHtml(message.content)}</div>
                 </div>
                 ${quoteNavButton}
             </div>`;

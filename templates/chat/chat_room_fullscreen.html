@@ -1131,11 +1131,10 @@
         const isForwarded = message.content.includes('📤 Переслано') ||
                            message.content.includes('Переслано из «') ||
                            message.content.includes('**Переслано из чата');
-        const forwardedClass = isForwarded ? ' forwarded-message' : '';
 
         // Формируем HTML сообщения с поддержкой ответов
         let messageHTML = `
-            <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
+            <div class="message-content ${isOwn ? 'own' : 'other'}">
         `;
 
         // Добавляем блок цитаты если это ответ
@@ -1151,11 +1150,29 @@
             `;
         }
 
-        messageHTML += `
+        // 📤 ПРАВИЛЬНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ КАК У ОБЫЧНЫХ
+        if (isForwarded) {
+            // Парсим пересланное сообщение
+            const forwardedInfo = parseForwardedMessage(message.content);
+
+            messageHTML += `
+                <div class="message-author">
+                    ${forwardedInfo.originalAuthor}
+                </div>
+                <div class="message-text">
+                    <div style="color: #666; font-size: 0.9em; margin-bottom: 0.3rem;">
+                        ${forwardedInfo.forwardInfo}
+                    </div>
+                    ${forwardedInfo.content}${message.is_edited ? generateEditIndicator(message) : ''}
+                </div>`;
+        } else {
+            // Обычные сообщения как раньше
+            messageHTML += `
                 <div class="message-author">
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
-                <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>
+                <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>`;
+        }
 
                 <!-- Время в правом нижнем углу -->
                 <div class="message-timestamp">${timestamp}</div>
@@ -1227,11 +1244,10 @@
             const isForwarded = message.content.includes('📤 Переслано') ||
                                message.content.includes('Переслано из «') ||
                                message.content.includes('**Переслано из чата');
-            const forwardedClass = isForwarded ? ' forwarded-message' : '';
 
             // Формируем HTML сообщения с поддержкой ответов
             let messageHTML = `
-                <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
+                <div class="message-content ${isOwn ? 'own' : 'other'}
             `;
 
             // Добавляем блок цитаты если это ответ
@@ -1247,11 +1263,29 @@
                 `;
             }
 
-            messageHTML += `
+            // 📤 ПРАВИЛЬНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ КАК У ОБЫЧНЫХ
+            if (isForwarded) {
+                // Парсим пересланное сообщение
+                const forwardedInfo = parseForwardedMessage(message.content);
+
+                messageHTML += `
+                    <div class="message-author">
+                        ${forwardedInfo.originalAuthor}
+                    </div>
+                    <div class="message-text">
+                        <div style="color: #666; font-size: 0.9em; margin-bottom: 0.3rem;">
+                            ${forwardedInfo.forwardInfo}
+                        </div>
+                        ${forwardedInfo.content}${message.is_edited ? generateEditIndicator(message) : ''}
+                    </div>`;
+            } else {
+                // Обычные сообщения как раньше
+                messageHTML += `
                     <div class="message-author">
                         ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
-                    <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>
+                    <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>`;
+            }
 
                     <!-- Время в правом нижнем углу -->
                     <div class="message-timestamp">${timestamp}</div>
@@ -1566,6 +1600,65 @@
             }
         `;
         document.head.appendChild(style);
+    }
+
+    // 📤 ФУНКЦИЯ ПАРСИНГА ПЕРЕСЛАННЫХ СООБЩЕНИЙ КАК У ОБЫЧНЫХ
+    function parseForwardedMessage(content) {
+        // По умолчанию
+        let forwardInfo = 'Переслано';
+        let originalAuthor = '👤 Неизвестный автор';
+        let messageContent = content;
+
+        try {
+            // Новый формат: "Переслано из «чат» автор контент"
+            if (content.includes('Переслано из «')) {
+                const lines = content.split('\n');
+                if (lines.length >= 3) {
+                    forwardInfo = lines[0]; // "Переслано из «...»"
+                    originalAuthor = lines[1]; // "👑 Buddy"
+                    messageContent = lines.slice(2).join('\n'); // остальное
+                }
+            }
+            // Старый markdown формат: "📤 **Переслано из чата "general"**"
+            else if (content.includes('📤 **Переслано из чата')) {
+                const lines = content.split('\n');
+                forwardInfo = lines[0] ? lines[0].replace(/\*\*/g, '') : 'Переслано';
+
+                // Ищем строку с автором
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].includes('**Автор:**')) {
+                        originalAuthor = lines[i].replace('**Автор:**', '').trim();
+                        messageContent = lines.slice(i + 2).join('\n'); // после "---"
+                        break;
+                    }
+                }
+            }
+            // Старый формат: "Переслано из «чат» Автор: автор"
+            else if (content.includes('Автор:')) {
+                const lines = content.split('\n');
+                if (lines.length >= 1) {
+                    const firstLine = lines[0];
+                    const authorMatch = firstLine.match(/Автор:\s*(.+?)(?:\s|$)/);
+                    if (authorMatch) {
+                        forwardInfo = firstLine.split('Автор:')[0].trim();
+                        originalAuthor = authorMatch[1];
+                        const remainingText = firstLine.replace(forwardInfo, '').replace(/Автор:\s*.+?/, '').trim();
+                        messageContent = remainingText + '\n' + lines.slice(1).join('\n');
+                        messageContent = messageContent.trim();
+                    }
+                }
+            }
+            // Убираем лишние пробелы
+            messageContent = messageContent.trim();
+        } catch (error) {
+            console.warn('Ошибка парсинга пересланного сообщения:', error);
+        }
+
+        return {
+            forwardInfo: forwardInfo,
+            originalAuthor: originalAuthor,
+            content: messageContent
+        };
     }
 
     // 🆕 НОВОЕ КОНТЕКСТНОЕ МЕНЮ С ПРАВИЛЬНОЙ ЛОГИКОЙ
