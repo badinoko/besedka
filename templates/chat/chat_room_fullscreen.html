@@ -280,11 +280,11 @@
         transform: scale(1.15);
     }
 
-    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА С ФИОЛЕТОВОЙ ГРАНИЦЕЙ */
+    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА БЕЗ ВЕРХНЕЙ ГРАНИЦЫ */
     .chat-input-area {
         padding: 0.5rem; /* УМЕНЬШЕНО с 1.5rem до 0.5rem */
         background: white;
-        border-top: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА ДЛЯ РАЗДЕЛЕНИЯ С ЧАТОМ */
+        border: none; /* УБИРАЕМ ВЕРХНЮЮ ГРАНИЦУ - ОНА У КОНТЕЙНЕРА ЦИТАТЫ */
         margin: 0; /* Убираем все отступы */
         margin-right: calc(240px + var(--border-width)); /* УМЕНЬШЕННАЯ ПАНЕЛЬ + ЕЕ ОТСТУП */
         margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
@@ -481,14 +481,23 @@
         margin-top: var(--border-width);
     }
 
-    /* Зона ответа В ОКНЕ ЧАТА */
+    /* ФИКСИРОВАННЫЙ КОНТЕЙНЕР ДЛЯ ЦИТАТЫ - НЕ ПРОКРУЧИВАЕТСЯ */
+    .reply-zone-container {
+        background: white;
+        border-top: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА СВЕРХУ */
+        margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
+        margin-right: calc(240px + var(--border-width)); /* ОТСТУП ОТ ПРАВОЙ ПАНЕЛИ */
+        padding: 0.5rem; /* НЕБОЛЬШИЕ ОТСТУПЫ */
+        min-height: 0; /* МИНИМАЛЬНАЯ ВЫСОТА КОГДА СКРЫТА */
+    }
+
+    /* ЦИТАТА ВНУТРИ ФИКСИРОВАННОГО КОНТЕЙНЕРА */
     .reply-zone {
         background: rgba(219, 234, 254, 0.7); /* ГОЛУБАЯ ПОДЛОЖКА КАК У ЧУЖИХ СООБЩЕНИЙ */
         border: 2px solid #007bff;
         border-radius: 0.75rem;
         padding: 0.75rem;
-        margin: 0.5rem;
-        margin-bottom: 1rem;
+        margin: 0; /* НИКАКИХ ОТСТУПОВ - ВЕСЬ РАЗМЕР КОНТЕЙНЕРА */
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -548,7 +557,16 @@
 <div class="chat-fullscreen-container">
     <!-- Область сообщений -->
     <div class="chat-messages-area" id="chat-messages-area">
-        <!-- Режим ответа В ОКНЕ ЧАТА -->
+        <div id="chat-log">
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                <p>Добро пожаловать в чат! Начните общение.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ФИКСИРОВАННЫЙ КОНТЕЙНЕР ДЛЯ ЦИТАТЫ - НЕ ПРОКРУЧИВАЕТСЯ -->
+    <div class="reply-zone-container">
         <div class="reply-zone" id="reply-zone" style="display: none;">
             <div class="reply-mode-info">
                 <div class="reply-mode-label">
@@ -559,13 +577,6 @@
             <button class="reply-mode-cancel" id="reply-mode-cancel" title="Отменить ответ">
                 <i class="fas fa-times"></i>
             </button>
-        </div>
-
-        <div id="chat-log">
-            <div class="text-center text-muted py-4">
-                <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
-                <p>Добро пожаловать в чат! Начните общение.</p>
-            </div>
         </div>
     </div>
 
