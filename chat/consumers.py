@@ -76,6 +76,12 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.handle_typing(data)
             elif message_type == 'reaction':
                 self.handle_reaction(data)
+            elif message_type == 'delete_message':
+                self.handle_delete_message(data)
+            elif message_type == 'edit_message':
+                self.handle_edit_message(data)
+            elif message_type == 'forward_message':
+                self.handle_forward_message(data)
             else:
                 logger.warning(f"Unknown message type: {message_type}")
 
@@ -175,8 +181,193 @@ class BaseChatConsumer(WebsocketConsumer):
         reaction = data.get('reaction')
         logger.info(f"Reaction {reaction} on message {message_id} by {self.user.username}")
 
+    def handle_delete_message(self, data):
+        """Обработка удаления сообщения"""
+        message_id = data.get('message_id')
+
+        if not message_id:
+            logger.warning("Delete request without message_id")
+            return
+
+        try:
+            # Получаем сообщение
+            message = Message.objects.get(id=message_id)
+
+            # Проверяем права: владелец может удалять любые сообщения,
+            # модераторы могут удалять любые, обычные пользователи - только свои
+            can_delete = (
+                message.author == self.user or  # Собственное сообщение
+                self.user.role == 'owner' or    # Владелец может всё
+                self.user.role == 'moderator'   # Модератор может всё
+            )
+
+            if not can_delete:
+                logger.warning(f"User {self.user.username} tried to delete message {message_id} without permission")
+                return
+
+            # Помечаем сообщение как удаленное (soft delete)
+            message.content = "[Сообщение удалено]"
+            message.is_deleted = True  # Добавим это поле позже в миграции
+            message.save()
+
+            # Уведомляем всех пользователей об удалении
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, {
+                    "type": "message_deleted",
+                    "message_id": str(message_id),
+                    "deleted_by": self.user.username
+                }
+            )
+
+            logger.info(f"Message {message_id} deleted by {self.user.username}")
+
+        except Message.DoesNotExist:
+            logger.warning(f"Attempted to delete non-existent message {message_id}")
+
+    def handle_edit_message(self, data):
+        """Обработка редактирования сообщения"""
+        message_id = data.get('message_id')
+        new_content = data.get('new_content', '').strip()
+
+        if not message_id or not new_content:
+            logger.warning("Edit request without message_id or new_content")
+            return
+
+        try:
+            # Получаем сообщение
+            message = Message.objects.get(id=message_id)
+
+            # Проверяем права: владелец может редактировать любые сообщения,
+            # модераторы могут редактировать любые, обычные пользователи - только свои
+            can_edit = (
+                message.author == self.user or  # Собственное сообщение
+                self.user.role == 'owner' or    # Владелец может всё
+                self.user.role == 'moderator'   # Модератор может всё
+            )
+
+            if not can_edit:
+                logger.warning(f"User {self.user.username} tried to edit message {message_id} without permission")
+                return
+
+            # Сохраняем оригинальный контент для истории
+            original_content = message.content
+
+            # Обновляем сообщение
+            message.content = new_content
+            message.is_edited = True  # Добавим это поле позже в миграции
+            message.edited_by = self.user
+            message.edited_at = timezone.now()
+            message.save()
+
+            # Уведомляем всех пользователей об изменении
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, {
+                    "type": "message_edited",
+                    "message_id": str(message_id),
+                    "new_content": new_content,
+                    "edited_by": self.user.username,
+                    "edited_by_role": self.user.role,
+                    "edited_at": timezone.now().isoformat()
+                }
+            )
+
+            logger.info(f"Message {message_id} edited by {self.user.username}")
+
+        except Message.DoesNotExist:
+            logger.warning(f"Attempted to edit non-existent message {message_id}")
+
+    def handle_forward_message(self, data):
+        """Обработка пересылки сообщения"""
+        message_id = data.get('message_id')
+        target_room_name = data.get('target_room')
+        original_content = data.get('original_content', '')
+        original_author = data.get('original_author', '')
+
+        if not message_id or not target_room_name:
+            logger.warning("Forward request without message_id or target_room")
+            return
+
+        try:
+            # Получаем оригинальное сообщение для проверки
+            original_message = Message.objects.get(id=message_id)
+
+            # Получаем или создаем целевую комнату
+            target_room, created = Room.objects.get_or_create(name=target_room_name)
+
+            # Проверяем права доступа к целевой комнате
+            can_access_target = self.check_room_access(target_room_name)
+            if not can_access_target:
+                logger.warning(f"User {self.user.username} tried to forward to {target_room_name} without access")
+                return
+
+            # Создаем пересланное сообщение
+            forwarded_content = f"📤 Переслано из чата '{self.room_name}'\n👤 Автор: {original_author}\n\n{original_content}"
+
+            forwarded_message = Message.objects.create(
+                room=target_room,
+                author=self.user,
+                content=forwarded_content,
+                is_forwarded=True,  # Добавим это поле позже в миграции
+                original_message_id=message_id
+            )
+
+            # Отправляем сообщение в целевую группу
+            target_group_name = f"chat_{target_room_name}"
+            async_to_sync(self.channel_layer.group_send)(
+                target_group_name, {
+                    "type": "new_message",
+                    "message": self.message_to_json_for_room(forwarded_message, target_room_name)
+                }
+            )
+
+            logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room_name}")
+
+        except Message.DoesNotExist:
+            logger.warning(f"Attempted to forward non-existent message {message_id}")
+
+    def check_room_access(self, room_name):
+        """Проверка доступа пользователя к комнате"""
+        if room_name == 'general':
+            return True  # Все имеют доступ к общему чату
+        elif room_name == 'vip':
+            return self.user.role in ['owner', 'moderator', 'vip_user']
+        elif room_name == 'moderator':
+            return self.user.role in ['owner', 'moderator']
+        else:
+            return False  # Неизвестная комната
+
+    def message_to_json_for_room(self, message, room_name):
+        """Конвертация сообщения в JSON для конкретной комнаты"""
+        # Определяем является ли сообщение собственным для пользователей в целевой комнате
+        reply_data = None
+        if message.parent:
+            reply_data = {
+                'id': str(message.parent.id),
+                'author_name': message.parent.author.display_name,
+                'author_role_icon': message.parent.author.get_role_icon,
+                'content_snippet': message.parent.content[:100] + ('...' if len(message.parent.content) > 100 else '')
+            }
+
+        return {
+            'id': str(message.id),
+            'content': message.content,
+            'author_name': message.author.display_name,
+            'author_role': message.author.role,
+            'author_role_icon': message.author.get_role_icon,
+            'created': message.created_at.isoformat(),
+            'is_own': message.author == self.user,  # Для отправителя будет True
+            'reply_to': reply_data,
+            'is_reply_to_me': bool(message.parent and message.parent.author == self.user),
+            'likes_count': 0,  # Заглушка для реакций
+            'dislikes_count': 0,  # Заглушка для реакций
+            'is_forwarded': getattr(message, 'is_forwarded', False),
+            'is_edited': getattr(message, 'is_edited', False),
+            'edited_by': getattr(message, 'edited_by', None),
+            'edited_by_role': getattr(message.edited_by, 'role', None) if hasattr(message, 'edited_by') and message.edited_by else None,
+        }
+
     def message_to_json(self, message, is_history=False):
-        """Конвертация сообщения в JSON с поддержкой ответов"""
+        """Конвертация сообщения в JSON с поддержкой ответов и редактирования"""
         reply_data = None
         if message.parent:
             reply_data = {
@@ -198,6 +389,10 @@ class BaseChatConsumer(WebsocketConsumer):
             'is_reply_to_me': bool(message.parent and message.parent.author == self.user),
             'likes_count': 0,  # Заглушка для реакций
             'dislikes_count': 0,  # Заглушка для реакций
+            'is_edited': getattr(message, 'is_edited', False),
+            'edited_by': getattr(message, 'edited_by', None),
+            'edited_by_role': getattr(message.edited_by, 'role', None) if hasattr(message, 'edited_by') and message.edited_by else None,
+            'edited_at': getattr(message, 'edited_at', None),
         }
 
     def user_to_json(self, user):
@@ -240,6 +435,26 @@ class BaseChatConsumer(WebsocketConsumer):
                 "user": event["user"],
                 "is_typing": event["is_typing"]
             }))
+
+    # Обработчики событий группы для новых типов сообщений
+    def message_deleted(self, event):
+        """Уведомление об удалении сообщения"""
+        self.send(text_data=json.dumps({
+            "type": "message_deleted",
+            "message_id": event["message_id"],
+            "deleted_by": event["deleted_by"]
+        }))
+
+    def message_edited(self, event):
+        """Уведомление об изменении сообщения"""
+        self.send(text_data=json.dumps({
+            "type": "message_edited",
+            "message_id": event["message_id"],
+            "new_content": event["new_content"],
+            "edited_by": event["edited_by"],
+            "edited_by_role": event["edited_by_role"],
+            "edited_at": event["edited_at"]
+        }))
 
 
 # Алиас для обратной совместимости

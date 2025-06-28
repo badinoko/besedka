@@ -832,3 +832,14 @@ isOwnMessage: true/false
 messageData.isOwn: true/false
 
 ---
+
+/* ЕДИНСТВЕННОЕ ОПРЕДЕЛЕНИЕ - НИКАКОГО ДУБЛИРОВАНИЯ */
+.context-menu {
+    /* ДИНАМИЧЕСКИЕ РАЗМЕРЫ - ПОДСТРАИВАЮТСЯ ПОД СОДЕРЖИМОЕ */
+    min-width: 180px;
+    max-width: 320px;
+    width: max-content;
+    /* НЕТ ФИКСИРОВАННОЙ ВЫСОТЫ - РАЗМЕР ПО СОДЕРЖИМОМУ */
+    overflow: visible;
+    height: auto;
+}

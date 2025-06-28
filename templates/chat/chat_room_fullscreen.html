@@ -569,7 +569,230 @@
         100% { background: rgba(0, 123, 255, 0.1) !important; }
     }
 
-    /* КОНТЕКСТНОЕ МЕНЮ - СТИЛИ ПЕРЕНЕСЕНЫ В ОСНОВНОЙ CSS ФАЙЛ */
+    /* 🖱️ КОНТЕКСТНОЕ МЕНЮ СООБЩЕНИЙ */
+    .message-context-menu {
+        position: fixed;
+        background: white;
+        border: 2px solid #6f42c1;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0;
+        box-shadow:
+            0 8px 25px rgba(111, 66, 193, 0.25),
+            0 4px 12px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        z-index: 9999;
+        min-width: 180px;
+        display: none;
+        animation: contextMenuFadeIn 0.2s ease-out;
+    }
+
+    @keyframes contextMenuFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        color: #333;
+        gap: 0.5rem;
+    }
+
+    .menu-item:hover {
+        background: rgba(111, 66, 193, 0.1);
+        transform: translateX(3px);
+    }
+
+    .menu-item i {
+        width: 16px;
+        text-align: center;
+        color: #6f42c1;
+    }
+
+    .menu-item[data-action="delete"] {
+        color: #dc3545;
+    }
+
+    .menu-item[data-action="delete"]:hover {
+        background: rgba(220, 53, 69, 0.1);
+    }
+
+    .menu-item[data-action="delete"] i {
+        color: #dc3545;
+    }
+
+    /* 💎 СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН */
+    .chat-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .chat-modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+    }
+
+    .chat-modal-content {
+        position: relative;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 500px;
+        overflow: hidden;
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .chat-modal-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, #6f42c1, #5a32a3);
+        color: white;
+    }
+
+    .chat-modal-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .chat-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+    }
+
+    .chat-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-modal-body {
+        padding: 1.5rem;
+    }
+
+    .chat-modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 2px solid #f8f9fa;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        background: #f8f9fa;
+    }
+
+    .message-preview {
+        background: rgba(111, 66, 193, 0.1);
+        border: 2px solid #6f42c1;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .message-preview .preview-author {
+        font-weight: 600;
+        color: #6f42c1;
+        margin-bottom: 0.5rem;
+    }
+
+    .message-preview .preview-text {
+        font-style: italic;
+        color: #333;
+    }
+
+    /* СТИЛИ ДЛЯ СПИСКА ЧАТОВ */
+    .chat-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .chat-option {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .chat-option:hover {
+        background: rgba(111, 66, 193, 0.1);
+        border-color: #6f42c1;
+    }
+
+    .chat-option.selected {
+        background: rgba(111, 66, 193, 0.2);
+        border-color: #6f42c1;
+        color: #6f42c1;
+    }
+
+    .chat-option-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        width: 2rem;
+        text-align: center;
+    }
+
+    .chat-option-info h6 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .chat-option-info p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
 
 </style>
 {% endblock %}
@@ -644,7 +867,6 @@
         <i class="fas fa-copy"></i>
         <span>Копировать текст</span>
     </div>
-    <div class="menu-separator"></div>
     <div class="menu-item" data-action="edit" style="display: none;">
         <i class="fas fa-edit"></i>
         <span>Редактировать</span>
@@ -655,10 +877,93 @@
     </div>
 </div>
 
+<!-- 🗑️ МОДАЛЬНОЕ ОКНО ДЛЯ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ -->
+<div id="delete-modal" class="chat-modal" style="display: none;">
+    <div class="chat-modal-backdrop"></div>
+    <div class="chat-modal-content">
+        <div class="chat-modal-header">
+            <h5><i class="fas fa-trash text-danger me-2"></i>Удалить сообщение</h5>
+            <button class="chat-modal-close" onclick="hideDeleteModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-modal-body">
+            <p>Вы действительно хотите удалить это сообщение?</p>
+            <div class="message-preview" id="delete-message-preview">
+                <!-- Предпросмотр сообщения -->
+            </div>
+        </div>
+        <div class="chat-modal-footer">
+            <button class="btn btn-secondary" onclick="hideDeleteModal()">
+                <i class="fas fa-times me-1"></i>Отмена
+            </button>
+            <button class="btn btn-danger" onclick="confirmDeleteMessage()">
+                <i class="fas fa-trash me-1"></i>Удалить
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ✏️ МОДАЛЬНОЕ ОКНО ДЛЯ РЕДАКТИРОВАНИЯ -->
+<div id="edit-modal" class="chat-modal" style="display: none;">
+    <div class="chat-modal-backdrop"></div>
+    <div class="chat-modal-content">
+        <div class="chat-modal-header">
+            <h5><i class="fas fa-edit text-primary me-2"></i>Редактировать сообщение</h5>
+            <button class="chat-modal-close" onclick="hideEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-modal-body">
+            <div class="form-group">
+                <label for="edit-message-text">Текст сообщения:</label>
+                <textarea id="edit-message-text" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="chat-modal-footer">
+            <button class="btn btn-secondary" onclick="hideEditModal()">
+                <i class="fas fa-times me-1"></i>Отмена
+            </button>
+            <button class="btn btn-primary" onclick="confirmEditMessage()">
+                <i class="fas fa-save me-1"></i>Сохранить
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 📤 МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРЕСЫЛКИ -->
+<div id="forward-modal" class="chat-modal" style="display: none;">
+    <div class="chat-modal-backdrop"></div>
+    <div class="chat-modal-content">
+        <div class="chat-modal-header">
+            <h5><i class="fas fa-share text-success me-2"></i>Переслать сообщение</h5>
+            <button class="chat-modal-close" onclick="hideForwardModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-modal-body">
+            <p>Выберите чат для пересылки:</p>
+            <div class="chat-list" id="forward-chat-list">
+                <!-- Список доступных чатов -->
+            </div>
+        </div>
+        <div class="chat-modal-footer">
+            <button class="btn btn-secondary" onclick="hideForwardModal()">
+                <i class="fas fa-times me-1"></i>Отмена
+            </button>
+            <button class="btn btn-success" onclick="confirmForwardMessage()" disabled>
+                <i class="fas fa-paper-plane me-1"></i>Переслать
+            </button>
+        </div>
+    </div>
+</div>
+
 {{ room_name|json_script:"room-name" }}
+{{ user.role|json_script:"user-role" }}
 
 <script>
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const userRole = JSON.parse(document.getElementById('user-role').textContent);
     const chatSocket = new WebSocket(
         'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
     );
@@ -754,6 +1059,12 @@
                     type: 'fetch_online_users'
                 }));
                 break;
+            case 'message_deleted':
+                handleMessageDeleted(data);
+                break;
+            case 'message_edited':
+                handleMessageEdited(data);
+                break;
             default:
                 console.log('Unknown message type:', data.type);
         }
@@ -795,7 +1106,7 @@
                 <div class="message-author">
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
-                <div class="message-text">${message.content}</div>
+                <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>
 
                 <!-- Время в правом нижнем углу -->
                 <div class="message-timestamp">${timestamp}</div>
@@ -829,7 +1140,12 @@
         messageElement.innerHTML = messageHTML;
         chatLog.appendChild(messageElement);
 
-
+        // Инициализируем tooltips для нового сообщения
+        if (message.is_edited) {
+            setTimeout(() => {
+                initTooltipsInContainer(messageElement);
+            }, 50);
+        }
 
         // Автопрокрутка для новых сообщений
         setTimeout(scrollToBottom, 100);
@@ -880,7 +1196,7 @@
                     <div class="message-author">
                         ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
-                    <div class="message-text">${message.content}</div>
+                    <div class="message-text">${message.content}${message.is_edited ? generateEditIndicator(message) : ''}</div>
 
                     <!-- Время в правом нижнем углу -->
                     <div class="message-timestamp">${timestamp}</div>
@@ -920,6 +1236,11 @@
         historyLoaded = true;
         // Прокручиваем к последнему сообщению с задержкой для истории
         setTimeout(scrollToBottom, 200);
+
+        // Инициализируем tooltips для всех загруженных сообщений
+        setTimeout(() => {
+            initTooltipsInContainer(document.getElementById('chat-log'));
+        }, 250);
     }
 
     function updateOnlineUsers(users, count) {
@@ -1216,14 +1537,14 @@
 
         // Обработчик правого клика ТОЛЬКО на блоке сообщения
         document.addEventListener('contextmenu', function(e) {
-            // Ищем именно .message-bubble (блок сообщения), а НЕ всю ширину
-            const messageBubbleElement = e.target.closest('.message-bubble');
+            // Ищем именно .message-content (блок сообщения), а НЕ всю ширину
+            const messageContentElement = e.target.closest('.message-content');
 
-            if (messageBubbleElement) {
+            if (messageContentElement) {
                 e.preventDefault(); // Отменяем стандартное меню браузера
 
                 // Найдем родительский элемент с data-message-id
-                const messageElement = messageBubbleElement.closest('[data-message-id]');
+                const messageElement = messageContentElement.closest('[data-message-id]');
 
                 if (messageElement) {
                     const messageId = messageElement.dataset.messageId;
@@ -1231,10 +1552,9 @@
                     const messageAuthorElement = messageElement.querySelector('.message-author');
                     const messageText = messageTextElement ? messageTextElement.textContent : 'Текст сообщения';
                     const messageAuthor = messageAuthorElement ? messageAuthorElement.textContent : 'Неизвестный автор';
-                    const isOwnMessage = messageElement.classList.contains('own-message');
+                    const isOwnMessage = messageContentElement.classList.contains('own');
 
-                    console.log('🎯 Новое контекстное меню - клик на сообщении:', messageId);
-                    console.log('Своё сообщение:', isOwnMessage);
+
 
                     showNewContextMenu(e.clientX, e.clientY, {
                         id: messageId,
@@ -1286,12 +1606,15 @@
         const editItem = newContextMenu.element.querySelector('[data-action="edit"]');
         const deleteItem = newContextMenu.element.querySelector('[data-action="delete"]');
 
-        if (messageData.isOwn) {
-            editItem.style.display = 'flex';
-            deleteItem.style.display = 'flex';
+        // ПРАВИЛЬНАЯ ЛОГИКА РОЛЕЙ: владелец и модераторы могут модерировать любые сообщения
+        const canModerate = messageData.isOwn || userRole === 'owner' || userRole === 'moderator';
+
+        if (canModerate) {
+            if (editItem) editItem.style.display = 'flex';
+            if (deleteItem) deleteItem.style.display = 'flex';
         } else {
-            editItem.style.display = 'none';
-            deleteItem.style.display = 'none';
+            if (editItem) editItem.style.display = 'none';
+            if (deleteItem) deleteItem.style.display = 'none';
         }
 
         // Показываем меню для измерения размеров
@@ -1338,9 +1661,7 @@
         newContextMenu.element.style.left = finalX + 'px';
         newContextMenu.element.style.top = finalY + 'px';
 
-        console.log(`🎯 showContextMenu DEBUG:`);
-        console.log('messageData.isOwn:', messageData.isOwn);
-        console.log(`Меню показано в позиции (${finalX}, ${finalY}) в пределах области сообщений`);
+
     }
 
     function hideNewContextMenu() {
@@ -1364,7 +1685,7 @@
                 break;
 
             case 'forward':
-                showTemporaryFeedback('📤 Функция пересылки в разработке', 'warning');
+                showForwardModal(messageData);
                 break;
 
             case 'copy':
@@ -1378,21 +1699,11 @@
                 break;
 
             case 'edit':
-                if (messageData.isOwn) {
-                    showTemporaryFeedback('✏️ Функция редактирования в разработке', 'warning');
-                } else {
-                    showTemporaryFeedback('❌ Можно редактировать только свои сообщения', 'error');
-                }
+                showEditModal(messageData);
                 break;
 
             case 'delete':
-                if (messageData.isOwn) {
-                    if (confirm('Удалить сообщение?')) {
-                        showTemporaryFeedback('🗑️ Функция удаления в разработке', 'warning');
-                    }
-                } else {
-                    showTemporaryFeedback('❌ Можно удалять только свои сообщения', 'error');
-                }
+                showDeleteModal(messageData);
                 break;
 
             default:
@@ -1400,6 +1711,400 @@
         }
     }
 
+    // 🗑️ ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА УДАЛЕНИЯ
+    let currentDeleteData = null;
+
+    function showDeleteModal(messageData) {
+        currentDeleteData = messageData;
+
+        // Заполняем предпросмотр сообщения
+        const preview = document.getElementById('delete-message-preview');
+        preview.innerHTML = `
+            <div class="preview-author">${messageData.author}</div>
+            <div class="preview-text">${messageData.content}</div>
+        `;
+
+        // Показываем модальное окно
+        document.getElementById('delete-modal').style.display = 'flex';
+    }
+
+    function hideDeleteModal() {
+        document.getElementById('delete-modal').style.display = 'none';
+        currentDeleteData = null;
+    }
+
+    function confirmDeleteMessage() {
+        if (!currentDeleteData) return;
+
+        // TODO: Отправить запрос на сервер для удаления
+        chatSocket.send(JSON.stringify({
+            type: 'delete_message',
+            message_id: currentDeleteData.id
+        }));
+
+        // Удаляем сообщение из DOM
+        const messageElement = document.querySelector(`[data-message-id="${currentDeleteData.id}"]`);
+        if (messageElement) {
+            messageElement.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                messageElement.remove();
+            }, 300);
+        }
+
+        showTemporaryFeedback('🗑️ Сообщение удалено', 'success');
+        hideDeleteModal();
+    }
+
+    // ✏️ ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА РЕДАКТИРОВАНИЯ
+    let currentEditData = null;
+
+    function showEditModal(messageData) {
+        currentEditData = messageData;
+
+        // Заполняем поле редактирования текущим текстом
+        document.getElementById('edit-message-text').value = messageData.content;
+
+        // Показываем модальное окно
+        document.getElementById('edit-modal').style.display = 'flex';
+
+        // Фокус на поле ввода
+        setTimeout(() => {
+            document.getElementById('edit-message-text').focus();
+        }, 100);
+    }
+
+    function hideEditModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+        currentEditData = null;
+    }
+
+    function confirmEditMessage() {
+        if (!currentEditData) return;
+
+        const newText = document.getElementById('edit-message-text').value.trim();
+        if (!newText) {
+            showTemporaryFeedback('❌ Сообщение не может быть пустым', 'error');
+            return;
+        }
+
+        // TODO: Отправить запрос на сервер для редактирования
+        chatSocket.send(JSON.stringify({
+            type: 'edit_message',
+            message_id: currentEditData.id,
+            new_content: newText
+        }));
+
+        // Обновляем сообщение в DOM
+        const messageElement = document.querySelector(`[data-message-id="${currentEditData.id}"]`);
+        if (messageElement) {
+            const messageTextElement = messageElement.querySelector('.message-text');
+            if (messageTextElement) {
+                messageTextElement.textContent = newText;
+
+                // Добавляем индикатор редактирования с улучшенным tooltip
+                const editIndicator = messageElement.querySelector('.edit-indicator') || document.createElement('span');
+                editIndicator.className = 'edit-indicator';
+
+                // Определяем роль редактора для tooltip
+                let editorTitle = "отредактировано";
+                if (currentEditData.isOwn) {
+                    editorTitle = "отредактировано вами";
+                } else {
+                    // Если редактировал не автор, показываем роль
+                    editorTitle = `отредактировано ${getRoleDisplayName(userRole)}`;
+                }
+
+                editIndicator.innerHTML = ` <i class="fas fa-edit text-muted edit-icon" title="${editorTitle}"></i>`;
+                messageTextElement.appendChild(editIndicator);
+
+                // Подсвечиваем отредактированное сообщение
+                messageElement.classList.add('message-highlighted');
+                setTimeout(() => {
+                    messageElement.classList.remove('message-highlighted');
+                }, 3000);
+            }
+        }
+
+        showTemporaryFeedback('✏️ Сообщение отредактировано', 'success');
+        hideEditModal();
+    }
+
+    // 📤 ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ПЕРЕСЫЛКИ
+    let currentForwardData = null;
+    let selectedForwardChat = null;
+
+    function showForwardModal(messageData) {
+        currentForwardData = messageData;
+        selectedForwardChat = null;
+
+        // Заполняем список доступных чатов
+        populateForwardChatList();
+
+        // Отключаем кнопку пересылки до выбора чата
+        document.querySelector('#forward-modal .btn-success').disabled = true;
+
+        // Показываем модальное окно
+        document.getElementById('forward-modal').style.display = 'flex';
+    }
+
+    function hideForwardModal() {
+        document.getElementById('forward-modal').style.display = 'none';
+        currentForwardData = null;
+        selectedForwardChat = null;
+    }
+
+    function populateForwardChatList() {
+        const chatList = document.getElementById('forward-chat-list');
+        chatList.innerHTML = '';
+
+        // Определяем доступные чаты на основе роли пользователя
+        const availableChats = [];
+
+        // Все пользователи могут отправить в общий чат (если сейчас не в нем)
+        if (roomName !== 'general') {
+            availableChats.push({
+                id: 'general',
+                name: 'Беседка (Общий чат)',
+                icon: '💬',
+                description: 'Открытый чат для всех пользователей'
+            });
+        }
+
+        // Owner и модераторы могут отправить в VIP чат
+        if ((userRole === 'owner' || userRole === 'moderator') && roomName !== 'vip') {
+            availableChats.push({
+                id: 'vip',
+                name: 'Беседка - VIP',
+                icon: '👑',
+                description: 'Эксклюзивный чат для VIP пользователей'
+            });
+        }
+
+        // Модераторы могут отправить в модераторский чат (когда он будет создан)
+        if (userRole === 'moderator' && roomName !== 'moderator') {
+            availableChats.push({
+                id: 'moderator',
+                name: 'Модераторы',
+                icon: '🛡️',
+                description: 'Приватный чат для модераторов'
+            });
+        }
+
+        if (availableChats.length === 0) {
+            chatList.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-info-circle mb-2"></i>
+                    <p>Нет доступных чатов для пересылки</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Создаем элементы для каждого доступного чата
+        availableChats.forEach(chat => {
+            const chatOption = document.createElement('div');
+            chatOption.className = 'chat-option';
+            chatOption.dataset.chatId = chat.id;
+            chatOption.innerHTML = `
+                <div class="chat-option-icon">${chat.icon}</div>
+                <div class="chat-option-info">
+                    <h6>${chat.name}</h6>
+                    <p>${chat.description}</p>
+                </div>
+            `;
+
+            // Обработчик выбора чата
+            chatOption.addEventListener('click', function() {
+                // Убираем выделение с других чатов
+                document.querySelectorAll('.chat-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+
+                // Выделяем выбранный чат
+                this.classList.add('selected');
+                selectedForwardChat = chat;
+
+                // Активируем кнопку пересылки
+                document.querySelector('#forward-modal .btn-success').disabled = false;
+            });
+
+            chatList.appendChild(chatOption);
+        });
+    }
+
+    function confirmForwardMessage() {
+        if (!currentForwardData || !selectedForwardChat) return;
+
+        // TODO: Отправить запрос на сервер для пересылки
+        chatSocket.send(JSON.stringify({
+            type: 'forward_message',
+            message_id: currentForwardData.id,
+            target_room: selectedForwardChat.id,
+            original_content: currentForwardData.content,
+            original_author: currentForwardData.author
+        }));
+
+        showTemporaryFeedback(`📤 Сообщение переслано в "${selectedForwardChat.name}"`, 'success');
+        hideForwardModal();
+    }
+
+    // Обработчики закрытия модальных окон по клику на backdrop
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('chat-modal-backdrop')) {
+            if (e.target.closest('#delete-modal')) hideDeleteModal();
+            if (e.target.closest('#edit-modal')) hideEditModal();
+            if (e.target.closest('#forward-modal')) hideForwardModal();
+        }
+    });
+
+    // Обработчики закрытия модальных окон по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideDeleteModal();
+            hideEditModal();
+            hideForwardModal();
+        }
+    });
+
+    // 🔧 ОБРАБОТЧИКИ СОБЫТИЙ ОТ СЕРВЕРА
+    function handleMessageDeleted(data) {
+        const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
+        if (messageElement) {
+            // Анимация исчезновения
+            messageElement.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                messageElement.remove();
+            }, 300);
+
+            // Показываем уведомление если удалил не текущий пользователь
+            if (data.deleted_by && data.deleted_by !== '{{ user.username }}') {
+                showTemporaryFeedback(`🗑️ Сообщение удалено пользователем ${data.deleted_by}`, 'info');
+            }
+        }
+    }
+
+    function handleMessageEdited(data) {
+        const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
+        if (messageElement) {
+            const messageTextElement = messageElement.querySelector('.message-text');
+            if (messageTextElement) {
+                // Обновляем текст сообщения
+                messageTextElement.textContent = data.new_content;
+
+                // Добавляем/обновляем индикатор редактирования
+                let editIndicator = messageElement.querySelector('.edit-indicator');
+                if (!editIndicator) {
+                    editIndicator = document.createElement('span');
+                    editIndicator.className = 'edit-indicator';
+                    messageTextElement.appendChild(editIndicator);
+                }
+
+                // Определяем tooltip в зависимости от того, кто редактировал
+                let editorTitle = "отредактировано";
+                if (data.edited_by === '{{ user.username }}') {
+                    editorTitle = "отредактировано вами";
+                } else {
+                    const editorRole = getRoleDisplayName(data.edited_by_role);
+                    editorTitle = `отредактировано ${editorRole}`;
+                }
+
+                editIndicator.innerHTML = ` <i class="fas fa-edit text-muted edit-icon"
+                                               title="${editorTitle}"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="left"
+                                               data-bs-container=".chat-messages-area"></i>`;
+
+                // Подсвечиваем отредактированное сообщение
+                messageElement.classList.add('message-highlighted');
+                setTimeout(() => {
+                    messageElement.classList.remove('message-highlighted');
+                }, 3000);
+
+                // Показываем уведомление если редактировал не текущий пользователь
+                if (data.edited_by && data.edited_by !== '{{ user.username }}') {
+                    showTemporaryFeedback(`✏️ Сообщение отредактировано пользователем ${data.edited_by}`, 'info');
+                }
+
+                // Инициализируем tooltip для нового элемента
+                initTooltipsInContainer(messageElement);
+            }
+        }
+    }
+
+    // 🎯 HELPER ФУНКЦИИ
+    function getRoleDisplayName(role) {
+        const roleNames = {
+            'owner': 'владельцем',
+            'moderator': 'модератором',
+            'store_owner': 'владельцем магазина',
+            'store_admin': 'администратором магазина',
+            'user': 'пользователем'
+        };
+        return roleNames[role] || 'пользователем';
+    }
+
+    function generateEditIndicator(message) {
+        if (!message.is_edited) return '';
+
+        // Определяем tooltip в зависимости от того, кто редактировал
+        let editorTitle = "отредактировано";
+        if (message.edited_by === '{{ user.username }}') {
+            editorTitle = "отредактировано вами";
+        } else if (message.edited_by_role) {
+            const editorRole = getRoleDisplayName(message.edited_by_role);
+            editorTitle = `отредактировано ${editorRole}`;
+        }
+
+        return ` <span class="edit-indicator">
+                    <i class="fas fa-edit text-muted edit-icon"
+                       title="${editorTitle}"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="left"
+                       data-bs-container=".chat-messages-area"></i>
+                 </span>`;
+    }
+
+    function initTooltipsInContainer(container) {
+        // Инициализируем tooltips только для элементов внутри области чата
+        const tooltipElements = container.querySelectorAll('.edit-icon[data-bs-toggle="tooltip"]');
+        tooltipElements.forEach(element => {
+            // Убеждаемся что tooltip позиционируется внутри области чата
+            new bootstrap.Tooltip(element, {
+                boundary: '.chat-messages-area',
+                placement: 'left',
+                container: '.chat-messages-area'
+            });
+        });
+    }
+
+    // Добавляем CSS анимации для удаления сообщений и улучшенные стили
+    if (!document.querySelector('#message-animations')) {
+        const style = document.createElement('style');
+        style.id = 'message-animations';
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: scale(1); }
+                to { opacity: 0; transform: scale(0.95); }
+            }
+            .edit-indicator {
+                font-size: 0.8rem;
+                opacity: 0.7;
+            }
+            .edit-icon {
+                cursor: help;
+                transition: all 0.2s ease;
+            }
+            .edit-icon:hover {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            /* Стили для tooltips внутри чата */
+            .tooltip {
+                z-index: 9999;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 </script>
 {% endblock %}
 

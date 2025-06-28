@@ -3,6 +3,9 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 import uuid
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Room(models.Model):
@@ -11,7 +14,9 @@ class Room(models.Model):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(_("Название комнаты"), max_length=100, unique=True, default='general')
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(_("Дата создания"), default=timezone.now)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = _("Комната чата")
@@ -34,7 +39,7 @@ class Message(models.Model):
         verbose_name=_("Комната")
     )
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="messages",
         verbose_name=_("Автор")
@@ -50,6 +55,17 @@ class Message(models.Model):
     )
     created_at = models.DateTimeField(_("Дата создания"), default=timezone.now, db_index=True)
 
+    # Новые поля для расширенного функционала
+    is_deleted = models.BooleanField(default=False, help_text="Сообщение помечено как удаленное")
+    is_edited = models.BooleanField(default=False, help_text="Сообщение было отредактировано")
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='edited_messages', help_text="Кто отредактировал сообщение")
+    edited_at = models.DateTimeField(null=True, blank=True, help_text="Когда было отредактировано")
+
+    is_forwarded = models.BooleanField(default=False, help_text="Сообщение является пересланным")
+    original_message_id = models.CharField(max_length=50, null=True, blank=True,
+                                         help_text="ID оригинального сообщения при пересылке")
+
     class Meta:
         verbose_name = _("Сообщение")
         verbose_name_plural = _("Сообщения")
@@ -57,3 +73,14 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Сообщение от {self.author} в {self.room}"
+
+    @property
+    def is_reply(self):
+        """Является ли сообщение ответом на другое сообщение"""
+        return self.parent is not None
+
+    def get_editor_display_name(self):
+        """Возвращает отображаемое имя редактора"""
+        if not self.edited_by:
+            return None
+        return self.edited_by.display_name
