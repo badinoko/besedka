@@ -316,10 +316,10 @@ class BaseChatConsumer(WebsocketConsumer):
 
             source_room_display = room_display_names.get(self.room_name, self.room_name)
 
-            # Создаем пересланное сообщение как обычное сообщение с цитатой (SSOT принцип)
+            # Создаем пересланное сообщение в простом формате как обычные сообщения
             forwarded_content = f"""Переслано из «{source_room_display}»
-
-{source_author}: {clean_content}"""
+{source_author}
+{clean_content}"""
 
             forwarded_message = Message.objects.create(
                 room=target_room,
@@ -349,12 +349,9 @@ class BaseChatConsumer(WebsocketConsumer):
         if content.startswith('Переслано из «') or content.startswith('📤'):
             lines = content.split('\n')
             if len(lines) >= 3:
-                # Новый формат: "Переслано из...", "", "автор: контент"
-                # Ищем строку с автором и двоеточием
-                for i, line in enumerate(lines[2:], 2):  # Начинаем с 3-й строки
-                    if ': ' in line:
-                        # Берем все после двоеточия
-                        return line.split(': ', 1)[1]
+                # Новый простой формат: "Переслано из...", "автор", "контент"
+                # Возвращаем все строки начиная с 3-й (индекс 2)
+                return '\n'.join(lines[2:]).strip()
 
         return content
 
@@ -363,10 +360,10 @@ class BaseChatConsumer(WebsocketConsumer):
         # Если сообщение уже пересланное, извлекаем оригинального автора
         if content.startswith('Переслано из «') or content.startswith('📤'):
             lines = content.split('\n')
-            for line in lines[2:]:  # Начинаем с 3-й строки
-                if ': ' in line:
-                    # Берем все до двоеточия как имя автора
-                    return line.split(': ', 1)[0]
+            if len(lines) >= 2:
+                # Новый простой формат: "Переслано из...", "автор", "контент"
+                # Автор всегда во второй строке (индекс 1)
+                return lines[1].strip()
 
         return fallback_author
 
