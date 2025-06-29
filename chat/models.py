@@ -66,6 +66,11 @@ class Message(models.Model):
     original_message_id = models.CharField(max_length=50, null=True, blank=True,
                                          help_text="ID оригинального сообщения при пересылке")
 
+    is_pinned = models.BooleanField(default=False, help_text="Сообщение закреплено")
+    pinned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='pinned_messages', help_text="Кто закрепил сообщение")
+    pinned_at = models.DateTimeField(null=True, blank=True, help_text="Когда было закреплено")
+
     class Meta:
         verbose_name = _("Сообщение")
         verbose_name_plural = _("Сообщения")
