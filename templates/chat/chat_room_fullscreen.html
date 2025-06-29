@@ -622,6 +622,89 @@
         color: white;
         border-color: #004085;
     }
+
+    /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА БЕЗ BOOTSTRAP */
+    .custom-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+
+    .custom-modal-content {
+        position: relative;
+        background: white;
+        border-radius: 1rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        z-index: 2;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .custom-modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+        color: white;
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .custom-modal-header h5 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .custom-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+
+    .custom-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-modal-body {
+        padding: 1.5rem;
+    }
+
+    .custom-modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
 </style>
 {% endblock %}
 
@@ -710,107 +793,79 @@
 
     <!-- 🎨 МОДАЛЬНЫЕ ОКНА ДЛЯ РЕДАКТИРОВАНИЯ И УДАЛЕНИЯ -->
 
-    <!-- МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: 3px solid #6f42c1; border-radius: 1rem;">
-                <div class="modal-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white; border-radius: 0.75rem 0.75rem 0 0;">
-                    <h5 class="modal-title" id="editModalLabel">✏️ Редактировать сообщение</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="editMessageText" class="form-label">Текст сообщения:</label>
-                        <textarea class="form-control" id="editMessageText" rows="6"
-                                  style="border: 2px solid #6f42c1; border-radius: 0.75rem; resize: vertical; min-height: 150px; max-height: 300px; overflow-y: auto;"
-                                  placeholder="Введите текст сообщения..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer" style="border-top: 2px solid #6f42c1;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" id="confirmEditBtn" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); border: none;">Сохранить</button>
-                </div>
+    <!-- ОКНО РЕДАКТИРОВАНИЯ -->
+    <div id="editModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-backdrop"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5>✏️ Редактировать сообщение</h5>
+                <button type="button" class="custom-modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <textarea id="editMessageText" rows="6" style="width: 100%; padding: 0.75rem; border: 2px solid #6f42c1; border-radius: 0.5rem; resize: vertical; min-height: 150px; max-height: 300px;" placeholder="Введите текст сообщения..."></textarea>
+                <small class="text-muted">Вы можете изменить размер поля, потянув за правый нижний угол</small>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Отмена</button>
+                <button type="button" id="confirmEditBtn" class="btn btn-primary">Сохранить изменения</button>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО УДАЛЕНИЯ -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: 3px solid #dc3545; border-radius: 1rem;">
-                <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border-radius: 0.75rem 0.75rem 0 0;">
-                    <h5 class="modal-title" id="deleteModalLabel">🗑️ Удалить сообщение</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning" role="alert">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Внимание!</strong> Это действие нельзя отменить.
-                    </div>
-                    <p><strong>Автор:</strong> <span id="deleteMessageAuthor"></span></p>
-                    <p><strong>Сообщение:</strong></p>
-                    <div class="border rounded p-2 bg-light">
-                        <span id="deleteMessagePreview" style="line-height: 1.4;"></span>
-                    </div>
-                </div>
-                <div class="modal-footer" style="border-top: 2px solid #dc3545;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border: none;">Удалить</button>
-                </div>
+    <!-- ОКНО УДАЛЕНИЯ -->
+    <div id="deleteModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-backdrop"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5>🗑️ Удалить сообщение</h5>
+                <button type="button" class="custom-modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p><strong>Автор:</strong> <span id="deleteMessageAuthor"></span></p>
+                <p><strong>Сообщение:</strong></p>
+                <div id="deleteMessagePreview" style="background: #f8f9fa; padding: 0.75rem; border-radius: 0.5rem; border-left: 4px solid #dc3545; max-height: 100px; overflow-y: auto;"></div>
+                <p class="text-danger mt-3"><strong>⚠️ Это действие нельзя отменить!</strong></p>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Удалить сообщение</button>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ВЫБОРА ЧАТА ДЛЯ ПЕРЕСЫЛКИ -->
-    <div class="modal fade" id="forwardModal" tabindex="-1" aria-labelledby="forwardModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: 3px solid #28a745; border-radius: 1rem;">
-                <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-radius: 0.75rem 0.75rem 0 0;">
-                    <h5 class="modal-title" id="forwardModalLabel">📤 Переслать сообщение</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="mb-3"><strong>Выберите чат для пересылки:</strong></p>
-
-                    <div class="list-group">
-                        <!-- Показываем только те чаты, которые доступны и СУЩЕСТВУЮТ -->
-
-                        <!-- Общий чат - показываем только если мы НЕ в общем чате -->
-                        {% if 'general' not in request.resolver_match.url_name %}
-                        <label class="list-group-item d-flex align-items-center" style="cursor: pointer;">
-                            <input class="form-check-input me-3" type="radio" name="targetChat" value="general" checked>
-                            <div>
-                                <div class="fw-bold">💬 Беседка</div>
-                                <small class="text-muted">Общий чат - доступен всем</small>
-                            </div>
+    <!-- ОКНО ПЕРЕСЫЛКИ -->
+    <div id="forwardModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-backdrop"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5>📤 Переслать сообщение</h5>
+                <button type="button" class="custom-modal-close" onclick="closeForwardModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p><strong>Выберите чат для пересылки:</strong></p>
+                <div class="chat-selection">
+                    {% if current_room != 'general' %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="targetChat" id="targetGeneral" value="general">
+                        <label class="form-check-label" for="targetGeneral">
+                            💬 Беседка (общий чат)
                         </label>
-                        {% endif %}
-
-                        <!-- VIP чат - показываем если есть доступ И мы НЕ в VIP чате -->
-                        {% if user.role == 'owner' or user.role == 'store_owner' or user.role == 'store_admin' %}
-                            {% if 'vip' not in request.resolver_match.url_name %}
-                            <label class="list-group-item d-flex align-items-center" style="cursor: pointer;">
-                                <input class="form-check-input me-3" type="radio" name="targetChat" value="vip" {% if 'general' in request.resolver_match.url_name %}checked{% endif %}>
-                                <div>
-                                    <div class="fw-bold">👑 Беседка - VIP</div>
-                                    <small class="text-muted">VIP чат - для владельцев и администрации магазина</small>
-                                </div>
-                            </label>
-                            {% endif %}
-                        {% endif %}
-
-                        <!-- МОДЕРАТОРСКИЙ ЧАТ ВРЕМЕННО УБРАН - ЕГО ЕЩЕ НЕТ В ПРОЕКТЕ -->
                     </div>
+                    {% endif %}
 
-                    <div class="alert alert-info mt-3" role="alert">
-                        <i class="fas fa-info-circle"></i>
-                        <small>Сообщение будет переслано с указанием источника и автора.</small>
+                    {% if current_room != 'vip' and user.role in 'owner,store_owner,store_admin' %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="targetChat" id="targetVip" value="vip">
+                        <label class="form-check-label" for="targetVip">
+                            👑 Беседка - VIP (для владельцев и администрации магазина)
+                        </label>
                     </div>
+                    {% endif %}
                 </div>
-                <div class="modal-footer" style="border-top: 2px solid #28a745;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-success" id="confirmForwardBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none;">Переслать</button>
-                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeForwardModal()">Отмена</button>
+                <button type="button" id="confirmForwardBtn" class="btn btn-success">Переслать</button>
             </div>
         </div>
     </div>
@@ -1668,7 +1723,6 @@
     function contextMenuEdit() {
         if (!contextMenu.currentMessageData) return;
 
-        // Простая проверка существования элементов
         const editModal = document.getElementById('editModal');
         const editMessageText = document.getElementById('editMessageText');
 
@@ -1680,15 +1734,14 @@
 
         editMessageText.value = contextMenu.currentMessageData.text;
 
-        // 🔧 ИСПРАВЛЕНИЕ ЗАВИСАНИЯ: Используем getOrCreateInstance вместо new
-        const modal = bootstrap.Modal.getOrCreateInstance(editModal);
-        modal.show();
+        // Показываем кастомное окно
+        editModal.style.display = 'flex';
 
-        // Фокус на текстовое поле после открытия модального окна
-        editModal.addEventListener('shown.bs.modal', function () {
+        // Фокус на текстовое поле
+        setTimeout(() => {
             editMessageText.focus();
-            editMessageText.select(); // Выделяем весь текст для удобства
-        }, { once: true });
+            editMessageText.select();
+        }, 100);
 
         hideContextMenu();
         console.log('🖱️ Edit modal opened for message:', contextMenu.currentMessageData.id);
@@ -1697,7 +1750,6 @@
     function contextMenuDelete() {
         if (!contextMenu.currentMessageData) return;
 
-        // Простая проверка существования элементов
         const deleteModal = document.getElementById('deleteModal');
         const deleteMessageAuthor = document.getElementById('deleteMessageAuthor');
         const deleteMessagePreview = document.getElementById('deleteMessagePreview');
@@ -1712,24 +1764,19 @@
 
         // 🎯 НОВАЯ ЛОГИКА ОБРЕЗКИ: до 2 строк целиком, если больше - обрезаем многоточием
         const messageText = contextMenu.currentMessageData.text;
-
-        // Подсчитываем приблизительное количество символов в 2 строках (примерно 120-140 символов)
         const maxCharsForTwoLines = 130;
 
         let displayText;
         if (messageText.length <= maxCharsForTwoLines) {
-            // Помещается в 2 строки - показываем целиком
             displayText = messageText;
         } else {
-            // Не помещается - обрезаем многоточием
             displayText = messageText.substring(0, maxCharsForTwoLines) + '...';
         }
 
         deleteMessagePreview.textContent = displayText;
 
-        // 🔧 ИСПРАВЛЕНИЕ ЗАВИСАНИЯ: Используем getOrCreateInstance вместо new
-        const modal = bootstrap.Modal.getOrCreateInstance(deleteModal);
-        modal.show();
+        // Показываем кастомное окно
+        deleteModal.style.display = 'flex';
 
         hideContextMenu();
         console.log('🖱️ Delete modal opened for message:', contextMenu.currentMessageData.id);
@@ -1753,7 +1800,6 @@
     function contextMenuForward() {
         if (!contextMenu.currentMessageData) return;
 
-        // Простая проверка существования элементов
         const forwardModal = document.getElementById('forwardModal');
 
         if (!forwardModal) {
@@ -1762,9 +1808,8 @@
             return;
         }
 
-        // 🔧 ИСПРАВЛЕНИЕ ЗАВИСАНИЯ: Используем getOrCreateInstance вместо new
-        const modal = bootstrap.Modal.getOrCreateInstance(forwardModal);
-        modal.show();
+        // Показываем кастомное окно
+        forwardModal.style.display = 'flex';
 
         hideContextMenu();
         console.log('🖱️ Forward modal opened for message:', contextMenu.currentMessageData.id);
@@ -1980,11 +2025,8 @@
                 if (chatSocket.readyState === WebSocket.OPEN) {
                     chatSocket.send(JSON.stringify(editData));
                     console.log('✅ Edit request sent successfully');
-                    // Закрываем модальное окно
-                    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-                    if (editModal) {
-                        editModal.hide();
-                    }
+                    // Закрываем кастомное окно
+                    closeEditModal();
                 } else {
                     showTemporaryFeedback('❌ Нет соединения с сервером', 'error');
                     console.error('❌ WebSocket not connected:', chatSocket.readyState);
@@ -2017,11 +2059,8 @@
                 if (chatSocket.readyState === WebSocket.OPEN) {
                     chatSocket.send(JSON.stringify(deleteData));
                     console.log('✅ Delete request sent successfully');
-                    // Закрываем модальное окно
-                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-                    if (deleteModal) {
-                        deleteModal.hide();
-                    }
+                    // Закрываем кастомное окно
+                    closeDeleteModal();
                 } else {
                     showTemporaryFeedback('❌ Нет соединения с сервером', 'error');
                     console.error('❌ WebSocket not connected:', chatSocket.readyState);
@@ -2065,11 +2104,8 @@
                 if (chatSocket.readyState === WebSocket.OPEN) {
                     chatSocket.send(JSON.stringify(forwardData));
                     console.log('✅ Forward request sent successfully');
-                    // Закрываем модальное окно
-                    const forwardModal = bootstrap.Modal.getInstance(document.getElementById('forwardModal'));
-                    if (forwardModal) {
-                        forwardModal.hide();
-                    }
+                    // Закрываем кастомное окно
+                    closeForwardModal();
                 } else {
                     showTemporaryFeedback('❌ Нет соединения с сервером', 'error');
                     console.error('❌ WebSocket not connected:', chatSocket.readyState);
@@ -2081,6 +2117,47 @@
 
         console.log('✅ Modal handlers initialized successfully');
     }); // Закрываем DOMContentLoaded
+
+    // === ФУНКЦИИ УПРАВЛЕНИЯ КАСТОМНЫМИ ОКНАМИ ===
+
+    function closeEditModal() {
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.style.display = 'none';
+        }
+    }
+
+    function closeDeleteModal() {
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    }
+
+    function closeForwardModal() {
+        const forwardModal = document.getElementById('forwardModal');
+        if (forwardModal) {
+            forwardModal.style.display = 'none';
+        }
+    }
+
+    // Закрытие окон по клику на backdrop
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('custom-modal-backdrop')) {
+            if (e.target.parentElement.id === 'editModal') closeEditModal();
+            if (e.target.parentElement.id === 'deleteModal') closeDeleteModal();
+            if (e.target.parentElement.id === 'forwardModal') closeForwardModal();
+        }
+    });
+
+    // Закрытие окон по ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEditModal();
+            closeDeleteModal();
+            closeForwardModal();
+        }
+    });
 
 </script>
 
