@@ -706,39 +706,51 @@
         justify-content: flex-end;
     }
 
-    /* === СТИЛИ ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ === */
-    /* ЖЕЛТАЯ РАМОЧКА ДЛЯ ВСЕГО ПЕРЕСЛАННОГО СООБЩЕНИЯ */
-    .message-content.forwarded-own,
-    .message-content.forwarded-other {
-        border: 3px solid #ffc107 !important; /* ЖЕЛТАЯ РАМОЧКА */
-        box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.3) !important; /* ДОПОЛНИТЕЛЬНОЕ ЖЕЛТОЕ СВЕЧЕНИЕ */
+        /* === СТИЛИ ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ === */
+    /* ОТМЕНЯЕМ БАЗОВЫЕ ЦВЕТА И ДЕЛАЕМ НЕЙТРАЛЬНЫМИ */
+    .message-content.own.forwarded-own,
+    .message-content.other.forwarded-other {
+        background: #f8f9fa !important; /* НЕЙТРАЛЬНЫЙ СЕРЫЙ ФОН ВМЕСТО ЗЕЛЕНОГО/ГОЛУБОГО */
+        color: #333 !important; /* ТЕМНЫЙ ТЕКСТ */
+        border: 3px solid #ffc107 !important; /* ЖЕЛТАЯ РАМОЧКА ДЛЯ ОТЛИЧИЯ */
+        box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.3) !important;
+        text-shadow: none !important; /* УБИРАЕМ ТЕНЬ ТЕКСТА */
     }
 
-    /* КОМПАКТНЫЙ ЗАГОЛОВОК ПЕРЕСЛАННОГО СООБЩЕНИЯ */
+    /* НЕЙТРАЛЬНЫЙ СТИЛЬ ДЛЯ АВТОРА В ПЕРЕСЛАННЫХ СООБЩЕНИЯХ */
+    .message-content.forwarded-own .message-author,
+    .message-content.forwarded-other .message-author {
+        background: rgba(0, 0, 0, 0.05) !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
+        color: #333 !important;
+    }
+
+    /* КОМПАКТНЫЙ ЗАГОЛОВОК БЕЗ ЛИШНИХ ОТСТУПОВ */
     .forwarded-header {
         background: transparent;
-        padding: 0.1rem 0; /* ЕЩЕ МЕНЬШЕ ОТСТУПОВ */
-        margin-bottom: 0.3rem; /* ЕЩЕ МЕНЬШЕ ОТСТУП СНИЗУ */
+        padding: 0;
+        margin: 0 0 0.25rem 0;
         font-size: 0.8rem;
         font-weight: 600;
-        color: #333 !important; /* ТЕМНЫЙ ЦВЕТ ВМЕСТО СЕРОГО */
+        color: #333 !important;
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        line-height: 1;
     }
 
     .forwarded-header i {
-        color: #333 !important; /* ТЕМНЫЙ ЦВЕТ ВМЕСТО СЕРОГО */
+        color: #333 !important;
         font-size: 0.8rem;
     }
 
-    /* ПРАВИЛЬНЫЕ ЦВЕТА ДЛЯ ЦИТАТ В ПЕРЕСЛАННЫХ СООБЩЕНИЯХ */
-    .message-content.own .reply-quote {
+    /* ПРАВИЛЬНЫЕ ЦВЕТА ТОЛЬКО ДЛЯ ЦИТАТ В ПЕРЕСЛАННЫХ СООБЩЕНИЯХ */
+    .message-content.own.forwarded-own .reply-quote {
         background: rgba(40, 167, 69, 0.1) !important; /* ЗЕЛЕНАЯ ПОДЛОЖКА ДЛЯ ЦИТАТ МОИХ СООБЩЕНИЙ */
         border-color: #28a745 !important;
     }
 
-    .message-content.other .reply-quote {
+    .message-content.other.forwarded-other .reply-quote {
         background: rgba(219, 234, 254, 0.7) !important; /* ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ЦИТАТ ЧУЖИХ СООБЩЕНИЙ */
         border-color: #007bff !important;
     }
