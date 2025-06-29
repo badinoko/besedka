@@ -724,9 +724,6 @@
                         <textarea class="form-control" id="editMessageText" rows="6"
                                   style="border: 2px solid #6f42c1; border-radius: 0.75rem; resize: vertical; min-height: 150px; max-height: 300px; overflow-y: auto;"
                                   placeholder="Введите текст сообщения..."></textarea>
-                        <small class="form-text text-muted">
-                            <i class="fas fa-info-circle"></i> Поле автоматически расширяется до 10 строк, затем появится прокрутка
-                        </small>
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 2px solid #6f42c1;">
@@ -751,13 +748,10 @@
                         <strong>Внимание!</strong> Это действие нельзя отменить.
                     </div>
                     <p><strong>Автор:</strong> <span id="deleteMessageAuthor"></span></p>
-                    <p><strong>Фрагмент сообщения:</strong></p>
-                    <div class="border rounded p-2 bg-light" style="max-height: 80px; overflow: hidden;">
-                        <span id="deleteMessagePreview" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;"></span>
+                    <p><strong>Сообщение:</strong></p>
+                    <div class="border rounded p-2 bg-light">
+                        <span id="deleteMessagePreview" style="line-height: 1.4;"></span>
                     </div>
-                    <small class="form-text text-muted mt-1">
-                        <i class="fas fa-info-circle"></i> Показан только фрагмент для подтверждения
-                    </small>
                 </div>
                 <div class="modal-footer" style="border-top: 2px solid #dc3545;">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -1671,47 +1665,22 @@
         console.log('🖱️ Reply mode started via context menu');
     }
 
-    function contextMenuEdit(retryCount = 0) {
+    function contextMenuEdit() {
         if (!contextMenu.currentMessageData) return;
 
-        // Защита от бесконечной рекурсии
-        if (retryCount > 3) {
-            console.error('❌ Too many retries for edit modal');
-            showTemporaryFeedback('❌ Ошибка: не удалось найти модальное окно', 'error');
-            return;
-        }
-
-        // Проверяем существование элементов
+        // Простая проверка существования элементов
         const editModal = document.getElementById('editModal');
         const editMessageText = document.getElementById('editMessageText');
 
         if (!editModal || !editMessageText) {
             console.error('❌ Edit modal elements not found!');
-            console.log('🐛 DEBUG: DOM state:', {
-                readyState: document.readyState,
-                editModal: !!editModal,
-                editMessageText: !!editMessageText,
-                editModalById: !!document.getElementById('editModal'),
-                editMessageTextById: !!document.getElementById('editMessageText')
-            });
-            // Попробуем найти элементы еще раз через небольшую задержку
-            setTimeout(() => {
-                const retryEditModal = document.getElementById('editModal');
-                const retryEditMessageText = document.getElementById('editMessageText');
-                if (retryEditModal && retryEditMessageText) {
-                    console.log('✅ Elements found on retry!');
-                    // Повторяем вызов функции
-                    contextMenuEdit(retryCount + 1);
-                } else {
-                    showTemporaryFeedback('❌ Ошибка: модальное окно не найдено', 'error');
-                }
-            }, 100);
+            showTemporaryFeedback('❌ Ошибка: модальное окно не найдено', 'error');
             return;
         }
 
         editMessageText.value = contextMenu.currentMessageData.text;
 
-        // Показываем модальное окно с правильными настройками
+        // Показываем модальное окно
         const modal = new bootstrap.Modal(editModal, {
             backdrop: true,
             keyboard: true,
@@ -1729,53 +1698,40 @@
         console.log('🖱️ Edit modal opened for message:', contextMenu.currentMessageData.id);
     }
 
-    function contextMenuDelete(retryCount = 0) {
+    function contextMenuDelete() {
         if (!contextMenu.currentMessageData) return;
 
-        // Защита от бесконечной рекурсии
-        if (retryCount > 3) {
-            console.error('❌ Too many retries for delete modal');
-            showTemporaryFeedback('❌ Ошибка: не удалось найти модальное окно', 'error');
-            return;
-        }
-
-        // Проверяем существование элементов
+        // Простая проверка существования элементов
         const deleteModal = document.getElementById('deleteModal');
         const deleteMessageAuthor = document.getElementById('deleteMessageAuthor');
         const deleteMessagePreview = document.getElementById('deleteMessagePreview');
 
         if (!deleteModal || !deleteMessageAuthor || !deleteMessagePreview) {
             console.error('❌ Delete modal elements not found!');
-            console.log('🐛 DEBUG: DOM state:', {
-                readyState: document.readyState,
-                deleteModal: !!deleteModal,
-                deleteMessageAuthor: !!deleteMessageAuthor,
-                deleteMessagePreview: !!deleteMessagePreview
-            });
-            // Попробуем найти элементы еще раз через небольшую задержку
-            setTimeout(() => {
-                const retryDeleteModal = document.getElementById('deleteModal');
-                const retryDeleteMessageAuthor = document.getElementById('deleteMessageAuthor');
-                const retryDeleteMessagePreview = document.getElementById('deleteMessagePreview');
-                if (retryDeleteModal && retryDeleteMessageAuthor && retryDeleteMessagePreview) {
-                    console.log('✅ Delete elements found on retry!');
-                    // Повторяем вызов функции
-                    contextMenuDelete(retryCount + 1);
-                } else {
-                    showTemporaryFeedback('❌ Ошибка: модальное окно не найдено', 'error');
-                }
-            }, 100);
+            showTemporaryFeedback('❌ Ошибка: модальное окно не найдено', 'error');
             return;
         }
 
         deleteMessageAuthor.textContent = contextMenu.currentMessageData.author;
 
-        // Обрезаем текст если слишком длинный
+        // 🎯 НОВАЯ ЛОГИКА ОБРЕЗКИ: до 2 строк целиком, если больше - обрезаем многоточием
         const messageText = contextMenu.currentMessageData.text;
-        const previewText = messageText.length > 100 ? messageText.substring(0, 100) + '...' : messageText;
-        deleteMessagePreview.textContent = previewText;
 
-        // Показываем модальное окно с правильными настройками
+        // Подсчитываем приблизительное количество символов в 2 строках (примерно 120-140 символов)
+        const maxCharsForTwoLines = 130;
+
+        let displayText;
+        if (messageText.length <= maxCharsForTwoLines) {
+            // Помещается в 2 строки - показываем целиком
+            displayText = messageText;
+        } else {
+            // Не помещается - обрезаем многоточием
+            displayText = messageText.substring(0, maxCharsForTwoLines) + '...';
+        }
+
+        deleteMessagePreview.textContent = displayText;
+
+        // Показываем модальное окно
         const modal = new bootstrap.Modal(deleteModal, {
             backdrop: true,
             keyboard: true,
@@ -1802,41 +1758,19 @@
         console.log('🖱️ Text copied to clipboard');
     }
 
-    function contextMenuForward(retryCount = 0) {
+    function contextMenuForward() {
         if (!contextMenu.currentMessageData) return;
 
-        // Защита от бесконечной рекурсии
-        if (retryCount > 3) {
-            console.error('❌ Too many retries for forward modal');
-            showTemporaryFeedback('❌ Ошибка: не удалось найти модальное окно', 'error');
-            return;
-        }
-
-        // Проверяем существование элементов
+        // Простая проверка существования элементов
         const forwardModal = document.getElementById('forwardModal');
 
         if (!forwardModal) {
             console.error('❌ Forward modal element not found!');
-            console.log('🐛 DEBUG: DOM state:', {
-                readyState: document.readyState,
-                forwardModal: !!forwardModal,
-                forwardModalById: !!document.getElementById('forwardModal')
-            });
-            // Попробуем найти элементы еще раз через небольшую задержку
-            setTimeout(() => {
-                const retryForwardModal = document.getElementById('forwardModal');
-                if (retryForwardModal) {
-                    console.log('✅ Forward element found on retry!');
-                    // Повторяем вызов функции
-                    contextMenuForward(retryCount + 1);
-                } else {
-                    showTemporaryFeedback('❌ Ошибка: модальное окно не найдено', 'error');
-                }
-            }, 100);
+            showTemporaryFeedback('❌ Ошибка: модальное окно не найдено', 'error');
             return;
         }
 
-        // Показываем модальное окно выбора чата с правильными настройками
+        // Показываем модальное окно выбора чата
         const modal = new bootstrap.Modal(forwardModal, {
             backdrop: true,
             keyboard: true,
@@ -2019,39 +1953,6 @@
     // Ждем полной загрузки DOM перед добавлением обработчиков
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📋 DOM loaded, initializing modal handlers...');
-
-        // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная очистка состояния модалов
-        const modals = ['editModal', 'deleteModal', 'forwardModal'];
-        modals.forEach(modalId => {
-            const modalElement = document.getElementById(modalId);
-            if (modalElement) {
-                // Убираем все возможные блокирующие классы и атрибуты
-                modalElement.classList.remove('show');
-                modalElement.style.display = 'none';
-                modalElement.setAttribute('aria-hidden', 'true');
-                modalElement.removeAttribute('aria-modal');
-                modalElement.removeAttribute('role');
-
-                // Принудительно закрываем любые активные экземпляры
-                const existingModal = bootstrap.Modal.getInstance(modalElement);
-                if (existingModal) {
-                    existingModal.dispose();
-                }
-            }
-        });
-
-        // Убираем backdrop если остался
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-            backdrop.remove();
-        }
-
-        // Восстанавливаем прокрутку body
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-
-        console.log('✅ Modal state cleaned up successfully');
 
         // Обработчик кнопки подтверждения редактирования
         const confirmEditBtn = document.getElementById('confirmEditBtn');
