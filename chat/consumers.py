@@ -523,6 +523,8 @@ class BaseChatConsumer(WebsocketConsumer):
             'is_pinned': message.is_pinned,
             'pinned_by': message.pinned_by.display_name if message.pinned_by else None,
             'pinned_at': message.pinned_at.isoformat() if message.pinned_at else None,
+            'is_forwarded': getattr(message, 'is_forwarded', False),
+            'original_message_id': getattr(message, 'original_message_id', None),
         }
 
     def user_to_json(self, user):
