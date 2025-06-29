@@ -1721,7 +1721,20 @@
     }
 
     function contextMenuEdit() {
-        if (!contextMenu.currentMessageData) return;
+        if (!contextMenu.currentMessageData) {
+            console.error('❌ No message data available for edit!');
+            showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
+            return;
+        }
+
+        // 🔑 СОХРАНЯЕМ ДАННЫЕ ЛОКАЛЬНО ПЕРЕД СКРЫТИЕМ МЕНЮ
+        const messageData = {
+            id: contextMenu.currentMessageData.id,
+            author: contextMenu.currentMessageData.author,
+            text: contextMenu.currentMessageData.text,
+            isOwn: contextMenu.currentMessageData.isOwn,
+            authorRole: contextMenu.currentMessageData.authorRole
+        };
 
         const editModal = document.getElementById('editModal');
         const editMessageText = document.getElementById('editMessageText');
@@ -1732,7 +1745,11 @@
             return;
         }
 
-        editMessageText.value = contextMenu.currentMessageData.text;
+        editMessageText.value = messageData.text;
+
+        // Сохраняем данные в модальном окне для использования в обработчике
+        editModal.dataset.messageId = messageData.id;
+        editModal.dataset.messageText = messageData.text;
 
         // Показываем кастомное окно
         editModal.style.display = 'flex';
@@ -1744,11 +1761,24 @@
         }, 100);
 
         hideContextMenu();
-        console.log('🖱️ Edit modal opened for message:', contextMenu.currentMessageData.id);
+        console.log('🖱️ Edit modal opened for message:', messageData.id);
     }
 
     function contextMenuDelete() {
-        if (!contextMenu.currentMessageData) return;
+        if (!contextMenu.currentMessageData) {
+            console.error('❌ No message data available for delete!');
+            showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
+            return;
+        }
+
+        // 🔑 СОХРАНЯЕМ ДАННЫЕ ЛОКАЛЬНО ПЕРЕД СКРЫТИЕМ МЕНЮ
+        const messageData = {
+            id: contextMenu.currentMessageData.id,
+            author: contextMenu.currentMessageData.author,
+            text: contextMenu.currentMessageData.text,
+            isOwn: contextMenu.currentMessageData.isOwn,
+            authorRole: contextMenu.currentMessageData.authorRole
+        };
 
         const deleteModal = document.getElementById('deleteModal');
         const deleteMessageAuthor = document.getElementById('deleteMessageAuthor');
@@ -1760,10 +1790,10 @@
             return;
         }
 
-        deleteMessageAuthor.textContent = contextMenu.currentMessageData.author;
+        deleteMessageAuthor.textContent = messageData.author;
 
         // 🎯 НОВАЯ ЛОГИКА ОБРЕЗКИ: до 2 строк целиком, если больше - обрезаем многоточием
-        const messageText = contextMenu.currentMessageData.text;
+        const messageText = messageData.text;
         const maxCharsForTwoLines = 130;
 
         let displayText;
@@ -1775,11 +1805,14 @@
 
         deleteMessagePreview.textContent = displayText;
 
+        // Сохраняем данные в модальном окне для использования в обработчике
+        deleteModal.dataset.messageId = messageData.id;
+
         // Показываем кастомное окно
         deleteModal.style.display = 'flex';
 
         hideContextMenu();
-        console.log('🖱️ Delete modal opened for message:', contextMenu.currentMessageData.id);
+        console.log('🖱️ Delete modal opened for message:', messageData.id);
     }
 
     function contextMenuCopy() {
@@ -1798,7 +1831,20 @@
     }
 
     function contextMenuForward() {
-        if (!contextMenu.currentMessageData) return;
+        if (!contextMenu.currentMessageData) {
+            console.error('❌ No message data available for forward!');
+            showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
+            return;
+        }
+
+        // 🔑 СОХРАНЯЕМ ДАННЫЕ ЛОКАЛЬНО ПЕРЕД СКРЫТИЕМ МЕНЮ
+        const messageData = {
+            id: contextMenu.currentMessageData.id,
+            author: contextMenu.currentMessageData.author,
+            text: contextMenu.currentMessageData.text,
+            isOwn: contextMenu.currentMessageData.isOwn,
+            authorRole: contextMenu.currentMessageData.authorRole
+        };
 
         const forwardModal = document.getElementById('forwardModal');
 
@@ -1808,11 +1854,41 @@
             return;
         }
 
+        // Сохраняем данные в модальном окне для использования в обработчике
+        forwardModal.dataset.messageId = messageData.id;
+        forwardModal.dataset.messageText = messageData.text;
+        forwardModal.dataset.messageAuthor = messageData.author;
+
+        // ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ СООБЩЕНИЯ В ОКНЕ ПЕРЕСЫЛКИ
+        const forwardMessagePreview = document.createElement('div');
+        forwardMessagePreview.id = 'forwardMessagePreview';
+        forwardMessagePreview.style.cssText = `
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #28a745;
+            margin-bottom: 1rem;
+            max-height: 80px;
+            overflow-y: auto;
+        `;
+        forwardMessagePreview.innerHTML = `
+            <strong>${messageData.author}:</strong><br>
+            ${messageData.text}
+        `;
+
+        // Вставляем preview в модальное окно
+        const modalBody = forwardModal.querySelector('.custom-modal-body');
+        const existingPreview = modalBody.querySelector('#forwardMessagePreview');
+        if (existingPreview) {
+            existingPreview.remove();
+        }
+        modalBody.insertBefore(forwardMessagePreview, modalBody.firstChild);
+
         // Показываем кастомное окно
         forwardModal.style.display = 'flex';
 
         hideContextMenu();
-        console.log('🖱️ Forward modal opened for message:', contextMenu.currentMessageData.id);
+        console.log('🖱️ Forward modal opened for message:', messageData.id);
     }
 
     function contextMenuPin() {
@@ -1991,36 +2067,39 @@
         const confirmEditBtn = document.getElementById('confirmEditBtn');
         if (confirmEditBtn) {
             confirmEditBtn.addEventListener('click', function() {
-                console.log('🔧 Edit button clicked!', contextMenu.currentMessageData);
-
+                const editModal = document.getElementById('editModal');
                 const editMessageText = document.getElementById('editMessageText');
-                if (!editMessageText) {
-                    console.error('❌ editMessageText element not found!');
+
+                if (!editModal || !editMessageText) {
+                    console.error('❌ editModal or editMessageText element not found!');
                     showTemporaryFeedback('❌ Ошибка: элемент не найден', 'error');
+                    return;
+                }
+
+                // 🔑 ИСПОЛЬЗУЕМ СОХРАНЕННЫЕ ДАННЫЕ ИЗ DATASET ВМЕСТО contextMenu.currentMessageData
+                const messageId = editModal.dataset.messageId;
+
+                if (!messageId) {
+                    showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
+                    console.error('❌ messageId not found in dataset!');
                     return;
                 }
 
                 const newContent = editMessageText.value.trim();
 
-        if (!newContent) {
-            showTemporaryFeedback('❌ Текст сообщения не может быть пустым', 'error');
-            return;
-        }
+                if (!newContent) {
+                    showTemporaryFeedback('❌ Текст сообщения не может быть пустым', 'error');
+                    return;
+                }
 
-        if (!contextMenu.currentMessageData) {
-            showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
-            console.error('❌ contextMenu.currentMessageData is null!');
-            return;
-        }
+                // Отправляем запрос на редактирование через WebSocket
+                const editData = {
+                    type: 'edit_message',
+                    message_id: messageId,
+                    new_content: newContent
+                };
 
-        // Отправляем запрос на редактирование через WebSocket
-        const editData = {
-            type: 'edit_message',
-            message_id: contextMenu.currentMessageData.id,
-            new_content: newContent
-        };
-
-        console.log('📤 Sending edit request:', editData);
+                console.log('📤 Sending edit request:', editData);
 
                 if (chatSocket.readyState === WebSocket.OPEN) {
                     chatSocket.send(JSON.stringify(editData));
@@ -2040,18 +2119,27 @@
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         if (confirmDeleteBtn) {
             confirmDeleteBtn.addEventListener('click', function() {
-                console.log('🗑️ Delete button clicked!', contextMenu.currentMessageData);
+                const deleteModal = document.getElementById('deleteModal');
 
-                if (!contextMenu.currentMessageData) {
+                if (!deleteModal) {
+                    console.error('❌ deleteModal element not found!');
+                    showTemporaryFeedback('❌ Ошибка: элемент не найден', 'error');
+                    return;
+                }
+
+                // 🔑 ИСПОЛЬЗУЕМ СОХРАНЕННЫЕ ДАННЫЕ ИЗ DATASET ВМЕСТО contextMenu.currentMessageData
+                const messageId = deleteModal.dataset.messageId;
+
+                if (!messageId) {
                     showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
-                    console.error('❌ contextMenu.currentMessageData is null!');
+                    console.error('❌ messageId not found in dataset!');
                     return;
                 }
 
                 // Отправляем запрос на удаление через WebSocket
                 const deleteData = {
                     type: 'delete_message',
-                    message_id: contextMenu.currentMessageData.id
+                    message_id: messageId
                 };
 
                 console.log('📤 Sending delete request:', deleteData);
@@ -2074,9 +2162,14 @@
         const confirmForwardBtn = document.getElementById('confirmForwardBtn');
         if (confirmForwardBtn) {
             confirmForwardBtn.addEventListener('click', function() {
-                console.log('📤 Forward button clicked!', contextMenu.currentMessageData);
-
+                const forwardModal = document.getElementById('forwardModal');
                 const targetChatRadio = document.querySelector('input[name="targetChat"]:checked');
+
+                if (!forwardModal) {
+                    console.error('❌ forwardModal element not found!');
+                    showTemporaryFeedback('❌ Ошибка: элемент не найден', 'error');
+                    return;
+                }
 
                 if (!targetChatRadio) {
                     showTemporaryFeedback('❌ Выберите чат для пересылки', 'error');
@@ -2084,9 +2177,12 @@
                     return;
                 }
 
-                if (!contextMenu.currentMessageData) {
+                // 🔑 ИСПОЛЬЗУЕМ СОХРАНЕННЫЕ ДАННЫЕ ИЗ DATASET ВМЕСТО contextMenu.currentMessageData
+                const messageId = forwardModal.dataset.messageId;
+
+                if (!messageId) {
                     showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
-                    console.error('❌ contextMenu.currentMessageData is null!');
+                    console.error('❌ messageId not found in dataset!');
                     return;
                 }
 
@@ -2095,7 +2191,7 @@
                 // Отправляем запрос на пересылку через WebSocket
                 const forwardData = {
                     type: 'forward_message',
-                    message_id: contextMenu.currentMessageData.id,
+                    message_id: messageId,
                     target_room: targetRoom
                 };
 
