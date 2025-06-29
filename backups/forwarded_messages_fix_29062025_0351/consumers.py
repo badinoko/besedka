@@ -314,10 +314,9 @@ class BaseChatConsumer(WebsocketConsumer):
                 original_message_id=str(message_id)
             )
 
-            # Отправляем пересланное сообщение в группу ЦЕЛЕВОГО ЧАТА
-            target_group_name = f"chat_{target_room}"
+            # Отправляем пересланное сообщение в группу
             async_to_sync(self.channel_layer.group_send)(
-                target_group_name, {
+                self.room_group_name, {
                     "type": "message_forwarded",
                     "message": self.message_to_json(forwarded_message),
                     "forwarder": self.user_to_json(self.user)
