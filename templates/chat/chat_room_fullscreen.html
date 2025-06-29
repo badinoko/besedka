@@ -1680,12 +1680,8 @@
 
         editMessageText.value = contextMenu.currentMessageData.text;
 
-        // Показываем модальное окно
-        const modal = new bootstrap.Modal(editModal, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
+        // 🔧 ИСПРАВЛЕНИЕ ЗАВИСАНИЯ: Используем getOrCreateInstance вместо new
+        const modal = bootstrap.Modal.getOrCreateInstance(editModal);
         modal.show();
 
         // Фокус на текстовое поле после открытия модального окна
@@ -1731,12 +1727,8 @@
 
         deleteMessagePreview.textContent = displayText;
 
-        // Показываем модальное окно
-        const modal = new bootstrap.Modal(deleteModal, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
+        // 🔧 ИСПРАВЛЕНИЕ ЗАВИСАНИЯ: Используем getOrCreateInstance вместо new
+        const modal = bootstrap.Modal.getOrCreateInstance(deleteModal);
         modal.show();
 
         hideContextMenu();
@@ -1770,12 +1762,8 @@
             return;
         }
 
-        // Показываем модальное окно выбора чата
-        const modal = new bootstrap.Modal(forwardModal, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
+        // 🔧 ИСПРАВЛЕНИЕ ЗАВИСАНИЯ: Используем getOrCreateInstance вместо new
+        const modal = bootstrap.Modal.getOrCreateInstance(forwardModal);
         modal.show();
 
         hideContextMenu();
