@@ -19,6 +19,55 @@
     <link rel="stylesheet" href="{% static 'css/unified_cards.css' %}?v=202506130010">
     <link rel="stylesheet" href="{% static 'css/unified_styles.css' %}?v=202506150730">
 
+    <!-- CSS переменные для темной и светлой темы -->
+    <style>
+        :root {
+            /* Светлая тема (по умолчанию) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+
+            /* Цвета для сообщений чата */
+            --chat-own-bg: #3B82F6;
+            --chat-own-text: #ffffff;
+            --chat-other-bg: #F3F4F6;
+            --chat-other-text: #111827;
+            --chat-forwarded-bg: #FEF3C7;
+            --chat-quote-border: #3B82F6;
+            --chat-forward-border: #D97706;
+        }
+
+        [data-theme="dark"] {
+            /* Темная тема */
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+
+            /* Цвета для сообщений чата в темной теме */
+            --chat-own-bg: #2563EB;
+            --chat-own-text: #ffffff;
+            --chat-other-bg: #1F2937;
+            --chat-other-text: #f9fafb;
+            --chat-forwarded-bg: #78350F;
+            --chat-quote-border: #2563EB;
+            --chat-forward-border: #D97706;
+        }
+
+        /* Стили для кнопки переключения темы */
+        .theme-toggle-btn {
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            color: #ffffff !important;
+            transform: scale(1.1);
+        }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="page-container">
@@ -83,6 +132,42 @@
                 }
             }, 4000); // 4 секунды
         });
+    });
+
+    // Логика переключения темы
+    function toggleTheme() {
+        const htmlElement = document.documentElement;
+        const themeIcon = document.querySelector('.theme-icon');
+        const currentTheme = htmlElement.getAttribute('data-theme');
+
+        if (currentTheme === 'dark') {
+            htmlElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+            themeIcon.className = 'fas fa-moon theme-icon';
+        } else {
+            htmlElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.className = 'fas fa-sun theme-icon';
+        }
+    }
+
+    // Загрузка сохраненной темы при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme');
+        const htmlElement = document.documentElement;
+        const themeIcon = document.querySelector('.theme-icon');
+
+        if (savedTheme === 'dark') {
+            htmlElement.setAttribute('data-theme', 'dark');
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-sun theme-icon';
+            }
+        } else {
+            htmlElement.removeAttribute('data-theme');
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-moon theme-icon';
+            }
+        }
     });
     </script>
 

@@ -1,0 +1,29 @@
+<!-- Модальное окно удаления -->
+<div id="deleteModal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop" onclick="closeDeleteModal()"></div>
+    <div class="custom-modal-content">
+        <div class="custom-modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+            <h5>🗑️ Удалить сообщение</h5>
+            <button type="button" class="custom-modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <p><strong>Автор:</strong> <span id="deleteMessageAuthor"></span></p>
+            <p><strong>Сообщение:</strong></p>
+            <div id="deleteMessagePreview"
+                 style="background: var(--quote-bg);
+                        padding: 0.75rem;
+                        border-radius: var(--border-radius);
+                        border-left: 4px solid var(--error-color);
+                        max-height: 100px;
+                        overflow-y: auto;
+                        font-size: var(--text-small);"></div>
+            <p class="text-danger mt-3"><strong>⚠️ Это действие нельзя отменить!</strong></p>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Удалить сообщение</button>
+        </div>
+    </div>
+</div>
+
+

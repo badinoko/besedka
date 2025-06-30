@@ -1,0 +1,31 @@
+<!-- Модальное окно редактирования -->
+<div id="editModal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop" onclick="closeEditModal()"></div>
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>✏️ Редактировать сообщение</h5>
+            <button type="button" class="custom-modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <textarea id="editMessageText"
+                      rows="6"
+                      style="width: 100%;
+                             padding: 0.75rem;
+                             border: 2px solid var(--own-message-bg);
+                             border-radius: var(--border-radius);
+                             resize: vertical;
+                             min-height: 150px;
+                             max-height: 300px;
+                             font-family: var(--font-family);
+                             font-size: var(--text-base);"
+                      placeholder="Введите текст сообщения..."></textarea>
+            <small class="text-muted">Вы можете изменить размер поля, потянув за правый нижний угол</small>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Отмена</button>
+            <button type="button" id="confirmEditBtn" class="btn btn-primary">Сохранить изменения</button>
+        </div>
+    </div>
+</div>
+
+

@@ -4,12 +4,15 @@
     <div class="container-fluid px-3 px-lg-4">
         <a class="navbar-brand fw-bold" href="{% url 'home' %}">
             <i class="fas fa-home"></i> Беседка
-            {% if request.resolver_match.url_name == 'room' or request.resolver_match.url_name == 'chat_test' %}
-            <span id="connection-status" class="connection-status-nav status-connecting">
-                <i class="fas fa-lock"></i>
-            </span>
-            {% endif %}
         </a>
+
+        <!-- СТАТУС ПОДКЛЮЧЕНИЯ ОТДЕЛЬНО СПРАВА ОТ ЛОГОТИПА -->
+        {% if request.resolver_match.url_name == 'room' or request.resolver_match.url_name == 'chat_test' %}
+        <span id="connection-status" class="connection-status-nav status-connecting ms-2">
+            <i class="fas fa-lock"></i>
+        </span>
+        {% endif %}
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavGlobal">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -81,6 +84,15 @@
             </div>
             {% endif %}
             <ul class="navbar-nav ms-auto">
+                <!-- Кнопка переключения темы - перемещена левее -->
+                <li class="nav-item">
+                    <button class="nav-link btn border-0 bg-transparent theme-toggle-btn"
+                            onclick="toggleTheme()"
+                            title="Переключить тему"
+                            style="color: rgba(255,255,255,.55); font-size: 1.1rem; padding: 0.6rem 0.8rem;">
+                        <i class="fas fa-moon theme-icon"></i>
+                    </button>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
                         <i class="fas fa-shopping-cart nav-icon"></i>

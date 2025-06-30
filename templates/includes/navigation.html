@@ -84,6 +84,15 @@
             </div>
             {% endif %}
             <ul class="navbar-nav ms-auto">
+                <!-- Кнопка переключения темы - перемещена левее -->
+                <li class="nav-item">
+                    <button class="nav-link btn border-0 bg-transparent theme-toggle-btn"
+                            onclick="toggleTheme()"
+                            title="Переключить тему"
+                            style="color: rgba(255,255,255,.55); font-size: 1.1rem; padding: 0.6rem 0.8rem;">
+                        <i class="fas fa-moon theme-icon"></i>
+                    </button>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
                         <i class="fas fa-shopping-cart nav-icon"></i>
