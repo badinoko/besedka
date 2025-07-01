@@ -1391,7 +1391,7 @@
 
                     <!-- Индикатор редактирования с умным временем -->
                     ${message.is_edited ? `
-                        <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;" title="${getFullTimestamp(message.edited_at)}">
+                        <div class="edit-indicator" style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.8); font-style: italic; margin-top: 0.25rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);" title="${getFullTimestamp(message.edited_at)}">
                             ✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}
                         </div>
                     ` : ''}
@@ -2237,7 +2237,7 @@
         if (!editIndicator && message.is_edited) {
             editIndicator = document.createElement('div');
             editIndicator.className = 'edit-indicator';
-            editIndicator.style.cssText = 'font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;';
+            editIndicator.style.cssText = 'font-size: 0.75rem; color: rgba(255, 255, 255, 0.8); font-style: italic; margin-top: 0.25rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);';
 
             // Вставляем индикатор перед кнопками реакций
             const messageReactions = messageElement.querySelector('.message-reactions');
@@ -2249,7 +2249,10 @@
         }
 
         if (editIndicator && message.is_edited) {
-            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}`;
+            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}`;
+            editIndicator.style.color = 'rgba(255, 255, 255, 0.8)';
+            editIndicator.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.3)';
+            editIndicator.title = getFullTimestamp(message.edited_at);
         }
 
         // Показываем уведомление об успехе
@@ -2610,7 +2613,7 @@
 
     // === ФУНКЦИИ УПРАВЛЕНИЯ ЧАТОМ ===
 
-    // 🕐 УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ (из Gemini Redesign Prompt)
+    // 🕐 УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ (исправленная логика)
     function formatSmartTimestamp(dateString) {
         const messageDate = new Date(dateString);
         const now = new Date();
@@ -2619,7 +2622,7 @@
         const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
         const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-        // Сегодня (< 24 часов) - показываем только время
+        // Сегодня (0 дней) - показываем только время
         if (diffInDays === 0) {
             return messageDate.toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
@@ -2627,25 +2630,25 @@
             });
         }
 
-        // Вчера
+        // Вчера (1 день)
         if (diffInDays === 1) {
             return 'вчера';
         }
 
         // 2-6 дней назад
-        if (diffInDays <= 6) {
+        if (diffInDays >= 2 && diffInDays <= 6) {
             return `${diffInDays} дня назад`;
         }
 
-        // Неделя назад
-        if (diffInDays === 7) {
+        // 1 неделя назад (7-13 дней)
+        if (diffInDays >= 7 && diffInDays <= 13) {
             return 'неделю назад';
         }
 
-        // Более недели - показываем дату
-        if (diffInDays <= 30) {
+        // 2+ недели назад (14-30 дней)
+        if (diffInDays >= 14 && diffInDays <= 30) {
             const weeks = Math.floor(diffInDays / 7);
-            return weeks === 1 ? 'неделю назад' : `${weeks} недели назад`;
+            return `${weeks} недели назад`;
         }
 
         // Более месяца - показываем дату в формате ДД.ММ
