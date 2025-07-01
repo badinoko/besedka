@@ -321,7 +321,7 @@
     }
 
     .reply-quote-text {
-        color: var(--text-secondary) !important; /* Вторичный цвет текста */
+        color: #374151 !important; /* Темно-серый цвет для хорошей читаемости */
         line-height: 1.3;
         font-weight: 400;
         font-style: italic;
@@ -330,6 +330,38 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    /* Стили для темной темы */
+    [data-theme="dark"] .reply-quote {
+        background: rgba(55, 65, 81, 0.5) !important;
+    }
+
+    [data-theme="dark"] .reply-quote:hover {
+        background: rgba(55, 65, 81, 0.7) !important;
+    }
+
+    [data-theme="dark"] .reply-quote-text {
+        color: #d1d5db !important; /* Светло-серый для темной темы */
+    }
+
+    /* Стили для заголовка пересылки */
+    .forwarded-header {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 8px;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .forwarded-header i {
+        color: #059669;
+    }
+
+    [data-theme="dark"] .forwarded-header {
+        color: #9ca3af;
     }
 
     /* === КНОПКА ОТВЕТИТЬ === */
@@ -1129,16 +1161,29 @@
         }
     }
 
-    // Функция прокрутки к последнему сообщению (ИСПРАВЛЕНА)
+    // 🔥 ИСПРАВЛЕНА ФУНКЦИЯ АВТОСКРОЛЛИНГА (ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА)
     function scrollToBottom() {
         const messagesArea = document.getElementById('chat-messages-area');
         if (messagesArea) {
-            console.log('📜 scrollToBottom: прокрутка к концу чата');
-            // Двойной requestAnimationFrame для надежности
+            console.log('📜 scrollToBottom: ПРИНУДИТЕЛЬНАЯ прокрутка к концу чата');
+
+            // 🔥 ТРОЙНОЙ requestAnimationFrame для 100% надежности + принудительная прокрутка
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    messagesArea.scrollTop = messagesArea.scrollHeight;
-                    console.log('✅ Скролл выполнен:', messagesArea.scrollTop, '/', messagesArea.scrollHeight);
+                    requestAnimationFrame(() => {
+                        // 🔥 ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА - ГАРАНТИРОВАННАЯ РАБОТА
+                        const maxScroll = messagesArea.scrollHeight - messagesArea.clientHeight;
+                        messagesArea.scrollTop = maxScroll + 1000; // +1000 для гарантии
+                        console.log('✅ ПРИНУДИТЕЛЬНЫЙ Скролл выполнен:', messagesArea.scrollTop, '/', messagesArea.scrollHeight);
+
+                        // 🔥 ДУБЛИРУЮЩАЯ ПРОВЕРКА ЧЕРЕЗ 100ms
+                        setTimeout(() => {
+                            if (messagesArea.scrollTop < maxScroll - 50) {
+                                console.log('⚠️ Докручиваем принудительно...');
+                                messagesArea.scrollTop = messagesArea.scrollHeight;
+                            }
+                        }, 100);
+                    });
                 });
             });
         } else {
@@ -1257,27 +1302,32 @@
             <div class="message-content ${isOwn ? 'own' : 'other'} ${forwardedClass}">
         `;
 
-        // Добавляем блок цитаты если это ответ
-        if (message.reply_to) {
-            messageHTML += `
-                <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                    <div class="reply-quote-author">
-                        <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
-                        ${message.reply_to.author_name}
-                    </div>
-                    <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
-                </div>
-            `;
-        }
-
-        // 🎯 СПЕЦИАЛЬНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+        // 🎯 ИСПРАВЛЕН ПОРЯДОК И ДИЗАЙН ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
         const forwardedData = parseForwardedMessage(message.content, message);
         if (forwardedData) {
+            // 🎯 ИСПРАВЛЕНО: ИМЯ АВТОРА ВСЕГДА ВВЕРХУ БЕЗ ПОДЛОЖКИ (как в VIP)
             messageHTML += `
-                <div class="forwarded-header">
-                    <i class="fas fa-share"></i>
-                    ${forwardedData.sourceName} • ${forwardedData.forwarderIcon || '👤'} ${forwardedData.forwarderName}
+                <div class="message-author" style="background: none !important; padding: 0 !important; border: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1); font-weight: 600;">
+                    ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
+            `;
+
+            // 🎯 ИСПРАВЛЕНО: ЗАГОЛОВОК ПЕРЕСЫЛКИ ОРАНЖЕВЫЙ И КОМПАКТНЫЙ
+            messageHTML += `
+                <div class="forwarded-header" style="color: #d77706 !important; font-size: 0.85rem !important; margin: 0.25rem 0 !important;">
+                    <i class="fas fa-share" style="color: #d77706 !important;"></i> Переслано из «${forwardedData.sourceName}»
+                </div>
+            `;
+
+            // 🎯 ИСПРАВЛЕНО: КОММЕНТАРИЙ ПОЛЬЗОВАТЕЛЯ ПОСЛЕ ЗАГОЛОВКА ПЕРЕСЫЛКИ
+            if (forwardedData.userComment) {
+                messageHTML += `
+                    <div class="message-text">${forwardedData.userComment}</div>
+                `;
+            }
+
+            // 🎯 ИСПРАВЛЕНО: ЦИТАТА ВНИЗ ПОД КОММЕНТАРИЕМ
+            messageHTML += `
                 <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedData.originalMessageId}', '${forwardedData.sourceName}')" title="Перейти к оригинальному сообщению">
                     <div class="reply-quote-author">
                         ${forwardedData.originalAuthor}
@@ -1286,10 +1336,28 @@
                 </div>
             `;
         } else {
+            // 🎯 ИСПРАВЛЕНО: ОБЫЧНЫЕ СООБЩЕНИЯ БЕЗ ПОДЛОЖКИ У ИМЕНИ АВТОРА
             messageHTML += `
-                <div class="message-author">
+                <div class="message-author" style="background: none !important; padding: 0 !important; border: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1); font-weight: 600;">
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
+            `;
+
+            // Добавляем блок цитаты если это ответ - ПОСЛЕ имени автора
+            if (message.reply_to) {
+                messageHTML += `
+                    <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                        <div class="reply-quote-author">
+                            <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                            ${message.reply_to.author_name}
+                        </div>
+                        <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
+                    </div>
+                `;
+            }
+
+            // Основной текст сообщения
+            messageHTML += `
                 <div class="message-text">${message.content}</div>
             `;
         }
@@ -1327,8 +1395,10 @@
         messageElement.innerHTML = messageHTML;
         chatLog.appendChild(messageElement);
 
-        // Автопрокрутка для новых сообщений
-        setTimeout(scrollToBottom, 100);
+        // 🔥 ИСПРАВЛЕНА АВТОПРОКРУТКА - ПРИНУДИТЕЛЬНАЯ С ЗАДЕРЖКОЙ
+        setTimeout(() => {
+            scrollToBottom();
+        }, 200); // Увеличенная задержка для рендеринга
     }
 
     function displayMessages(messages) {
@@ -1372,27 +1442,32 @@
                 <div class="message-content ${isOwn ? 'own' : 'other'} ${forwardedClass}">
             `;
 
-            // Добавляем блок цитаты если это ответ
-            if (message.reply_to) {
-                messageHTML += `
-                    <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                        <div class="reply-quote-author">
-                            <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
-                            ${message.reply_to.author_name}
-                        </div>
-                        <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
-                    </div>
-                `;
-            }
-
-            // 🎯 СПЕЦИАЛЬНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ В ИСТОРИИ
+            // 🎯 ИСПРАВЛЕН ПОРЯДОК И ДИЗАЙН ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ В ИСТОРИИ
             const forwardedDataHistory = parseForwardedMessage(message.content, message);
             if (forwardedDataHistory) {
+                // 🎯 ИСПРАВЛЕНО: ИМЯ АВТОРА ВСЕГДА ВВЕРХУ БЕЗ ПОДЛОЖКИ (как в VIP)
                 messageHTML += `
-                    <div class="forwarded-header">
-                        <i class="fas fa-share"></i>
-                        ${forwardedDataHistory.sourceName} • ${forwardedDataHistory.forwarderIcon || '👤'} ${forwardedDataHistory.forwarderName}
+                    <div class="message-author" style="background: none !important; padding: 0 !important; border: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1); font-weight: 600;">
+                        ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
+                `;
+
+                // 🎯 ИСПРАВЛЕНО: ЗАГОЛОВОК ПЕРЕСЫЛКИ ОРАНЖЕВЫЙ И КОМПАКТНЫЙ
+                messageHTML += `
+                    <div class="forwarded-header" style="color: #d77706 !important; font-size: 0.85rem !important; margin: 0.25rem 0 !important;">
+                        <i class="fas fa-share" style="color: #d77706 !important;"></i> Переслано из «${forwardedDataHistory.sourceName}»
+                    </div>
+                `;
+
+                // 🎯 ИСПРАВЛЕНО: КОММЕНТАРИЙ ПОЛЬЗОВАТЕЛЯ ПОСЛЕ ЗАГОЛОВКА ПЕРЕСЫЛКИ
+                if (forwardedDataHistory.userComment) {
+                    messageHTML += `
+                        <div class="message-text">${forwardedDataHistory.userComment}</div>
+                    `;
+                }
+
+                // 🎯 ИСПРАВЛЕНО: ЦИТАТА ВНИЗ ПОД КОММЕНТАРИЕМ
+                messageHTML += `
                     <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedDataHistory.originalMessageId}', '${forwardedDataHistory.sourceName}')" title="Перейти к оригинальному сообщению">
                         <div class="reply-quote-author">
                             ${forwardedDataHistory.originalAuthor}
@@ -1401,10 +1476,28 @@
                     </div>
                 `;
             } else {
+                // 🎯 ИСПРАВЛЕНО: ОБЫЧНЫЕ СООБЩЕНИЯ БЕЗ ПОДЛОЖКИ У ИМЕНИ АВТОРА
                 messageHTML += `
-                    <div class="message-author">
+                    <div class="message-author" style="background: none !important; padding: 0 !important; border: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1); font-weight: 600;">
                         ${message.author_role_icon || '👤'} ${message.author_name}
                     </div>
+                `;
+
+                // Добавляем блок цитаты если это ответ - ПОСЛЕ имени автора
+                if (message.reply_to) {
+                    messageHTML += `
+                        <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                            <div class="reply-quote-author">
+                                <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                                ${message.reply_to.author_name}
+                            </div>
+                            <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
+                        </div>
+                    `;
+                }
+
+                // Основной текст сообщения
+                messageHTML += `
                     <div class="message-text">${message.content}</div>
                 `;
             }
@@ -1477,11 +1570,14 @@
         });
 
         historyLoaded = true;
-        // Принудительно обновляем все временные метки после загрузки истории
+        // 🔥 ИСПРАВЛЕНА ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАГРУЗКИ ИСТОРИИ
         setTimeout(() => {
             updateAllTimestamps();
-            scrollToBottom();
-        }, 200);
+            // Дополнительная задержка для корректного автоскроллинга
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        }, 300); // Увеличенная задержка для полного рендеринга
     }
 
     // 🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ВСЕХ ВРЕМЕННЫХ МЕТОК
@@ -1618,15 +1714,40 @@
     }
 
     function scrollToMessage(messageId) {
+        console.log('🎯 scrollToMessage: переход к сообщению', messageId);
+
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
         if (messageElement) {
-            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Используем правильный контейнер для прокрутки
+            const messagesArea = document.getElementById('chat-messages-area');
+            if (messagesArea) {
+                // Получаем позицию сообщения относительно контейнера
+                const messageRect = messageElement.getBoundingClientRect();
+                const containerRect = messagesArea.getBoundingClientRect();
+
+                // Вычисляем позицию для скролла (центрируем сообщение)
+                const targetScrollTop = messagesArea.scrollTop + messageRect.top - containerRect.top - (containerRect.height / 2) + (messageRect.height / 2);
+
+                // Плавная прокрутка
+                messagesArea.scrollTo({
+                    top: targetScrollTop,
+                    behavior: 'smooth'
+                });
+
+                console.log('✅ scrollToMessage: скролл выполнен к сообщению', messageId);
+            } else {
+                // Fallback - стандартный scrollIntoView
+                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
 
             // Подсвечиваем сообщение
             messageElement.classList.add('message-highlighted');
             setTimeout(() => {
                 messageElement.classList.remove('message-highlighted');
             }, 3000);
+        } else {
+            console.error('❌ scrollToMessage: сообщение не найдено', messageId);
+            showTemporaryFeedback('❌ Сообщение не найдено в истории', 'error');
         }
     }
 
@@ -1740,32 +1861,95 @@
     // === ПАРСИНГ ПЕРЕСЛАННЫХ СООБЩЕНИЙ ===
     function parseForwardedMessage(content, message) {
         // Проверяем, является ли сообщение пересланным
-        if (!content.includes('Переслано из «') && !message.is_forwarded) {
+        if (!content.includes('📤') && !message.is_forwarded) {
             return null;
         }
 
         const lines = content.split('\n');
-        if (lines.length < 3) {
+
+        // Ищем строку с эмодзи 📤
+        let forwardLineIndex = -1;
+        let sourceName = 'Неизвестный чат';
+        let userComment = ''; // Комментарий пользователя
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line.includes('📤')) {
+                forwardLineIndex = i;
+
+                // Если 📤 НЕ в первой строке, значит есть комментарий выше
+                if (i > 0) {
+                    // Извлекаем все строки до 📤 как комментарий
+                    const commentLines = lines.slice(0, i).filter(line => line.trim() !== '');
+                    userComment = commentLines.join('\n').trim();
+                }
+
+                // Два возможных формата:
+                // 1. "📤 Переслано из «Беседка»"
+                // 2. "📤 owner:"
+
+                if (line.includes('Переслано из «')) {
+                    const sourceMatch = line.match(/Переслано из «(.+)»/);
+                    sourceName = sourceMatch ? sourceMatch[1] : 'Неизвестный чат';
+                } else {
+                    // Формат с комментарием - определяем источник по room_name
+                    sourceName = getCurrentRoomDisplayName();
+                }
+                break;
+            }
+        }
+
+        if (forwardLineIndex === -1) {
             return null;
         }
 
-        const sourceInfo = lines[0]; // "Переслано из «Беседка»"
-        const originalAuthor = lines[1]; // "👑 owner"
-        const messageText = lines.slice(2).join('\n'); // Остальной текст
+        // Извлекаем оригинального автора и текст
+        let originalAuthor = 'Неизвестный автор';
+        let messageText = '';
 
-        // Извлекаем название источника из строки
-        const sourceMatch = sourceInfo.match(/Переслано из «(.+)»/);
-        const sourceName = sourceMatch ? sourceMatch[1] : 'Неизвестный чат';
+        if (forwardLineIndex < lines.length - 1) {
+            const authorLine = lines[forwardLineIndex].trim();
+
+            if (authorLine.includes('Переслано из «')) {
+                // Формат: "📤 Переслано из «Беседка»\n👑 owner\nТекст"
+                if (forwardLineIndex + 1 < lines.length) {
+                    originalAuthor = lines[forwardLineIndex + 1].trim();
+                    messageText = lines.slice(forwardLineIndex + 2).join('\n').trim();
+                }
+            } else {
+                // Формат: "Комментарий\n\n📤 owner:\nТекст"
+                const authorMatch = authorLine.match(/📤\s*(.+):/);
+                if (authorMatch) {
+                    originalAuthor = authorMatch[1].trim();
+                    messageText = lines.slice(forwardLineIndex + 1).join('\n').trim();
+                }
+            }
+        }
 
         return {
             sourceName: sourceName,
             originalAuthor: originalAuthor,
             messageText: messageText,
+            userComment: userComment, // НОВОЕ ПОЛЕ - комментарий пользователя
             isForwarded: true,
-            originalMessageId: message.original_message_id, // ID оригинального сообщения для перехода
-            forwarderName: message.author_name, // Кто переслал
-            forwarderIcon: message.author_role_icon, // Значок того кто переслал
+            originalMessageId: message.original_message_id,
+            forwarderName: message.author_name,
+            forwarderIcon: message.author_role_icon,
         };
+    }
+
+    // Определяет отображаемое имя комнаты для пересланных сообщений
+    function getCurrentRoomDisplayName() {
+        switch(roomName) {
+            case 'general':
+                return 'Беседка';
+            case 'vip':
+                return 'Беседка - VIP';
+            case 'moderators':
+                return 'Модераторы';
+            default:
+                return 'Неизвестный чат';
+        }
     }
 
     // Функции для лайков и дизлайков

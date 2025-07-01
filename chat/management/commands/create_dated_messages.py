@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--clear',
             action='store_true',
-            help='Очистить все существующие сообщения перед созданием новых',
+            help='⚠️ ОПАСНО! Очистить все существующие сообщения перед созданием новых',
         )
         parser.add_argument(
             '--room',
@@ -37,11 +37,27 @@ class Command(BaseCommand):
         # Получаем или создаем комнату
         room, created = Room.objects.get_or_create(name=room_name)
 
+        # ⚠️ КРИТИЧЕСКОЕ ПРЕДУПРЕЖДЕНИЕ
         if options['clear']:
             deleted_count = Message.objects.filter(room=room).count()
+            self.stdout.write(
+                self.style.ERROR(f'⚠️ ВНИМАНИЕ! Будет удалено {deleted_count} существующих сообщений!')
+            )
+            self.stdout.write(
+                self.style.ERROR('Это действие НЕОБРАТИМО!')
+            )
+
+            # Дополнительная защита
+            confirmation = input('Введите "YES DELETE ALL" для подтверждения: ')
+            if confirmation != 'YES DELETE ALL':
+                self.stdout.write(
+                    self.style.SUCCESS('Операция отменена. Сообщения НЕ удалены.')
+                )
+                return
+
             Message.objects.filter(room=room).delete()
             self.stdout.write(
-                self.style.WARNING(f'Удалено {deleted_count} существующих сообщений')
+                self.style.WARNING(f'❌ Удалено {deleted_count} существующих сообщений')
             )
 
         # Текущее время
@@ -50,9 +66,9 @@ class Command(BaseCommand):
         # Определяем даты для тестирования
         test_dates = [
             # Сегодня - разное время
-            (now - timedelta(hours=2), owner, "Привет! Как дела? (2 часа назад)"),
-            (now - timedelta(hours=1), test_user, "Отлично! А у тебя как? (1 час назад)"),
-            (now - timedelta(minutes=30), owner, "Тоже хорошо, работаю над проектом (30 минут назад)"),
+            (now - timedelta(hours=2), owner, "Привет! Как дела?"),
+            (now - timedelta(hours=1), test_user, "Отлично! А у тебя как?"),
+            (now - timedelta(minutes=30), owner, "Тоже хорошо, работаю над проектом"),
 
             # Вчера
             (now - timedelta(days=1, hours=10), test_user, "Вчера была отличная погода!"),
@@ -87,6 +103,7 @@ class Command(BaseCommand):
 
         created_messages = []
 
+        # ТОЛЬКО ДОБАВЛЯЕМ НОВЫЕ СООБЩЕНИЯ
         for date, author, content in test_dates:
             message = Message.objects.create(
                 room=room,
@@ -98,12 +115,12 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f'Создано {len(created_messages)} тестовых сообщений в комнате "{room_name}"'
+                f'✅ ДОБАВЛЕНО {len(created_messages)} тестовых сообщений в комнату "{room_name}"'
             )
         )
 
         # Показываем созданные сообщения для проверки
-        self.stdout.write('\n📅 Созданные сообщения:')
+        self.stdout.write('\n📅 Добавленные сообщения:')
         for msg in created_messages:
             # Рассчитываем разницу для проверки
             diff = now - msg.created_at
@@ -127,6 +144,6 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f'\n✅ Тестовые сообщения созданы! Проверьте чат http://127.0.0.1:8001/chat/{room_name}/'
+                f'\n✅ Тестовые сообщения ДОБАВЛЕНЫ! Проверьте чат http://127.0.0.1:8001/chat/{room_name}/'
             )
         )
