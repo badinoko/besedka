@@ -83,12 +83,13 @@
                 </ul>
             </div>
             {% endif %}
-                        <ul class="navbar-nav ms-auto">
-                <!-- Кнопка переключения темы - объемная как значок статуса -->
+            <ul class="navbar-nav ms-auto">
+                <!-- Кнопка переключения темы - перемещена левее -->
                 <li class="nav-item">
-                    <button class="theme-toggle-btn-volumetric"
+                    <button class="nav-link btn border-0 bg-transparent theme-toggle-btn"
                             onclick="toggleTheme()"
-                            title="Переключить тему">
+                            title="Переключить тему"
+                            style="color: rgba(255,255,255,.55); font-size: 1.3rem; padding: 0.75rem 1rem;">
                         <i class="fas fa-moon theme-icon"></i>
                     </button>
                 </li>
@@ -104,53 +105,6 @@
                 {% user_info_badge %}
             </ul>
         </div>
-        </div>
+    </div>
 </nav>
-
-<!-- КНОПКА ПЕРЕКЛЮЧЕНИЯ ТЕМ - ТОЧНАЯ КОПИЯ ЗНАЧКА СТАТУСА ПОДКЛЮЧЕНИЯ -->
-<style>
-.theme-toggle-btn-volumetric {
-    /* ТОЧНО ТЕ ЖЕ СТИЛИ КАК У .connection-status-nav */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #495057 0%, #343a40 50%, #212529 100%);
-    border: 2px solid #495057;
-    box-shadow:
-        0 6px 20px rgba(73, 80, 87, 0.4),
-        0 3px 10px rgba(73, 80, 87, 0.3),
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    color: #ffffff;
-}
-
-.theme-toggle-btn-volumetric i {
-    font-size: 14px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* HOVER ЭФФЕКТ С ПОДСВЕТКОЙ КАК У ЗНАЧКА СТАТУСА */
-.theme-toggle-btn-volumetric:hover {
-    box-shadow:
-        0 0 12px #007bff,
-        0 0 24px #007bff,
-        0 6px 20px rgba(73, 80, 87, 0.4),
-        0 3px 10px rgba(73, 80, 87, 0.3),
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-}
-
-.theme-toggle-btn-volumetric:hover i {
-    color: #007bff;
-}
-</style>
-
 {# {% include 'includes/chat_modal.html' %} #}

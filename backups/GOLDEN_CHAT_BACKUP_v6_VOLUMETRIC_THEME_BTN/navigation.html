@@ -83,17 +83,41 @@
                 </ul>
             </div>
             {% endif %}
-                        <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center">
                 <!-- Кнопка переключения темы - объемная как значок статуса -->
                 <li class="nav-item">
-                    <button class="theme-toggle-btn-volumetric"
+                    <button class="nav-link btn border-0 bg-transparent theme-toggle-btn theme-toggle-3d"
                             onclick="toggleTheme()"
-                            title="Переключить тему">
-                        <i class="fas fa-moon theme-icon"></i>
+                            title="Переключить тему"
+                            style="
+                                /* 🎨 ОБЪЕМНЫЙ ДИЗАЙН В СТИЛЕ ЛАЙК-КНОПКИ (СИНЯЯ ВЕРСИЯ) */
+                                width: 50px;
+                                height: 50px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                margin: 0 0.5rem;
+
+                                /* Градиентный фон */
+                                background: linear-gradient(135deg, #007bff 0%, #0056b3 50%, #004494 100%);
+                                border: 3px solid #007bff !important;
+
+                                /* 3D-тени в стиле лайк-кнопки */
+                                box-shadow:
+                                    0 15px 35px rgba(0, 123, 255, 0.45),
+                                    0 8px 20px rgba(0, 123, 255, 0.35),
+                                    0 4px 8px rgba(0, 0, 0, 0.25),
+                                    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+
+                                /* Плавный переход */
+                                transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+                            ">
+                        <i class="fas fa-moon theme-icon" style="color: #ffffff !important; font-size: 1.2rem;"></i>
                     </button>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-with-counter" href="{% url 'store:cart_detail' %}">
+                <li class="nav-item d-flex align-items-center">
+                    <a class="nav-link nav-link-with-counter d-flex align-items-center" href="{% url 'store:cart_detail' %}" style="margin: 0 0.5rem;">
                         <i class="fas fa-shopping-cart nav-icon"></i>
                         <span class="nav-counter-badge cart-badge rounded-pill" style="{% if cart_items_count == 0 %}display: none;{% else %}display: flex;{% endif %}">
                             {{ cart_items_count|default:0 }}
@@ -101,55 +125,49 @@
                         </span>
                     </a>
                 </li>
-                {% user_info_badge %}
+                <li class="nav-item d-flex align-items-center" style="margin: 0 0.5rem;">
+                    {% user_info_badge %}
+                </li>
             </ul>
         </div>
-        </div>
+    </div>
 </nav>
 
-<!-- КНОПКА ПЕРЕКЛЮЧЕНИЯ ТЕМ - ТОЧНАЯ КОПИЯ ЗНАЧКА СТАТУСА ПОДКЛЮЧЕНИЯ -->
+<!-- 🎨 СТИЛИ ДЛЯ ОБЪЕМНОЙ КНОПКИ ПЕРЕКЛЮЧЕНИЯ ТЕМ -->
 <style>
-.theme-toggle-btn-volumetric {
-    /* ТОЧНО ТЕ ЖЕ СТИЛИ КАК У .connection-status-nav */
-    display: inline-flex;
+/* Hover-эффекты в стиле лайк-кнопки для кнопки переключения тем */
+.theme-toggle-3d:hover {
+    /* Усиленные 3D-тени при наведении */
+    box-shadow:
+        0 20px 45px rgba(0, 123, 255, 0.55) !important,
+        0 12px 25px rgba(0, 123, 255, 0.45) !important,
+        0 6px 12px rgba(0, 0, 0, 0.35) !important,
+        inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
+
+    /* Легкое увеличение */
+    transform: scale(1.05);
+}
+
+/* Эффект нажатия */
+.theme-toggle-3d:active {
+    transform: scale(0.95);
+    box-shadow:
+        0 8px 20px rgba(0, 123, 255, 0.4) !important,
+        0 4px 10px rgba(0, 123, 255, 0.3) !important,
+        0 2px 4px rgba(0, 0, 0, 0.2) !important,
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Выравнивание всех элементов правой секции навигации */
+.navbar-nav.ms-auto li.nav-item {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #495057 0%, #343a40 50%, #212529 100%);
-    border: 2px solid #495057;
-    box-shadow:
-        0 6px 20px rgba(73, 80, 87, 0.4),
-        0 3px 10px rgba(73, 80, 87, 0.3),
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    color: #ffffff;
+    height: 60px; /* Высота навигации */
 }
 
-.theme-toggle-btn-volumetric i {
-    font-size: 14px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* HOVER ЭФФЕКТ С ПОДСВЕТКОЙ КАК У ЗНАЧКА СТАТУСА */
-.theme-toggle-btn-volumetric:hover {
-    box-shadow:
-        0 0 12px #007bff,
-        0 0 24px #007bff,
-        0 6px 20px rgba(73, 80, 87, 0.4),
-        0 3px 10px rgba(73, 80, 87, 0.3),
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-}
-
-.theme-toggle-btn-volumetric:hover i {
-    color: #007bff;
+.nav-link-with-counter {
+    height: auto !important;
+    min-height: auto !important;
 }
 </style>
 

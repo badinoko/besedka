@@ -434,8 +434,21 @@
         background-clip: text;
     }
 
-    /* SSOT ИСПРАВЛЕНИЕ: УДАЛЕН ПЕРЕОПРЕДЕЛЯЮЩИЙ CSS ДЛЯ BADGE В ШАБЛОНЕ ЧАТА */
-    /* Переопределение нарушало SSOT принципы - теперь используются единые стили badge */
+    /* 🔥 КРУТОЙ BADGE ДЛЯ СЧЕТЧИКА */
+    .badge {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%); /* ЗЕЛЕНЫЙ ГРАДИЕНТ ВМЕСТО СИНЕГО */
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 1.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow:
+            0 4px 15px rgba(40, 167, 69, 0.4),
+            0 2px 8px rgba(40, 167, 69, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
 
     /* КОМПАКТНЫЙ СПИСОК ПОЛЬЗОВАТЕЛЕЙ */
     .users-list {
@@ -1212,8 +1225,7 @@
         messageElement.dataset.authorRole = message.author_role || 'user';
         messageElement.dataset.isPinned = message.is_pinned || false;
 
-        const timestamp = formatSmartTimestamp(message.created);
-        const fullTimestamp = getFullTimestamp(message.created);
+        const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
         const isForwarded = message.content.includes('📤 Переслано') ||
                            message.content.includes('Переслано из «') ||
@@ -1273,8 +1285,8 @@
         }
 
         messageHTML += `
-                <!-- Время в правом нижнем углу с tooltip -->
-                <div class="message-timestamp" title="${fullTimestamp}">${timestamp}</div>
+                <!-- Время в правом нижнем углу -->
+                <div class="message-timestamp">${timestamp}</div>
 
                 <!-- Кнопки реакций в левом нижнем углу -->
                 <div class="message-reactions">
@@ -1331,8 +1343,7 @@
             messageElement.dataset.authorRole = message.author_role || 'user';
             messageElement.dataset.isPinned = message.is_pinned || false;
 
-            const timestamp = formatSmartTimestamp(message.created);
-            const fullTimestamp = getFullTimestamp(message.created);
+            const timestamp = new Date(message.created).toLocaleTimeString();
             const isOwn = message.is_own;
             const isForwarded = message.content.includes('📤 Переслано') ||
                                message.content.includes('Переслано из «') ||
@@ -1386,13 +1397,13 @@
             }
 
             messageHTML += `
-                    <!-- Время в правом нижнем углу с tooltip -->
-                    <div class="message-timestamp" title="${fullTimestamp}">${timestamp}</div>
+                    <!-- Время в правом нижнем углу -->
+                    <div class="message-timestamp">${timestamp}</div>
 
-                    <!-- Индикатор редактирования с умным временем -->
+                    <!-- Индикатор редактирования -->
                     ${message.is_edited ? `
-                        <div class="edit-indicator" style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.8); font-style: italic; margin-top: 0.25rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);" title="${getFullTimestamp(message.edited_at)}">
-                            ✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}
+                        <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;">
+                            ✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}
                         </div>
                     ` : ''}
 
@@ -2237,7 +2248,7 @@
         if (!editIndicator && message.is_edited) {
             editIndicator = document.createElement('div');
             editIndicator.className = 'edit-indicator';
-            editIndicator.style.cssText = 'font-size: 0.75rem; color: rgba(255, 255, 255, 0.8); font-style: italic; margin-top: 0.25rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);';
+            editIndicator.style.cssText = 'font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;';
 
             // Вставляем индикатор перед кнопками реакций
             const messageReactions = messageElement.querySelector('.message-reactions');
@@ -2249,10 +2260,7 @@
         }
 
         if (editIndicator && message.is_edited) {
-            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}`;
-            editIndicator.style.color = 'rgba(255, 255, 255, 0.8)';
-            editIndicator.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.3)';
-            editIndicator.title = getFullTimestamp(message.edited_at);
+            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}`;
         }
 
         // Показываем уведомление об успехе
@@ -2610,93 +2618,6 @@
             console.log('🌞 Loaded light theme from localStorage');
         }
     });
-
-    // === ФУНКЦИИ УПРАВЛЕНИЯ ЧАТОМ ===
-
-    // 🕐 УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ (исправленная логика с debug)
-    function formatSmartTimestamp(dateString) {
-        const messageDate = new Date(dateString);
-        const now = new Date();
-
-        // 🔍 DEBUG: Логирование для диагностики
-        console.log('⏰ formatSmartTimestamp DEBUG:', {
-            original: dateString,
-            messageDate: messageDate.toLocaleString('ru-RU'),
-            now: now.toLocaleString('ru-RU'),
-            messageTime: messageDate.getTime(),
-            nowTime: now.getTime()
-        });
-
-        // Сравниваем даты без учета времени для корректного подсчета дней
-        const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
-        const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const diffInMs = nowDateOnly - messageDateOnly;
-        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-        console.log('⏰ Days calculation:', {
-            messageDateOnly: messageDateOnly.toDateString(),
-            nowDateOnly: nowDateOnly.toDateString(),
-            diffInMs,
-            diffInDays
-        });
-
-        // Сегодня (0 дней) - показываем только время
-        if (diffInDays === 0) {
-            const result = messageDate.toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            console.log('⏰ Result: TODAY ->', result);
-            return result;
-        }
-
-        // Вчера (1 день)
-        if (diffInDays === 1) {
-            console.log('⏰ Result: YESTERDAY -> вчера');
-            return 'вчера';
-        }
-
-        // 2-6 дней назад
-        if (diffInDays >= 2 && diffInDays <= 6) {
-            const result = `${diffInDays} дня назад`;
-            console.log('⏰ Result: DAYS AGO ->', result);
-            return result;
-        }
-
-        // 1 неделя назад (7-13 дней)
-        if (diffInDays >= 7 && diffInDays <= 13) {
-            console.log('⏰ Result: WEEK AGO -> неделю назад');
-            return 'неделю назад';
-        }
-
-        // 2+ недели назад (14-30 дней)
-        if (diffInDays >= 14 && diffInDays <= 30) {
-            const weeks = Math.floor(diffInDays / 7);
-            const result = `${weeks} недели назад`;
-            console.log('⏰ Result: WEEKS AGO ->', result);
-            return result;
-        }
-
-        // Более месяца - показываем дату в формате ДД.ММ
-        const result = messageDate.toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit'
-        });
-        console.log('⏰ Result: OLD DATE ->', result);
-        return result;
-    }
-
-    // 📅 ПОЛНАЯ ДАТА/ВРЕМЯ ДЛЯ TOOLTIP (при наведении)
-    function getFullTimestamp(dateString) {
-        const messageDate = new Date(dateString);
-        return messageDate.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
 
 </script>
 
