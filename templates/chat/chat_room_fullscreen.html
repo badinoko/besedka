@@ -279,9 +279,9 @@
         background: rgba(229, 231, 235, 0.5) !important; /* Нейтральный фон согласно ТЗ */
         border: none !important;
         border-left: 4px solid var(--chat-quote-border) !important; /* Левая полоса согласно ТЗ */
-        border-radius: 12px !important; /* Согласно ТЗ */
-        padding: 12px !important; /* Согласно ТЗ */
-        margin-bottom: 12px !important;
+        border-radius: 8px !important; /* УМЕНЬШЕНО с 12px */
+        padding: 8px !important; /* УМЕНЬШЕНО с 12px */
+        margin-bottom: 8px !important; /* УМЕНЬШЕНО с 12px */
         font-size: 12px !important; /* Мелкий шрифт согласно ТЗ (90% от основного 14px) */
         cursor: pointer;
         transition: all 0.2s ease;
@@ -298,18 +298,20 @@
     .reply-quote-author {
         font-weight: 700;
         color: var(--chat-quote-border) !important; /* Цвет полосы */
-        margin-bottom: 4px !important;
+        margin-bottom: 2px !important; /* УМЕНЬШЕНО с 4px */
         font-size: 11px !important;
-        line-height: 1.2;
+        line-height: 1.1; /* УМЕНЬШЕНО с 1.2 */
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 2px; /* УМЕНЬШЕНО с 4px */
+        padding: 0; /* УБИРАЕМ ЛИШНИЕ ОТСТУПЫ */
     }
 
     .reply-quote-author .role-icon {
-        font-size: 12px;
+        font-size: 11px; /* УМЕНЬШЕНО с 12px */
         display: inline-block;
-        margin-right: 2px;
+        margin: 0; /* УБИРАЕМ margin-right */
+        line-height: 1;
     }
 
     .reply-quote-text {
@@ -1334,7 +1336,7 @@
             messageHTML += `
                 <div class="forwarded-header">
                     <i class="fas fa-share"></i>
-                    Переслано из ${sourceName} • ${forwarderIcon} ${forwarderName}
+                    Переслано из ${sourceName}
                 </div>
                 <div class="reply-quote" onclick="navigateToOriginalMessage('${originalMessageId}', '${sourceName}')" title="Перейти к оригинальному сообщению">
                     <div class="reply-quote-author">

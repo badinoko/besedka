@@ -547,7 +547,7 @@ class BaseChatConsumer(WebsocketConsumer):
             'is_pinned': message.is_pinned,
             'pinned_by': message.pinned_by.display_name if message.pinned_by else None,
             'pinned_at': message.pinned_at.isoformat() if message.pinned_at else None,
-            'is_forwarded': getattr(message, 'is_forwarded', False),
+            'is_forwarded': getattr(message, 'is_forwarded', False) or message.content.startswith('📤 Переслано') or 'Переслано из «' in message.content,
             'original_message_id': getattr(message, 'original_message_id', None),
         }
 
