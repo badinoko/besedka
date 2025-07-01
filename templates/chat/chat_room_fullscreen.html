@@ -1319,36 +1319,31 @@
 
         // 🏆 ЕДИНАЯ ОБРАБОТКА ВСЕХ СООБЩЕНИЙ (SSOT ПРИНЦИП)
         if (isForwarded) {
-            // ВСЕ ПЕРЕСЛАННЫЕ СООБЩЕНИЯ ОБРАБАТЫВАЮТСЯ ОДИНАКОВО
+            // ВСЕ ПЕРЕСЛАННЫЕ СООБЩЕНИЯ ОТОБРАЖАЮТСЯ ОДИНАКОВО
             const forwardedData = parseForwardedMessage(message.content, message);
-            if (forwardedData) {
-                // ПАРСИНГ УСПЕШЕН - показываем структурированную версию
-                messageHTML += `
-                    <div class="forwarded-header">
-                        <i class="fas fa-share"></i>
-                        Переслано из ${forwardedData.sourceName} • ${forwardedData.forwarderIcon || '👤'} ${forwardedData.forwarderName}
+
+            // ЕДИНЫЙ ФОРМАТ ДЛЯ ВСЕХ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+            const sourceName = forwardedData ? forwardedData.sourceName : 'Неизвестный чат';
+            const forwarderIcon = forwardedData ? (forwardedData.forwarderIcon || '👤') : (message.author_role_icon || '👤');
+            const forwarderName = forwardedData ? forwardedData.forwarderName : message.author_name;
+            const originalAuthorIcon = forwardedData ? forwardedData.originalAuthorIcon : '👤';
+            const originalAuthorName = forwardedData ? forwardedData.originalAuthorName : 'Автор';
+            const messageText = forwardedData ? forwardedData.messageText : message.content;
+            const originalMessageId = forwardedData ? (forwardedData.originalMessageId || 'null') : 'null';
+
+            messageHTML += `
+                <div class="forwarded-header">
+                    <i class="fas fa-share"></i>
+                    Переслано из ${sourceName} • ${forwarderIcon} ${forwarderName}
+                </div>
+                <div class="reply-quote" onclick="navigateToOriginalMessage('${originalMessageId}', '${sourceName}')" title="Перейти к оригинальному сообщению">
+                    <div class="reply-quote-author">
+                        <span class="role-icon">${originalAuthorIcon}</span>
+                        ${originalAuthorName}
                     </div>
-                    <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedData.originalMessageId || 'null'}', '${forwardedData.sourceName}')" title="Перейти к оригинальному сообщению">
-                        <div class="reply-quote-author">
-                            <span class="role-icon">${forwardedData.originalAuthorIcon}</span>
-                            ${forwardedData.originalAuthorName}
-                        </div>
-                        <div class="reply-quote-text">${forwardedData.messageText}</div>
-                    </div>
-                `;
-            } else {
-                // ПАРСИНГ НЕ УДАЛСЯ - показываем как есть, но с правильными классами пересланного
-                messageHTML += `
-                    <div class="forwarded-header">
-                        <i class="fas fa-share"></i>
-                        Пересланное сообщение
-                    </div>
-                    <div class="message-author">
-                        ${message.author_role_icon || '👤'} ${message.author_name}
-                    </div>
-                    <div class="message-text">${message.content}</div>
-                `;
-            }
+                    <div class="reply-quote-text">${messageText}</div>
+                </div>
+            `;
         } else {
             // ОБЫЧНЫЕ СООБЩЕНИЯ - стандартная структура
             messageHTML += `
@@ -1841,13 +1836,12 @@
 
         return {
             sourceName: sourceName,
-            originalAuthor: originalAuthorLine, // Полная строка для совместимости
-            originalAuthorIcon: originalAuthorIcon, // Значок роли отдельно
+            originalAuthorIcon: originalAuthorIcon, // Значок роли
             originalAuthorName: originalAuthorName, // Имя без значка
             messageText: messageText,
             isForwarded: true,
             originalMessageId: originalMessageId,
-            forwarderName: forwarderName, // Кто переслал (из нового формата)
+            forwarderName: forwarderName, // Кто переслал
             forwarderIcon: forwarderIcon, // Значок того кто переслал
         };
     }
