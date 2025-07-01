@@ -38,6 +38,12 @@
     --unified-border-hover: #007bff; /* Единый синий цвет для всех hover */
     --unified-border-selected: #28a745; /* Единый зеленый цвет для выделения */
     --unified-border-width: 3px; /* Единая толщина границ */
+
+    /* 📤 ПЕРЕМЕННЫЕ ДЛЯ ПЕРЕСЛАННЫХ СООБЩЕНИЙ (УНИФИКАЦИЯ) */
+    --forwarded-bg-light: rgba(0, 122, 255, 0.05); /* Светлая тема */
+    --forwarded-bg-dark: rgba(0, 122, 255, 0.15); /* Темная тема */
+    --forwarded-border: #D97706; /* Оранжевая граница для пересланных */
+    --forwarded-header-color: #6c757d; /* Цвет заголовка пересланного сообщения */
 }
 
 /* ===== ОСНОВНАЯ СТРУКТУРА ЧАТА С ПРАВИЛЬНОЙ ГРАНИЦЕЙ ПОД НАВИГАЦИЮ ===== */
@@ -3073,5 +3079,94 @@
 .reaction-btn.disabled {
     opacity: 0.4 !important;
     pointer-events: none !important;
+}
+
+/* 📤 ===== УНИФИЦИРОВАННЫЕ СТИЛИ ПЕРЕСЛАННЫХ СООБЩЕНИЙ ===== */
+
+/* Основные стили для пересланных сообщений */
+.message-content.forwarded-own,
+.message-content.forwarded-other {
+    position: relative;
+    border-left: 4px solid var(--forwarded-border) !important;
+    background: var(--forwarded-bg-light) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin: 0.5rem 0 !important;
+}
+
+/* Темная тема для пересланных сообщений */
+[data-theme="dark"] .message-content.forwarded-own,
+[data-theme="dark"] .message-content.forwarded-other {
+    background: var(--forwarded-bg-dark) !important;
+}
+
+/* Заголовок пересланного сообщения */
+.forwarded-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--forwarded-header-color);
+    font-style: italic;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(108, 117, 125, 0.2);
+}
+
+.forwarded-header i {
+    color: var(--forwarded-border);
+    font-size: 0.9rem;
+}
+
+/* Стили для цитат в пересланных сообщениях */
+.forwarded-own .reply-quote,
+.forwarded-other .reply-quote {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-left: 3px solid var(--forwarded-border) !important;
+    padding: 0.75rem !important;
+    border-radius: 6px !important;
+    margin: 0.5rem 0 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover эффект для цитат в пересланных сообщениях */
+.forwarded-own .reply-quote:hover,
+.forwarded-other .reply-quote:hover {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-left-color: #e67e00 !important;
+    transform: translateX(2px);
+}
+
+/* Темная тема для цитат в пересланных сообщениях */
+[data-theme="dark"] .forwarded-own .reply-quote,
+[data-theme="dark"] .forwarded-other .reply-quote {
+    background: rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .forwarded-own .reply-quote:hover,
+[data-theme="dark"] .forwarded-other .reply-quote:hover {
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 🔧 ИСПРАВЛЕНИЕ ВИДИМОСТИ ТЕКСТА РЕДАКТИРОВАНИЯ НА СИНЕМ ФОНЕ */
+.edit-indicator {
+    font-size: 0.75rem !important;
+    color: #2c3e50 !important; /* ТЕМНЫЙ ЦВЕТ ВМЕСТО #6c757d ДЛЯ ЛУЧШЕЙ ВИДИМОСТИ */
+    font-style: italic !important;
+    margin-top: 0.25rem !important;
+    font-weight: 600 !important; /* ЖИРНЫЙ ШРИФТ ДЛЯ ЛУЧШЕЙ ЧИТАЕМОСТИ */
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important; /* БЕЛАЯ ТЕНЬ ДЛЯ КОНТРАСТНОСТИ */
+    background: rgba(255, 255, 255, 0.7) !important; /* БЕЛАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+}
+
+/* Темная тема для индикатора редактирования */
+[data-theme="dark"] .edit-indicator {
+    color: #ffffff !important; /* БЕЛЫЙ ТЕКСТ НА ТЕМНОМ ФОНЕ */
+    background: rgba(0, 0, 0, 0.7) !important; /* ТЕМНАЯ ПОДЛОЖКА */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important; /* ТЕМНАЯ ТЕНЬ */
 }
 

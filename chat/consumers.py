@@ -277,10 +277,10 @@ class BaseChatConsumer(WebsocketConsumer):
             self.send_error("Ошибка при удалении сообщения")
 
     def handle_forward_message(self, data):
-        """Обработка пересылки сообщения с комментарием"""
+        """Обработка пересылки сообщения с поддержкой пользовательского текста"""
         message_id = data.get('message_id')
         target_room = data.get('target_room', self.room_name)
-        comment = data.get('comment', '').strip()  # Комментарий пользователя
+        custom_message = data.get('custom_message', '').strip()
 
         if not message_id:
             self.send_error("ID сообщения не указан")
@@ -299,19 +299,28 @@ class BaseChatConsumer(WebsocketConsumer):
             original_author = self.extract_original_author(original_message.content, original_message.author.display_name)
 
             # Определяем отображаемое название источника
-            source_room_display = "Беседка" if self.room_name == "general" else "Беседка - VIP" if self.room_name == "vip" else "Модераторы"
+            if self.room_name == "general":
+                source_room_display = "Беседка"
+            elif self.room_name == "vip":
+                source_room_display = "Беседка - VIP"
+            elif self.room_name == "moderators":
+                source_room_display = "Модераторы"
+            else:
+                # Для любых других комнат используем более читаемое название
+                source_room_display = f"Чат «{self.room_name.title()}»"
 
-            # НОВАЯ ЛОГИКА: комментарий - основной текст, цитата - под ним
-            if comment:
-                # Если есть комментарий - он становится основным текстом
-                forwarded_content = f"""{comment}
+            # 💬 СОЗДАЕМ ФИНАЛЬНЫЙ КОНТЕНТ В ЗАВИСИМОСТИ ОТ НАЛИЧИЯ ПОЛЬЗОВАТЕЛЬСКОГО СООБЩЕНИЯ
+            if custom_message:
+                # Если есть пользовательское сообщение, пересланный контент становится цитатой
+                forwarded_content = f"""{custom_message}
 
-📤 {original_author}:
+Переслано из «{source_room_display}»
+{original_author}
 {clean_content}"""
             else:
-                # Если комментария нет - используем старый формат
-                forwarded_content = f"""📤 Переслано из «{source_room_display}»
-{original_author}:
+                # Если нет пользовательского сообщения, используем стандартный формат
+                forwarded_content = f"""Переслано из «{source_room_display}»
+{original_author}
 {clean_content}"""
 
             # Создаем новое сообщение
@@ -333,8 +342,10 @@ class BaseChatConsumer(WebsocketConsumer):
                 }
             )
 
-            comment_info = f" with comment: '{comment[:30]}...'" if comment else " without comment"
-            logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room}{comment_info}")
+            if custom_message:
+                logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room} with custom message")
+            else:
+                logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room}")
 
         except Message.DoesNotExist:
             self.send_error("Сообщение не найдено или уже удалено")
@@ -409,7 +420,7 @@ class BaseChatConsumer(WebsocketConsumer):
             message.pinned_at = None
             message.save()
 
-            # Отправляем уведомление об открепл��нии всем в группе
+            # Отправляем уведомление об откреплении всем в группе
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, {
                     "type": "message_unpinned",
@@ -424,7 +435,7 @@ class BaseChatConsumer(WebsocketConsumer):
             self.send_error("Сообщение не найдено или уже удалено")
         except Exception as e:
             logger.error(f"Error unpinning message {message_id}: {e}")
-            self.send_error("Ошибка при открепленни сообщения")
+            self.send_error("Ошибка при откреплении сообщения")
 
     def can_edit_message(self, message):
         """Проверка прав на редактирование сообщения"""
@@ -611,7 +622,7 @@ class BaseChatConsumer(WebsocketConsumer):
         }))
 
     def message_unpinned(self, event):
-        """Уведомление об открепл��нии сообщения"""
+        """Уведомление об откреплении сообщения"""
         self.send(text_data=json.dumps({
             "type": "message_unpinned",
             "message_id": event["message_id"],

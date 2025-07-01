@@ -15,49 +15,49 @@
         --border-width: 3px; /* Унифицированная толщина */
 
         /* ===== СИСТЕМА ТЕМ ДЛЯ ЧАТА ===== */
-        /* Светлая тема (по умолчанию) */
         --bg-primary: #ffffff;
         --bg-secondary: #f8f9fa;
-        --text-primary: #111827;
-        --text-secondary: #6b7280;
-        --border-color-theme: #e5e7eb;
+        --text-primary: #333333;
+        --text-secondary: #666666; /* ИСПРАВЛЕНО: более контрастный серый вместо очень темного */
+        --border-color-theme: #dee2e6;
 
         /* Цвета для сообщений чата */
         --chat-own-bg: #3B82F6;
         --chat-own-text: #ffffff;
         --chat-other-bg: #F3F4F6;
         --chat-other-text: #111827;
-        --chat-forwarded-bg: #FEF3C7;
-        --chat-quote-border: #3B82F6;
-        --chat-forward-border: #D97706;
+        --chat-forwarded-bg: rgba(217, 151, 6, 0.1); /* ИСПРАВЛЕНО: светло-оранжевый фон вместо синего */
+        --chat-quote-border: #007bff;
+        --chat-forward-border: #D97706; /* Оранжевая граница согласно дорожной карте */
 
         /* Цвета для поля ввода */
         --chat-input-bg: #ffffff;
-        --chat-input-text: #111827;
-        --chat-input-border: #e5e7eb;
+        --chat-input-text: #333333;
+        --chat-input-border: #dee2e6;
     }
 
     [data-theme="dark"] {
         /* Темная тема */
-        --bg-primary: #111827;
-        --bg-secondary: #1f2937;
-        --text-primary: #f9fafb;
-        --text-secondary: #9ca3af;
-        --border-color-theme: #374151;
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --text-primary: #e5e5e5;
+        --text-secondary: #cccccc; /* ИСПРАВЛЕНО: более контрастный светлый серый */
+        --border-color: #495057;
+        --border-color-theme: #495057;
 
         /* Цвета для сообщений чата в темной теме */
         --chat-own-bg: #2563EB;
         --chat-own-text: #ffffff;
         --chat-other-bg: #1F2937;
         --chat-other-text: #f9fafb;
-        --chat-forwarded-bg: #78350F;
-        --chat-quote-border: #2563EB;
-        --chat-forward-border: #D97706;
+        --chat-forwarded-bg: rgba(217, 151, 6, 0.15); /* ИСПРАВЛЕНО: более темный оранжевый фон для темной темы */
+        --chat-quote-border: #66a3ff;
+        --chat-forward-border: #D97706; /* Оранжевая граница согласно дорожной карте */
 
         /* Цвета для поля ввода в темной теме */
-        --chat-input-bg: #1f2937;
-        --chat-input-text: #f9fafb;
-        --chat-input-border: #374151;
+        --chat-input-bg: #2d2d2d;
+        --chat-input-text: #e5e5e5;
+        --chat-input-border: #495057;
     }
 
     /* 🟣 ПОЛНОЭКРАННЫЙ ЧАТ С ПОЛНОЙ ФИОЛЕТОВОЙ ОКАНТОВКОЙ И ПОДДЕРЖКОЙ ТЕМ */
@@ -197,13 +197,6 @@
         opacity: 0.8;
     }
 
-    /* ИСПРАВЛЕНИЕ: Хорошо видимая временная метка на синих сообщениях */
-    .message-content.own .message-timestamp {
-        color: rgba(255, 255, 255, 0.85) !important; /* Белый с легкой прозрачностью */
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Легкая тень для читаемости */
-        font-weight: 600; /* Чуть жирнее для лучшей видимости */
-    }
-
     /* === КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ === */
     .message-reactions {
         position: absolute;
@@ -321,45 +314,15 @@
     }
 
     .reply-quote-text {
-        color: #374151 !important; /* Темно-серый цвет для хорошей читаемости */
+        color: var(--text-secondary) !important; /* Вторичный цвет текста */
         line-height: 1.3;
         font-weight: 400;
+        font-style: italic;
         display: -webkit-box;
         -webkit-line-clamp: 3; /* Ограничение до 3 строк */
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    /* Стили для темной темы */
-    [data-theme="dark"] .reply-quote {
-        background: rgba(55, 65, 81, 0.5) !important;
-    }
-
-    [data-theme="dark"] .reply-quote:hover {
-        background: rgba(55, 65, 81, 0.7) !important;
-    }
-
-    [data-theme="dark"] .reply-quote-text {
-        color: #d1d5db !important; /* Светло-серый для темной темы */
-    }
-
-    /* Стили для заголовка пересылки */
-    .forwarded-header {
-        font-size: 11px;
-        color: #6b7280;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .forwarded-header i {
-        color: #059669;
-    }
-
-    [data-theme="dark"] .forwarded-header {
-        color: #9ca3af;
     }
 
     /* === КНОПКА ОТВЕТИТЬ === */
@@ -471,8 +434,21 @@
         background-clip: text;
     }
 
-    /* SSOT ИСПРАВЛЕНИЕ: УДАЛЕН ПЕРЕОПРЕДЕЛЯЮЩИЙ CSS ДЛЯ BADGE В ШАБЛОНЕ ЧАТА */
-    /* Переопределение нарушало SSOT принципы - теперь используются единые стили badge */
+    /* 🔥 КРУТОЙ BADGE ДЛЯ СЧЕТЧИКА */
+    .badge {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%); /* ЗЕЛЕНЫЙ ГРАДИЕНТ ВМЕСТО СИНЕГО */
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 1.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow:
+            0 4px 15px rgba(40, 167, 69, 0.4),
+            0 2px 8px rgba(40, 167, 69, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
 
     /* КОМПАКТНЫЙ СПИСОК ПОЛЬЗОВАТЕЛЕЙ */
     .users-list {
@@ -1030,7 +1006,7 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="targetChat" id="targetGeneral" value="general">
                         <label class="form-check-label" for="targetGeneral">
-                            💬 Беседка
+                            💬 Беседка (общий чат)
                         </label>
                     </div>
                     {% endif %}
@@ -1039,16 +1015,10 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="targetChat" id="targetVip" value="vip">
                         <label class="form-check-label" for="targetVip">
-                            👑 Беседка - VIP
+                            👑 Беседка - VIP (для владельцев и администрации магазина)
                         </label>
                     </div>
                     {% endif %}
-                </div>
-
-                <!-- НОВОЕ: Поле комментария к пересылаемому сообщению -->
-                <div class="mt-3">
-                    <label for="forwardComment" class="form-label"><strong>💭 Добавить комментарий (необязательно):</strong></label>
-                    <textarea class="form-control" id="forwardComment" rows="3" placeholder="Введите свой комментарий к пересылаемому сообщению..." maxlength="500"></textarea>
                 </div>
             </div>
             <div class="custom-modal-footer">
@@ -1067,9 +1037,9 @@
 
     // 🖱️ ДАННЫЕ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ДЛЯ КОНТЕКСТНОГО МЕНЮ
     const currentUser = {
-        id: {{ request.user.id }},
-        role: '{{ request.user.role }}',
-        username: '{{ request.user.username }}'
+        id: {{ request.user.id|default_if_none:"null" }},
+        role: "{{ request.user.role|default:'user' }}",
+        username: "{{ request.user.username|default:'guest' }}"
     };
 
     const chatSocket = new WebSocket(
@@ -1159,17 +1129,12 @@
         }
     }
 
-    // 🔥 ИСПРАВЛЕНА ФУНКЦИЯ АВТОСКРОЛЛИНГА (ПРОСТАЯ И НАДЕЖНАЯ)
+    // Функция прокрутки к последнему сообщению
     function scrollToBottom() {
         const messagesArea = document.getElementById('chat-messages-area');
-        if (messagesArea) {
-            console.log('📜 scrollToBottom: ПРОСТАЯ ПРИНУДИТЕЛЬНАЯ прокрутка к концу');
-            // ПРОСТОЕ И НАДЕЖНОЕ РЕШЕНИЕ - ВСЕГДА РАБОТАЕТ
+        requestAnimationFrame(() => {
             messagesArea.scrollTop = messagesArea.scrollHeight;
-            console.log('✅ Автоскроллинг выполнен');
-        } else {
-            console.error('❌ scrollToBottom: элемент chat-messages-area не найден');
-        }
+        });
     }
 
     let historyLoaded = false;
@@ -1247,60 +1212,65 @@
         }
     };
 
-    function displayMessage(message) {
-        // Если это первое сообщение, очистим placeholder
-        const placeholder = chatLog.querySelector('.text-center');
-        if (placeholder) {
-            chatLog.innerHTML = '';
-        }
-
+    // === ЕДИНАЯ ФУНКЦИЯ СОЗДАНИЯ ЭЛЕМЕНТА СООБЩЕНИЯ (SSOT) ===
+    function createMessageElement(message, isHistory = false) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('chat-message');
         messageElement.dataset.messageId = message.id;
         messageElement.dataset.authorRole = message.author_role || 'user';
         messageElement.dataset.isPinned = message.is_pinned || false;
 
-        const timestamp = formatSmartTimestamp(message.created);
-        const fullTimestamp = getFullTimestamp(message.created);
+        const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
-        const isForwarded = message.content.includes('📤 Переслано') ||
+
+        // 🎯 УНИФИЦИРОВАННОЕ ОПРЕДЕЛЕНИЕ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+        // Проверяем и по флагу is_forwarded, и по содержимому для старых сообщений
+        const isForwarded = message.is_forwarded ||
+                           message.content.includes('📤 Переслано') ||
                            message.content.includes('Переслано из «') ||
                            message.content.includes('**Переслано из чата');
 
-        // 🎯 ИСПРАВЛЕНО: ВСЕ ПЕРЕСЛАННЫЕ СООБЩЕНИЯ ПОЛУЧАЮТ ЕДИНЫЙ ДИЗАЙН
+        // Определяем класс подложки для пересланных сообщений
         let forwardedClass = '';
         if (isForwarded) {
-            // ЕДИНАЯ ЛОГИКА - ВСЕ ПЕРЕСЛАННЫЕ СООБЩЕНИЯ ОДИНАКОВЫЕ
-            forwardedClass = ' forwarded-other';
-            console.log(`🎯 УНИФИЦИРОВАННОЕ пересланное сообщение от ${message.author_name}:`, {
-                messageId: message.id,
-                isOwn: isOwn,
-                forwardedClass: forwardedClass.trim(),
-                note: 'ЕДИНЫЙ ДИЗАЙН для всех пересланных сообщений'
-            });
+            forwardedClass = isOwn ? ' forwarded-own' : ' forwarded-other';
+            if (!isHistory) {
+                console.log(`🎯 Пересланное сообщение от ${message.author_name}:`, {
+                    messageId: message.id,
+                    isOwn: isOwn,
+                    forwardedClass: forwardedClass.trim(),
+                    authorName: message.author_name,
+                    hasOriginalId: !!message.original_message_id,
+                    isForwardedFlag: message.is_forwarded
+                });
+            }
         }
 
         let messageHTML = `
-            <div class="message-content ${isOwn ? 'own' : 'other'} ${forwardedClass}">
+            <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
         `;
 
-        // 🎯 ИСПРАВЛЕН ДИЗАЙН ПЕРЕСЛАННЫХ СООБЩЕНИЙ - УБРАНЫ КУРСИВЫ
-        const forwardedData = parseForwardedMessage(message.content, message);
-        if (forwardedData) {
-            // ИМЯ АВТОРА И ЗАГОЛОВОК ПЕРЕСЫЛКИ НА ОДНОЙ СТРОКЕ
+        // Добавляем блок цитаты если это ответ
+        if (message.reply_to) {
             messageHTML += `
-                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                    <div class="message-author">
-                        ${message.author_role_icon || '👤'} ${message.author_name}
+                <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                    <div class="reply-quote-author">
+                        <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                        ${message.reply_to.author_name}
                     </div>
-                    <div class="forwarded-header">
-                        <i class="fas fa-share"></i> Переслано из «${forwardedData.sourceName}»
-                    </div>
+                    <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
                 </div>
             `;
+        }
 
-            // ЦИТАТА БЕЗ КУРСИВОВ
+        // 🎯 ЕДИНАЯ ОБРАБОТКА ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+        const forwardedData = parseForwardedMessage(message.content, message);
+        if (forwardedData) {
             messageHTML += `
+                <div class="forwarded-header">
+                    <i class="fas fa-share"></i>
+                    ${forwardedData.sourceName} • ${forwardedData.forwarderIcon || '👤'} ${forwardedData.forwarderName}
+                </div>
                 <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedData.originalMessageId}', '${forwardedData.sourceName}')" title="Перейти к оригинальному сообщению">
                     <div class="reply-quote-author">
                         ${forwardedData.originalAuthor}
@@ -1308,43 +1278,25 @@
                     <div class="reply-quote-text">${forwardedData.messageText}</div>
                 </div>
             `;
-
-            // КОММЕНТАРИЙ ПОЛЬЗОВАТЕЛЯ БЕЗ КУРСИВОВ
-            if (forwardedData.userComment) {
-                messageHTML += `
-                    <div class="message-text">${forwardedData.userComment}</div>
-                `;
-            }
         } else {
-            // ОБЫЧНЫЕ СООБЩЕНИЯ БЕЗ ПОДЛОЖКИ У ИМЕНИ АВТОРА
             messageHTML += `
                 <div class="message-author">
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
-            `;
-
-            // Добавляем блок цитаты если это ответ - ПОСЛЕ имени автора
-            if (message.reply_to) {
-                messageHTML += `
-                    <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                        <div class="reply-quote-author">
-                            <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
-                            ${message.reply_to.author_name}
-                        </div>
-                        <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
-                    </div>
-                `;
-            }
-
-            // Основной текст сообщения
-            messageHTML += `
                 <div class="message-text">${message.content}</div>
             `;
         }
 
         messageHTML += `
-                <!-- Время в правом нижнем углу с tooltip -->
-                <div class="message-timestamp" title="${fullTimestamp}">${timestamp}</div>
+                <!-- Время в правом нижнем углу -->
+                <div class="message-timestamp">${timestamp}</div>
+
+                <!-- Индикатор редактирования (только для истории) -->
+                ${isHistory && message.is_edited ? `
+                    <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;">
+                        ✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}
+                    </div>
+                ` : ''}
 
                 <!-- Кнопки реакций в левом нижнем углу -->
                 <div class="message-reactions">
@@ -1373,9 +1325,47 @@
         `;
 
         messageElement.innerHTML = messageHTML;
+
+        // Добавляем индикатор закрепления если сообщение закреплено
+        if (message.is_pinned) {
+            const messageContent = messageElement.querySelector('.message-content');
+            if (messageContent) {
+                const pinIndicator = document.createElement('div');
+                pinIndicator.className = 'pin-indicator';
+                pinIndicator.style.cssText = `
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                    background: linear-gradient(135deg, #ffd700, #ffb347);
+                    color: #333;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 12px;
+                    font-size: 0.75rem;
+                    font-weight: bold;
+                    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+                    z-index: 10;
+                `;
+                pinIndicator.innerHTML = '📌 Закреплено';
+                messageContent.style.position = 'relative';
+                messageContent.appendChild(pinIndicator);
+            }
+        }
+
+        return messageElement;
+    }
+
+    function displayMessage(message) {
+        // Если это первое сообщение, очистим placeholder
+        const placeholder = chatLog.querySelector('.text-center');
+        if (placeholder) {
+            chatLog.innerHTML = '';
+        }
+
+        // ИСПОЛЬЗУЕМ ЕДИНУЮ ФУНКЦИЮ СОЗДАНИЯ ЭЛЕМЕНТА
+        const messageElement = createMessageElement(message, false);
         chatLog.appendChild(messageElement);
 
-        // 🔥 ИСПРАВЛЕННЫЙ АВТОСКРОЛЛИНГ - ПРОСТОЙ И РАБОТАЮЩИЙ
+        // Автопрокрутка для новых сообщений
         setTimeout(scrollToBottom, 100);
     }
 
@@ -1393,189 +1383,15 @@
             return;
         }
 
-        console.log('🔄 ПЕРЕРАСЧЕТ ВСЕХ СООБЩЕНИЙ (унифицированный дизайн)');
-
-        // Добавляем сообщения
+        // ИСПОЛЬЗУЕМ ЕДИНУЮ ФУНКЦИЮ ДЛЯ ВСЕХ СООБЩЕНИЙ ИЗ ИСТОРИИ
         messages.forEach(message => {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            messageElement.dataset.messageId = message.id;
-            messageElement.dataset.authorRole = message.author_role || 'user';
-            messageElement.dataset.isPinned = message.is_pinned || false;
-
-            const timestamp = formatSmartTimestamp(message.created);
-            const fullTimestamp = getFullTimestamp(message.created);
-            const isOwn = message.is_own;
-            const isForwarded = message.content.includes('📤 Переслано') ||
-                               message.content.includes('Переслано из «') ||
-                               message.content.includes('**Переслано из чата');
-
-            // 🎯 ИСПРАВЛЕНО: ЕДИНЫЙ ДИЗАЙН ДЛЯ ВСЕХ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
-            let forwardedClass = '';
-            if (isForwarded) {
-                forwardedClass = ' forwarded-other';
-            }
-
-            let messageHTML = `
-                <div class="message-content ${isOwn ? 'own' : 'other'} ${forwardedClass}">
-            `;
-
-            // 🎯 ИСПРАВЛЕН ДИЗАЙН ПЕРЕСЛАННЫХ СООБЩЕНИЙ В ИСТОРИИ - БЕЗ КУРСИВОВ
-            const forwardedDataHistory = parseForwardedMessage(message.content, message);
-            if (forwardedDataHistory) {
-                // ИМЯ АВТОРА И ЗАГОЛОВОК ПЕРЕСЫЛКИ НА ОДНОЙ СТРОКЕ
-                messageHTML += `
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                        <div class="message-author">
-                            ${message.author_role_icon || '👤'} ${message.author_name}
-                        </div>
-                        <div class="forwarded-header">
-                            <i class="fas fa-share"></i> Переслано из «${forwardedDataHistory.sourceName}»
-                        </div>
-                    </div>
-                `;
-
-                // ЦИТАТА БЕЗ КУРСИВОВ
-                messageHTML += `
-                    <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedDataHistory.originalMessageId}', '${forwardedDataHistory.sourceName}')" title="Перейти к оригинальному сообщению">
-                        <div class="reply-quote-author">
-                            ${forwardedDataHistory.originalAuthor}
-                        </div>
-                        <div class="reply-quote-text">${forwardedDataHistory.messageText}</div>
-                    </div>
-                `;
-
-                // КОММЕНТАРИЙ ПОЛЬЗОВАТЕЛЯ БЕЗ КУРСИВОВ
-                if (forwardedDataHistory.userComment) {
-                    messageHTML += `
-                        <div class="message-text">${forwardedDataHistory.userComment}</div>
-                    `;
-                }
-            } else {
-                // ОБЫЧНЫЕ СООБЩЕНИЯ БЕЗ ПОДЛОЖКИ У ИМЕНИ АВТОРА
-                messageHTML += `
-                    <div class="message-author">
-                        ${message.author_role_icon || '👤'} ${message.author_name}
-                    </div>
-                `;
-
-                // Добавляем блок цитаты если это ответ - ПОСЛЕ имени автора
-                if (message.reply_to) {
-                    messageHTML += `
-                        <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                            <div class="reply-quote-author">
-                                <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
-                                ${message.reply_to.author_name}
-                            </div>
-                            <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
-                        </div>
-                    `;
-                }
-
-                // Основной текст сообщения
-                messageHTML += `
-                    <div class="message-text">${message.content}</div>
-                `;
-            }
-
-            messageHTML += `
-                    <!-- Время в правом нижнем углу с tooltip -->
-                    <div class="message-timestamp" title="${fullTimestamp}">${timestamp}</div>
-
-                    <!-- Индикатор редактирования БЕЗ КУРСИВОВ -->
-                    ${message.is_edited ? `
-                        <div class="edit-indicator" title="${getFullTimestamp(message.edited_at)}">
-                            ✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}
-                        </div>
-                    ` : ''}
-
-                    <!-- Кнопки реакций в левом нижнем углу -->
-                    <div class="message-reactions">
-                        <div class="reaction-group">
-                            <button class="reaction-btn like-btn" onclick="likeMessage('${message.id}')" title="Нравится" data-message-id="${message.id}" data-reaction="like">
-                                <i class="fas fa-thumbs-up"></i>
-                            </button>
-                            <span class="reaction-count" id="likes-${message.id}">0</span>
-                        </div>
-
-                        <div class="reaction-group">
-                            <button class="reaction-btn dislike-btn" onclick="dislikeMessage('${message.id}')" title="Не нравится" data-message-id="${message.id}" data-reaction="dislike">
-                                <i class="fas fa-thumbs-down"></i>
-                            </button>
-                            <span class="reaction-count" id="dislikes-${message.id}">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Кнопка ответить привязана к контенту -->
-                    <div class="message-actions">
-                        <button class="action-btn reply-btn" onclick="startReplyMode('${message.id}', '${message.author_name}', \`${message.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Ответить">
-                            <i class="fas fa-reply"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            messageElement.innerHTML = messageHTML;
-
-            // Добавляем индикатор закрепления если сообщение закреплено
-            if (message.is_pinned) {
-                const messageContent = messageElement.querySelector('.message-content');
-                if (messageContent) {
-                    const pinIndicator = document.createElement('div');
-                    pinIndicator.className = 'pin-indicator';
-                    pinIndicator.innerHTML = '📌 Закреплено';
-                    messageContent.style.position = 'relative';
-                    messageContent.appendChild(pinIndicator);
-                }
-            }
-
+            const messageElement = createMessageElement(message, true);
             chatLog.appendChild(messageElement);
         });
 
         historyLoaded = true;
-        // 🔥 ИСПРАВЛЕННАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАГРУЗКИ ИСТОРИИ
-        setTimeout(() => {
-            updateAllTimestamps();
-            // ПРОСТОЙ И НАДЕЖНЫЙ АВТОСКРОЛЛИНГ
-            setTimeout(scrollToBottom, 100);
-        }, 200);
-    }
-
-    // 🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ВСЕХ ВРЕМЕННЫХ МЕТОК
-    function updateAllTimestamps() {
-        console.log('🔄 updateAllTimestamps: принудительное обновление всех временных меток');
-
-        const allTimestamps = document.querySelectorAll('.message-timestamp');
-        allTimestamps.forEach(timestampElement => {
-            // Получаем полную дату из title атрибута
-            const fullTimestamp = timestampElement.getAttribute('title');
-            if (fullTimestamp) {
-                // Парсим дату из формата "01.07.2025, 19:27:47"
-                const [datePart, timePart] = fullTimestamp.split(', ');
-                const [day, month, year] = datePart.split('.');
-                const [hours, minutes, seconds] = timePart.split(':');
-
-                // Создаем объект Date
-                const messageDate = new Date(year, month - 1, day, hours, minutes, seconds);
-                const iso = messageDate.toISOString();
-
-                console.log('🔄 Обновляю timestamp:', {
-                    element: timestampElement,
-                    oldText: timestampElement.textContent,
-                    fullTimestamp,
-                    parsedDate: messageDate.toLocaleString('ru-RU'),
-                    iso
-                });
-
-                // Пересчитываем и обновляем текст
-                const newTimestamp = formatSmartTimestamp(iso);
-                timestampElement.textContent = newTimestamp;
-
-                console.log('✅ Timestamp обновлен:', timestampElement.textContent);
-            }
-        });
-
-        console.log('✅ updateAllTimestamps завершена');
+        // Прокручиваем к последнему сообщению с задержкой для истории
+        setTimeout(scrollToBottom, 200);
     }
 
     function updateOnlineUsers(users, count) {
@@ -1675,50 +1491,27 @@
     }
 
     function scrollToMessage(messageId) {
-        console.log('🎯 scrollToMessage: переход к сообщению', messageId);
-
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
         if (messageElement) {
-            // Используем правильный контейнер для прокрутки
-            const messagesArea = document.getElementById('chat-messages-area');
-            if (messagesArea) {
-                // Получаем позицию сообщения относительно контейнера
-                const messageRect = messageElement.getBoundingClientRect();
-                const containerRect = messagesArea.getBoundingClientRect();
-
-                // Вычисляем позицию для скролла (центрируем сообщение)
-                const targetScrollTop = messagesArea.scrollTop + messageRect.top - containerRect.top - (containerRect.height / 2) + (messageRect.height / 2);
-
-                // Плавная прокрутка
-                messagesArea.scrollTo({
-                    top: targetScrollTop,
-                    behavior: 'smooth'
-                });
-
-                console.log('✅ scrollToMessage: скролл выполнен к сообщению', messageId);
-            } else {
-                // Fallback - стандартный scrollIntoView
-                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             // Подсвечиваем сообщение
             messageElement.classList.add('message-highlighted');
             setTimeout(() => {
                 messageElement.classList.remove('message-highlighted');
             }, 3000);
-        } else {
-            console.error('❌ scrollToMessage: сообщение не найдено', messageId);
-            showTemporaryFeedback('❌ Сообщение не найдено в истории', 'error');
         }
     }
 
     // === НАВИГАЦИЯ К ОРИГИНАЛЬНОМУ СООБЩЕНИЮ ===
     function navigateToOriginalMessage(originalMessageId, sourceName) {
-        console.log('🔗 navigateToOriginalMessage:', { originalMessageId, sourceName });
+        console.log('🔍 navigateToOriginalMessage called:', { originalMessageId, sourceName });
 
-        // Если нет ID оригинального сообщения, переходим просто в чат
-        if (!originalMessageId || originalMessageId === 'undefined') {
-            console.log('⚠️ Нет ID оригинального сообщения, переходим в чат');
+        // 🎯 УЛУЧШЕННАЯ ОБРАБОТКА СТАРЫХ СООБЩЕНИЙ
+        if (!originalMessageId || originalMessageId === 'undefined' || originalMessageId === 'null') {
+            console.log('⚠️ Старое пересланное сообщение без original_message_id');
+            showTemporaryFeedback('📍 Это старое пересланное сообщение. Переходим к источнику...', 'info');
+            // Переходим просто в чат источника для старых сообщений
             navigateToSourceChat(sourceName);
             return;
         }
@@ -1737,27 +1530,35 @@
                 targetUrl = '/chat/moderators/';
                 break;
             default:
-                console.error('❌ Неизвестный источник чата:', sourceName);
+                console.log('⚠️ Unknown source chat:', sourceName);
                 showTemporaryFeedback('❌ Неизвестный источник чата', 'error');
                 return;
         }
 
-        console.log('🎯 Переходим к:', { targetUrl, messageId: originalMessageId });
+        console.log('🎯 Target URL determined:', targetUrl);
 
         // Если это тот же чат, скроллим к сообщению
         const currentPath = window.location.pathname;
         if (currentPath === targetUrl) {
             // Тот же чат - просто скроллим к сообщению
-            console.log('📍 Тот же чат, скроллим к сообщению');
+            console.log('🔄 Same chat, scrolling to message:', originalMessageId);
             setTimeout(() => {
-                scrollToMessage(originalMessageId);
+                const messageElement = document.querySelector(`[data-message-id="${originalMessageId}"]`);
+                if (messageElement) {
+                    scrollToMessage(originalMessageId);
+                    showTemporaryFeedback('📍 Перешли к исходному сообщению', 'success');
+                } else {
+                    console.log('❌ Message not found in current chat, might be on different page');
+                    showTemporaryFeedback('📍 Сообщение может быть на другой странице истории', 'warning');
+                }
             }, 100);
         } else {
-            // Другой чат - переходим и скроллим
-            console.log('🚀 Переходим в другой чат');
-            showTemporaryFeedback(`🔗 Переходим в ${sourceName}...`, 'info');
+            // Другой чат - переходим к нему
+            console.log('🔄 Different chat, navigating to:', targetUrl);
+            showTemporaryFeedback('🔄 Переходим к источнику...', 'info');
             setTimeout(() => {
-                window.location.href = targetUrl + '#message-' + originalMessageId;
+                // Переходим к чату с якорем для поиска сообщения
+                window.location.href = targetUrl + '?highlight=' + originalMessageId;
             }, 500);
         }
     }
@@ -1829,95 +1630,62 @@
     // === ПАРСИНГ ПЕРЕСЛАННЫХ СООБЩЕНИЙ ===
     function parseForwardedMessage(content, message) {
         // Проверяем, является ли сообщение пересланным
-        if (!content.includes('📤') && !message.is_forwarded) {
+        if (!content.includes('Переслано из «') && !message.is_forwarded) {
             return null;
         }
 
         const lines = content.split('\n');
-
-        // Ищем строку с эмодзи 📤
-        let forwardLineIndex = -1;
-        let sourceName = 'Неизвестный чат';
-        let userComment = ''; // Комментарий пользователя
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (line.includes('📤')) {
-                forwardLineIndex = i;
-
-                // Если 📤 НЕ в первой строке, значит есть комментарий выше
-                if (i > 0) {
-                    // Извлекаем все строки до 📤 как комментарий
-                    const commentLines = lines.slice(0, i).filter(line => line.trim() !== '');
-                    userComment = commentLines.join('\n').trim();
-                }
-
-                // Два возможных формата:
-                // 1. "📤 Переслано из «Беседка»"
-                // 2. "📤 owner:"
-
-                if (line.includes('Переслано из «')) {
-                    const sourceMatch = line.match(/Переслано из «(.+)»/);
-                    sourceName = sourceMatch ? sourceMatch[1] : 'Неизвестный чат';
-                } else {
-                    // Формат с комментарием - определяем источник по room_name
-                    sourceName = getCurrentRoomDisplayName();
-                }
-                break;
-            }
-        }
-
-        if (forwardLineIndex === -1) {
+        if (lines.length < 3) {
             return null;
         }
 
-        // Извлекаем оригинального автора и текст
-        let originalAuthor = 'Неизвестный автор';
-        let messageText = '';
+        const sourceInfo = lines[0]; // "Переслано из «Беседка»"
+        const originalAuthor = lines[1]; // "👑 owner"
+        const messageText = lines.slice(2).join('\n'); // Остальной текст
 
-        if (forwardLineIndex < lines.length - 1) {
-            const authorLine = lines[forwardLineIndex].trim();
+        // Извлекаем название источника из строки
+        const sourceMatch = sourceInfo.match(/Переслано из «(.+)»/);
+        let sourceName;
 
-            if (authorLine.includes('Переслано из «')) {
-                // Формат: "📤 Переслано из «Беседка»\n👑 owner\nТекст"
-                if (forwardLineIndex + 1 < lines.length) {
-                    originalAuthor = lines[forwardLineIndex + 1].trim();
-                    messageText = lines.slice(forwardLineIndex + 2).join('\n').trim();
-                }
+        if (sourceMatch) {
+            sourceName = sourceMatch[1];
+        } else {
+            // Если не удалось распарсить, пытаемся определить по текущему чату
+            const currentPath = window.location.pathname;
+            if (currentPath.includes('/general/')) {
+                sourceName = 'Беседка - VIP'; // Скорее всего пришло из VIP в общий
+            } else if (currentPath.includes('/vip/')) {
+                sourceName = 'Беседка'; // Скорее всего пришло из общего в VIP
             } else {
-                // Формат: "Комментарий\n\n📤 owner:\nТекст"
-                const authorMatch = authorLine.match(/📤\s*(.+):/);
-                if (authorMatch) {
-                    originalAuthor = authorMatch[1].trim();
-                    messageText = lines.slice(forwardLineIndex + 1).join('\n').trim();
-                }
+                sourceName = 'Другой чат'; // Более мягкая формулировка вместо "Неизвестный чат"
             }
+        }
+
+        // 🎯 ОПРЕДЕЛЕНИЕ ID ОРИГИНАЛЬНОГО СООБЩЕНИЯ
+        let originalMessageId = null;
+
+        // Сначала пытаемся взять из поля базы данных (для новых сообщений)
+        if (message.original_message_id && message.original_message_id !== 'null' && message.original_message_id !== 'undefined') {
+            originalMessageId = message.original_message_id;
+            console.log('✅ Используем original_message_id из БД:', originalMessageId);
+        } else {
+            // Для старых сообщений показываем предупреждение в console
+            console.log('⚠️ Старое пересланное сообщение без original_message_id:', {
+                messageId: message.id,
+                sourceName: sourceName,
+                hasOriginalId: false
+            });
         }
 
         return {
             sourceName: sourceName,
             originalAuthor: originalAuthor,
             messageText: messageText,
-            userComment: userComment, // НОВОЕ ПОЛЕ - комментарий пользователя
             isForwarded: true,
-            originalMessageId: message.original_message_id,
-            forwarderName: message.author_name,
-            forwarderIcon: message.author_role_icon,
+            originalMessageId: originalMessageId, // Может быть null для старых сообщений
+            forwarderName: message.author_name, // Кто переслал
+            forwarderIcon: message.author_role_icon, // Значок того кто переслал
         };
-    }
-
-    // Определяет отображаемое имя комнаты для пересланных сообщений
-    function getCurrentRoomDisplayName() {
-        switch(roomName) {
-            case 'general':
-                return 'Беседка';
-            case 'vip':
-                return 'Беседка - VIP';
-            case 'moderators':
-                return 'Модераторы';
-            default:
-                return 'Неизвестный чат';
-        }
     }
 
     // Функции для лайков и дизлайков
@@ -2378,7 +2146,7 @@
         forwardModal.dataset.messageText = messageData.text;
         forwardModal.dataset.messageAuthor = messageData.author;
 
-        // ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ СООБЩЕНИЯ В ОКНЕ ПЕРЕСЫЛКИ (ИСПРАВЛЕНО ДЛЯ ПЕРЕСЛАННЫХ)
+        // ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ СООБЩЕНИЯ В ОКНЕ ПЕРЕСЫЛКИ
         const forwardMessagePreview = document.createElement('div');
         forwardMessagePreview.id = 'forwardMessagePreview';
         forwardMessagePreview.style.cssText = `
@@ -2387,35 +2155,13 @@
             border-radius: 0.5rem;
             border-left: 4px solid #28a745;
             margin-bottom: 1rem;
-            max-height: 120px;
+            max-height: 80px;
             overflow-y: auto;
         `;
-
-        // 🔧 ИСПРАВЛЯЕМ ОТОБРАЖЕНИЕ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
-        let previewText = messageData.text;
-
-        // Если это пересланное сообщение, извлекаем оригинальный текст
-        if (previewText.includes('Переслано из «')) {
-            const lines = previewText.split('\n');
-            if (lines.length >= 3) {
-                const sourceLine = lines[0]; // "Переслано из «Беседка»"
-                const authorLine = lines[1]; // "👑 owner"
-                const textLines = lines.slice(2); // Остальной текст
-
-                previewText = `
-                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">
-                        <i class="fas fa-share"></i> ${sourceLine} • ${authorLine}
-                    </div>
-                    <div style="padding: 0.5rem; background: rgba(229, 231, 235, 0.5); border-left: 3px solid #007bff; border-radius: 6px;">
-                        ${textLines.join('\n')}
-                    </div>
-                `;
-            }
-        } else {
-            previewText = `<strong>${messageData.author}:</strong><br>${previewText}`;
-        }
-
-        forwardMessagePreview.innerHTML = previewText;
+        forwardMessagePreview.innerHTML = `
+            <strong>${messageData.author}:</strong><br>
+            ${messageData.text}
+        `;
 
         // Вставляем preview в модальное окно
         const modalBody = forwardModal.querySelector('.custom-modal-body');
@@ -2470,11 +2216,12 @@
             messageTextElement.textContent = message.content;
         }
 
-        // Добавляем или обновляем индикатор редактирования БЕЗ КУРСИВОВ
+        // Добавляем или обновляем индикатор редактирования
         let editIndicator = messageElement.querySelector('.edit-indicator');
         if (!editIndicator && message.is_edited) {
             editIndicator = document.createElement('div');
             editIndicator.className = 'edit-indicator';
+            editIndicator.style.cssText = 'font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;';
 
             // Вставляем индикатор перед кнопками реакций
             const messageReactions = messageElement.querySelector('.message-reactions');
@@ -2486,8 +2233,7 @@
         }
 
         if (editIndicator && message.is_edited) {
-            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}`;
-            editIndicator.title = getFullTimestamp(message.edited_at);
+            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}`;
         }
 
         // Показываем уведомление об успехе
@@ -2705,6 +2451,7 @@
             confirmForwardBtn.addEventListener('click', function() {
                 const forwardModal = document.getElementById('forwardModal');
                 const targetChatRadio = document.querySelector('input[name="targetChat"]:checked');
+                const customMessageField = document.getElementById('forwardCustomMessage');
 
                 if (!forwardModal) {
                     console.error('❌ forwardModal element not found!');
@@ -2720,6 +2467,7 @@
 
                 // 🔑 ИСПОЛЬЗУЕМ СОХРАНЕННЫЕ ДАННЫЕ ИЗ DATASET ВМЕСТО contextMenu.currentMessageData
                 const messageId = forwardModal.dataset.messageId;
+                const customMessage = customMessageField ? customMessageField.value.trim() : '';
 
                 if (!messageId) {
                     showTemporaryFeedback('❌ Ошибка: данные сообщения не найдены', 'error');
@@ -2728,15 +2476,13 @@
                 }
 
                 const targetRoom = targetChatRadio.value;
-                const forwardComment = document.getElementById('forwardComment');
-                const comment = forwardComment ? forwardComment.value.trim() : '';
 
-                // Отправляем запрос на пересылку через WebSocket
+                // 📝 ОТПРАВЛЯЕМ ЗАПРОС НА ПЕРЕСЫЛКУ С ДОПОЛНИТЕЛЬНЫМ СООБЩЕНИЕМ
                 const forwardData = {
                     type: 'forward_message',
                     message_id: messageId,
                     target_room: targetRoom,
-                    comment: comment  // Добавляем комментарий к пересылаемому сообщению
+                    custom_message: customMessage
                 };
 
                 console.log('📤 Sending forward request:', forwardData);
@@ -2746,7 +2492,11 @@
                     console.log('✅ Forward request sent successfully');
 
                     // 🎯 ДОБАВЛЯЕМ УВЕДОМЛЕНИЕ ОБ УСПЕШНОЙ ПЕРЕСЫЛКЕ В ИСТОЧНИКЕ
-                    showTemporaryFeedback('📤 Сообщение переслано!', 'success');
+                    if (customMessage) {
+                        showTemporaryFeedback('📤 Сообщение переслано с комментарием!', 'success');
+                    } else {
+                        showTemporaryFeedback('📤 Сообщение переслано!', 'success');
+                    }
 
                     // Закрываем кастомное окно
                     closeForwardModal();
@@ -2780,15 +2530,13 @@
 
     function closeForwardModal() {
         const forwardModal = document.getElementById('forwardModal');
-        const forwardComment = document.getElementById('forwardComment');
-
         if (forwardModal) {
             forwardModal.style.display = 'none';
-        }
-
-        // Очищаем поле комментария при закрытии
-        if (forwardComment) {
-            forwardComment.value = '';
+            // Очищаем поле ввода при закрытии модального окна
+            const customMessageField = document.getElementById('forwardCustomMessage');
+            if (customMessageField) {
+                customMessageField.value = '';
+            }
         }
     }
 
@@ -2855,93 +2603,6 @@
             console.log('🌞 Loaded light theme from localStorage');
         }
     });
-
-    // === ФУНКЦИИ УПРАВЛЕНИЯ ЧАТОМ ===
-
-    // 🕐 УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ (исправленная логика с debug)
-    function formatSmartTimestamp(dateString) {
-        const messageDate = new Date(dateString);
-        const now = new Date();
-
-        // 🔍 DEBUG: Логирование для диагностики
-        console.log('⏰ formatSmartTimestamp DEBUG:', {
-            original: dateString,
-            messageDate: messageDate.toLocaleString('ru-RU'),
-            now: now.toLocaleString('ru-RU'),
-            messageTime: messageDate.getTime(),
-            nowTime: now.getTime()
-        });
-
-        // Сравниваем даты без учета времени для корректного подсчета дней
-        const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
-        const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const diffInMs = nowDateOnly - messageDateOnly;
-        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-        console.log('⏰ Days calculation:', {
-            messageDateOnly: messageDateOnly.toDateString(),
-            nowDateOnly: nowDateOnly.toDateString(),
-            diffInMs,
-            diffInDays
-        });
-
-        // Сегодня (0 дней) - показываем только время
-        if (diffInDays === 0) {
-            const result = messageDate.toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            console.log('⏰ Result: TODAY ->', result);
-            return result;
-        }
-
-        // Вчера (1 день)
-        if (diffInDays === 1) {
-            console.log('⏰ Result: YESTERDAY -> вчера');
-            return 'вчера';
-        }
-
-        // 2-6 дней назад
-        if (diffInDays >= 2 && diffInDays <= 6) {
-            const result = `${diffInDays} дня назад`;
-            console.log('⏰ Result: DAYS AGO ->', result);
-            return result;
-        }
-
-        // 1 неделя назад (7-13 дней)
-        if (diffInDays >= 7 && diffInDays <= 13) {
-            console.log('⏰ Result: WEEK AGO -> неделю назад');
-            return 'неделю назад';
-        }
-
-        // 2+ недели назад (14-30 дней)
-        if (diffInDays >= 14 && diffInDays <= 30) {
-            const weeks = Math.floor(diffInDays / 7);
-            const result = `${weeks} недели назад`;
-            console.log('⏰ Result: WEEKS AGO ->', result);
-            return result;
-        }
-
-        // Более месяца - показываем дату в формате ДД.ММ
-        const result = messageDate.toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit'
-        });
-        console.log('⏰ Result: OLD DATE ->', result);
-        return result;
-    }
-
-    // 📅 ПОЛНАЯ ДАТА/ВРЕМЯ ДЛЯ TOOLTIP (при наведении)
-    function getFullTimestamp(dateString) {
-        const messageDate = new Date(dateString);
-        return messageDate.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
 
 </script>
 

@@ -29,25 +29,47 @@
             </div>
 
             <div class="mt-3">
-                <p><strong>Предпросмотр сообщения:</strong></p>
+                <p><strong>Предпросмотр пересылаемого сообщения:</strong></p>
                 <div id="forwardMessagePreview"
-                     style="background: var(--forwarded-bg);
+                     style="background: var(--forwarded-bg-light, rgba(0, 122, 255, 0.05));
                             padding: 0.75rem;
-                            border-radius: var(--border-radius);
-                            border-left: 4px solid #FFC107;
-                            font-size: var(--text-small);">
-                    <div class="forwarded-header">
-                        <i class="fas fa-share"></i>
+                            border-radius: 6px;
+                            border-left: 4px solid #D97706;
+                            font-size: 0.9rem;
+                            margin-bottom: 1rem;">
+                    <div class="forwarded-header" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #6c757d; font-style: italic; margin-bottom: 0.5rem;">
+                        <i class="fas fa-share" style="color: #D97706;"></i>
                         <span>Пересланное сообщение</span>
                     </div>
                     <div class="fw-bold" id="forwardMessageAuthor"></div>
                     <div id="forwardMessageText"></div>
                 </div>
             </div>
+
+            <!-- 💬 НОВОЕ ПОЛЕ ДЛЯ ВВОДА СОБСТВЕННОГО СООБЩЕНИЯ -->
+            <div class="mt-3">
+                <label for="forwardCustomMessage" class="form-label">
+                    <strong>💬 Ваше сообщение (необязательно):</strong>
+                </label>
+                <textarea
+                    id="forwardCustomMessage"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Введите свой комментарий к пересылаемому сообщению..."
+                    style="resize: vertical; font-size: 0.95rem; line-height: 1.4;">
+                </textarea>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>
+                    Если оставите поле пустым, будет переслано только оригинальное сообщение.
+                    Если добавите текст, пересылаемое сообщение станет цитатой в вашем новом сообщении.
+                </div>
+            </div>
         </div>
         <div class="custom-modal-footer">
             <button type="button" class="btn btn-secondary" onclick="closeForwardModal()">Отмена</button>
-            <button type="button" id="confirmForwardBtn" class="btn btn-success">Переслать</button>
+            <button type="button" id="confirmForwardBtn" class="btn btn-success">
+                <i class="fas fa-paper-plane"></i> Переслать
+            </button>
         </div>
     </div>
 </div>
