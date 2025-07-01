@@ -279,9 +279,9 @@
         background: rgba(229, 231, 235, 0.5) !important; /* Нейтральный фон согласно ТЗ */
         border: none !important;
         border-left: 4px solid var(--chat-quote-border) !important; /* Левая полоса согласно ТЗ */
-        border-radius: 8px !important; /* УМЕНЬШЕНО с 12px */
-        padding: 8px !important; /* УМЕНЬШЕНО с 12px */
-        margin-bottom: 8px !important; /* УМЕНЬШЕНО с 12px */
+        border-radius: 6px !important; /* ЕЩЕ МЕНЬШЕ */
+        padding: 6px !important; /* МИНИМАЛЬНЫЕ отступы */
+        margin-bottom: 6px !important; /* МИНИМАЛЬНЫЙ отступ */
         font-size: 12px !important; /* Мелкий шрифт согласно ТЗ (90% от основного 14px) */
         cursor: pointer;
         transition: all 0.2s ease;
@@ -298,17 +298,17 @@
     .reply-quote-author {
         font-weight: 700;
         color: var(--chat-quote-border) !important; /* Цвет полосы */
-        margin-bottom: 2px !important; /* УМЕНЬШЕНО с 4px */
+        margin-bottom: 1px !important; /* МИНИМАЛЬНЫЙ отступ */
         font-size: 11px !important;
-        line-height: 1.1; /* УМЕНЬШЕНО с 1.2 */
+        line-height: 1.0; /* МИНИМАЛЬНАЯ высота строки */
         display: flex;
         align-items: center;
-        gap: 2px; /* УМЕНЬШЕНО с 4px */
+        gap: 1px; /* МИНИМАЛЬНЫЙ gap */
         padding: 0; /* УБИРАЕМ ЛИШНИЕ ОТСТУПЫ */
     }
 
     .reply-quote-author .role-icon {
-        font-size: 11px; /* УМЕНЬШЕНО с 12px */
+        font-size: 10px; /* УМЕНЬШЕНО */
         display: inline-block;
         margin: 0; /* УБИРАЕМ margin-right */
         line-height: 1;
@@ -1336,7 +1336,7 @@
             messageHTML += `
                 <div class="forwarded-header">
                     <i class="fas fa-share"></i>
-                    🔧 ФИКС: Переслано из ${sourceName}
+                    Переслано из ${sourceName} • ${forwarderIcon} ${forwarderName}
                 </div>
                 <div class="reply-quote" onclick="navigateToOriginalMessage('${originalMessageId}', '${sourceName}')" title="Перейти к оригинальному сообщению">
                     <div class="reply-quote-author">
@@ -1742,6 +1742,7 @@
 
     // === ПАРСИНГ ПЕРЕСЛАННЫХ СООБЩЕНИЙ ===
     function parseForwardedMessage(content, message) {
+        console.log('🔍 DEBUG parseForwardedMessage content:', content);
         // Проверяем, является ли сообщение пересланным
         if (!content.includes('📤 Переслано из «') && !content.includes('Переслано из «') && !message.is_forwarded) {
             return null;
