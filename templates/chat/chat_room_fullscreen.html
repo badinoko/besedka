@@ -1746,7 +1746,7 @@
     // === ПАРСИНГ ПЕРЕСЛАННЫХ СООБЩЕНИЙ ===
     function parseForwardedMessage(content, message) {
         // Проверяем, является ли сообщение пересланным
-        if (!content.includes('Переслано из «') && !message.is_forwarded) {
+        if (!content.includes('📤 Переслано из «') && !content.includes('Переслано из «') && !message.is_forwarded) {
             return null;
         }
 
@@ -1755,53 +1755,88 @@
             return null;
         }
 
-        const sourceInfo = lines[0]; // "Переслано из «Беседка»"
-        const originalAuthorLine = lines[1]; // "👑 owner"
-        const messageText = lines.slice(2).join('\n'); // Остальной текст
+        // Определяем формат сообщения (новый или старый)
+        const isNewFormat = lines[0].includes('📤 Переслано из «') && lines[0].includes(' • ');
 
-        // 👑 ИЗВЛЕКАЕМ ЗНАЧОК РОЛИ И ИМЯ АВТОРА ОТДЕЛЬНО
-        let originalAuthorIcon = '👤'; // По умолчанию
+        let sourceInfo, originalAuthorLine, messageText;
+        let forwarderName = '', forwarderIcon = '';
+
+        if (isNewFormat) {
+            // НОВЫЙ ФОРМАТ: "📤 Переслано из «Беседка - VIP» • 👑 Buddy"
+            sourceInfo = lines[0];
+            originalAuthorLine = lines[1];
+
+            // Извлекаем информацию о пересылающем из первой строки
+            const forwarderMatch = sourceInfo.match(/📤 Переслано из «(.+)» • (.+)$/);
+            if (forwarderMatch) {
+                // Разбираем информацию о пересылающем
+                const forwarderInfo = forwarderMatch[2];
+                const forwarderEmojiMatch = forwarderInfo.match(/^([\u{1F300}-\u{1F9FF}]|👑|🛡️|🏪|📦|👤)\s*(.+)$/u);
+                if (forwarderEmojiMatch) {
+                    forwarderIcon = forwarderEmojiMatch[1];
+                    forwarderName = forwarderEmojiMatch[2];
+                } else {
+                    forwarderName = forwarderInfo;
+                    forwarderIcon = '👤';
+                }
+            }
+
+            // Проверяем, есть ли пользовательское сообщение (если сообщение начинается не с 📤)
+            if (!content.startsWith('📤 Переслано из «')) {
+                // Пользовательское сообщение есть, пересланная часть начинается позже
+                const forwardedPartIndex = content.indexOf('📤 Переслано из «');
+                if (forwardedPartIndex > 0) {
+                    const linesFromForwarded = content.substring(forwardedPartIndex).split('\n');
+                    originalAuthorLine = linesFromForwarded[1];
+                    messageText = linesFromForwarded.slice(2).join('\n');
+                } else {
+                    messageText = lines.slice(2).join('\n');
+                }
+            } else {
+                messageText = lines.slice(2).join('\n');
+            }
+        } else {
+            // СТАРЫЙ ФОРМАТ: "Переслано из «Беседка»"
+            sourceInfo = lines[0];
+            originalAuthorLine = lines[1];
+            messageText = lines.slice(2).join('\n');
+
+            // Для старого формата берем информацию из message объекта
+            forwarderName = message.author_name || '';
+            forwarderIcon = message.author_role_icon || '👤';
+        }
+
+        // 👑 ИЗВЛЕКАЕМ ЗНАЧОК РОЛИ И ИМЯ АВТОРА ОРИГИНАЛЬНОГО СООБЩЕНИЯ
+        let originalAuthorIcon = '👤';
         let originalAuthorName = originalAuthorLine;
 
-        // Пытаемся найти эмодзи в начале строки
         const emojiMatch = originalAuthorLine.match(/^([\u{1F300}-\u{1F9FF}]|👑|🛡️|🏪|📦|👤)\s*(.+)$/u);
         if (emojiMatch) {
             originalAuthorIcon = emojiMatch[1];
             originalAuthorName = emojiMatch[2];
         }
 
-        // Извлекаем название источника из строки
-        const sourceMatch = sourceInfo.match(/Переслано из «(.+)»/);
+        // Извлекаем название источника
+        const sourceMatch = sourceInfo.match(/Переслано из «(.+?)»(\s*•|$)/);
         let sourceName;
 
         if (sourceMatch) {
             sourceName = sourceMatch[1];
         } else {
-            // Если не удалось распарсить, пытаемся определить по текущему чату
             const currentPath = window.location.pathname;
             if (currentPath.includes('/general/')) {
-                sourceName = 'Беседка - VIP'; // Скорее всего пришло из VIP в общий
+                sourceName = 'Беседка - VIP';
             } else if (currentPath.includes('/vip/')) {
-                sourceName = 'Беседка'; // Скорее всего пришло из общего в VIP
+                sourceName = 'Беседка';
             } else {
-                sourceName = 'Другой чат'; // Более мягкая формулировка вместо "Неизвестный чат"
+                sourceName = 'Другой чат';
             }
         }
 
         // 🎯 ОПРЕДЕЛЕНИЕ ID ОРИГИНАЛЬНОГО СООБЩЕНИЯ
         let originalMessageId = null;
-
-        // Сначала пытаемся взять из поля базы данных (для новых сообщений)
         if (message.original_message_id && message.original_message_id !== 'null' && message.original_message_id !== 'undefined') {
             originalMessageId = message.original_message_id;
-            console.log('✅ Используем original_message_id из БД:', originalMessageId);
-        } else {
-            // Для старых сообщений показываем предупреждение в console
-            console.log('⚠️ Старое пересланное сообщение без original_message_id:', {
-                messageId: message.id,
-                sourceName: sourceName,
-                hasOriginalId: false
-            });
         }
 
         return {
@@ -1811,9 +1846,9 @@
             originalAuthorName: originalAuthorName, // Имя без значка
             messageText: messageText,
             isForwarded: true,
-            originalMessageId: originalMessageId, // Может быть null для старых сообщений
-            forwarderName: message.author_name, // Кто переслал
-            forwarderIcon: message.author_role_icon, // Значок того кто переслал
+            originalMessageId: originalMessageId,
+            forwarderName: forwarderName, // Кто переслал (из нового формата)
+            forwarderIcon: forwarderIcon, // Значок того кто переслал
         };
     }
 

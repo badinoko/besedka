@@ -309,18 +309,21 @@ class BaseChatConsumer(WebsocketConsumer):
                 # Для любых других комнат используем более читаемое название
                 source_room_display = f"Чат «{self.room_name.title()}»"
 
-            # 💬 СОЗДАЕМ ФИНАЛЬНЫЙ КОНТЕНТ В ЗАВИСИМОСТИ ОТ НАЛИЧИЯ ПОЛЬЗОВАТЕЛЬСКОГО СООБЩЕНИЯ
+            # 💬 СОЗДАЕМ ФИНАЛЬНЫЙ КОНТЕНТ БЕЗ ДУБЛИРОВАНИЯ ИНФОРМАЦИИ О ПЕРЕСЫЛКЕ
+            # Формируем правильную информацию об авторе оригинального сообщения
+            original_author_with_icon = f"{original_message.author.get_role_icon} {original_message.author.display_name}"
+
             if custom_message:
                 # Если есть пользовательское сообщение, пересланный контент становится цитатой
                 forwarded_content = f"""{custom_message}
 
-Переслано из «{source_room_display}»
-{original_author}
+📤 Переслано из «{source_room_display}» • {self.user.get_role_icon} {self.user.display_name}
+{original_author_with_icon}
 {clean_content}"""
             else:
                 # Если нет пользовательского сообщения, используем стандартный формат
-                forwarded_content = f"""Переслано из «{source_room_display}»
-{original_author}
+                forwarded_content = f"""📤 Переслано из «{source_room_display}» • {self.user.get_role_icon} {self.user.display_name}
+{original_author_with_icon}
 {clean_content}"""
 
             # Создаем новое сообщение
