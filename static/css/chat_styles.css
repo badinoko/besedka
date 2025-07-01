@@ -547,7 +547,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
-    background: white !important; /* чистый фон без голубых/розовых переливов */
+    background: var(--bg-primary);
     scroll-behavior: smooth;
     /* SSOT: УБРАНА ДУБЛИРУЮЩАЯ ГРАНИЦА - граница есть только у .chat-input-area */
 }
@@ -765,7 +765,7 @@
 .chat-input-area {
     /* SSOT: СТРОГО УНИФИЦИРОВАННЫЕ ПАРАМЕТРЫ ДЛЯ ВСЕХ ПАНЕЛЕЙ */
     padding: 1.25rem !important; /* ПРИНУДИТЕЛЬНАЯ унификация */
-    background: white;
+    background: var(--bg-primary);
     border-top: 3px solid var(--chat-border-dark);
     box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
     /* SSOT: КРИТИЧНО - АБСОЛЮТНО ОДИНАКОВАЯ ВЫСОТА ВЕЗДЕ */
@@ -869,7 +869,7 @@
 
 /* ===== SSOT: УНИФИЦИРОВАННАЯ СТАТИСТИЧЕСКАЯ ПАНЕЛЬ ===== */
 .chat-stats-panel {
-    background: #f8f9fa; /* SSOT: Стандартный светлый фон */
+    background: var(--bg-secondary);
     border-top: 3px solid var(--chat-border);
     /* SSOT: СТРОГО УНИФИЦИРОВАННЫЕ ПАРАМЕТРЫ ДЛЯ ВСЕХ ПАНЕЛЕЙ */
     padding: 1.25rem !important; /* ПРИНУДИТЕЛЬНАЯ унификация */
@@ -904,8 +904,8 @@
 .users-header {
     padding: 1.25rem 1.5rem; /* Увеличил отступы для лучшего объема */
     border-bottom: 2px solid var(--chat-border);
-    background: white;
-    color: #333;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     font-weight: 700; /* Сделал жирнее */
     font-size: 1.6rem; /* СУЩЕСТВЕННО УВЕЛИЧИЛ размер заголовка "Онлайн" для лучшей видимости */
     display: flex;
@@ -963,7 +963,7 @@
     padding: 0.875rem;
     margin-bottom: 0.5rem;
     border-radius: 0.75rem;
-    background: white;
+    background: var(--bg-primary);
     border: 1px solid #e9ecef;
     display: flex;
     align-items: center;
@@ -2261,7 +2261,7 @@
     align-items: stretch !important;
 
     /* МИНИМАЛИСТИЧНЫЙ ВИД */
-    background: #ffffff !important; /* единый белый фон */
+    background: var(--bg-primary) !important;
     border: 1px solid rgba(0,0,0,0.06) !important; /* лёгкий контур */
     border-radius: 0.75rem !important;
     padding: 0.75rem 1rem !important;
