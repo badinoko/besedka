@@ -13,16 +13,61 @@
     :root {
         --border-color: #6f42c1; /* Красивый фиолетовый цвет */
         --border-width: 3px; /* Унифицированная толщина */
+
+        /* ===== СИСТЕМА ТЕМ ДЛЯ ЧАТА ===== */
+        /* Светлая тема (по умолчанию) */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --border-color-theme: #e5e7eb;
+
+        /* Цвета для сообщений чата */
+        --chat-own-bg: #3B82F6;
+        --chat-own-text: #ffffff;
+        --chat-other-bg: #F3F4F6;
+        --chat-other-text: #111827;
+        --chat-forwarded-bg: #FEF3C7;
+        --chat-quote-border: #3B82F6;
+        --chat-forward-border: #D97706;
+
+        /* Цвета для поля ввода */
+        --chat-input-bg: #ffffff;
+        --chat-input-text: #111827;
+        --chat-input-border: #e5e7eb;
     }
 
-    /* 🟣 ПОЛНОЭКРАННЫЙ ЧАТ С ПОЛНОЙ ФИОЛЕТОВОЙ ОКАНТОВКОЙ */
+    [data-theme="dark"] {
+        /* Темная тема */
+        --bg-primary: #111827;
+        --bg-secondary: #1f2937;
+        --text-primary: #f9fafb;
+        --text-secondary: #9ca3af;
+        --border-color-theme: #374151;
+
+        /* Цвета для сообщений чата в темной теме */
+        --chat-own-bg: #2563EB;
+        --chat-own-text: #ffffff;
+        --chat-other-bg: #1F2937;
+        --chat-other-text: #f9fafb;
+        --chat-forwarded-bg: #78350F;
+        --chat-quote-border: #2563EB;
+        --chat-forward-border: #D97706;
+
+        /* Цвета для поля ввода в темной теме */
+        --chat-input-bg: #1f2937;
+        --chat-input-text: #f9fafb;
+        --chat-input-border: #374151;
+    }
+
+    /* 🟣 ПОЛНОЭКРАННЫЙ ЧАТ С ПОЛНОЙ ФИОЛЕТОВОЙ ОКАНТОВКОЙ И ПОДДЕРЖКОЙ ТЕМ */
     .chat-fullscreen-container {
         position: fixed;
         top: 60px; /* Под навигацией */
         left: 0;
         right: 0;
         bottom: 0;
-        background: white; /* Белый фон */
+        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         display: flex;
         flex-direction: column;
         /* 🟣 ПОЛНАЯ ОКАНТОВКА ВКЛЮЧАЯ ВЕРХНЮЮ ПОД НАВИГАЦИЕЙ */
@@ -30,19 +75,21 @@
         border-left: var(--border-width) solid var(--border-color);
         border-right: var(--border-width) solid var(--border-color);
         border-bottom: var(--border-width) solid var(--border-color);
+        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
-    /* 🟣 КОМПАКТНАЯ ОБЛАСТЬ СООБЩЕНИЙ БЕЗ ЛИШНИХ ОТСТУПОВ */
+    /* 🟣 КОМПАКТНАЯ ОБЛАСТЬ СООБЩЕНИЙ БЕЗ ЛИШНИХ ОТСТУПОВ И С ПОДДЕРЖКОЙ ТЕМ */
     .chat-messages-area {
         flex: 1;
         overflow-y: auto;
         padding: 0.75rem; /* УМЕНЬШЕНО с 1.5rem до 0.75rem */
-        background: white;
+        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         border: none; /* Убираем все границы - граница будет только у .users-sidebar */
         box-shadow: none; /* Убираем тени */
         margin-top: var(--border-width); /* ОТСТУП ОТ ВЕРХНЕЙ ГРАНИЦЫ */
         margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
         margin-right: calc(240px + var(--border-width)); /* УМЕНЬШЕННАЯ ПАНЕЛЬ + ЕЕ ОТСТУП */
+        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
     /* Стили сообщений */
@@ -345,20 +392,21 @@
         transform: translateX(5px);
     }
 
-    /* 🟣 КОМПАКТНАЯ ПРАВАЯ ПАНЕЛЬ С ФИОЛЕТОВОЙ ГРАНИЦЕЙ */
+    /* 🟣 КОМПАКТНАЯ ПРАВАЯ ПАНЕЛЬ С ФИОЛЕТОВОЙ ГРАНИЦЕЙ И ПОДДЕРЖКОЙ ТЕМ */
     .users-sidebar {
         position: fixed;
         top: calc(60px + var(--border-width)); /* ПОСЛЕ НАВИГАЦИИ И ВЕРХНЕЙ ГРАНИЦЫ */
         right: var(--border-width); /* ОТСТУП ОТ ПРАВОГО КРАЯ НА ТОЛЩИНУ ГРАНИЦЫ */
         width: 240px; /* УМЕНЬШЕННАЯ ШИРИНА с 250px до 240px */
         height: calc(100vh - 60px - 2 * var(--border-width)); /* УЧИТЫВАЕМ ВЕРХНЮЮ И НИЖНЮЮ ГРАНИЦЫ */
-        background: white;
+        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         border: none; /* Убираем все границы */
         border-left: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА ДЛЯ РАЗДЕЛЕНИЯ */
         display: flex;
         flex-direction: column;
         box-shadow: none; /* Убираем тени */
         z-index: 20; /* Выше чем поле ввода */
+        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
     /* 🌟 РЕВОЛЮЦИОННЫЙ ДИЗАЙН ЗАГОЛОВКА "ONLINE" */
@@ -386,21 +434,8 @@
         background-clip: text;
     }
 
-    /* 🔥 КРУТОЙ BADGE ДЛЯ СЧЕТЧИКА */
-    .badge {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%); /* ЗЕЛЕНЫЙ ГРАДИЕНТ ВМЕСТО СИНЕГО */
-        color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 1.5rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-        box-shadow:
-            0 4px 15px rgba(40, 167, 69, 0.4),
-            0 2px 8px rgba(40, 167, 69, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
+    /* SSOT ИСПРАВЛЕНИЕ: УДАЛЕН ПЕРЕОПРЕДЕЛЯЮЩИЙ CSS ДЛЯ BADGE В ШАБЛОНЕ ЧАТА */
+    /* Переопределение нарушало SSOT принципы - теперь используются единые стили badge */
 
     /* КОМПАКТНЫЙ СПИСОК ПОЛЬЗОВАТЕЛЕЙ */
     .users-list {
@@ -413,14 +448,15 @@
         display: flex;
         align-items: center;
         padding: 0.4rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-        border-bottom: 1px solid #f8f9fa;
+        border-bottom: 1px solid var(--border-color-theme); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         margin-bottom: 0.2rem;
         border-radius: 0.5rem;
-        transition: background 0.2s ease;
+        transition: all 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
+        background: transparent;
     }
 
     .online-user:hover {
-        background: rgba(111, 66, 193, 0.05);
+        background: rgba(111, 66, 193, 0.1);
     }
 
     .status-dot {
@@ -432,16 +468,17 @@
         flex-shrink: 0; /* НЕ СЖИМАЕТСЯ */
     }
 
-    /* 🔤 ОБРАБОТКА ДЛИННЫХ ИМЕН ПОЛЬЗОВАТЕЛЕЙ */
+    /* 🔤 ОБРАБОТКА ДЛИННЫХ ИМЕН ПОЛЬЗОВАТЕЛЕЙ С ПОДДЕРЖКОЙ ТЕМ */
     .user-name {
         font-size: 0.9rem;
         font-weight: 500;
-        color: #333;
+        color: var(--text-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 180px; /* ОГРАНИЧИВАЕМ ШИРИНУ ДЛЯ ELLIPSIS */
         flex: 1;
+        transition: color 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
     /* Отступ для правой панели */
@@ -451,14 +488,15 @@
         margin-top: var(--border-width);
     }
 
-    /* ФИКСИРОВАННЫЙ КОНТЕЙНЕР ДЛЯ ЦИТАТЫ - НЕ ПРОКРУЧИВАЕТСЯ */
+    /* ФИКСИРОВАННЫЙ КОНТЕЙНЕР ДЛЯ ЦИТАТЫ - НЕ ПРОКРУЧИВАЕТСЯ С ПОДДЕРЖКОЙ ТЕМ */
     .reply-zone-container {
-        background: white;
+        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         border: none; /* УБИРАЕМ ГРАНИЦУ СВЕРХУ */
         margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
         margin-right: calc(240px + var(--border-width)); /* ОТСТУП ОТ ПРАВОЙ ПАНЕЛИ */
         padding: 0.5rem; /* НЕБОЛЬШИЕ ОТСТУПЫ */
         min-height: 0; /* МИНИМАЛЬНАЯ ВЫСОТА КОГДА СКРЫТА */
+        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
     /* ЦИТАТА ВНУТРИ ФИКСИРОВАННОГО КОНТЕЙНЕРА */
@@ -593,10 +631,10 @@
         pointer-events: none;
     }
 
-    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА С ФИОЛЕТОВОЙ ГРАНИЦЕЙ СВЕРХУ */
+    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА С ФИОЛЕТОВОЙ ГРАНИЦЕЙ СВЕРХУ И ПОДДЕРЖКОЙ ТЕМ */
     .chat-input-area {
         padding: 0.5rem; /* УМЕНЬШЕНО с 1.5rem до 0.5rem */
-        background: white;
+        background: var(--chat-input-bg); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         border-top: var(--border-width) solid var(--border-color); /* ВОЗВРАЩАЕМ ФИОЛЕТОВУЮ ГРАНИЦУ МЕЖДУ ЦИТАТОЙ И ПОЛЕМ */
         margin: 0; /* Убираем все отступы */
         margin-right: calc(240px + var(--border-width)); /* УМЕНЬШЕННАЯ ПАНЕЛЬ + ЕЕ ОТСТУП */
@@ -607,13 +645,14 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
     .input-group {
         border-radius: 1rem;
         overflow: hidden;
         border: 2px solid #007bff; /* УСИЛЕННАЯ СИНЯЯ КАЕМОЧКА */
-        background: white;
+        background: var(--chat-input-bg); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
         transition: all 0.3s ease;
         box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); /* УСИЛЕННАЯ СИНЯЯ ТЕНЬ */
     }
@@ -632,11 +671,22 @@
         height: 60px; /* УМЕНЬШЕННАЯ ВЫСОТА */
         overflow-y: auto; /* СКРОЛЛИНГ ВНУТРИ ПОЛЯ */
         line-height: 1.4; /* Удобная высота строки */
+        background: var(--chat-input-bg) !important; /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
+        color: var(--chat-input-text) !important; /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
+        border: 1px solid var(--chat-input-border) !important; /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
+        transition: all 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
     }
 
     .form-control:focus {
         box-shadow: none;
-        border: none;
+        border: 1px solid #007bff !important; /* АКТИВНАЯ ГРАНИЦА */
+        background: var(--chat-input-bg) !important; /* ФОН ОСТАЕТСЯ ИЗ ТЕМЫ */
+        color: var(--chat-input-text) !important; /* ТЕКСТ ОСТАЕТСЯ ИЗ ТЕМЫ */
+    }
+
+    .form-control::placeholder {
+        color: var(--text-secondary) !important; /* PLACEHOLDER ИЗ ТЕМЫ */
+        opacity: 0.8;
     }
 
     .btn-send {
@@ -1162,7 +1212,8 @@
         messageElement.dataset.authorRole = message.author_role || 'user';
         messageElement.dataset.isPinned = message.is_pinned || false;
 
-        const timestamp = new Date(message.created).toLocaleTimeString();
+        const timestamp = formatSmartTimestamp(message.created);
+        const fullTimestamp = getFullTimestamp(message.created);
         const isOwn = message.is_own;
         const isForwarded = message.content.includes('📤 Переслано') ||
                            message.content.includes('Переслано из «') ||
@@ -1222,8 +1273,8 @@
         }
 
         messageHTML += `
-                <!-- Время в правом нижнем углу -->
-                <div class="message-timestamp">${timestamp}</div>
+                <!-- Время в правом нижнем углу с tooltip -->
+                <div class="message-timestamp" title="${fullTimestamp}">${timestamp}</div>
 
                 <!-- Кнопки реакций в левом нижнем углу -->
                 <div class="message-reactions">
@@ -1280,7 +1331,8 @@
             messageElement.dataset.authorRole = message.author_role || 'user';
             messageElement.dataset.isPinned = message.is_pinned || false;
 
-            const timestamp = new Date(message.created).toLocaleTimeString();
+            const timestamp = formatSmartTimestamp(message.created);
+            const fullTimestamp = getFullTimestamp(message.created);
             const isOwn = message.is_own;
             const isForwarded = message.content.includes('📤 Переслано') ||
                                message.content.includes('Переслано из «') ||
@@ -1334,13 +1386,13 @@
             }
 
             messageHTML += `
-                    <!-- Время в правом нижнем углу -->
-                    <div class="message-timestamp">${timestamp}</div>
+                    <!-- Время в правом нижнем углу с tooltip -->
+                    <div class="message-timestamp" title="${fullTimestamp}">${timestamp}</div>
 
-                    <!-- Индикатор редактирования -->
+                    <!-- Индикатор редактирования с умным временем -->
                     ${message.is_edited ? `
-                        <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;">
-                            ✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}
+                        <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;" title="${getFullTimestamp(message.edited_at)}">
+                            ✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}
                         </div>
                     ` : ''}
 
@@ -2509,6 +2561,111 @@
             closeForwardModal();
         }
     });
+
+    // === СИСТЕМА ПЕРЕКЛЮЧЕНИЯ ТЕМ ДЛЯ ЧАТА ===
+
+    // Функция переключения темы (аналогично base.html)
+    function toggleTheme() {
+        const htmlElement = document.documentElement;
+        const themeIcon = document.querySelector('.theme-icon');
+        const currentTheme = htmlElement.getAttribute('data-theme');
+
+        if (currentTheme === 'dark') {
+            htmlElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-moon theme-icon';
+            }
+            console.log('🌞 Switched to light theme');
+        } else {
+            htmlElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-sun theme-icon';
+            }
+            console.log('🌙 Switched to dark theme');
+        }
+    }
+
+    // Загрузка сохраненной темы при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme');
+        const htmlElement = document.documentElement;
+        const themeIcon = document.querySelector('.theme-icon');
+
+        if (savedTheme === 'dark') {
+            htmlElement.setAttribute('data-theme', 'dark');
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-sun theme-icon';
+            }
+            console.log('🌙 Loaded dark theme from localStorage');
+        } else {
+            htmlElement.removeAttribute('data-theme');
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-moon theme-icon';
+            }
+            console.log('🌞 Loaded light theme from localStorage');
+        }
+    });
+
+    // === ФУНКЦИИ УПРАВЛЕНИЯ ЧАТОМ ===
+
+    // 🕐 УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ (из Gemini Redesign Prompt)
+    function formatSmartTimestamp(dateString) {
+        const messageDate = new Date(dateString);
+        const now = new Date();
+        const diffInMs = now - messageDate;
+        const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+        // Сегодня (< 24 часов) - показываем только время
+        if (diffInDays === 0) {
+            return messageDate.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Вчера
+        if (diffInDays === 1) {
+            return 'вчера';
+        }
+
+        // 2-6 дней назад
+        if (diffInDays <= 6) {
+            return `${diffInDays} дня назад`;
+        }
+
+        // Неделя назад
+        if (diffInDays === 7) {
+            return 'неделю назад';
+        }
+
+        // Более недели - показываем дату
+        if (diffInDays <= 30) {
+            const weeks = Math.floor(diffInDays / 7);
+            return weeks === 1 ? 'неделю назад' : `${weeks} недели назад`;
+        }
+
+        // Более месяца - показываем дату в формате ДД.ММ
+        return messageDate.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit'
+        });
+    }
+
+    // 📅 ПОЛНАЯ ДАТА/ВРЕМЯ ДЛЯ TOOLTIP (при наведении)
+    function getFullTimestamp(dateString) {
+        const messageDate = new Date(dateString);
+        return messageDate.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
 
 </script>
 
