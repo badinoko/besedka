@@ -126,15 +126,10 @@
         border: none; /* Убираем границу */
     }
 
-    /* Стили для автора сообщения */
+    /* Стили для автора сообщения - унификация согласно SSOT */
     .message-content.own .message-author,
     .message-content.other .message-author {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px; /* Согласно ТЗ */
-        padding: 6px 12px; /* Компактные отступы */
-        backdrop-filter: blur(5px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 0; /* Убираем подложку для унификации */
     }
 
     /* === ТИПОГРАФИКА СОГЛАСНО ТЗ === */
@@ -145,14 +140,9 @@
         margin-bottom: 8px; /* Компактнее согласно ТЗ */
         letter-spacing: 0.2px;
 
-        /* Компактный дизайн автора */
+        /* Убираем овальную подложку для унификации согласно SSOT */
         display: inline-block;
-        padding: 4px 10px; /* Компактнее согласно ТЗ */
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px; /* Согласно ТЗ */
-        backdrop-filter: blur(5px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 0; /* Убираем отступы подложки */
     }
 
     .message-text {
@@ -311,6 +301,15 @@
         margin-bottom: 4px !important;
         font-size: 11px !important;
         line-height: 1.2;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .reply-quote-author .role-icon {
+        font-size: 12px;
+        display: inline-block;
+        margin-right: 2px;
     }
 
     .reply-quote-text {
@@ -1283,7 +1282,8 @@
                     </div>
                     <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedData.originalMessageId || 'null'}', '${forwardedData.sourceName}')" title="Перейти к оригинальному сообщению">
                         <div class="reply-quote-author">
-                            ${forwardedData.originalAuthor}
+                            <span class="role-icon">${forwardedData.originalAuthorIcon}</span>
+                            ${forwardedData.originalAuthorName}
                         </div>
                         <div class="reply-quote-text">${forwardedData.messageText}</div>
                     </div>
@@ -1317,7 +1317,7 @@
 
                 <!-- Индикатор редактирования (только для истории) -->
                 ${isHistory && message.is_edited ? `
-                    <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;">
+                    <div class="edit-indicator" style="font-size: 0.75rem; color: var(--text-primary); font-style: italic; margin-top: 0.25rem; font-weight: 600;">
                         ✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}
                     </div>
                 ` : ''}
@@ -1708,8 +1708,19 @@
         }
 
         const sourceInfo = lines[0]; // "Переслано из «Беседка»"
-        const originalAuthor = lines[1]; // "👑 owner"
+        const originalAuthorLine = lines[1]; // "👑 owner"
         const messageText = lines.slice(2).join('\n'); // Остальной текст
+
+        // 👑 ИЗВЛЕКАЕМ ЗНАЧОК РОЛИ И ИМЯ АВТОРА ОТДЕЛЬНО
+        let originalAuthorIcon = '👤'; // По умолчанию
+        let originalAuthorName = originalAuthorLine;
+
+        // Пытаемся найти эмодзи в начале строки
+        const emojiMatch = originalAuthorLine.match(/^([\u{1F300}-\u{1F9FF}]|👑|🛡️|🏪|📦|👤)\s*(.+)$/u);
+        if (emojiMatch) {
+            originalAuthorIcon = emojiMatch[1];
+            originalAuthorName = emojiMatch[2];
+        }
 
         // Извлекаем название источника из строки
         const sourceMatch = sourceInfo.match(/Переслано из «(.+)»/);
@@ -1747,7 +1758,9 @@
 
         return {
             sourceName: sourceName,
-            originalAuthor: originalAuthor,
+            originalAuthor: originalAuthorLine, // Полная строка для совместимости
+            originalAuthorIcon: originalAuthorIcon, // Значок роли отдельно
+            originalAuthorName: originalAuthorName, // Имя без значка
             messageText: messageText,
             isForwarded: true,
             originalMessageId: originalMessageId, // Может быть null для старых сообщений
@@ -2214,30 +2227,16 @@
         forwardModal.dataset.messageText = messageData.text;
         forwardModal.dataset.messageAuthor = messageData.author;
 
-        // ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ СООБЩЕНИЯ В ОКНЕ ПЕРЕСЫЛКИ
-        const forwardMessagePreview = document.createElement('div');
-        forwardMessagePreview.id = 'forwardMessagePreview';
-        forwardMessagePreview.style.cssText = `
-            background: #f8f9fa;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border-left: 4px solid #28a745;
-            margin-bottom: 1rem;
-            max-height: 80px;
-            overflow-y: auto;
-        `;
-        forwardMessagePreview.innerHTML = `
-            <strong>${messageData.author}:</strong><br>
-            ${messageData.text}
-        `;
+        // ОБНОВЛЯЕМ СУЩЕСТВУЮЩИЙ ПРЕДПРОСМОТР В МОДАЛЬНОМ ОКНЕ
+        const forwardMessageAuthor = document.getElementById('forwardMessageAuthor');
+        const forwardMessageText = document.getElementById('forwardMessageText');
 
-        // Вставляем preview в модальное окно
-        const modalBody = forwardModal.querySelector('.custom-modal-body');
-        const existingPreview = modalBody.querySelector('#forwardMessagePreview');
-        if (existingPreview) {
-            existingPreview.remove();
+        if (forwardMessageAuthor && forwardMessageText) {
+            forwardMessageAuthor.textContent = messageData.author;
+            forwardMessageText.textContent = messageData.text;
+        } else {
+            console.error('❌ Forward message preview elements not found!');
         }
-        modalBody.insertBefore(forwardMessagePreview, modalBody.firstChild);
 
         // Показываем кастомное окно
         forwardModal.style.display = 'flex';
@@ -2289,7 +2288,7 @@
         if (!editIndicator && message.is_edited) {
             editIndicator = document.createElement('div');
             editIndicator.className = 'edit-indicator';
-            editIndicator.style.cssText = 'font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;';
+            editIndicator.style.cssText = 'font-size: 0.75rem; color: var(--text-primary); font-style: italic; margin-top: 0.25rem; font-weight: 600;';
 
             // Вставляем индикатор перед кнопками реакций
             const messageReactions = messageElement.querySelector('.message-reactions');
@@ -2513,12 +2512,12 @@
             console.error('❌ confirmDeleteBtn element not found!');
         }
 
-        // Обработчик кнопки подтверждения пересылки
+        // Обработчик кнопки подтверждения пересылки (с поддержкой множественного выбора)
         const confirmForwardBtn = document.getElementById('confirmForwardBtn');
         if (confirmForwardBtn) {
             confirmForwardBtn.addEventListener('click', function() {
                 const forwardModal = document.getElementById('forwardModal');
-                const targetChatRadio = document.querySelector('input[name="targetChat"]:checked');
+                const targetChatCheckboxes = document.querySelectorAll('input[name="targetChats"]:checked');
                 const customMessageField = document.getElementById('forwardCustomMessage');
 
                 if (!forwardModal) {
@@ -2527,9 +2526,9 @@
                     return;
                 }
 
-                if (!targetChatRadio) {
-                    showTemporaryFeedback('❌ Выберите чат для пересылки', 'error');
-                    console.error('❌ No target chat selected');
+                if (targetChatCheckboxes.length === 0) {
+                    showTemporaryFeedback('❌ Выберите хотя бы один чат для пересылки', 'error');
+                    console.error('❌ No target chats selected');
                     return;
                 }
 
@@ -2543,35 +2542,48 @@
                     return;
                 }
 
-                const targetRoom = targetChatRadio.value;
+                // Собираем все выбранные чаты
+                const targetRooms = Array.from(targetChatCheckboxes).map(checkbox => checkbox.value);
 
-                // 📝 ОТПРАВЛЯЕМ ЗАПРОС НА ПЕРЕСЫЛКУ С ДОПОЛНИТЕЛЬНЫМ СООБЩЕНИЕМ
-                const forwardData = {
-                    type: 'forward_message',
-                    message_id: messageId,
-                    target_room: targetRoom,
-                    custom_message: customMessage
-                };
+                // 📝 ОТПРАВЛЯЕМ ЗАПРОСЫ НА ПЕРЕСЫЛКУ ДЛЯ КАЖДОГО ВЫБРАННОГО ЧАТА
+                let forwardCount = 0;
+                const totalTargets = targetRooms.length;
 
-                console.log('📤 Sending forward request:', forwardData);
+                targetRooms.forEach((targetRoom, index) => {
+                    const forwardData = {
+                        type: 'forward_message',
+                        message_id: messageId,
+                        target_room: targetRoom,
+                        custom_message: customMessage
+                    };
 
-                if (chatSocket.readyState === WebSocket.OPEN) {
-                    chatSocket.send(JSON.stringify(forwardData));
-                    console.log('✅ Forward request sent successfully');
+                    console.log(`📤 Sending forward request ${index + 1}/${totalTargets}:`, forwardData);
 
-                    // 🎯 ДОБАВЛЯЕМ УВЕДОМЛЕНИЕ ОБ УСПЕШНОЙ ПЕРЕСЫЛКЕ В ИСТОЧНИКЕ
-                    if (customMessage) {
-                        showTemporaryFeedback('📤 Сообщение переслано с комментарием!', 'success');
+                    if (chatSocket.readyState === WebSocket.OPEN) {
+                        chatSocket.send(JSON.stringify(forwardData));
+                        forwardCount++;
+
+                        // Показываем уведомление после отправки всех сообщений
+                        if (forwardCount === totalTargets) {
+                            console.log(`✅ All ${totalTargets} forward requests sent successfully`);
+
+                            // 🎯 ДОБАВЛЯЕМ УВЕДОМЛЕНИЕ ОБ УСПЕШНОЙ ПЕРЕСЫЛКЕ В ИСТОЧНИКЕ
+                            const chatWord = totalTargets === 1 ? 'чат' : totalTargets < 5 ? 'чата' : 'чатов';
+                            if (customMessage) {
+                                showTemporaryFeedback(`📤 Сообщение переслано в ${totalTargets} ${chatWord} с комментарием!`, 'success');
+                            } else {
+                                showTemporaryFeedback(`📤 Сообщение переслано в ${totalTargets} ${chatWord}!`, 'success');
+                            }
+
+                            // Закрываем кастомное окно
+                            closeForwardModal();
+                        }
                     } else {
-                        showTemporaryFeedback('📤 Сообщение переслано!', 'success');
+                        showTemporaryFeedback('❌ Нет соединения с сервером', 'error');
+                        console.error('❌ WebSocket not connected:', chatSocket.readyState);
+                        return;
                     }
-
-                    // Закрываем кастомное окно
-                    closeForwardModal();
-                } else {
-                    showTemporaryFeedback('❌ Нет соединения с сервером', 'error');
-                    console.error('❌ WebSocket not connected:', chatSocket.readyState);
-                }
+                });
             });
         } else {
             console.error('❌ confirmForwardBtn element not found!');
@@ -2605,6 +2617,11 @@
             if (customMessageField) {
                 customMessageField.value = '';
             }
+            // Снимаем выбор со всех чекбоксов
+            const targetChatCheckboxes = document.querySelectorAll('input[name="targetChats"]');
+            targetChatCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
         }
     }
 

@@ -7,11 +7,11 @@
             <button type="button" class="custom-modal-close" onclick="closeForwardModal()">&times;</button>
         </div>
         <div class="custom-modal-body">
-            <p><strong>Выберите чат для пересылки:</strong></p>
+            <p><strong>Выберите чаты для пересылки (можно несколько):</strong></p>
             <div class="chat-selection">
                 {% if room_name != 'general' %}
                 <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="targetChat" id="targetGeneral" value="general">
+                    <input class="form-check-input" type="checkbox" name="targetChats" id="targetGeneral" value="general">
                     <label class="form-check-label" for="targetGeneral">
                         💬 Беседка (общий чат)
                     </label>
@@ -20,12 +20,19 @@
 
                 {% if room_name != 'vip' and request.user.role in 'owner,store_owner,store_admin' %}
                 <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="targetChat" id="targetVip" value="vip">
+                    <input class="form-check-input" type="checkbox" name="targetChats" id="targetVip" value="vip">
                     <label class="form-check-label" for="targetVip">
                         👑 Беседка - VIP (для владельцев и администрации магазина)
                     </label>
                 </div>
                 {% endif %}
+            </div>
+
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    Выберите один или несколько чатов. Сообщение будет отправлено в каждый выбранный чат.
+                </small>
             </div>
 
             <div class="mt-3">
