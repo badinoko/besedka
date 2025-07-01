@@ -277,9 +277,10 @@ class BaseChatConsumer(WebsocketConsumer):
             self.send_error("Ошибка при удалении сообщения")
 
     def handle_forward_message(self, data):
-        """Обработка пересылки сообщения"""
+        """Обработка пересылки сообщения с комментарием"""
         message_id = data.get('message_id')
         target_room = data.get('target_room', self.room_name)
+        comment = data.get('comment', '').strip()  # Комментарий пользователя
 
         if not message_id:
             self.send_error("ID сообщения не указан")
@@ -300,9 +301,17 @@ class BaseChatConsumer(WebsocketConsumer):
             # Определяем отображаемое название источника
             source_room_display = "Беседка" if self.room_name == "general" else "Беседка - VIP" if self.room_name == "vip" else "Модераторы"
 
-            # Создаем пересланное сообщение с правильной структурой
-            forwarded_content = f"""Переслано из «{source_room_display}»
-{original_author}
+            # НОВАЯ ЛОГИКА: комментарий - основной текст, цитата - под ним
+            if comment:
+                # Если есть комментарий - он становится основным текстом
+                forwarded_content = f"""{comment}
+
+📤 {original_author}:
+{clean_content}"""
+            else:
+                # Если комментария нет - используем старый формат
+                forwarded_content = f"""📤 Переслано из «{source_room_display}»
+{original_author}:
 {clean_content}"""
 
             # Создаем новое сообщение
@@ -324,7 +333,8 @@ class BaseChatConsumer(WebsocketConsumer):
                 }
             )
 
-            logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room}")
+            comment_info = f" with comment: '{comment[:30]}...'" if comment else " without comment"
+            logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room}{comment_info}")
 
         except Message.DoesNotExist:
             self.send_error("Сообщение не найдено или уже удалено")

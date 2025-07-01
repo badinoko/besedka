@@ -197,6 +197,13 @@
         opacity: 0.8;
     }
 
+    /* ИСПРАВЛЕНИЕ: Хорошо видимая временная метка на синих сообщениях */
+    .message-content.own .message-timestamp {
+        color: rgba(255, 255, 255, 0.85) !important; /* Белый с легкой прозрачностью */
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Легкая тень для читаемости */
+        font-weight: 600; /* Чуть жирнее для лучшей видимости */
+    }
+
     /* === КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ === */
     .message-reactions {
         position: absolute;
@@ -993,7 +1000,7 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="targetChat" id="targetGeneral" value="general">
                         <label class="form-check-label" for="targetGeneral">
-                            💬 Беседка (общий чат)
+                            💬 Беседка
                         </label>
                     </div>
                     {% endif %}
@@ -1002,10 +1009,16 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="targetChat" id="targetVip" value="vip">
                         <label class="form-check-label" for="targetVip">
-                            👑 Беседка - VIP (для владельцев и администрации магазина)
+                            👑 Беседка - VIP
                         </label>
                     </div>
                     {% endif %}
+                </div>
+
+                <!-- НОВОЕ: Поле комментария к пересылаемому сообщению -->
+                <div class="mt-3">
+                    <label for="forwardComment" class="form-label"><strong>💭 Добавить комментарий (необязательно):</strong></label>
+                    <textarea class="form-control" id="forwardComment" rows="3" placeholder="Введите свой комментарий к пересылаемому сообщению..." maxlength="500"></textarea>
                 </div>
             </div>
             <div class="custom-modal-footer">
@@ -1116,12 +1129,21 @@
         }
     }
 
-    // Функция прокрутки к последнему сообщению
+    // Функция прокрутки к последнему сообщению (ИСПРАВЛЕНА)
     function scrollToBottom() {
         const messagesArea = document.getElementById('chat-messages-area');
-        requestAnimationFrame(() => {
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-        });
+        if (messagesArea) {
+            console.log('📜 scrollToBottom: прокрутка к концу чата');
+            // Двойной requestAnimationFrame для надежности
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                    console.log('✅ Скролл выполнен:', messagesArea.scrollTop, '/', messagesArea.scrollHeight);
+                });
+            });
+        } else {
+            console.error('❌ scrollToBottom: элемент chat-messages-area не найден');
+        }
     }
 
     let historyLoaded = false;
@@ -2204,7 +2226,7 @@
         forwardModal.dataset.messageText = messageData.text;
         forwardModal.dataset.messageAuthor = messageData.author;
 
-        // ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ СООБЩЕНИЯ В ОКНЕ ПЕРЕСЫЛКИ
+        // ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ СООБЩЕНИЯ В ОКНЕ ПЕРЕСЫЛКИ (ИСПРАВЛЕНО ДЛЯ ПЕРЕСЛАННЫХ)
         const forwardMessagePreview = document.createElement('div');
         forwardMessagePreview.id = 'forwardMessagePreview';
         forwardMessagePreview.style.cssText = `
@@ -2213,13 +2235,35 @@
             border-radius: 0.5rem;
             border-left: 4px solid #28a745;
             margin-bottom: 1rem;
-            max-height: 80px;
+            max-height: 120px;
             overflow-y: auto;
         `;
-        forwardMessagePreview.innerHTML = `
-            <strong>${messageData.author}:</strong><br>
-            ${messageData.text}
-        `;
+
+        // 🔧 ИСПРАВЛЯЕМ ОТОБРАЖЕНИЕ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+        let previewText = messageData.text;
+
+        // Если это пересланное сообщение, извлекаем оригинальный текст
+        if (previewText.includes('Переслано из «')) {
+            const lines = previewText.split('\n');
+            if (lines.length >= 3) {
+                const sourceLine = lines[0]; // "Переслано из «Беседка»"
+                const authorLine = lines[1]; // "👑 owner"
+                const textLines = lines.slice(2); // Остальной текст
+
+                previewText = `
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">
+                        <i class="fas fa-share"></i> ${sourceLine} • ${authorLine}
+                    </div>
+                    <div style="padding: 0.5rem; background: rgba(229, 231, 235, 0.5); border-left: 3px solid #007bff; border-radius: 6px;">
+                        ${textLines.join('\n')}
+                    </div>
+                `;
+            }
+        } else {
+            previewText = `<strong>${messageData.author}:</strong><br>${previewText}`;
+        }
+
+        forwardMessagePreview.innerHTML = previewText;
 
         // Вставляем preview в модальное окно
         const modalBody = forwardModal.querySelector('.custom-modal-body');
@@ -2538,12 +2582,15 @@
                 }
 
                 const targetRoom = targetChatRadio.value;
+                const forwardComment = document.getElementById('forwardComment');
+                const comment = forwardComment ? forwardComment.value.trim() : '';
 
                 // Отправляем запрос на пересылку через WebSocket
                 const forwardData = {
                     type: 'forward_message',
                     message_id: messageId,
-                    target_room: targetRoom
+                    target_room: targetRoom,
+                    comment: comment  // Добавляем комментарий к пересылаемому сообщению
                 };
 
                 console.log('📤 Sending forward request:', forwardData);
@@ -2587,8 +2634,15 @@
 
     function closeForwardModal() {
         const forwardModal = document.getElementById('forwardModal');
+        const forwardComment = document.getElementById('forwardComment');
+
         if (forwardModal) {
             forwardModal.style.display = 'none';
+        }
+
+        // Очищаем поле комментария при закрытии
+        if (forwardComment) {
+            forwardComment.value = '';
         }
     }
 
