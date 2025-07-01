@@ -1323,6 +1323,8 @@
             return;
         }
 
+        console.log('🔄 ПЕРЕРАСЧЕТ ВСЕХ СООБЩЕНИЙ (принудительное обновление)');
+
         // Добавляем сообщения
         messages.forEach(message => {
             const messageElement = document.createElement('div');
@@ -1391,7 +1393,7 @@
 
                     <!-- Индикатор редактирования с умным временем -->
                     ${message.is_edited ? `
-                        <div class="edit-indicator" style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.8); font-style: italic; margin-top: 0.25rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);" title="${getFullTimestamp(message.edited_at)}">
+                        <div class="edit-indicator" style="font-size: 0.75rem; color: ${isOwn ? 'rgba(255, 255, 255, 0.8)' : 'rgba(108, 117, 125, 1)'}; font-style: italic; margin-top: 0.25rem; text-shadow: ${isOwn ? '0 1px 2px rgba(0, 0, 0, 0.3)' : 'none'};" title="${getFullTimestamp(message.edited_at)}">
                             ✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}
                         </div>
                     ` : ''}
@@ -1453,8 +1455,48 @@
         });
 
         historyLoaded = true;
-        // Прокручиваем к последнему сообщению с задержкой для истории
-        setTimeout(scrollToBottom, 200);
+        // Принудительно обновляем все временные метки после загрузки истории
+        setTimeout(() => {
+            updateAllTimestamps();
+            scrollToBottom();
+        }, 200);
+    }
+
+    // 🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ВСЕХ ВРЕМЕННЫХ МЕТОК
+    function updateAllTimestamps() {
+        console.log('🔄 updateAllTimestamps: принудительное обновление всех временных меток');
+
+        const allTimestamps = document.querySelectorAll('.message-timestamp');
+        allTimestamps.forEach(timestampElement => {
+            // Получаем полную дату из title атрибута
+            const fullTimestamp = timestampElement.getAttribute('title');
+            if (fullTimestamp) {
+                // Парсим дату из формата "01.07.2025, 19:27:47"
+                const [datePart, timePart] = fullTimestamp.split(', ');
+                const [day, month, year] = datePart.split('.');
+                const [hours, minutes, seconds] = timePart.split(':');
+
+                // Создаем объект Date
+                const messageDate = new Date(year, month - 1, day, hours, minutes, seconds);
+                const iso = messageDate.toISOString();
+
+                console.log('🔄 Обновляю timestamp:', {
+                    element: timestampElement,
+                    oldText: timestampElement.textContent,
+                    fullTimestamp,
+                    parsedDate: messageDate.toLocaleString('ru-RU'),
+                    iso
+                });
+
+                // Пересчитываем и обновляем текст
+                const newTimestamp = formatSmartTimestamp(iso);
+                timestampElement.textContent = newTimestamp;
+
+                console.log('✅ Timestamp обновлен:', timestampElement.textContent);
+            }
+        });
+
+        console.log('✅ updateAllTimestamps завершена');
     }
 
     function updateOnlineUsers(users, count) {
@@ -2250,8 +2292,11 @@
 
         if (editIndicator && message.is_edited) {
             editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}`;
-            editIndicator.style.color = 'rgba(255, 255, 255, 0.8)';
-            editIndicator.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.3)';
+            // Адаптивный цвет: темнее для светлых сообщений, светлее для темных
+            const messageElement = editIndicator.closest('.chat-message');
+            const isOwnMessage = messageElement && messageElement.querySelector('.message-content.own');
+            editIndicator.style.color = isOwnMessage ? 'rgba(255, 255, 255, 0.8)' : 'rgba(108, 117, 125, 1)';
+            editIndicator.style.textShadow = isOwnMessage ? '0 1px 2px rgba(0, 0, 0, 0.3)' : 'none';
             editIndicator.title = getFullTimestamp(message.edited_at);
         }
 
