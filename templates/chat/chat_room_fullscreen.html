@@ -1001,20 +1001,22 @@
             <div class="custom-modal-body">
                 <p><strong>Выберите чаты для пересылки (можно несколько):</strong></p>
                 <div class="chat-selection">
-                    {% if room_name != 'general' %}
+                    <!-- ВСЕГДА ПОКАЗЫВАЕМ ОБЩИЙ ЧАТ -->
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" name="targetChats" id="targetGeneral" value="general">
                         <label class="form-check-label" for="targetGeneral">
                             💬 Беседка (общий чат)
+                            {% if room_name == 'general' %}<small class="text-muted"> (текущий чат)</small>{% endif %}
                         </label>
                     </div>
-                    {% endif %}
 
-                    {% if room_name != 'vip' and request.user.role in 'owner,store_owner,store_admin' %}
+                    <!-- VIP ЧАТ ДЛЯ ВЛАДЕЛЬЦЕВ И АДМИНИСТРАЦИИ -->
+                    {% if request.user.role in 'owner,store_owner,store_admin' %}
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" name="targetChats" id="targetVip" value="vip">
                         <label class="form-check-label" for="targetVip">
                             👑 Беседка - VIP (для владельцев и администрации магазина)
+                            {% if room_name == 'vip' %}<small class="text-muted"> (текущий чат)</small>{% endif %}
                         </label>
                     </div>
                     {% endif %}
