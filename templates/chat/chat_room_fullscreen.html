@@ -126,15 +126,15 @@
         border: none; /* Убираем границу */
     }
 
-    /* Стили для автора сообщения */
+    /* Стили для автора сообщения - УБРАНА ОВАЛЬНАЯ ПОДЛОЖКА */
     .message-content.own .message-author,
     .message-content.other .message-author {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px; /* Согласно ТЗ */
-        padding: 6px 12px; /* Компактные отступы */
-        backdrop-filter: blur(5px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: none !important; /* УБИРАЕМ ПОДЛОЖКУ */
+        border: none !important; /* УБИРАЕМ ГРАНИЦУ */
+        border-radius: 0 !important; /* УБИРАЕМ СКРУГЛЕНИЕ */
+        padding: 0 !important; /* УБИРАЕМ ОТСТУПЫ */
+        backdrop-filter: none !important; /* УБИРАЕМ BLUR */
+        box-shadow: none !important; /* УБИРАЕМ ТЕНИ */
     }
 
     /* === ТИПОГРАФИКА СОГЛАСНО ТЗ === */
@@ -145,14 +145,9 @@
         margin-bottom: 8px; /* Компактнее согласно ТЗ */
         letter-spacing: 0.2px;
 
-        /* Компактный дизайн автора */
+        /* УБРАНА ОВАЛЬНАЯ ПОДЛОЖКА - ТОЛЬКО ТЕКСТ */
         display: inline-block;
-        padding: 4px 10px; /* Компактнее согласно ТЗ */
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px; /* Согласно ТЗ */
-        backdrop-filter: blur(5px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 0; /* УБРАНА ПОДЛОЖКА */
     }
 
     .message-text {
@@ -286,7 +281,7 @@
 
     /* === НОВЫЕ СТИЛИ ЦИТАТ СОГЛАСНО ТЗ === */
     .reply-quote {
-        background: rgba(229, 231, 235, 0.5) !important; /* Нейтральный фон согласно ТЗ */
+        background: rgba(0, 123, 255, 0.03) !important; /* ДЕЛИКАТНАЯ ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
         border: none !important;
         border-left: 4px solid var(--chat-quote-border) !important; /* Левая полоса согласно ТЗ */
         border-radius: 12px !important; /* Согласно ТЗ */
@@ -301,7 +296,7 @@
     }
 
     .reply-quote:hover {
-        background: rgba(229, 231, 235, 0.7) !important;
+        background: rgba(0, 123, 255, 0.08) !important; /* УСИЛЕННАЯ ГОЛУБАЯ ПОДЛОЖКА ПРИ HOVER */
         border-left-color: var(--chat-quote-border) !important;
     }
 
@@ -323,18 +318,21 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        background: none !important; /* УБИРАЕМ ЧЕРНУЮ ПОДЛОЖКУ */
+        padding: 0 !important;
+        border-radius: 0 !important;
     }
 
     /* 🌙 === ИСПРАВЛЕНИЯ ДЛЯ ТЕМНОЙ ТЕМЫ === */
 
     /* Исправляем цитаты в темной теме */
     [data-theme="dark"] .reply-quote {
-        background: rgba(45, 45, 45, 0.8) !important; /* Темный фон вместо светлого */
+        background: rgba(102, 163, 255, 0.05) !important; /* ДЕЛИКАТНАЯ СИНЯЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ В ТЕМНОЙ ТЕМЕ */
         border-left-color: #66a3ff !important; /* Яркая синяя граница для контраста */
     }
 
     [data-theme="dark"] .reply-quote:hover {
-        background: rgba(45, 45, 45, 0.9) !important; /* Еще темнее при hover */
+        background: rgba(102, 163, 255, 0.12) !important; /* УСИЛЕННАЯ СИНЯЯ ПОДЛОЖКА ПРИ HOVER В ТЕМНОЙ ТЕМЕ */
         border-left-color: #4dabf7 !important; /* Еще ярче синий при hover */
     }
 
@@ -356,13 +354,13 @@
     /* Исправляем цитаты в пересланных сообщениях в темной теме */
     [data-theme="dark"] .message-content.forwarded-own .reply-quote,
     [data-theme="dark"] .message-content.forwarded-other .reply-quote {
-        background: rgba(45, 45, 45, 0.9) !important; /* Темный фон */
+        background: rgba(217, 119, 6, 0.08) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА В ТЕМНОЙ ТЕМЕ */
         border-left-color: #D97706 !important; /* Оранжевая граница как у пересланных */
     }
 
     [data-theme="dark"] .message-content.forwarded-own .reply-quote:hover,
     [data-theme="dark"] .message-content.forwarded-other .reply-quote:hover {
-        background: rgba(45, 45, 45, 1) !important; /* Полностью непрозрачный при hover */
+        background: rgba(217, 119, 6, 0.15) !important; /* УСИЛЕННАЯ ОРАНЖЕВАЯ ПОДЛОЖКА ПРИ HOVER */
         border-left-color: #ffa94d !important; /* Ярче оранжевый при hover */
     }
 
@@ -372,13 +370,28 @@
         color: #D97706 !important; /* Оранжевый цвет как граница */
     }
 
-    /* Исправляем индикатор редактирования в темной теме */
-    [data-theme="dark"] .edit-indicator {
-        color: #e5e5e5 !important; /* Светлый текст */
-        background: rgba(45, 45, 45, 0.9) !important; /* Темная подложка */
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important; /* Темная тень для контраста */
-        border: 1px solid #495057 !important; /* Граница для лучшего выделения */
+    /* === БАЗОВЫЕ СТИЛИ ДЛЯ ИНДИКАТОРА РЕДАКТИРОВАНИЯ === */
+    .edit-indicator {
+        color: #333333 !important; /* Черный цвет в обеих темах */
+        font-weight: 600;
+        font-size: 0.75rem;
+        font-style: italic;
+        margin-top: 0.25rem;
+        /* Убираем любые подложки */
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
     }
+
+            /* Темная тема - белый цвет для хорошей видимости на темном фоне */
+        [data-theme="dark"] .edit-indicator {
+            color: #ffffff !important;
+            font-weight: 600;
+            /* Убираем любые подложки */
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
 
     /* === КНОПКА ОТВЕТИТЬ === */
     .message-actions {
@@ -1034,16 +1047,19 @@
         color: var(--text-primary) !important;
     }
 
-    /* Цитаты в пересланных сообщениях */
+    /* Цитаты в пересланных сообщениях - ДЕЛИКАТНАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
     .message-content.own.forwarded-own .reply-quote {
-        background: rgba(59, 130, 246, 0.1) !important; /* Синяя подложка для цитат */
-        border-color: var(--chat-quote-border) !important;
+        background: rgba(217, 119, 6, 0.03) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА */
+        border-left-color: #D97706 !important; /* ОРАНЖЕВАЯ ГРАНИЦА КАК У ПЕРЕСЛАННЫХ */
     }
 
     .message-content.other.forwarded-other .reply-quote {
-        background: rgba(59, 130, 246, 0.1) !important; /* Синяя подложка для цитат */
-        border-color: var(--chat-quote-border) !important;
+        background: rgba(217, 119, 6, 0.03) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА */
+        border-left-color: #D97706 !important; /* ОРАНЖЕВАЯ ГРАНИЦА КАК У ПЕРЕСЛАННЫХ */
     }
+
+
+
 </style>
 {% endblock %}
 
@@ -1240,7 +1256,7 @@
 
     // 🖱️ ДАННЫЕ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ДЛЯ КОНТЕКСТНОГО МЕНЮ
     const currentUser = {
-        id: {{ request.user.id|default_if_none:"null" }},
+        id: {{ request.user.id|default:"null" }},
         role: "{{ request.user.role|default:'user' }}",
         username: "{{ request.user.username|default:'guest' }}"
     };
@@ -1335,6 +1351,71 @@
 
     // 🚫 ФЛАГ БЛОКИРОВКИ АВТОСКРОЛЛИНГА ВО ВРЕМЯ НАВИГАЦИИ
     let isNavigatingToMessage = false;
+
+    // === ФУНКЦИЯ УМНЫХ ДАТИРОВОК ===
+    function formatSmartTimestamp(dateString) {
+        if (!dateString) return '';
+
+        const editDate = new Date(dateString);
+        const now = new Date();
+        const diffInMs = now - editDate;
+        const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+        // Менее 1 минуты назад
+        if (diffInMinutes < 1) {
+            return 'только что';
+        }
+
+        // Менее часа назад
+        if (diffInMinutes < 60) {
+            const minuteWord = diffInMinutes === 1 ? 'минуту' :
+                              (diffInMinutes >= 2 && diffInMinutes <= 4) ? 'минуты' : 'минут';
+            return `${diffInMinutes} ${minuteWord} назад`;
+        }
+
+        // Менее 24 часов назад
+        if (diffInHours < 24) {
+            const hourWord = diffInHours === 1 ? 'час' :
+                           (diffInHours >= 2 && diffInHours <= 4) ? 'часа' : 'часов';
+            return `${diffInHours} ${hourWord} назад`;
+        }
+
+        // 1 день назад
+        if (diffInDays === 1) {
+            return `вчера в ${editDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        // 2 дня назад
+        if (diffInDays === 2) {
+            return `позавчера в ${editDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        // До недели назад
+        if (diffInDays <= 7) {
+            const dayWord = diffInDays === 1 ? 'день' :
+                           (diffInDays >= 2 && diffInDays <= 4) ? 'дня' : 'дней';
+            return `${diffInDays} ${dayWord} назад`;
+        }
+
+        // До месяца назад
+        if (diffInDays <= 30) {
+            const weekCount = Math.floor(diffInDays / 7);
+            const weekWord = weekCount === 1 ? 'неделю' :
+                           (weekCount >= 2 && weekCount <= 4) ? 'недели' : 'недель';
+            return `${weekCount} ${weekWord} назад`;
+        }
+
+        // Больше месяца - показываем дату
+        return editDate.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
 
     // Функция прокрутки к последнему сообщению
     function scrollToBottom() {
@@ -1437,7 +1518,6 @@
         const isOwn = message.is_own;
 
         // 🎯 УНИФИЦИРОВАННОЕ ОПРЕДЕЛЕНИЕ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
-        // Проверяем и по флагу is_forwarded, и по содержимому для старых сообщений
         const isForwarded = message.is_forwarded ||
                            message.content.includes('📤 Переслано') ||
                            message.content.includes('Переслано из «') ||
@@ -1447,26 +1527,37 @@
         let forwardedClass = '';
         if (isForwarded) {
             forwardedClass = isOwn ? ' forwarded-own' : ' forwarded-other';
-            if (!isHistory) {
-                console.log(`🎯 SSOT: Пересланное сообщение ID ${message.id}:`, {
-                    isOwn: isOwn,
-                    forwardedClass: forwardedClass.trim(),
-                    author: message.author_name,
-                    hasOriginalId: !!message.original_message_id
-                });
-            }
         }
 
+        // 🎯 ЕДИНАЯ СТРУКТУРА ДЛЯ ВСЕХ ТИПОВ СООБЩЕНИЙ (SSOT ПРИНЦИП)
         let messageHTML = `
             <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
         `;
 
-        // 🏆 ЕДИНАЯ ОБРАБОТКА ВСЕХ СООБЩЕНИЙ (SSOT ПРИНЦИП)
+        // 🏆 ШАГ 1: ВСЕГДА ПОКАЗЫВАЕМ АВТОРА ТЕКУЩЕГО СООБЩЕНИЯ (ЕДИНООБРАЗИЕ)
+        messageHTML += `
+            <div class="message-author">
+                ${message.author_role_icon || '👤'} ${message.author_name}
+            </div>
+        `;
+
+        // 🏆 ШАГ 2: ПОКАЗЫВАЕМ ЦИТАТУ ЕСЛИ ЭТО ОТВЕТ (ПОСЛЕ АВТОРА)
+        if (message.reply_to) {
+            messageHTML += `
+                <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                    <div class="reply-quote-author">
+                        <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                        ${message.reply_to.author_name}
+                    </div>
+                    <div class="reply-quote-text">${limitTextToLines(message.reply_to.content_snippet, 3)}</div>
+                </div>
+            `;
+        }
+
+        // 🏆 ШАГ 3: ПОКАЗЫВАЕМ ЦИТАТУ ПЕРЕСЛАННОГО СООБЩЕНИЯ (ЕСЛИ ЕСТЬ)
         if (isForwarded) {
-            // ВСЕ ПЕРЕСЛАННЫЕ СООБЩЕНИЯ ОБРАБАТЫВАЮТСЯ ОДИНАКОВО
             const forwardedData = parseForwardedMessage(message.content, message);
-            if (forwardedData) {
-                // ПАРСИНГ УСПЕШЕН - показываем структурированную версию
+            if (forwardedData && forwardedData.messageText && forwardedData.originalAuthor) {
                 messageHTML += `
                     <div class="forwarded-header">
                         <i class="fas fa-share"></i>
@@ -1474,49 +1565,31 @@
                     </div>
                     <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedData.originalMessageId || 'null'}', '${forwardedData.sourceName}')" title="Перейти к оригинальному сообщению">
                         <div class="reply-quote-author">
-                            ${forwardedData.originalAuthor}
+                            ${parseAuthorWithIcon(forwardedData.originalAuthor)}
                         </div>
-                        <div class="reply-quote-text">${forwardedData.messageText}</div>
+                        <div class="reply-quote-text">${limitTextToLines(forwardedData.messageText, 3)}</div>
                     </div>
                 `;
+            }
+        }
+
+        // 🏆 ШАГ 4: ОСНОВНОЙ ТЕКСТ СООБЩЕНИЯ
+        let mainText = message.content;
+
+        // Для пересланных сообщений извлекаем только пользовательский комментарий (если есть)
+        if (isForwarded) {
+            const forwardedData = parseForwardedMessage(message.content, message);
+            if (forwardedData && forwardedData.userComment) {
+                mainText = forwardedData.userComment;
             } else {
-                // ПАРСИНГ НЕ УДАЛСЯ - показываем как есть, но с правильными классами пересланного
-                messageHTML += `
-                    <div class="forwarded-header">
-                        <i class="fas fa-share"></i>
-                        Пересланное сообщение
-                    </div>
-                    <div class="message-author">
-                        ${message.author_role_icon || '👤'} ${message.author_name}
-                    </div>
-                    <div class="message-text">${message.content}</div>
-                `;
+                // Если нет пользовательского комментария, скрываем основной текст
+                mainText = '';
             }
-        } else {
-            // 🎯 ПРАВИЛЬНЫЙ ПОРЯДОК: СНАЧАЛА АВТОР, ПОТОМ ЦИТАТА
-            // Имя автора текущего сообщения
-            messageHTML += `
-                <div class="message-author">
-                    ${message.author_role_icon || '👤'} ${message.author_name}
-                </div>
-            `;
+        }
 
-            // Добавляем блок цитаты если это ответ (ПОСЛЕ имени автора)
-            if (message.reply_to) {
-                messageHTML += `
-                    <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                        <div class="reply-quote-author">
-                            <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
-                            ${message.reply_to.author_name}
-                        </div>
-                        <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
-                    </div>
-                `;
-            }
-
-            // Текст сообщения
+        if (mainText.trim()) {
             messageHTML += `
-                <div class="message-text">${message.content}</div>
+                <div class="message-text">${mainText}</div>
             `;
         }
 
@@ -1526,8 +1599,8 @@
 
                 <!-- Индикатор редактирования (только для истории) -->
                 ${isHistory && message.is_edited ? `
-                    <div class="edit-indicator" style="font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;">
-                        ✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}
+                    <div class="edit-indicator">
+                        ✏️ ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}
                     </div>
                 ` : ''}
 
@@ -1585,6 +1658,38 @@
         }
 
         return messageElement;
+    }
+
+    // 🎯 НОВАЯ ФУНКЦИЯ ДЛЯ ОГРАНИЧЕНИЯ ТЕКСТА ДО N СТРОК
+    function limitTextToLines(text, maxLines) {
+        if (!text) return '';
+
+        const words = text.split(' ');
+        const avgWordsPerLine = 8; // Примерно 8 слов на строку
+        const maxWords = maxLines * avgWordsPerLine;
+
+        if (words.length <= maxWords) {
+            return text;
+        }
+
+        return words.slice(0, maxWords).join(' ') + '...';
+    }
+
+    // 🎯 ФУНКЦИЯ ДЛЯ ПАРСИНГА АВТОРА С ЗНАЧКОМ РОЛИ В ПЕРЕСЛАННЫХ СООБЩЕНИЯХ
+    function parseAuthorWithIcon(authorString) {
+        if (!authorString) return '';
+
+        // Регулярное выражение для поиска эмодзи-значков ролей в начале строки
+        const iconMatch = authorString.match(/^([\u{1F300}-\u{1F9FF}]|👑|🛡️|🏪|📦|👤)\s*(.+)$/u);
+
+        if (iconMatch) {
+            const icon = iconMatch[1];
+            const name = iconMatch[2].trim();
+            return `<span class="role-icon">${icon}</span>${name}`;
+        }
+
+        // Если значок не найден, возвращаем как есть
+        return authorString;
     }
 
     function displayMessage(message) {
@@ -1773,6 +1878,19 @@
                 isNavigatingToMessage = false;
                 console.log('✅ Auto-scroll re-enabled after message navigation');
             }, 2000);
+        } else {
+            // 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если сообщение не найдено (удалено) - переносим в конец чата
+            console.log('❌ Message not found (deleted?):', messageId, '- scrolling to bottom');
+            showTemporaryFeedback('📍 Сообщение удалено. Переносимся в конец диалога...', 'warning');
+
+            // Блокируем автоскроллинг и переносим в конец
+            isNavigatingToMessage = true;
+
+            setTimeout(() => {
+                scrollToBottom();
+                isNavigatingToMessage = false;
+                console.log('✅ Moved to chat bottom, auto-scroll re-enabled');
+            }, 500);
         }
     }
 
@@ -1906,7 +2024,12 @@
                     showTemporaryFeedback('📍 Перешли к сообщению', 'success');
                 } else {
                     console.log('❌ Message not found for anchor:', messageId);
-                    showTemporaryFeedback('📍 Сообщение не найдено на этой странице', 'warning');
+                    showTemporaryFeedback('📍 Сообщение удалено. Переносимся в конец диалога...', 'warning');
+
+                    // 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если сообщение не найдено - переносим в конец чата
+                    setTimeout(() => {
+                        scrollToBottom();
+                    }, 300);
                 }
 
                 // Очищаем якорь и разблокируем автоскроллинг
@@ -1938,7 +2061,11 @@
         let sourceInfo = '';
         let originalAuthor = '';
         let messageText = '';
+        let userComment = ''; // 🎯 НОВОЕ ПОЛЕ - комментарий пользователя
         let sourceLineIndex = -1;
+
+        // Определяем есть ли пользовательский комментарий перед пересланным контентом
+        let commentLines = [];
 
         // Ищем строку с "Переслано из"
         for (let i = 0; i < lines.length; i++) {
@@ -1946,6 +2073,8 @@
             if (line.includes('Переслано из «') || line.includes('📤 Переслано') || line.includes('**Переслано')) {
                 sourceInfo = line;
                 sourceLineIndex = i;
+                // Все что ДО этой строки - пользовательский комментарий
+                commentLines = lines.slice(0, i);
                 break;
             }
         }
@@ -1953,6 +2082,11 @@
         if (sourceLineIndex === -1) {
             console.log('⚠️ Не найдена строка "Переслано из" в сообщении:', content);
             return null;
+        }
+
+        // Собираем пользовательский комментарий
+        if (commentLines.length > 0) {
+            userComment = commentLines.join('\n').trim();
         }
 
         // Автор - следующая строка после "Переслано из"
@@ -2003,6 +2137,7 @@
             sourceInfo: sourceInfo,
             originalAuthor: originalAuthor,
             messageText: messageText.substring(0, 50) + '...',
+            userComment: userComment.substring(0, 30) + '...',
             sourceName: sourceName
         });
 
@@ -2010,6 +2145,7 @@
             sourceName: sourceName,
             originalAuthor: originalAuthor, // 🎯 ИСПОЛЬЗУЕМ КАК ЕСТЬ - БЕЗ ДОПОЛНИТЕЛЬНОГО ПАРСИНГА ИКОНОК
             messageText: messageText,
+            userComment: userComment, // 🎯 НОВОЕ ПОЛЕ - комментарий пользователя
             isForwarded: true,
             originalMessageId: originalMessageId, // Может быть null для старых сообщений
             forwarderName: message.author_name, // Кто переслал
@@ -2538,7 +2674,7 @@
         if (!editIndicator && message.is_edited) {
             editIndicator = document.createElement('div');
             editIndicator.className = 'edit-indicator';
-            editIndicator.style.cssText = 'font-size: 0.75rem; color: #6c757d; font-style: italic; margin-top: 0.25rem;';
+            // УБИРАЕМ INLINE СТИЛИ - ИСПОЛЬЗУЕМ CSS КЛАССЫ
 
             // Вставляем индикатор перед кнопками реакций
             const messageReactions = messageElement.querySelector('.message-reactions');
@@ -2550,7 +2686,7 @@
         }
 
         if (editIndicator && message.is_edited) {
-            editIndicator.innerHTML = `✏️ Отредактировано ${message.edited_by} в ${new Date(message.edited_at).toLocaleString()}`;
+            editIndicator.innerHTML = `✏️ ${message.edited_by} ${formatSmartTimestamp(message.edited_at)}`;
         }
 
         // Показываем уведомление об успехе

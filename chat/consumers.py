@@ -314,9 +314,15 @@ class BaseChatConsumer(WebsocketConsumer):
             # Получаем комнату назначения
             target_room_obj, _ = Room.objects.get_or_create(name=target_room)
 
-            # Извлекаем чистый контент и автора
-            clean_content = self.extract_clean_content(original_message.content)
-            original_author = self.extract_original_author(original_message.content, original_message.author.display_name)
+            # 🔧 ИСПРАВЛЕННАЯ ЛОГИКА: Используем контент напрямую без неправильного парсинга
+            if original_message.is_forwarded:
+                # Если пересылаем уже пересланное сообщение - используем методы извлечения
+                clean_content = self.extract_clean_content(original_message.content)
+                original_author_with_icon = self.extract_original_author(original_message.content, original_message.author.display_name)
+            else:
+                # 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Для обычных сообщений используем их содержимое КАК ЕСТЬ
+                clean_content = original_message.content
+                original_author_with_icon = f"{original_message.author.get_role_icon} {original_message.author.display_name}"
 
             # Определяем отображаемое название источника
             if self.room_name == "general":
@@ -331,16 +337,16 @@ class BaseChatConsumer(WebsocketConsumer):
 
             # 💬 СОЗДАЕМ ФИНАЛЬНЫЙ КОНТЕНТ В ЗАВИСИМОСТИ ОТ НАЛИЧИЯ ПОЛЬЗОВАТЕЛЬСКОГО СООБЩЕНИЯ
             if custom_message:
-                # Если есть пользовательское сообщение, пересланный контент становится цитатой
+                # 🎯 НОВАЯ ЛОГИКА: Пользовательское сообщение + структурированная цитата пересланного
                 forwarded_content = f"""{custom_message}
 
-Переслано из «{source_room_display}»
-{original_author}
+📤 Переслано из «{source_room_display}» • {original_author_with_icon}
+{original_author_with_icon}
 {clean_content}"""
             else:
                 # Если нет пользовательского сообщения, используем стандартный формат
-                forwarded_content = f"""Переслано из «{source_room_display}»
-{original_author}
+                forwarded_content = f"""📤 Переслано из «{source_room_display}» • {original_author_with_icon}
+{original_author_with_icon}
 {clean_content}"""
 
             # Создаем новое сообщение

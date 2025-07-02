@@ -3152,21 +3152,43 @@
 /* 🔧 ИСПРАВЛЕНИЕ ВИДИМОСТИ ТЕКСТА РЕДАКТИРОВАНИЯ НА СИНЕМ ФОНЕ */
 .edit-indicator {
     font-size: 0.75rem !important;
-    color: #2c3e50 !important; /* ТЕМНЫЙ ЦВЕТ ВМЕСТО #6c757d ДЛЯ ЛУЧШЕЙ ВИДИМОСТИ */
+    color: var(--text-primary) !important; /* ИСПОЛЬЗУЕМ CSS ПЕРЕМЕННУЮ ДЛЯ АДАПТИВНОСТИ */
     font-style: italic !important;
     margin-top: 0.25rem !important;
-    font-weight: 600 !important; /* ЖИРНЫЙ ШРИФТ ДЛЯ ЛУЧШЕЙ ЧИТАЕМОСТИ */
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important; /* БЕЛАЯ ТЕНЬ ДЛЯ КОНТРАСТНОСТИ */
-    background: rgba(255, 255, 255, 0.7) !important; /* БЕЛАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
-    padding: 0.25rem 0.5rem !important;
-    border-radius: 4px !important;
-    display: inline-block !important;
+    font-weight: 500 !important; /* УМЕНЬШЕН ВЕС ШРИФТА */
+    opacity: 0.8 !important; /* ЛЕГКАЯ ПРОЗРАЧНОСТЬ ДЛЯ НЕНАВЯЗЧИВОСТИ */
+    /* УБРАНЫ ВСЕ ПОДЛОЖКИ - ТЕКСТ ДОЛЖЕН БЫТЬ ВИДЕН БЕЗ НИХ */
 }
 
 /* Темная тема для индикатора редактирования */
 [data-theme="dark"] .edit-indicator {
-    color: #ffffff !important; /* БЕЛЫЙ ТЕКСТ НА ТЕМНОМ ФОНЕ */
-    background: rgba(0, 0, 0, 0.7) !important; /* ТЕМНАЯ ПОДЛОЖКА */
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important; /* ТЕМНАЯ ТЕНЬ */
+    color: var(--text-secondary) !important; /* АДАПТИВНЫЙ ЦВЕТ ДЛЯ ТЕМНОЙ ТЕМЫ */
+    opacity: 0.9 !important; /* ЧУТЬ БОЛЬШЕ КОНТРАСТНОСТИ В ТЕМНОЙ ТЕМЕ */
+}
+
+/* 🎯 УБИРАЕМ ЧЕРНЫЕ ПОДЛОЖКИ У ЦИТАТ - ДЕЛАЕМ ИХ ЛЕГКИМИ И ЧИТАЕМЫМИ */
+.reply-quote {
+    background: rgba(255, 255, 255, 0.1) !important; /* ОЧЕНЬ ЛЕГКАЯ ПОДЛОЖКА */
+    border-left: 3px solid var(--chat-primary) !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px !important;
+    margin: 0.5rem 0 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reply-quote:hover {
+    background: rgba(255, 255, 255, 0.2) !important; /* СЛЕГКА УСИЛИВАЕМ ПРИ HOVER */
+    border-left-color: #2196f3 !important;
+    transform: translateX(2px);
+}
+
+/* Темная тема для цитат */
+[data-theme="dark"] .reply-quote {
+    background: rgba(0, 0, 0, 0.1) !important; /* ЛЕГКАЯ ТЕМНАЯ ПОДЛОЖКА */
+}
+
+[data-theme="dark"] .reply-quote:hover {
+    background: rgba(0, 0, 0, 0.2) !important;
 }
 
