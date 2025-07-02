@@ -1319,12 +1319,46 @@
             `;
         }
 
-        // 🏆 ЕДИНЫЙ SSOT ФОРМАТ ДЛЯ ВСЕХ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+        // 🏆 ЕДИНЫЙ SSOT ФОРМАТ С ПРАВИЛЬНЫМ ПАРСИНГОМ
         if (message.is_forwarded) {
-            // ПРОСТЫЕ ДАННЫЕ ИЗ MESSAGE ОБЪЕКТА - БЕЗ ПАРСИНГА
-            const sourceName = 'Неизвестный чат';
-            const forwarderIcon = message.author_role_icon || '👤';
-            const forwarderName = message.author_name || 'Неизвестный автор';
+            // ПРОСТОЙ ПАРСИНГ ТОЛЬКО ДЛЯ ИЗВЛЕЧЕНИЯ НУЖНЫХ ДАННЫХ
+            const lines = message.content.split('\n');
+
+            // Определяем источник чата и автора пересылки
+            let sourceName = 'Неизвестный чат';
+            let forwarderName = message.author_name || 'Неизвестный автор';
+            let forwarderIcon = message.author_role_icon || '👤';
+
+            // Извлекаем источник из первой строки
+            if (lines[0].includes('Переслано из «')) {
+                const sourceMatch = lines[0].match(/Переслано из «(.+?)»/);
+                if (sourceMatch) {
+                    sourceName = sourceMatch[1];
+                }
+
+                // Если есть автор пересылки в первой строке (новый формат)
+                const authorMatch = lines[0].match(/• ([👑🛡️🏪📦👤]?)\s*(.+)$/);
+                if (authorMatch) {
+                    forwarderIcon = authorMatch[1] || '👤';
+                    forwarderName = authorMatch[2] || forwarderName;
+                }
+            }
+
+            // Определяем автора оригинального сообщения (вторая строка)
+            let originalAuthor = 'Автор';
+            let originalAuthorIcon = '👤';
+            if (lines[1]) {
+                const authorMatch = lines[1].match(/^([👑🛡️🏪📦👤]?)\s*(.+)$/);
+                if (authorMatch) {
+                    originalAuthorIcon = authorMatch[1] || '👤';
+                    originalAuthor = authorMatch[2] || 'Автор';
+                } else {
+                    originalAuthor = lines[1];
+                }
+            }
+
+            // Извлекаем только текст сообщения (с 3-й строки)
+            const messageText = lines.slice(2).join('\n');
 
             messageHTML += `
                 <div class="forwarded-header">
@@ -1333,10 +1367,10 @@
                 </div>
                 <div class="reply-quote" onclick="navigateToOriginalMessage('${message.original_message_id || 'null'}', '${sourceName}')" title="Перейти к оригинальному сообщению">
                     <div class="reply-quote-author">
-                        <span class="role-icon">👤</span>
-                        Пересланное сообщение
+                        <span class="role-icon">${originalAuthorIcon}</span>
+                        ${originalAuthor}
                     </div>
-                    <div class="reply-quote-text">${message.content}</div>
+                    <div class="reply-quote-text">${messageText}</div>
                 </div>
             `;
         } else {
