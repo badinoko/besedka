@@ -1461,19 +1461,6 @@
             <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
         `;
 
-        // Добавляем блок цитаты если это ответ
-        if (message.reply_to) {
-            messageHTML += `
-                <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
-                    <div class="reply-quote-author">
-                        <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
-                        ${message.reply_to.author_name}
-                    </div>
-                    <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
-                </div>
-            `;
-        }
-
         // 🏆 ЕДИНАЯ ОБРАБОТКА ВСЕХ СООБЩЕНИЙ (SSOT ПРИНЦИП)
         if (isForwarded) {
             // ВСЕ ПЕРЕСЛАННЫЕ СООБЩЕНИЯ ОБРАБАТЫВАЮТСЯ ОДИНАКОВО
@@ -1506,11 +1493,29 @@
                 `;
             }
         } else {
-            // ОБЫЧНЫЕ СООБЩЕНИЯ - стандартная структура
+            // 🎯 ПРАВИЛЬНЫЙ ПОРЯДОК: СНАЧАЛА АВТОР, ПОТОМ ЦИТАТА
+            // Имя автора текущего сообщения
             messageHTML += `
                 <div class="message-author">
                     ${message.author_role_icon || '👤'} ${message.author_name}
                 </div>
+            `;
+
+            // Добавляем блок цитаты если это ответ (ПОСЛЕ имени автора)
+            if (message.reply_to) {
+                messageHTML += `
+                    <div class="reply-quote" onclick="scrollToMessage('${message.reply_to.id}')">
+                        <div class="reply-quote-author">
+                            <span class="role-icon">${message.reply_to.author_role_icon || '👤'}</span>
+                            ${message.reply_to.author_name}
+                        </div>
+                        <div class="reply-quote-text">${message.reply_to.content_snippet}</div>
+                    </div>
+                `;
+            }
+
+            // Текст сообщения
+            messageHTML += `
                 <div class="message-text">${message.content}</div>
             `;
         }
