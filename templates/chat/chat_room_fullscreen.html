@@ -1515,15 +1515,7 @@
         messageElement.dataset.authorRole = message.author_role || 'user';
         messageElement.dataset.isPinned = message.is_pinned || false;
 
-        const timestamp = formatSmartTimestamp(message.created);
-        const fullDateTime = new Date(message.created).toLocaleDateString('ru-RU', {
-            weekday: 'long',
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const timestamp = new Date(message.created).toLocaleTimeString();
         const isOwn = message.is_own;
 
         // 🎯 УНИФИЦИРОВАННОЕ ОПРЕДЕЛЕНИЕ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
@@ -1609,8 +1601,8 @@
         }
 
         messageHTML += `
-                <!-- Время в правом нижнем углу с tooltip -->
-                <div class="message-timestamp" title="${fullDateTime}" data-original-date="${message.created}">${timestamp}</div>
+                <!-- Время в правом нижнем углу -->
+                <div class="message-timestamp">${timestamp}</div>
 
                 <!-- 🏆 SSOT: Индикатор редактирования для ВСЕХ отредактированных сообщений -->
                 ${message.is_edited ? `
