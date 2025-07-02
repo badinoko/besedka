@@ -180,23 +180,16 @@
         transform: translateY(-1px);
     }
 
-    /* === ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ - ВСЕГДА ЧИТАЕМОЕ === */
+    /* === ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ СОГЛАСНО ТЗ === */
     .message-timestamp {
         position: absolute;
         bottom: 8px;
         right: 12px;
-        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        /* ДНЕВНАЯ ТЕМА - ВСЕГДА ЧЕРНЫЙ */
-        color: #333333 !important;
-        opacity: 0.9;
-    }
-
-    /* НОЧНАЯ ТЕМА - ВСЕГДА БЕЛЫЙ ДЛЯ ВСЕХ ВРЕМЕННЫХ МЕТОК */
-    [data-theme="dark"] .message-timestamp {
-        color: #ffffff !important;
-        opacity: 0.9;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Согласно ТЗ */
+        font-size: 12px; /* Согласно ТЗ */
+        font-weight: 500;
+        color: var(--text-secondary) !important; /* Используем CSS переменную */
+        opacity: 0.8;
     }
 
     /* === КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ === */
@@ -330,29 +323,6 @@
         border-radius: 0 !important;
     }
 
-    /* === ЦИТАТЫ В СОБСТВЕННЫХ СООБЩЕНИЯХ (НЕ ПЕРЕСЛАННЫХ) - АДАПТИВНЫЕ ПОД СИНИЙ ФОН === */
-    .message-content.own:not(.forwarded-own) .reply-quote-author {
-        color: rgba(255, 255, 255, 0.95) !important; /* Белый для хорошей видимости на синем */
-        font-weight: 700;
-    }
-
-    .message-content.own:not(.forwarded-own) .reply-quote-text {
-        color: rgba(255, 255, 255, 0.8) !important; /* Белый полупрозрачный для текста цитаты */
-    }
-
-    /* === ЦИТАТЫ В ПЕРЕСЛАННЫХ СООБЩЕНИЯХ - ДНЕВНАЯ ТЕМА === */
-    .message-content.forwarded-own .reply-quote-text,
-    .message-content.forwarded-other .reply-quote-text {
-        color: #333333 !important; /* Черный для читаемости в дневной теме */
-        font-weight: 500;
-    }
-
-    .message-content.forwarded-own .reply-quote-author,
-    .message-content.forwarded-other .reply-quote-author {
-        color: #D97706 !important; /* Оранжевый цвет как у границы пересланных */
-        font-weight: 700;
-    }
-
     /* 🌙 === ИСПРАВЛЕНИЯ ДЛЯ ТЕМНОЙ ТЕМЫ === */
 
     /* Исправляем цитаты в темной теме */
@@ -398,13 +368,6 @@
     [data-theme="dark"] .message-content.forwarded-own .reply-quote-author,
     [data-theme="dark"] .message-content.forwarded-other .reply-quote-author {
         color: #D97706 !important; /* Оранжевый цвет как граница */
-    }
-
-    /* Исправляем текст цитат в пересланных сообщениях в темной теме */
-    [data-theme="dark"] .message-content.forwarded-own .reply-quote-text,
-    [data-theme="dark"] .message-content.forwarded-other .reply-quote-text {
-        color: #ffffff !important; /* Белый для читаемости в темной теме */
-        font-weight: 500;
     }
 
     /* === БАЗОВЫЕ СТИЛИ ДЛЯ ИНДИКАТОРА РЕДАКТИРОВАНИЯ === */
@@ -1094,6 +1057,25 @@
     .message-content.other.forwarded-other .reply-quote {
         background: rgba(217, 119, 6, 0.03) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА */
         border-left-color: #D97706 !important; /* ОРАНЖЕВАЯ ГРАНИЦА КАК У ПЕРЕСЛАННЫХ */
+    }
+
+    /* === ИСПРАВЛЕНИЯ ЧИТАЕМОСТИ ДЛЯ СОБСТВЕННЫХ СООБЩЕНИЙ В СВЕТЛОЙ ТЕМЕ === */
+    /* Временные метки в собственных сообщениях - черный цвет как у индикатора редактирования */
+    .message-content.own .message-timestamp {
+        color: #333333 !important; /* Контрастный черный цвет */
+        font-weight: 600; /* Жирнее для лучшей видимости */
+    }
+
+    /* Текст цитат в собственных сообщениях - черный цвет для читаемости */
+    .message-content.own .reply-quote-text {
+        color: #333333 !important; /* Контрастный черный цвет */
+        font-weight: 500; /* Немного жирнее для лучшей видимости */
+    }
+
+    /* Автор цитаты в собственных сообщениях - белый цвет остается для контраста */
+    .message-content.own .reply-quote-author {
+        color: rgba(255, 255, 255, 0.95) !important; /* Яркий белый на синем фоне */
+        font-weight: 700; /* Жирный для хорошей видимости */
     }
 
 
