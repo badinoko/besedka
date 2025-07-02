@@ -1319,31 +1319,24 @@
             `;
         }
 
-        // 🏆 СТРОГАЯ ОБРАБОТКА ТОЛЬКО РЕАЛЬНО ПЕРЕСЛАННЫХ СООБЩЕНИЙ
+        // 🏆 ЕДИНЫЙ SSOT ФОРМАТ ДЛЯ ВСЕХ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
         if (message.is_forwarded) {
-            // ТОЛЬКО СООБЩЕНИЯ С ФЛАГОМ is_forwarded ИЗ БАЗЫ ДАННЫХ
-            const forwardedData = parseForwardedMessage(message.content, message);
-
-            // ЕДИНЫЙ ФОРМАТ ДЛЯ ВСЕХ ПЕРЕСЛАННЫХ СООБЩЕНИЙ
-            const sourceName = forwardedData ? forwardedData.sourceName : 'Неизвестный чат';
-            const forwarderIcon = forwardedData ? (forwardedData.forwarderIcon || '👤') : (message.author_role_icon || '👤');
-            const forwarderName = forwardedData ? forwardedData.forwarderName : message.author_name;
-            const originalAuthorIcon = forwardedData ? forwardedData.originalAuthorIcon : '👤';
-            const originalAuthorName = forwardedData ? forwardedData.originalAuthorName : 'Автор';
-            const messageText = forwardedData ? forwardedData.messageText : message.content;
-            const originalMessageId = forwardedData ? (forwardedData.originalMessageId || 'null') : 'null';
+            // ПРОСТЫЕ ДАННЫЕ ИЗ MESSAGE ОБЪЕКТА - БЕЗ ПАРСИНГА
+            const sourceName = 'Неизвестный чат';
+            const forwarderIcon = message.author_role_icon || '👤';
+            const forwarderName = message.author_name || 'Неизвестный автор';
 
             messageHTML += `
                 <div class="forwarded-header">
                     <i class="fas fa-share"></i>
                     Переслано из ${sourceName} • ${forwarderIcon} ${forwarderName}
                 </div>
-                <div class="reply-quote" onclick="navigateToOriginalMessage('${originalMessageId}', '${sourceName}')" title="Перейти к оригинальному сообщению">
+                <div class="reply-quote" onclick="navigateToOriginalMessage('${message.original_message_id || 'null'}', '${sourceName}')" title="Перейти к оригинальному сообщению">
                     <div class="reply-quote-author">
-                        <span class="role-icon">${originalAuthorIcon}</span>
-                        ${originalAuthorName}
+                        <span class="role-icon">👤</span>
+                        Пересланное сообщение
                     </div>
-                    <div class="reply-quote-text">${messageText}</div>
+                    <div class="reply-quote-text">${message.content}</div>
                 </div>
             `;
         } else {
@@ -1740,113 +1733,8 @@
     // Система для отслеживания реакций пользователя (безотзывная)
     let userReactions = new Set();
 
-    // === ПАРСИНГ ПЕРЕСЛАННЫХ СООБЩЕНИЙ ===
-    function parseForwardedMessage(content, message) {
-        // СТРОГАЯ ПРОВЕРКА: только если сообщение РЕАЛЬНО пересланное
-        if (!content.startsWith('📤 Переслано из «') && !content.startsWith('Переслано из «') && !message.is_forwarded) {
-            return null;
-        }
-
-        const lines = content.split('\n');
-        if (lines.length < 3) {
-            return null;
-        }
-
-        // Определяем формат сообщения (новый или старый)
-        const isNewFormat = lines[0].includes('📤 Переслано из «') && lines[0].includes(' • ');
-
-        let sourceInfo, originalAuthorLine, messageText;
-        let forwarderName = '', forwarderIcon = '';
-
-        if (isNewFormat) {
-            // НОВЫЙ ФОРМАТ: "📤 Переслано из «Беседка - VIP» • 👑 Buddy"
-            sourceInfo = lines[0];
-            originalAuthorLine = lines[1];
-
-            // Извлекаем информацию о пересылающем из первой строки
-            const forwarderMatch = sourceInfo.match(/📤 Переслано из «(.+)» • (.+)$/);
-            if (forwarderMatch) {
-                // Разбираем информацию о пересылающем
-                const forwarderInfo = forwarderMatch[2];
-                const forwarderEmojiMatch = forwarderInfo.match(/^([\u{1F300}-\u{1F9FF}]|👑|🛡️|🏪|📦|👤)\s*(.+)$/u);
-                if (forwarderEmojiMatch) {
-                    forwarderIcon = forwarderEmojiMatch[1];
-                    forwarderName = forwarderEmojiMatch[2];
-                } else {
-                    forwarderName = forwarderInfo;
-                    forwarderIcon = '👤';
-                }
-            }
-
-            // Проверяем, есть ли пользовательское сообщение (если сообщение начинается не с 📤)
-            if (!content.startsWith('📤 Переслано из «')) {
-                // Пользовательское сообщение есть, пересланная часть начинается позже
-                const forwardedPartIndex = content.indexOf('📤 Переслано из «');
-                if (forwardedPartIndex > 0) {
-                    const linesFromForwarded = content.substring(forwardedPartIndex).split('\n');
-                    originalAuthorLine = linesFromForwarded[1];
-                    messageText = linesFromForwarded.slice(2).join('\n');
-                } else {
-                    messageText = lines.slice(2).join('\n');
-                }
-            } else {
-                messageText = lines.slice(2).join('\n');
-            }
-        } else {
-            // СТАРЫЙ ФОРМАТ: "Переслано из «Беседка»"
-            sourceInfo = lines[0];
-            originalAuthorLine = lines[1];
-            messageText = lines.slice(2).join('\n');
-
-            // Для старого формата берем информацию из message объекта
-            forwarderName = message.author_name || '';
-            forwarderIcon = message.author_role_icon || '👤';
-        }
-
-        // 👑 ИЗВЛЕКАЕМ ЗНАЧОК РОЛИ И ИМЯ АВТОРА ОРИГИНАЛЬНОГО СООБЩЕНИЯ
-        let originalAuthorIcon = '👤';
-        let originalAuthorName = originalAuthorLine;
-
-        const emojiMatch = originalAuthorLine.match(/^([\u{1F300}-\u{1F9FF}]|👑|🛡️|🏪|📦|👤)\s*(.+)$/u);
-        if (emojiMatch) {
-            originalAuthorIcon = emojiMatch[1];
-            originalAuthorName = emojiMatch[2];
-        }
-
-        // Извлекаем название источника
-        const sourceMatch = sourceInfo.match(/Переслано из «(.+?)»(\s*•|$)/);
-        let sourceName;
-
-        if (sourceMatch) {
-            sourceName = sourceMatch[1];
-        } else {
-            const currentPath = window.location.pathname;
-            if (currentPath.includes('/general/')) {
-                sourceName = 'Беседка - VIP';
-            } else if (currentPath.includes('/vip/')) {
-                sourceName = 'Беседка';
-            } else {
-                sourceName = 'Другой чат';
-            }
-        }
-
-        // 🎯 ОПРЕДЕЛЕНИЕ ID ОРИГИНАЛЬНОГО СООБЩЕНИЯ
-        let originalMessageId = null;
-        if (message.original_message_id && message.original_message_id !== 'null' && message.original_message_id !== 'undefined') {
-            originalMessageId = message.original_message_id;
-        }
-
-        return {
-            sourceName: sourceName,
-            originalAuthorIcon: originalAuthorIcon, // Значок роли
-            originalAuthorName: originalAuthorName, // Имя без значка
-            messageText: messageText,
-            isForwarded: true,
-            originalMessageId: originalMessageId,
-            forwarderName: forwarderName, // Кто переслал
-            forwarderIcon: forwarderIcon, // Значок того кто переслал
-        };
-    }
+    // === ФУНКЦИЯ parseForwardedMessage УДАЛЕНА ДЛЯ ВОССТАНОВЛЕНИЯ SSOT ===
+    // Все пересланные сообщения теперь рендерятся через единый простой шаблон в createMessageElement
 
     // Функции для лайков и дизлайков
     function likeMessage(messageId) {
