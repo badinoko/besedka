@@ -1039,13 +1039,12 @@
         font-size: 12px;
     }
 
-    /* Стили автора в пересланных сообщениях - УБРАНЫ ПОДЛОЖКИ */
+    /* Стили автора в пересланных сообщениях */
     .message-content.forwarded-own .message-author,
     .message-content.forwarded-other .message-author {
-        background: none !important; /* УБРАНА ОРАНЖЕВАЯ ПОДЛОЖКА */
-        border: none !important; /* УБРАНА ГРАНИЦА */
+        background: rgba(215, 119, 6, 0.1) !important; /* Оранжевый фон */
+        border-color: rgba(215, 119, 6, 0.2) !important;
         color: var(--text-primary) !important;
-        padding: 0 !important; /* УБРАНЫ ОТСТУПЫ ПОДЛОЖКИ */
     }
 
     /* Цитаты в пересланных сообщениях - ДЕЛИКАТНАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
@@ -1535,22 +1534,12 @@
             <div class="message-content ${isOwn ? 'own' : 'other'}${forwardedClass}">
         `;
 
-        // 🏆 ШАГ 1: ПОКАЗЫВАЕМ АВТОРА С ИНФОРМАЦИЕЙ О ПЕРЕСЫЛКЕ (ЕСЛИ ЕСТЬ)
-        if (isForwarded) {
-            const forwardedData = parseForwardedMessage(message.content, message);
-            const forwardInfo = forwardedData && forwardedData.sourceName ? ` • Переслано из ${forwardedData.sourceName}` : '';
-            messageHTML += `
-                <div class="message-author">
-                    ${message.author_role_icon || '👤'} ${message.author_name}${forwardInfo}
-                </div>
-            `;
-        } else {
-            messageHTML += `
-                <div class="message-author">
-                    ${message.author_role_icon || '👤'} ${message.author_name}
-                </div>
-            `;
-        }
+        // 🏆 ШАГ 1: ВСЕГДА ПОКАЗЫВАЕМ АВТОРА ТЕКУЩЕГО СООБЩЕНИЯ (ЕДИНООБРАЗИЕ)
+        messageHTML += `
+            <div class="message-author">
+                ${message.author_role_icon || '👤'} ${message.author_name}
+            </div>
+        `;
 
         // 🏆 ШАГ 2: ПОКАЗЫВАЕМ ЦИТАТУ ЕСЛИ ЭТО ОТВЕТ (ПОСЛЕ АВТОРА)
         if (message.reply_to) {
@@ -1565,11 +1554,15 @@
             `;
         }
 
-        // 🏆 ШАГ 3: ПОКАЗЫВАЕМ ЦИТАТУ ПЕРЕСЛАННОГО СООБЩЕНИЯ (БЕЗ ДУБЛИРОВАНИЯ ХЕДЕРА)
+        // 🏆 ШАГ 3: ПОКАЗЫВАЕМ ЦИТАТУ ПЕРЕСЛАННОГО СООБЩЕНИЯ (ЕСЛИ ЕСТЬ)
         if (isForwarded) {
             const forwardedData = parseForwardedMessage(message.content, message);
             if (forwardedData && forwardedData.messageText && forwardedData.originalAuthor) {
                 messageHTML += `
+                    <div class="forwarded-header">
+                        <i class="fas fa-share"></i>
+                        Переслано из ${forwardedData.sourceName} • ${forwardedData.forwarderIcon || '👤'} ${forwardedData.forwarderName}
+                    </div>
                     <div class="reply-quote" onclick="navigateToOriginalMessage('${forwardedData.originalMessageId || 'null'}', '${forwardedData.sourceName}')" title="Перейти к оригинальному сообщению">
                         <div class="reply-quote-author">
                             ${parseAuthorWithIcon(forwardedData.originalAuthor)}
@@ -1890,18 +1883,14 @@
             console.log('❌ Message not found (deleted?):', messageId, '- scrolling to bottom');
             showTemporaryFeedback('📍 Сообщение удалено. Переносимся в конец диалога...', 'warning');
 
-            // ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА В КОНЕЦ БЕЗ ПРОВЕРКИ ФЛАГА
-            const messagesArea = document.getElementById('chat-messages-area');
-            requestAnimationFrame(() => {
-                messagesArea.scrollTop = messagesArea.scrollHeight;
-                console.log('✅ ПРИНУДИТЕЛЬНО прокручено в конец чата');
-            });
+            // Блокируем автоскроллинг и переносим в конец
+            isNavigatingToMessage = true;
 
-            // Разблокируем автоскроллинг через короткое время
             setTimeout(() => {
+                scrollToBottom();
                 isNavigatingToMessage = false;
-                console.log('✅ Auto-scroll re-enabled after deleted message navigation');
-            }, 1000);
+                console.log('✅ Moved to chat bottom, auto-scroll re-enabled');
+            }, 500);
         }
     }
 
@@ -2037,11 +2026,9 @@
                     console.log('❌ Message not found for anchor:', messageId);
                     showTemporaryFeedback('📍 Сообщение удалено. Переносимся в конец диалога...', 'warning');
 
-                    // 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА В КОНЕЦ БЕЗ ПРОВЕРКИ ФЛАГА
-                    const messagesArea = document.getElementById('chat-messages-area');
+                    // 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если сообщение не найдено - переносим в конец чата
                     setTimeout(() => {
-                        messagesArea.scrollTop = messagesArea.scrollHeight;
-                        console.log('✅ ПРИНУДИТЕЛЬНО прокручено в конец чата (anchor)');
+                        scrollToBottom();
                     }, 300);
                 }
 
