@@ -24,33 +24,19 @@ class BaseChatConsumer(WebsocketConsumer):
         self.room_group_name = f"chat_{self.room_name}"
         self.user = self.scope["user"]
 
-        if self.user.is_anonymous:
+        if not self.user.is_authenticated:
             self.close()
             return
 
-        # Добавляем пользователя в группу чата
+        # Присоединяемся к группе комнаты
         async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
+            self.room_group_name, self.channel_name
         )
 
         self.accept()
+        logger.info(f"User {self.user.username} connected to room {self.room_name}")
 
-        # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Отмечаем первое посещение чата
-        room, _ = Room.objects.get_or_create(name=self.room_name)
-        position = UserChatPosition.get_or_create_for_user(self.user, room)
-
-        # Если пользователь впервые в чате, отмечаем текущее время как "прочитано до сих пор"
-        if position.last_read_at is None:
-            position.last_read_at = timezone.now()
-            position.unread_count = 0
-            position.save()
-            logger.info(f"First visit marked for {self.user.username} in {self.room_name}")
-
-        # Отправляем начальную информацию о непрочитанных
-        self.send_unread_info(position)
-
-        # Уведомляем других о подключении
+        # Уведомляем группу о присоединении пользователя
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {
                 "type": "user_joined",
@@ -58,7 +44,13 @@ class BaseChatConsumer(WebsocketConsumer):
             }
         )
 
-        logger.info(f"User {self.user.username} connected to chat {self.room_name}")
+        # Отправляем информацию о непрочитанных сообщениях при подключении
+        try:
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+            user_position = UserChatPosition.get_or_create_for_user(self.user, room)
+            self.send_unread_info(user_position)
+        except Exception as e:
+            logger.error(f"Error sending initial unread info: {e}")
 
     def disconnect(self, close_code):
         """Отключение от WebSocket"""
@@ -139,8 +131,13 @@ class BaseChatConsumer(WebsocketConsumer):
             parent=parent_message
         )
 
-        # 🚫 УДАЛЕНА НЕПРАВИЛЬНАЯ АВТООТМЕТКА ПРИ ОТПРАВКЕ СООБЩЕНИЯ
-        # Отправка сообщения НЕ означает прочтение всей истории чата!
+        # Автоматически отмечаем все сообщения как прочитанные для автора
+        # (если пользователь отправляет сообщение, значит он видит чат)
+        try:
+            user_position = UserChatPosition.get_or_create_for_user(self.user, room)
+            user_position.mark_as_read(up_to_message=message)
+        except Exception as e:
+            logger.error(f"Error updating user position after sending message: {e}")
 
         # Отправляем сообщение в группу
         async_to_sync(self.channel_layer.group_send)(
@@ -587,10 +584,6 @@ class BaseChatConsumer(WebsocketConsumer):
                 # Отмечаем все сообщения как прочитанные
                 position.mark_as_read()
                 logger.info(f"User {self.user.username} marked all messages as read in {self.room_name}")
-
-            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем кешированный счетчик перед отправкой
-            position.unread_count = position.get_unread_messages_count()
-            position.save()
 
             # Отправляем обновленную информацию о непрочитанных
             self.send_unread_info(position)

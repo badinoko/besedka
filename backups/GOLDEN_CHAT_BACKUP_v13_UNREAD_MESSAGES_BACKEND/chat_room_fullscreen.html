@@ -614,8 +614,6 @@
         animation: onlineCounterPulse 2s ease-in-out infinite;
     }
 
-    /* unread-counter стили удалены - используем Telegram-подобный подход */
-
     /* 🟢 АНИМАЦИЯ ПУЛЬСАЦИИ ДЛЯ ОНЛАЙН СЧЕТЧИКА */
     @keyframes onlineCounterPulse {
         0%, 100% {
@@ -635,8 +633,6 @@
                 inset 0 -1px 0 rgba(0, 0, 0, 0.15);
         }
     }
-
-    /* Анимация unreadCounterPulse удалена - используем Telegram-подобный подход */
 
     /* 🎨 КОМПАКТНЫЙ HOVER ЭФФЕКТ (СЧЕТЧИКИ НЕ КЛИКАБЕЛЬНЫЕ) */
     .user-counter:hover {
@@ -668,8 +664,6 @@
         /* УСИЛЕННОЕ СВЕЧЕНИЕ ПРИ HOVER */
         animation: none; /* ОСТАНАВЛИВАЕМ ПУЛЬСАЦИЮ ПРИ HOVER */
     }
-
-    /* Hover эффект для unread-counter удален - используем Telegram-подобный подход */
 
     /* 📱 АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ */
     @media (max-width: 768px) {
@@ -1150,15 +1144,13 @@
 
     <!-- Правая панель: список пользователей -->
     <div class="users-sidebar">
-        <!-- Заголовок панели с тремя счетчиками -->
+        <!-- Заголовок панели с двумя счетчиками -->
         <div class="users-header">
             <!-- Счетчик общего количества пользователей с доступом -->
             <div class="user-counter total-counter">
                 <div class="user-counter-label">Всего</div>
                 <div class="user-counter-number" id="total-users-count">0</div>
             </div>
-
-            <!-- HTML счетчика unread-counter удален - используем Telegram-подобный подход -->
 
             <!-- Счетчик пользователей онлайн -->
             <div class="user-counter online-counter">
@@ -1317,12 +1309,6 @@
     const usersListElement = document.getElementById('users-list');
     const connectionStatus = document.getElementById('connection-status');
 
-    // 📬 ПЕРЕМЕННЫЕ ДЛЯ СИСТЕМЫ НЕПРОЧИТАННЫХ СООБЩЕНИЙ
-    let unreadCount = 0;
-    let firstUnreadMessageId = null;
-    let lastReadAt = null;
-    let hasScrolledToUnread = false;
-
     // Переменные для режима ответа
     let replyMode = {
         active: false,
@@ -1469,214 +1455,6 @@
         });
     }
 
-    // 📬 ОБРАБОТЧИК ИНФОРМАЦИИ О НЕПРОЧИТАННЫХ СООБЩЕНИЯХ (КРИТИЧЕСКИ УПРОЩЕН)
-    function handleUnreadInfo(data) {
-        console.log('📬 ===== RECEIVED UNREAD INFO =====');
-        console.log('📬 Data:', data);
-        console.log('📬 Previous firstUnreadMessageId:', firstUnreadMessageId);
-
-        const previousUnreadCount = unreadCount;
-        unreadCount = data.unread_count || 0;
-        firstUnreadMessageId = data.first_unread_message_id;
-        lastReadAt = data.last_read_at;
-
-        console.log('📬 Updated firstUnreadMessageId:', firstUnreadMessageId);
-        console.log('📬 Updated unreadCount:', unreadCount);
-
-        // Обновляем badge в навигации (если есть)
-        updateUnreadBadge();
-
-        // 🔧 КРИТИЧЕСКОЕ УПРОЩЕНИЕ: Простая логика разделителя
-        removeUnreadSeparator(); // Сначала убираем любой существующий разделитель
-
-        if (unreadCount > 0 && firstUnreadMessageId) {
-            // Есть непрочитанные - ищем первое непрочитанное сообщение и добавляем разделитель
-            const firstUnreadElement = document.querySelector(`[data-message-id="${firstUnreadMessageId}"]`);
-            if (firstUnreadElement) {
-                console.log('📬 Adding separator before first unread:', firstUnreadMessageId);
-                addUnreadSeparator(firstUnreadElement);
-
-                // Скроллим к непрочитанным только при первом появлении
-                if (previousUnreadCount === 0 && !hasScrolledToUnread) {
-                    console.log('📬 First time with unread messages - scrolling');
-                    scrollToFirstUnread();
-                }
-            }
-        } else {
-            console.log('📬 No unread messages - separator removed');
-        }
-    }
-
-    // 📬 ФУНКЦИЯ ОБНОВЛЕНИЯ BADGE НЕПРОЧИТАННЫХ В НАВИГАЦИИ И СЧЕТЧИКА
-    function updateUnreadBadge() {
-        // Обновляем title страницы
-        if (unreadCount > 0) {
-            console.log(`📬 Непрочитанных сообщений: ${unreadCount}`);
-            document.title = `(${unreadCount}) ${roomName} - Беседка`;
-        } else {
-            document.title = `${roomName} - Беседка`;
-        }
-
-        // JavaScript для unread-counter удален - используем Telegram-подобный подход
-        // TODO: Реализовать плавающую кнопку в правом нижнем углу как в Telegram
-    }
-
-    // 📬 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ НЕПРОЧИТАННОМУ СООБЩЕНИЮ
-    function scrollToFirstUnread() {
-        if (!firstUnreadMessageId) {
-            scrollToBottom();
-            return;
-        }
-
-        const firstUnreadElement = document.querySelector(`[data-message-id="${firstUnreadMessageId}"]`);
-        if (firstUnreadElement) {
-            console.log('📬 Scrolling to first unread message:', firstUnreadMessageId);
-
-            // Блокируем автоскроллинг во время навигации
-            isNavigatingToMessage = true;
-
-            // Скроллим к первому непрочитанному
-            firstUnreadElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-
-            // Добавляем разделительную линию перед первым непрочитанным
-            addUnreadSeparator(firstUnreadElement);
-
-            // Разблокируем через секунду
-            setTimeout(() => {
-                isNavigatingToMessage = false;
-                hasScrolledToUnread = true;
-            }, 1000);
-
-        } else {
-            console.log('📬 First unread message not found, scrolling to bottom');
-            scrollToBottom();
-        }
-    }
-
-    // 📬 ФУНКЦИЯ ДОБАВЛЕНИЯ РАЗДЕЛИТЕЛЬНОЙ ЛИНИИ "НЕПРОЧИТАННЫЕ СООБЩЕНИЯ"
-    function addUnreadSeparator(beforeElement) {
-        // Проверяем, нет ли уже разделителя
-        const existingSeparator = document.querySelector('.unread-separator');
-        if (existingSeparator) {
-            existingSeparator.remove();
-        }
-
-        const separator = document.createElement('div');
-        separator.className = 'unread-separator';
-        separator.innerHTML = `
-            <div class="unread-separator-line"></div>
-            <div class="unread-separator-text">📬 Непрочитанные сообщения</div>
-            <div class="unread-separator-line"></div>
-        `;
-
-        // Стили для разделителя
-        separator.style.cssText = `
-            display: flex;
-            align-items: center;
-            margin: 1rem 0;
-            padding: 0 1rem;
-            font-size: 0.875rem;
-            color: #007bff;
-            font-weight: 600;
-        `;
-
-        beforeElement.parentNode.insertBefore(separator, beforeElement);
-        console.log('📬 Separator added before message:', beforeElement.dataset.messageId);
-    }
-
-    // 📬 ФУНКЦИЯ УДАЛЕНИЯ РАЗДЕЛИТЕЛЬНОЙ ЛИНИИ "НЕПРОЧИТАННЫЕ СООБЩЕНИЯ"
-    function removeUnreadSeparator() {
-        const existingSeparator = document.querySelector('.unread-separator');
-        if (existingSeparator) {
-            existingSeparator.remove();
-            console.log('📬 Separator removed');
-            return true;
-        }
-        return false;
-    }
-
-    // 📬 ФУНКЦИЯ ОТМЕТКИ СООБЩЕНИЙ КАК ПРОЧИТАННЫХ (ИСПРАВЛЕННАЯ)
-    function markMessagesAsRead(messageId = null, upToTime = null) {
-        if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
-            console.log('📬 Cannot mark as read: WebSocket not connected');
-            return;
-        }
-
-        const markData = {
-            type: 'mark_as_read'
-        };
-
-        if (messageId) {
-            markData.message_id = messageId;
-        } else if (upToTime) {
-            markData.up_to_time = upToTime;
-        }
-
-        console.log('📬 Marking messages as read:', markData);
-        chatSocket.send(JSON.stringify(markData));
-
-        // 🔧 ИСПРАВЛЕНИЕ: Запрашиваем обновленную информацию о непрочитанных
-        // Backend автоматически отправит unread_info после обработки mark_as_read
-        // Это обеспечит синхронизацию и правильное удаление/перемещение разделителя
-    }
-
-    // 📬 ФУНКЦИЯ АВТОМАТИЧЕСКОЙ ОТМЕТКИ ПРИ ПРОКРУТКЕ (ВРЕМЕННО ОТКЛЮЧЕНА - ИСПРАВЛЕНИЕ ЛОГИКИ)
-    function setupScrollMarkAsRead() {
-        console.log('📬 ⚠️ АВТООТМЕТКА ВРЕМЕННО ОТКЛЮЧЕНА ДЛЯ ИСПРАВЛЕНИЯ ЛОГИКИ');
-
-        // 🚫 ВРЕМЕННО ОТКЛЮЧАЕМ АВТООТМЕТКУ - ОНА РАБОТАЕТ СЛИШКОМ АГРЕССИВНО
-        // ПРОБЛЕМА: Каждая остановка на 2 секунды сдвигает "последнее прочитанное"
-        // РЕЗУЛЬТАТ: Разделитель появляется везде где пользователь останавливается
-
-        const messagesArea = document.getElementById('chat-messages-area');
-
-        // 🎯 НОВАЯ ЛОГИКА: Отмечаем как прочитанные ТОЛЬКО когда пользователь достигает низа чата
-        messagesArea.addEventListener('scroll', function() {
-            // Проверяем, достиг ли пользователь низа чата (в пределах 50px)
-            const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - 50);
-
-            if (isAtBottom) {
-                // Пользователь в самом низу - отмечаем ВСЕ сообщения как прочитанные
-                console.log('📬 User reached bottom - marking all as read');
-                markMessagesAsRead(); // Без параметров = отметить все
-            }
-        });
-
-        console.log('📬 ✅ Новая логика автоотметки установлена (только при достижении низа)');
-    }
-
-    // 📬 КРИТИЧЕСКИ УЛУЧШЕННАЯ ФУНКЦИЯ: ПОЛУЧЕНИЕ ВИДИМЫХ СООБЩЕНИЙ С НАСТРАИВАЕМЫМ ПОРОГОМ
-    function getVisibleMessages(visibilityThreshold = 0.5) {
-        const messagesArea = document.getElementById('chat-messages-area');
-        const messages = messagesArea.querySelectorAll('.chat-message');
-        const visibleMessages = [];
-
-        const containerRect = messagesArea.getBoundingClientRect();
-
-        messages.forEach(message => {
-            const messageRect = message.getBoundingClientRect();
-
-            // Рассчитываем процент видимости сообщения
-            const visibleTop = Math.max(messageRect.top, containerRect.top);
-            const visibleBottom = Math.min(messageRect.bottom, containerRect.bottom);
-            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-            const messageHeight = messageRect.height;
-
-            // Процент видимости
-            const visibilityPercent = visibleHeight / messageHeight;
-
-            // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Гибкий порог видимости
-            if (visibilityPercent >= visibilityThreshold) {
-                visibleMessages.push(message);
-            }
-        });
-
-        return visibleMessages;
-    }
-
     // Функция прокрутки к последнему сообщению
     function scrollToBottom() {
         // ⚠️ НЕ ПРОКРУЧИВАЕМ ЕСЛИ ИДЕТ НАВИГАЦИЯ К СООБЩЕНИЮ
@@ -1760,9 +1538,6 @@
                 break;
             case 'reaction_updated':
                 handleReactionUpdated(data);
-                break;
-            case 'unread_info':
-                handleUnreadInfo(data);
                 break;
             case 'error':
                 showTemporaryFeedback(`❌ ${data.message}`, 'error');
@@ -2089,10 +1864,6 @@
     }
 
     function displayMessages(messages) {
-        console.log('📬 ===== DISPLAY MESSAGES CALLED =====');
-        console.log('📬 Messages count:', messages.length);
-        console.log('📬 Current firstUnreadMessageId:', firstUnreadMessageId);
-
         // Очищаем контейнер
         chatLog.innerHTML = '';
 
@@ -2122,25 +1893,9 @@
         // 🔗 ОБРАБАТЫВАЕМ ЯКОРЯ ПОСЛЕ ЗАГРУЗКИ ИСТОРИИ
         handlePageAnchor();
 
-        // 📬 ОЖИДАЕМ ИНФОРМАЦИЮ О НЕПРОЧИТАННЫХ ПЕРЕД СКРОЛЛИНГОМ
+        // 🚫 ПРОКРУЧИВАЕМ ТОЛЬКО ЕСЛИ НЕ ИДЕТ НАВИГАЦИЯ К СООБЩЕНИЮ
         if (!isNavigatingToMessage) {
-            // Увеличиваем задержку чтобы дождаться unread_info события
-            setTimeout(() => {
-                console.log('📬 Checking scroll logic after history load, firstUnreadMessageId:', firstUnreadMessageId);
-
-                // Если есть непрочитанные сообщения, скроллим к первому непрочитанному
-                if (firstUnreadMessageId && !hasScrolledToUnread) {
-                    console.log('📬 Scrolling to first unread after history load');
-                    scrollToFirstUnread();
-                } else {
-                    console.log('📬 No unread messages or already scrolled, going to bottom');
-                    // Иначе скроллим к последнему сообщению
-                    scrollToBottom();
-                }
-
-                // Инициализируем НОВУЮ систему автоотметки (только при достижении низа)
-                setupScrollMarkAsRead();
-            }, 800); // Увеличена задержка с 200ms до 800ms для ожидания unread_info
+            setTimeout(scrollToBottom, 200);
         } else {
             console.log('🚫 Auto-scroll skipped: navigation in progress (message history)');
         }
@@ -2391,12 +2146,8 @@
                 messageData.reply_to_id = replyMode.messageId;
             }
 
-            chatSocket.send(JSON.stringify(messageData));
+                        chatSocket.send(JSON.stringify(messageData));
             messageInputDom.value = '';
-
-            // 📬 При отправке сообщения логично что пользователь прочитал всё до этого момента
-            console.log('📬 Message sent - marking all previous as read');
-            markMessagesAsRead(); // Отмечаем все сообщения как прочитанные
 
             // Отменяем режим ответа после отправки
             if (replyMode.active) {

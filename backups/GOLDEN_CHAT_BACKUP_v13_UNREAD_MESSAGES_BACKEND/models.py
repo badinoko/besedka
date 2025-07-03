@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 import uuid
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from datetime import timedelta
 
 User = get_user_model()
 
@@ -186,9 +185,8 @@ class UserChatPosition(models.Model):
     )
     last_read_at = models.DateTimeField(
         _("Последнее время прочтения"),
-        null=True,
-        blank=True,
-        help_text="Время последнего прочтения сообщений в этом чате. None для новых пользователей."
+        default=timezone.now,
+        help_text="Время последнего прочтения сообщений в этом чате"
     )
     last_message_id = models.UUIDField(
         _("ID последнего прочитанного сообщения"),
@@ -223,9 +221,8 @@ class UserChatPosition(models.Model):
     def get_unread_messages_count(self):
         """Вычисляет актуальное количество непрочитанных сообщений"""
         if not self.last_read_at:
-            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Для новых пользователей 0 непрочитанных
-            # Непрочитанные появляются только ПОСЛЕ первого посещения чата
-            return 0
+            # Если пользователь никогда не читал чат, считаем все сообщения
+            return self.room.messages.filter(is_deleted=False).count()
 
         return self.room.messages.filter(
             created_at__gt=self.last_read_at,
@@ -236,8 +233,6 @@ class UserChatPosition(models.Model):
         """
         Отмечает сообщения как прочитанные до указанного сообщения или времени
         """
-        old_last_read_at = self.last_read_at
-
         if up_to_message:
             self.last_message_id = up_to_message.id
             self.last_read_at = up_to_message.created_at
@@ -250,19 +245,10 @@ class UserChatPosition(models.Model):
         self.unread_count = self.get_unread_messages_count()
         self.save()
 
-        # Логируем изменение для отладки
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Position updated for {self.user.username} in {self.room.name}: "
-                   f"last_read_at {old_last_read_at} -> {self.last_read_at}, "
-                   f"unread_count: {self.unread_count}")
-
     def get_first_unread_message(self):
         """Возвращает первое непрочитанное сообщение или None"""
         if not self.last_read_at:
-            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Для новых пользователей НЕТ непрочитанных
-            # Непрочитанные появляются только ПОСЛЕ первого посещения чата
-            return None
+            return self.room.messages.filter(is_deleted=False).order_by('created_at').first()
 
         return self.room.messages.filter(
             created_at__gt=self.last_read_at,
@@ -276,9 +262,17 @@ class UserChatPosition(models.Model):
             user=user,
             room=room,
             defaults={
-                'last_read_at': None,
+                'last_read_at': timezone.now(),
                 'unread_count': 0
             }
         )
+
+        if created:
+            # Для новых пользователей отмечаем все текущие сообщения как прочитанные
+            latest_message = room.messages.filter(is_deleted=False).order_by('-created_at').first()
+            if latest_message:
+                position.last_message_id = latest_message.id
+                position.last_read_at = latest_message.created_at
+                position.save()
 
         return position

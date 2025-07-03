@@ -9,7 +9,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-from .models import Room, Message, UserChatPosition
+from .models import Room, Message
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -24,41 +24,25 @@ class BaseChatConsumer(WebsocketConsumer):
         self.room_group_name = f"chat_{self.room_name}"
         self.user = self.scope["user"]
 
-        if self.user.is_anonymous:
+        if not self.user.is_authenticated:
             self.close()
             return
 
-        # Добавляем пользователя в группу чата
+        # Присоединяемся к группе комнаты
         async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
+            self.room_group_name, self.channel_name
         )
 
         self.accept()
+        logger.info(f"User {self.user.username} connected to room {self.room_name}")
 
-        # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Отмечаем первое посещение чата
-        room, _ = Room.objects.get_or_create(name=self.room_name)
-        position = UserChatPosition.get_or_create_for_user(self.user, room)
-
-        # Если пользователь впервые в чате, отмечаем текущее время как "прочитано до сих пор"
-        if position.last_read_at is None:
-            position.last_read_at = timezone.now()
-            position.unread_count = 0
-            position.save()
-            logger.info(f"First visit marked for {self.user.username} in {self.room_name}")
-
-        # Отправляем начальную информацию о непрочитанных
-        self.send_unread_info(position)
-
-        # Уведомляем других о подключении
+        # Уведомляем группу о присоединении пользователя
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {
                 "type": "user_joined",
                 "user": self.user_to_json(self.user)
             }
         )
-
-        logger.info(f"User {self.user.username} connected to chat {self.room_name}")
 
     def disconnect(self, close_code):
         """Отключение от WebSocket"""
@@ -102,8 +86,6 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.handle_pin_message(data)
             elif message_type == 'unpin_message':
                 self.handle_unpin_message(data)
-            elif message_type == 'mark_as_read':
-                self.handle_mark_as_read(data)
             else:
                 logger.warning(f"Unknown message type: {message_type}")
 
@@ -139,9 +121,6 @@ class BaseChatConsumer(WebsocketConsumer):
             parent=parent_message
         )
 
-        # 🚫 УДАЛЕНА НЕПРАВИЛЬНАЯ АВТООТМЕТКА ПРИ ОТПРАВКЕ СООБЩЕНИЯ
-        # Отправка сообщения НЕ означает прочтение всей истории чата!
-
         # Отправляем сообщение в группу
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {
@@ -151,12 +130,9 @@ class BaseChatConsumer(WebsocketConsumer):
         )
 
     def send_message_history(self, page=1):
-        """Отправка истории сообщений с поддержкой непрочитанных сообщений"""
+        """Отправка истории сообщений с поддержкой ответов"""
         try:
             room, created = Room.objects.get_or_create(name=self.room_name)
-
-            # Получаем позицию пользователя для определения непрочитанных
-            user_position = UserChatPosition.get_or_create_for_user(self.user, room)
 
             # Получаем последние 50 сообщений с related данными (ИСКЛЮЧАЕМ УДАЛЕННЫЕ!)
             messages = Message.objects.filter(room=room, is_deleted=False).select_related(
@@ -164,26 +140,15 @@ class BaseChatConsumer(WebsocketConsumer):
             ).order_by('-created_at')[:50]
 
             # Обращаем порядок и конвертируем в JSON
-            messages_data = []
-            for msg in reversed(messages):
-                message_json = self.message_to_json(msg, is_history=True)
+            messages_data = [
+                self.message_to_json(msg, is_history=True)
+                for msg in reversed(messages)
+            ]
 
-                # Добавляем информацию о прочтении сообщения
-                if user_position.last_read_at:
-                    message_json['is_read'] = msg.created_at <= user_position.last_read_at
-                else:
-                    message_json['is_read'] = False
-
-                messages_data.append(message_json)
-
-            # Отправляем историю сообщений
             self.send(text_data=json.dumps({
                 "type": "messages_history",
                 "messages": messages_data
             }))
-
-            # Отправляем информацию о непрочитанных сообщениях
-            self.send_unread_info(user_position)
 
         except Exception as e:
             logger.error(f"Error sending message history: {e}")
@@ -559,68 +524,6 @@ class BaseChatConsumer(WebsocketConsumer):
         except Exception as e:
             logger.error(f"Error unpinning message {message_id}: {e}")
             self.send_error("Ошибка при откреплении сообщения")
-
-    def handle_mark_as_read(self, data):
-        """Обработка отметки сообщений как прочитанных"""
-        message_id = data.get('message_id')
-        up_to_time = data.get('up_to_time')
-
-        try:
-            # Получаем комнату и позицию пользователя
-            room, _ = Room.objects.get_or_create(name=self.room_name)
-            position = UserChatPosition.get_or_create_for_user(self.user, room)
-
-            if message_id:
-                # Отмечаем до конкретного сообщения
-                try:
-                    message = Message.objects.get(id=message_id, room=room, is_deleted=False)
-                    position.mark_as_read(up_to_message=message)
-                    logger.info(f"User {self.user.username} marked messages as read up to {message_id}")
-                except Message.DoesNotExist:
-                    self.send_error("Сообщение не найдено")
-                    return
-            elif up_to_time:
-                # Отмечаем до конкретного времени
-                position.mark_as_read(up_to_time=timezone.datetime.fromisoformat(up_to_time))
-                logger.info(f"User {self.user.username} marked messages as read up to {up_to_time}")
-            else:
-                # Отмечаем все сообщения как прочитанные
-                position.mark_as_read()
-                logger.info(f"User {self.user.username} marked all messages as read in {self.room_name}")
-
-            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем кешированный счетчик перед отправкой
-            position.unread_count = position.get_unread_messages_count()
-            position.save()
-
-            # Отправляем обновленную информацию о непрочитанных
-            self.send_unread_info(position)
-
-        except Exception as e:
-            logger.error(f"Error marking messages as read: {e}")
-            self.send_error("Ошибка при отметке сообщений как прочитанных")
-
-    def get_user_position(self):
-        """Получает или создает позицию пользователя в текущей комнате"""
-        try:
-            room, _ = Room.objects.get_or_create(name=self.room_name)
-            return UserChatPosition.get_or_create_for_user(self.user, room)
-        except Exception as e:
-            logger.error(f"Error getting user position: {e}")
-            return None
-
-    def send_unread_info(self, position):
-        """Отправляет информацию о непрочитанных сообщениях пользователю"""
-        try:
-            first_unread = position.get_first_unread_message()
-
-            self.send(text_data=json.dumps({
-                "type": "unread_info",
-                "unread_count": position.unread_count,
-                "first_unread_message_id": str(first_unread.id) if first_unread else None,
-                "last_read_at": position.last_read_at.isoformat() if position.last_read_at else None
-            }))
-        except Exception as e:
-            logger.error(f"Error sending unread info: {e}")
 
     def can_edit_message(self, message):
         """Проверка прав на редактирование сообщения"""
