@@ -223,9 +223,14 @@ class UserChatPosition(models.Model):
     def get_unread_messages_count(self):
         """Вычисляет актуальное количество непрочитанных сообщений"""
         if not self.last_read_at:
-            # 🔧 ИСПРАВЛЕНО: Для новых пользователей НЕТ непрочитанных сообщений
-            # Непрочитанные появляются только ПОСЛЕ первого посещения чата
-            return 0
+            # 🔧 ИСПРАВЛЕНО: Для новых пользователей считаем непрочитанными только недавние сообщения
+            # Считаем непрочитанными только сообщения за последние 24 часа
+            from datetime import timedelta
+            recent_threshold = timezone.now() - timedelta(hours=24)
+            return self.room.messages.filter(
+                created_at__gte=recent_threshold,
+                is_deleted=False
+            ).count()
 
         return self.room.messages.filter(
             created_at__gt=self.last_read_at,
@@ -260,9 +265,14 @@ class UserChatPosition(models.Model):
     def get_first_unread_message(self):
         """Возвращает первое непрочитанное сообщение или None"""
         if not self.last_read_at:
-            # 🔧 ИСПРАВЛЕНО: Для новых пользователей НЕТ непрочитанных сообщений
-            # Непрочитанные появляются только ПОСЛЕ первого посещения чата
-            return None
+            # 🔧 ИСПРАВЛЕНО: Для новых пользователей возвращаем первое недавнее сообщение
+            # Считаем непрочитанными только сообщения за последние 24 часа
+            from datetime import timedelta
+            recent_threshold = timezone.now() - timedelta(hours=24)
+            return self.room.messages.filter(
+                created_at__gte=recent_threshold,
+                is_deleted=False
+            ).order_by('created_at').first()
 
         return self.room.messages.filter(
             created_at__gt=self.last_read_at,

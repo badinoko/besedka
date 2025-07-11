@@ -1614,13 +1614,26 @@
         // Обновляем badge и плавающую кнопку
         updateUnreadBadge();
 
-        // 📬 РАЗДЕЛИТЕЛЬ УДАЛЕН - ИСПОЛЬЗУЕМ ТОЛЬКО СЧЕТЧИКИ В КНОПКАХ
-        console.log('📬 === РАЗДЕЛИТЕЛЬ ОТКЛЮЧЕН - ИСПОЛЬЗУЕМ ТОЛЬКО СЧЕТЧИКИ ===');
+        // 📬 ЧЕТКАЯ ЛОГИКА УПРАВЛЕНИЯ РАЗДЕЛИТЕЛЕМ
+        console.log('📬 === УПРАВЛЕНИЕ РАЗДЕЛИТЕЛЕМ ===');
 
-        // Всегда убираем существующий разделитель (на случай если он был)
+        // Сначала всегда убираем существующий разделитель
         const separatorRemoved = removeUnreadSeparator();
         if (separatorRemoved) {
             console.log('📬 Существующий разделитель удален');
+        }
+
+        // Добавляем разделитель только если есть непрочитанные И есть ID первого непрочитанного
+        if (unreadCount > 0 && firstUnreadMessageId) {
+            const firstUnreadElement = document.querySelector(`[data-message-id="${firstUnreadMessageId}"]`);
+            if (firstUnreadElement) {
+                addUnreadSeparator(firstUnreadElement);
+                console.log(`📬 Разделитель добавлен перед сообщением ${firstUnreadMessageId}`);
+            } else {
+                console.log(`📬 Элемент первого непрочитанного сообщения ${firstUnreadMessageId} не найден`);
+            }
+        } else {
+            console.log(`📬 Разделитель не добавлен: unreadCount=${unreadCount}, firstUnreadMessageId=${firstUnreadMessageId}`);
         }
 
         console.log('📬 ===== UNREAD INFO PROCESSED =====');
@@ -1640,7 +1653,7 @@
         updateFloatingUnreadBtn();
     }
 
-    // 📬 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ НЕПРОЧИТАННОМУ СООБЩЕНИЮ (ИСПРАВЛЕННАЯ)
+    // 📬 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ НЕПРОЧИТАННОМУ СООБЩЕНИЮ (TELEGRAM-СТАНДАРТ)
     function scrollToFirstUnread() {
         if (!firstUnreadMessageId) {
             console.log('📬 No firstUnreadMessageId, scrolling to bottom');
@@ -1650,18 +1663,19 @@
 
         const firstUnreadElement = document.querySelector(`[data-message-id="${firstUnreadMessageId}"]`);
         if (firstUnreadElement) {
-            console.log('📬 🎯 ТОЧНАЯ НАВИГАЦИЯ к первому непрочитанному сообщению:', firstUnreadMessageId);
+            console.log('📬 Scrolling to first unread message:', firstUnreadMessageId);
 
             // Блокируем автоскроллинг во время навигации
             isNavigatingToMessage = true;
 
-            // 🎯 ИСПРАВЛЕННАЯ ЛОГИКА: Используем scrollIntoView для точного позиционирования
+            // 🎯 TELEGRAM-СТАНДАРТ: Позиционирование в верхней трети экрана
             const messagesArea = document.getElementById('chat-messages-area');
+            const containerHeight = messagesArea.clientHeight;
+            const targetPosition = firstUnreadElement.offsetTop - (containerHeight * 0.25);
 
-            // Сначала прокручиваем к элементу с block: 'start' для позиционирования в верхней части
-            firstUnreadElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'  // Позиционируем в верхней части контейнера
+            messagesArea.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
             });
 
             // Подсветка целевого сообщения
@@ -1675,8 +1689,6 @@
                 isNavigatingToMessage = false;
                 hasScrolledToUnread = true;
             }, 1000);
-
-            console.log('📬 ✅ Навигация к первому непрочитанному завершена');
 
         } else {
             console.log('📬 First unread message not found, scrolling to bottom');
@@ -1700,7 +1712,7 @@
         hideFloatingUnreadBtn();
     }
 
-    // 📬 ФУНКЦИЯ ПОКАЗА/СКРЫТИЯ ПЛАВАЮЩЕЙ КНОПКИ (УЛУЧШЕННАЯ ЛОГИКА)
+    // 📬 ФУНКЦИЯ ПОКАЗА/СКРЫТИЯ ПЛАВАЮЩЕЙ КНОПКИ (TELEGRAM-СТАНДАРТ)
     function updateFloatingUnreadBtn() {
         const floatingBtn = document.getElementById('floating-unread-btn');
         const countBadge = document.getElementById('floating-unread-count');
@@ -1728,34 +1740,31 @@
         }
 
         // 🎯 ПРИОРИТЕТ 2: СТРЕЛКА ВНИЗ (нет непрочитанных, но пользователь не внизу)
-        // 🔧 УЛУЧШЕННАЯ ЛОГИКА: Более точное определение позиции внизу
-        const scrollThreshold = 150; // Увеличиваем порог для более стабильной работы
-        const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - scrollThreshold);
+        const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - 100);
 
         if (!isAtBottom) {
-            // 🔧 УЛУЧШЕННАЯ ЛОГИКА: Подсчитываем сообщения ниже текущей позиции
+            // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Подсчитываем сообщения ниже текущей позиции
             const messagesBelow = countMessagesBelow();
 
             floatingBtn.style.display = 'flex';
 
-            // 🎯 ПОКАЗЫВАЕМ СТРЕЛКУ ВНИЗ ТОЛЬКО ЕСЛИ ЕСТЬ СООБЩЕНИЯ НИЖЕ
+            // 🎯 TELEGRAM-ЛОГИКА: Показываем счетчик сообщений ниже даже если они прочитаны
             if (messagesBelow > 0) {
                 countBadge.textContent = messagesBelow > 999 ? '999+' : messagesBelow;
                 countBadge.style.display = 'inline'; // Показываем счетчик
                 floatingBtn.title = `${messagesBelow} сообщений ниже`;
                 console.log(`📬 ПОКАЗАНА СТРЕЛКА ВНИЗ С СЧЕТЧИКОМ: ${messagesBelow} сообщений ниже`);
             } else {
-                // 🔧 УЛУЧШЕНИЕ: Если нет сообщений ниже, скрываем кнопку
-                floatingBtn.style.display = 'none';
-                console.log('📬 КНОПКА СКРЫТА: нет сообщений ниже');
-                return;
+                countBadge.style.display = 'none'; // Скрываем счетчик
+                floatingBtn.title = 'Перейти к последнему сообщению';
+                console.log('📬 ПОКАЗАНА СТРЕЛКА ВНИЗ: пользователь не внизу');
             }
 
             btnIcon.className = 'fas fa-arrow-down nav-icon';
             return; // ВЫХОДИМ
         }
 
-        // 🎯 ПРИОРИТЕТ 3: КНОПКА СКРЫТА (нет непрочитанных И пользователь внизу)
+                // 🎯 ПРИОРИТЕТ 3: КНОПКА СКРЫТА (нет непрочитанных И пользователь внизу)
         floatingBtn.style.display = 'none';
         console.log('📬 КНОПКА СКРЫТА: нет непрочитанных и пользователь внизу');
     }
@@ -3840,15 +3849,12 @@
         }
     });
 
-    // 🔧 ФУНКЦИЯ ОБНОВЛЕНИЯ УЛУЧШЕННОЙ ДИАГНОСТИЧЕСКОЙ ПАНЕЛИ
+    // 🔧 ФУНКЦИЯ ОБНОВЛЕНИЯ ОТЛАДОЧНОЙ ПАНЕЛИ
     function updateDebugPanel() {
         const debugUnreadCount = document.getElementById('debug-unread-count');
         const debugFirstUnreadId = document.getElementById('debug-first-unread-id');
         const debugMessagesBelow = document.getElementById('debug-messages-below');
         const debugPosition = document.getElementById('debug-position');
-        const debugTotalMessages = document.getElementById('debug-total-messages');
-        const debugVisibleMessages = document.getElementById('debug-visible-messages');
-        const debugButtonState = document.getElementById('debug-button-state');
 
         if (debugUnreadCount) debugUnreadCount.textContent = unreadCount;
         if (debugFirstUnreadId) debugFirstUnreadId.textContent = firstUnreadMessageId || 'null';
@@ -3858,33 +3864,9 @@
 
         const messagesArea = document.getElementById('chat-messages-area');
         if (messagesArea) {
-            const scrollThreshold = 150;
-            const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - scrollThreshold);
+            const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - 100);
             if (debugPosition) debugPosition.textContent = isAtBottom ? 'bottom' : 'not at bottom';
-
-            // Подсчитываем общее количество сообщений
-            const totalMessages = messagesArea.querySelectorAll('.chat-message').length;
-            if (debugTotalMessages) debugTotalMessages.textContent = totalMessages;
-
-            // Подсчитываем видимые сообщения
-            const visibleMessages = getVisibleMessages(0.5).length;
-            if (debugVisibleMessages) debugVisibleMessages.textContent = visibleMessages;
         }
-
-        // Определяем состояние кнопки
-        const floatingBtn = document.getElementById('floating-unread-btn');
-        let buttonState = 'hidden';
-        if (floatingBtn && floatingBtn.style.display !== 'none') {
-            const btnIcon = document.getElementById('floating-btn-icon');
-            if (btnIcon) {
-                if (btnIcon.className.includes('envelope')) {
-                    buttonState = `envelope(${unreadCount})`;
-                } else if (btnIcon.className.includes('arrow-down')) {
-                    buttonState = `arrow(${messagesBelow})`;
-                }
-            }
-        }
-        if (debugButtonState) debugButtonState.textContent = buttonState;
     }
 
     // Обновляем отладочную панель при изменениях
@@ -3892,16 +3874,12 @@
 
 </script>
 
-<!-- 🔧 УЛУЧШЕННАЯ ДИАГНОСТИЧЕСКАЯ ПАНЕЛЬ -->
-<div id="debug-panel" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.9); color: white; padding: 12px; border-radius: 8px; font-size: 11px; z-index: 9999; font-family: monospace; min-width: 250px;">
-    <div style="color: #00ff00; font-weight: bold; margin-bottom: 8px;">📊 ДИАГНОСТИКА ЧАТА</div>
-    <div>📬 unreadCount: <span id="debug-unread-count" style="color: #ffff00;">0</span></div>
-    <div>🎯 firstUnreadId: <span id="debug-first-unread-id" style="color: #ffff00;">null</span></div>
-    <div>⬇️ messagesBelow: <span id="debug-messages-below" style="color: #ffff00;">0</span></div>
-    <div>📍 position: <span id="debug-position" style="color: #ffff00;">unknown</span></div>
-    <div>🔄 totalMessages: <span id="debug-total-messages" style="color: #ffff00;">0</span></div>
-    <div>👁️ visibleMessages: <span id="debug-visible-messages" style="color: #ffff00;">0</span></div>
-    <div>🎯 buttonState: <span id="debug-button-state" style="color: #ffff00;">unknown</span></div>
+<!-- 🔧 ВРЕМЕННАЯ ОТЛАДОЧНАЯ ПАНЕЛЬ -->
+<div id="debug-panel" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 9999;">
+    <div>unreadCount: <span id="debug-unread-count">0</span></div>
+    <div>firstUnreadId: <span id="debug-first-unread-id">null</span></div>
+    <div>messagesBelow: <span id="debug-messages-below">0</span></div>
+    <div>position: <span id="debug-position">unknown</span></div>
 </div>
 
 {% endblock %}

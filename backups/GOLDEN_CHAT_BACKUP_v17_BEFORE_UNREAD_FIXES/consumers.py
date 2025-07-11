@@ -36,19 +36,15 @@ class BaseChatConsumer(WebsocketConsumer):
 
         self.accept()
 
-        # 🔧 ИСПРАВЛЕНО: Правильная последовательность инициализации позиции
+        # 🔧 ИСПРАВЛЕНО: Правильная логика для новых пользователей
         room, _ = Room.objects.get_or_create(name=self.room_name)
         position = UserChatPosition.get_or_create_for_user(self.user, room)
 
-        # ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: При первом посещении сразу отмечаем как прочитанные
-        # ДО отправки unread_info, чтобы избежать race condition
-        if not position.last_read_at:
-            position.mark_as_read()  # Отмечает текущее время
-            logger.info(f"First visit: marked all existing messages as read for {self.user.username} in {self.room_name}")
-            # Обновляем position после mark_as_read
-            position.refresh_from_db()
+        # ⚠️ ИСПРАВЛЕНО: НЕ отмечаем текущее время для новых пользователей!
+        # Новые пользователи должны видеть ВСЕ существующие сообщения как непрочитанные
+        # last_read_at остается None до тех пор, пока пользователь не начнет читать сообщения
 
-        # Отправляем ПРАВИЛЬНУЮ информацию о непрочитанных (уже после mark_as_read)
+        # Отправляем начальную информацию о непрочитанных
         self.send_unread_info(position)
 
         # Уведомляем других о подключении
@@ -159,24 +155,21 @@ class BaseChatConsumer(WebsocketConsumer):
             # Получаем позицию пользователя для определения непрочитанных
             user_position = UserChatPosition.get_or_create_for_user(self.user, room)
 
-            # Получаем последние 100 сообщений с related данными (ИСКЛЮЧАЕМ УДАЛЕННЫЕ!)
+            # Получаем последние 50 сообщений с related данными (ИСКЛЮЧАЕМ УДАЛЕННЫЕ!)
             messages = Message.objects.filter(room=room, is_deleted=False).select_related(
                 'author', 'parent', 'parent__author'
-            ).order_by('-created_at')[:100]
+            ).order_by('-created_at')[:50]
 
             # Обращаем порядок и конвертируем в JSON
             messages_data = []
             for msg in reversed(messages):
                 message_json = self.message_to_json(msg, is_history=True)
 
-                # 🔧 ИСПРАВЛЕНО: Правильная логика определения прочитанности
+                # Добавляем информацию о прочтении сообщения
                 if user_position.last_read_at:
-                    # Пользователь уже посещал чат - сравниваем с last_read_at
                     message_json['is_read'] = msg.created_at <= user_position.last_read_at
                 else:
-                    # Новый пользователь - все исторические сообщения считаются прочитанными
-                    # (это исправляется в connect(), но на всякий случай)
-                    message_json['is_read'] = True
+                    message_json['is_read'] = False
 
                 messages_data.append(message_json)
 
@@ -185,6 +178,9 @@ class BaseChatConsumer(WebsocketConsumer):
                 "type": "messages_history",
                 "messages": messages_data
             }))
+
+            # Отправляем информацию о непрочитанных сообщениях
+            self.send_unread_info(user_position)
 
         except Exception as e:
             logger.error(f"Error sending message history: {e}")
@@ -612,26 +608,14 @@ class BaseChatConsumer(WebsocketConsumer):
     def send_unread_info(self, position):
         """Отправляет информацию о непрочитанных сообщениях пользователю"""
         try:
-            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда отправляем АКТУАЛЬНЫЙ счетчик, не кешированный!
-            actual_unread_count = position.get_unread_messages_count()
             first_unread = position.get_first_unread_message()
 
             self.send(text_data=json.dumps({
                 "type": "unread_info",
-                "unread_count": actual_unread_count,  # ⚡ ИСПОЛЬЗУЕМ АКТУАЛЬНЫЙ СЧЕТЧИК
+                "unread_count": position.unread_count,
                 "first_unread_message_id": str(first_unread.id) if first_unread else None,
-                "last_read_at": position.last_read_at.isoformat() if position.last_read_at else None,
-                # 🐛 DEBUG: Добавляем отладочную информацию
-                "debug_cached_count": position.unread_count,
-                "debug_actual_count": actual_unread_count
+                "last_read_at": position.last_read_at.isoformat() if position.last_read_at else None
             }))
-
-            # 🔧 ОБНОВЛЯЕМ КЕШИРОВАННЫЙ СЧЕТЧИК ДЛЯ СИНХРОНИЗАЦИИ
-            if position.unread_count != actual_unread_count:
-                position.unread_count = actual_unread_count
-                position.save()
-                logger.info(f"Updated cached unread_count for {self.user.username} in {self.room_name}: {actual_unread_count}")
-
         except Exception as e:
             logger.error(f"Error sending unread info: {e}")
 

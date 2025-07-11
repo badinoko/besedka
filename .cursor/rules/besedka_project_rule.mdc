@@ -1,7 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
+description: проект "Беседка"
+alwaysApply: false
 ---
 # Правила проекта "Беседка" (Версия 7.0 - Разработка кастомного чата)
 

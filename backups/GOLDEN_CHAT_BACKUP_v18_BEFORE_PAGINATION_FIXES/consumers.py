@@ -159,10 +159,10 @@ class BaseChatConsumer(WebsocketConsumer):
             # Получаем позицию пользователя для определения непрочитанных
             user_position = UserChatPosition.get_or_create_for_user(self.user, room)
 
-            # Получаем последние 100 сообщений с related данными (ИСКЛЮЧАЕМ УДАЛЕННЫЕ!)
+            # Получаем последние 50 сообщений с related данными (ИСКЛЮЧАЕМ УДАЛЕННЫЕ!)
             messages = Message.objects.filter(room=room, is_deleted=False).select_related(
                 'author', 'parent', 'parent__author'
-            ).order_by('-created_at')[:100]
+            ).order_by('-created_at')[:50]
 
             # Обращаем порядок и конвертируем в JSON
             messages_data = []
