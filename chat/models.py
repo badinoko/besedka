@@ -248,6 +248,10 @@ class UserChatPosition(models.Model):
         help_text="Время последнего визита в чат для определения правильной позиции"
     )
 
+    # 🎯 НОВЫЕ ПОЛЯ ДЛЯ ТОЧНОГО СОХРАНЕНИЯ ПОЗИЦИИ МЕЖДУ СЕССИЯМИ
+    last_visible_message_id = models.UUIDField(null=True, blank=True, help_text="UUID последнего видимого сообщения")
+    scroll_position_percent = models.FloatField(default=0.0, help_text="Процент прокрутки чата (0.0 - начало, 1.0 - конец)")
+
     updated_at = models.DateTimeField(
         _("Обновлено"),
         auto_now=True,

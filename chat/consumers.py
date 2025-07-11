@@ -47,10 +47,12 @@ class BaseChatConsumer(WebsocketConsumer):
         # 🎯 НОВАЯ ЛОГИКА: Определяем, является ли это первым визитом
         is_first_visit = position.last_visit_at is None
 
-        # ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: При первом посещении отмечаем текущее время как базовую точку
+        # ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: При первом посещении НЕ устанавливаем last_read_at
         if is_first_visit:
+            # Первый визит - устанавливаем только время визита, НЕ время прочтения
             position.last_visit_at = timezone.now()
-            position.last_read_at = timezone.now()
+            # НЕ устанавливаем last_read_at - пусть остается None
+            # Это означает, что нет "непрочитанных" сообщений для нового пользователя
             position.save()
             logger.info(f"First visit: initialized position for {self.user.username} in {self.room_name}")
         else:
@@ -121,6 +123,8 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.handle_mark_as_read(data)
             elif message_type == 'load_more_messages':
                 self.handle_load_more_messages(data)
+            elif message_type == 'save_position':
+                self.handle_save_position(data)
             else:
                 logger.warning(f"Unknown message type: {message_type}")
 
@@ -155,6 +159,14 @@ class BaseChatConsumer(WebsocketConsumer):
             content=content,
             parent=parent_message
         )
+
+        # 🎯 НОВАЯ ЛОГИКА: При первом сообщении устанавливаем last_read_at
+        position = UserChatPosition.get_or_create_for_user(self.user, room)
+        if position.last_read_at is None:
+            # Первое сообщение пользователя - теперь он "читает" чат
+            position.last_read_at = timezone.now()
+            position.save()
+            logger.info(f"First message sent: set last_read_at for {self.user.username} in {self.room_name}")
 
         # 🚫 УДАЛЕНА НЕПРАВИЛЬНАЯ АВТООТМЕТКА ПРИ ОТПРАВКЕ СООБЩЕНИЯ
         # Отправка сообщения НЕ означает прочтение всей истории чата!
@@ -576,6 +588,29 @@ class BaseChatConsumer(WebsocketConsumer):
             logger.error(f"Error unpinning message: {e}")
             self.send_error("Ошибка при открепленшании сообщения")
 
+    def handle_save_position(self, data):
+        """Сохранение позиции пользователя в чате для восстановления между сессиями"""
+        last_visible_message_id = data.get('last_visible_message_id')
+        scroll_position_percent = data.get('scroll_position_percent', 0.0)
+
+        try:
+            # Получаем комнату и позицию пользователя
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+            position = UserChatPosition.get_or_create_for_user(self.user, room)
+
+            # Сохраняем позицию
+            if last_visible_message_id:
+                position.last_visible_message_id = last_visible_message_id
+            position.scroll_position_percent = scroll_position_percent
+            position.save()
+
+            logger.info(f"Position saved for {self.user.username} in {self.room_name}: "
+                       f"message_id={last_visible_message_id}, scroll={scroll_position_percent:.2f}")
+
+        except Exception as e:
+            logger.error(f"Error saving position: {e}")
+            self.send_error("Ошибка при сохранении позиции")
+
     def handle_mark_as_read(self, data):
         """Обработка отметки сообщений как прочитанных"""
         message_id = data.get('message_id')
@@ -638,6 +673,15 @@ class BaseChatConsumer(WebsocketConsumer):
             # 🎯 НОВОЕ: Определяем позицию для возвращения в чат
             return_position = position.get_return_position()
 
+            # 🎯 НОВАЯ ЛОГИКА: Для первого визита (last_read_at=None) возвращаем специальную позицию
+            if position.last_read_at is None:
+                # Первый визит - позиционируем в конец чата
+                return_position = {
+                    'type': 'first_visit',
+                    'message_id': None
+                }
+                logger.info(f"First visit positioning for {self.user.username} in {self.room_name}")
+
             self.send(text_data=json.dumps({
                 "type": "unread_info",
                 "unread_count": actual_unread_count,  # ⚡ ОБЩИЙ СЧЕТЧИК НЕПРОЧИТАННЫХ
@@ -647,11 +691,18 @@ class BaseChatConsumer(WebsocketConsumer):
                 "return_position": return_position,  # 🎯 ПОЗИЦИЯ ДЛЯ ВОЗВРАЩЕНИЯ
                 "last_read_at": position.last_read_at.isoformat() if position.last_read_at else None,
                 "last_visit_at": position.last_visit_at.isoformat() if position.last_visit_at else None,
+                "is_first_visit": position.last_read_at is None,  # 🎯 НОВОЕ: Флаг первого визита
+                # 🎯 НОВЫЕ ПОЛЯ ДЛЯ ВОССТАНОВЛЕНИЯ ПОЗИЦИИ МЕЖДУ СЕССИЯМИ
+                "saved_position": {
+                    "last_visible_message_id": position.last_visible_message_id,
+                    "scroll_position_percent": position.scroll_position_percent
+                },
                 # 🐛 DEBUG: Добавляем отладочную информацию
                 "debug_cached_unread": position.unread_count,
                 "debug_actual_unread": actual_unread_count,
                 "debug_cached_personal": position.personal_notifications_count,
-                "debug_actual_personal": actual_personal_count
+                "debug_actual_personal": actual_personal_count,
+                "debug_is_first_visit": position.last_read_at is None
             }))
 
             # 🔧 ОБНОВЛЯЕМ КЕШИРОВАННЫЕ СЧЕТЧИКИ ДЛЯ СИНХРОНИЗАЦИИ

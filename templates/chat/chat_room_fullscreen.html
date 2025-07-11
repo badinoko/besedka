@@ -1296,47 +1296,24 @@
             <!-- Пользователи загружаются динамически -->
         </div>
 
-        <!-- 🔧 УВЕЛИЧЕННАЯ ДИАГНОСТИЧЕСКАЯ ПАНЕЛЬ -->
-        <div id="debug-panel" style="position: absolute; bottom: 10px; left: 10px; width: 220px; height: 280px; background: rgba(0,0,0,0.9); color: white; padding: 12px; border-radius: 8px; font-size: 11px; z-index: 1000; font-family: 'Courier New', monospace; border: 2px solid #444; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        <!-- 🔧 КОМПАКТНАЯ ОТЛАДОЧНАЯ ПАНЕЛЬ В ПРАВОМ НИЖНЕМ УГЛУ -->
+        <div id="debug-panel" style="position: fixed; bottom: 20px; right: 20px; width: 250px; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.9); color: white; padding: 8px; border-radius: 6px; font-size: 10px; z-index: 5000; font-family: 'Courier New', monospace; border: 1px solid #00ff00; box-shadow: 0 2px 10px rgba(0,255,0,0.3);">
 
-            <div style="color: #00ff00; font-weight: bold; margin-bottom: 8px; font-size: 14px; text-align: center; border-bottom: 1px solid #444; padding-bottom: 4px;">📊 DEBUG ПАНЕЛЬ</div>
+            <div style="color: #00ff00; font-weight: bold; margin-bottom: 4px; font-size: 11px; text-align: center;">📊 DEBUG</div>
 
-            <!-- СТАТИСТИКА СООБЩЕНИЙ -->
-            <div style="margin-bottom: 8px; padding: 4px; background: rgba(0,255,0,0.1); border-radius: 4px;">
-                <div style="color: #00ff00; font-weight: bold; margin-bottom: 4px;">📬 СООБЩЕНИЯ:</div>
-                <div style="margin-left: 8px;">
-                    <div>📬 Непрочитанные: <span id="debug-unread-count" style="color: #ffff00; font-weight: bold;">0</span></div>
-                    <div>🎯 Персональные: <span id="debug-personal-count" style="color: #ff6b6b; font-weight: bold;">0</span></div>
-                    <div>⬇️ Ниже позиции: <span id="debug-messages-below" style="color: #ffff00; font-weight: bold;">0</span></div>
-                    <div>🔄 Всего загружено: <span id="debug-total-messages" style="color: #ffff00; font-weight: bold;">0</span></div>
+            <!-- КОМПАКТНАЯ ИНФОРМАЦИЯ -->
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 9px;">
+                <div style="flex: 1; min-width: 110px;">
+                    <div style="color: #00ff00; font-weight: bold; margin-bottom: 2px;">📬 СООБЩЕНИЯ:</div>
+                    <div>Непрочитанные: <span id="debug-unread-count" style="color: #ffff00; font-weight: bold;">0</span></div>
+                    <div>Ниже позиции: <span id="debug-messages-below" style="color: #ffff00; font-weight: bold;">0</span></div>
+                    <div>Всего: <span id="debug-total-messages" style="color: #ffff00; font-weight: bold;">0</span></div>
                 </div>
-            </div>
-
-            <!-- ПОЗИЦИЯ И СКРОЛЛ -->
-            <div style="margin-bottom: 8px; padding: 4px; background: rgba(0,0,255,0.1); border-radius: 4px;">
-                <div style="color: #00aaff; font-weight: bold; margin-bottom: 4px;">📍 ПОЗИЦИЯ:</div>
-                <div style="margin-left: 8px;">
-                    <div>👁️ Видимые: <span id="debug-visible-messages" style="color: #ffff00; font-weight: bold;">0</span></div>
-                    <div>📍 Скролл: <span id="debug-position" style="color: #ffff00; font-weight: bold;">?</span></div>
-                    <div>🏠 В конце: <span id="debug-at-bottom" style="color: #ffff00; font-weight: bold;">?</span></div>
-                </div>
-            </div>
-
-            <!-- СОСТОЯНИЕ КНОПОК -->
-            <div style="margin-bottom: 8px; padding: 4px; background: rgba(255,0,0,0.1); border-radius: 4px;">
-                <div style="color: #ff6666; font-weight: bold; margin-bottom: 4px;">🎯 КНОПКИ:</div>
-                <div style="margin-left: 8px;">
-                    <div>📨 Состояние: <span id="debug-button-state" style="color: #ffff00; font-weight: bold;">hidden</span></div>
-                    <div>🔄 Последнее: <span id="debug-last-read" style="color: #ffff00; font-weight: bold;">none</span></div>
-                </div>
-            </div>
-
-            <!-- СИСТЕМА -->
-            <div style="padding: 4px; background: rgba(255,255,0,0.1); border-radius: 4px;">
-                <div style="color: #ffff00; font-weight: bold; margin-bottom: 4px;">⚙️ СИСТЕМА:</div>
-                <div style="margin-left: 8px;">
-                    <div>📄 Пагинация: <span id="debug-pagination-state" style="color: #ffff00; font-weight: bold;">ready</span></div>
-                    <div>🔗 WebSocket: <span id="debug-websocket-state" style="color: #ffff00; font-weight: bold;">?</span></div>
+                <div style="flex: 1; min-width: 110px;">
+                    <div style="color: #00aaff; font-weight: bold; margin-bottom: 2px;">📍 ПОЗИЦИЯ:</div>
+                    <div>Видимые: <span id="debug-visible-messages" style="color: #ffff00; font-weight: bold;">0</span></div>
+                    <div>Скролл: <span id="debug-position" style="color: #ffff00; font-weight: bold;">?</span></div>
+                    <div>Кнопка: <span id="debug-button-state" style="color: #ffff00; font-weight: bold;">hidden</span></div>
                 </div>
             </div>
         </div>
@@ -1506,6 +1483,11 @@
     let personalNotificationsCount = 0;
     let firstPersonalNotificationId = null;
     let returnPosition = null; // 'personal' | 'unread' | 'bottom'
+
+    // 🎯 НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ СОХРАНЕНИЯ ПОЗИЦИИ МЕЖДУ СЕССИЯМИ
+    let positionSaveTimer = null;
+    let lastSavedPosition = null;
+    let isPositionLoaded = false;
 
     // 📄 ПЕРЕМЕННЫЕ ДЛЯ СИСТЕМЫ ПАГИНАЦИИ
     let isLoadingMoreMessages = false;
@@ -1695,6 +1677,9 @@
         // Обновляем badge и плавающую кнопку
         updateUnreadBadge(); // 📬 ЕДИНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ (включает персональные уведомления)
 
+        // 🎯 НОВОЕ: Обновляем отладочную панель с информацией о сохраненной позиции
+        updateDebugPanel(data.saved_position);
+
         // 📬 РАЗДЕЛИТЕЛЬ УДАЛЕН - ИСПОЛЬЗУЕМ ТОЛЬКО СЧЕТЧИКИ В КНОПКАХ
         console.log('📬 === РАЗДЕЛИТЕЛЬ ОТКЛЮЧЕН - ИСПОЛЬЗУЕМ ТОЛЬКО СЧЕТЧИКИ ===');
 
@@ -1710,17 +1695,24 @@
         // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, нужно ли скроллить ПОСЛЕ получения информации о непрочитанных
         if (historyLoaded && !hasScrolledToUnread && !isNavigatingToMessage) {
             console.log('📬 ===== ВЫПОЛНЯЕМ СКРОЛЛИНГ ПОСЛЕ ПОЛУЧЕНИЯ UNREAD INFO =====');
+            console.log('📬 return_position:', returnPosition);
+            console.log('📬 is_first_visit:', data.is_first_visit);
 
             // Инициализируем системы если еще не инициализированы
             if (!document.querySelector('.chat-messages-area').hasAttribute('data-scroll-initialized')) {
                 setupScrollMarkAsRead();
                 setupFloatingBtnScrollHandling();
                 setupPaginationScrollHandling();
+                setupPositionSaving(); // 🎯 НОВАЯ СИСТЕМА СОХРАНЕНИЯ ПОЗИЦИИ
                 document.querySelector('.chat-messages-area').setAttribute('data-scroll-initialized', 'true');
             }
 
-            // 🎯 ПРАВИЛЬНАЯ TELEGRAM-ЛОГИКА: Умное позиционирование по приоритету
-            if (personalNotificationsCount > 0 && firstPersonalNotificationId) {
+            // 🎯 НОВАЯ ЛОГИКА: Обрабатываем разные типы позиций
+            if (data.is_first_visit || (returnPosition && returnPosition.type === 'first_visit')) {
+                console.log('🎯 ПЕРВЫЙ ВИЗИТ: Прокрутка к концу чата');
+                scrollToBottom();
+                hasScrolledToUnread = true;
+            } else if (personalNotificationsCount > 0 && firstPersonalNotificationId) {
                 console.log('🎯 ПРИОРИТЕТ 1: Прокрутка к персональным уведомлениям');
                 scrollToMessage(firstPersonalNotificationId);
                 hasScrolledToUnread = true;
@@ -1728,12 +1720,13 @@
                 console.log('📬 ПРИОРИТЕТ 2: Прокрутка к общим непрочитанным');
                 scrollToFirstUnread();
                 hasScrolledToUnread = true;
-            } else {
-                console.log('📬 ПРИОРИТЕТ 3: НЕТ НЕПРОЧИТАННЫХ - прокручиваем к концу чата');
-                // 🎯 ИСПРАВЛЕНО: Если нет непрочитанных - должны вернуться к концу чата
-                // Это правильное поведение Telegram - пользователь возвращается туда, где был активен
+            } else if (returnPosition && returnPosition.type === 'end') {
+                console.log('📬 ВОЗВРАТ В КОНЕЦ: Прокрутка к концу чата');
                 scrollToBottom();
                 hasScrolledToUnread = true;
+            } else {
+                console.log('📬 ДЕФОЛТ: Остаемся в текущей позиции');
+                hasScrolledToUnread = true; // Предотвращаем повторные попытки
             }
 
             // Обновляем состояние кнопки
@@ -4227,6 +4220,90 @@
         setTimeout(() => {
             fixHistoricalMessagesRoleIcons();
         }, 100);
+    }
+
+    // === ФУНКЦИИ СОХРАНЕНИЯ И ВОССТАНОВЛЕНИЯ ПОЗИЦИИ ===
+    function updateDebugPanel(savedPosition) {
+        if (!savedPosition) return;
+
+        // Обновляем отладочную панель с информацией о сохраненной позиции
+        const debugLastRead = document.getElementById('debug-last-read');
+        if (debugLastRead && savedPosition.last_visible_message_id) {
+            debugLastRead.textContent = `saved:#${savedPosition.last_visible_message_id}`;
+            debugLastRead.style.color = '#00aaff';
+        }
+
+        // Обновляем информацию о скролле
+        const debugPosition = document.getElementById('debug-position');
+        if (debugPosition && savedPosition.scroll_position_percent !== undefined) {
+            const scrollPercent = Math.round(savedPosition.scroll_position_percent * 100);
+            debugPosition.textContent = `${scrollPercent}% (saved)`;
+            debugPosition.style.color = '#00ff00';
+        }
+
+        console.log('🎯 DEBUG PANEL обновлен с сохраненной позицией:', savedPosition);
+    }
+
+    function saveUserPosition() {
+        const messagesArea = document.getElementById('chat-messages-area');
+        if (!messagesArea) return;
+
+        // Находим последнее видимое сообщение
+        const messages = messagesArea.querySelectorAll('.chat-message');
+        if (messages.length === 0) return;
+
+        let lastVisibleMessageId = null;
+        const areaRect = messagesArea.getBoundingClientRect();
+        const centerY = areaRect.top + (areaRect.height / 2);
+
+        // Находим сообщение ближайшее к центру видимой области
+        for (const message of messages) {
+            const messageRect = message.getBoundingClientRect();
+            if (messageRect.top < centerY && messageRect.bottom > areaRect.top) {
+                lastVisibleMessageId = message.dataset.messageId;
+            }
+        }
+
+        // Вычисляем процент прокрутки
+        const scrollPercent = messagesArea.scrollTop / (messagesArea.scrollHeight - messagesArea.clientHeight);
+        const normalizedScrollPercent = Math.max(0, Math.min(1, scrollPercent));
+
+        // Сохраняем позицию только если она изменилась
+        const newPosition = {
+            last_visible_message_id: lastVisibleMessageId,
+            scroll_position_percent: normalizedScrollPercent
+        };
+
+        if (JSON.stringify(newPosition) !== JSON.stringify(lastSavedPosition)) {
+            lastSavedPosition = newPosition;
+
+            // Отправляем на сервер
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    type: 'save_position',
+                    ...newPosition
+                }));
+            }
+        }
+    }
+
+    function setupPositionSaving() {
+        const messagesArea = document.getElementById('chat-messages-area');
+        if (!messagesArea) return;
+
+        // Сохраняем позицию при скролле (с дебаунсом)
+        messagesArea.addEventListener('scroll', function() {
+            clearTimeout(positionSaveTimer);
+            positionSaveTimer = setTimeout(saveUserPosition, 1000); // Сохраняем через 1 секунду после остановки скролла
+        });
+
+        // Также сохраняем позицию при потере фокуса страницы
+        window.addEventListener('beforeunload', saveUserPosition);
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                saveUserPosition();
+            }
+        });
     }
 
 </script>
