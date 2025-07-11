@@ -1080,6 +1080,23 @@
         }
     }
 
+    /* 🎯 ПОДСВЕТКА ПЕРСОНАЛЬНЫХ УВЕДОМЛЕНИЙ (КРАСНАЯ) */
+    .message-highlight-personal {
+        animation: highlightPulsePersonal 2s ease-out;
+    }
+
+    @keyframes highlightPulsePersonal {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+        }
+        20% {
+            box-shadow: 0 0 0 10px rgba(255, 71, 87, 0.3);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+        }
+    }
+
     /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА БЕЗ BOOTSTRAP */
     .custom-modal {
         position: fixed;
@@ -1809,6 +1826,51 @@
         }
     }
 
+    // 🎯 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ ПЕРСОНАЛЬНОМУ УВЕДОМЛЕНИЮ (TELEGRAM-СТАНДАРТ)
+    function scrollToPersonalNotification(messageId) {
+        if (!messageId) {
+            console.log('🎯 No personal notification messageId - staying in current position');
+            return;
+        }
+
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            console.log('🎯 🎯 ТОЧНАЯ НАВИГАЦИЯ к персональному уведомлению:', messageId);
+
+            // Блокируем автоскроллинг во время навигации
+            isNavigatingToMessage = true;
+
+            // 🎯 TELEGRAM-СТАНДАРТ: Позиционируем в верхней трети экрана
+            const messagesArea = document.getElementById('chat-messages-area');
+            const containerHeight = messagesArea.clientHeight;
+            const targetPosition = messageElement.offsetTop - (containerHeight * 0.25);
+
+            // Плавная прокрутка к точной позиции
+            messagesArea.scrollTo({
+                top: Math.max(0, targetPosition),
+                behavior: 'smooth'
+            });
+
+            // Подсветка целевого сообщения (красная для персональных)
+            messageElement.classList.add('message-highlight-personal');
+            setTimeout(() => {
+                messageElement.classList.remove('message-highlight-personal');
+            }, 2000);
+
+            // Разблокируем через секунду
+            setTimeout(() => {
+                isNavigatingToMessage = false;
+            }, 1000);
+
+            console.log('🎯 ✅ Навигация к персональному уведомлению завершена (верхняя треть экрана)');
+
+        } else {
+            console.log('🎯 Personal notification message not found - staying in current position');
+            // 🎯 ИСПРАВЛЕНО: НЕ скроллим к концу если сообщение не найдено
+            // Пользователь останется в текущей позиции
+        }
+    }
+
     // 🎯 НОВАЯ ФУНКЦИЯ: ВОССТАНОВЛЕНИЕ СОХРАНЕННОЙ ПОЗИЦИИ МЕЖДУ СЕССИЯМИ
     function scrollToSavedPosition(savedPosition) {
         if (!savedPosition || !savedPosition.last_visible_message_id) {
@@ -1862,7 +1924,7 @@
         // 🎯 ПРИОРИТЕТ 1: Персональные уведомления (высший приоритет)
         if (personalNotificationsCount > 0 && firstPersonalNotificationId) {
             console.log('🎯 Scrolling to first personal notification via floating button');
-            scrollToMessage(firstPersonalNotificationId);
+            scrollToPersonalNotification(firstPersonalNotificationId);
             return;
         }
 
@@ -1929,9 +1991,9 @@
         }
 
         // 🎯 ПРИОРИТЕТ 2: СТРЕЛКА ВНИЗ С ЧИСЛОМ СООБЩЕНИЙ НИЖЕ
-        // Проверяем позицию скролла
-        const scrollThreshold = 50;
-        const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - scrollThreshold);
+        // Проверяем позицию скролла (ИСПРАВЛЕННАЯ ЛОГИКА)
+        const scrollThreshold = 20; // Уменьшаем порог для точности
+        const isAtBottom = (messagesArea.scrollTop + messagesArea.clientHeight + scrollThreshold) >= messagesArea.scrollHeight;
 
         if (!isAtBottom) {
             // Считаем все сообщения ниже текущей позиции
@@ -1974,20 +2036,22 @@
         }
     }
 
-    // 🎯 НОВАЯ ФУНКЦИЯ: Подсчет сообщений ниже текущей позиции просмотра
+    // 🎯 ИСПРАВЛЕННАЯ ФУНКЦИЯ: Подсчет сообщений ниже текущей позиции просмотра
     function countMessagesBelow() {
         const messagesArea = document.getElementById('chat-messages-area');
         const messages = messagesArea.querySelectorAll('.chat-message');
 
-        const scrollBottom = messagesArea.scrollTop + messagesArea.clientHeight;
-        const totalMessages = messages.length;
-        const visibleMessages = getVisibleMessages(0.1).length; // Хотя бы 10% видимости
+        // 🔧 ИСПРАВЛЕННАЯ ЛОГИКА: Считаем сообщения, которые НЕ видны внизу
+        const containerRect = messagesArea.getBoundingClientRect();
+        const containerBottom = containerRect.bottom;
         let count = 0;
 
         messages.forEach(message => {
-            const messageTop = message.offsetTop;
-            // Если верх сообщения ниже видимой области - считаем его
-            if (messageTop >= scrollBottom) {
+            const messageRect = message.getBoundingClientRect();
+            const messageBottom = messageRect.bottom;
+
+            // Если низ сообщения ниже видимой области - считаем его
+            if (messageBottom > containerBottom) {
                 count++;
             }
         });
@@ -1999,6 +2063,9 @@
         const debugPosition = document.getElementById('debug-position');
         const debugAtBottom = document.getElementById('debug-at-bottom');
 
+        const totalMessages = messages.length;
+        const visibleMessages = getVisibleMessages(0.1).length; // Хотя бы 10% видимости
+
         if (debugTotalMessages) debugTotalMessages.textContent = totalMessages;
         if (debugVisibleMessages) debugVisibleMessages.textContent = visibleMessages;
         if (debugMessagesBelow) debugMessagesBelow.textContent = count;
@@ -2009,8 +2076,8 @@
         }
 
         if (debugAtBottom) {
-            const scrollThreshold = 50;
-            const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - scrollThreshold);
+            const scrollThreshold = 20; // Обновляем порог для соответствия
+            const isAtBottom = (messagesArea.scrollTop + messagesArea.clientHeight + scrollThreshold) >= messagesArea.scrollHeight;
             debugAtBottom.textContent = isAtBottom ? 'YES' : 'NO';
             debugAtBottom.style.color = isAtBottom ? '#00ff00' : '#ff6666';
         }
