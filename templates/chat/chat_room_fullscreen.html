@@ -1819,6 +1819,14 @@
             btnIcon.className = 'fas fa-envelope nav-icon';
             floatingBtn.title = `${personalNotificationsCount} персональных уведомлений (@упоминания и ответы)`;
             console.log(`🎯 ПОКАЗАН КОНВЕРТ ПЕРСОНАЛЬНЫХ: ${personalNotificationsCount} уведомлений`);
+
+            // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ
+            const debugButtonState = document.getElementById('debug-button-state');
+            if (debugButtonState) {
+                debugButtonState.textContent = `personal(${personalNotificationsCount})`;
+                debugButtonState.style.color = '#ff6b6b';
+            }
+
             return;
         }
 
@@ -1830,6 +1838,14 @@
             btnIcon.className = 'fas fa-envelope nav-icon';
             floatingBtn.title = `${unreadCount} непрочитанных сообщений`;
             console.log(`📬 ПОКАЗАН КОНВЕРТ ОБЩИХ: ${unreadCount} непрочитанных сообщений`);
+
+            // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ
+            const debugButtonState = document.getElementById('debug-button-state');
+            if (debugButtonState) {
+                debugButtonState.textContent = `unread(${unreadCount})`;
+                debugButtonState.style.color = '#ffff00';
+            }
+
             return;
         }
 
@@ -1850,6 +1866,14 @@
                 btnIcon.className = 'fas fa-envelope nav-icon'; // КОНВЕРТ вместо стрелки
                 floatingBtn.title = `${messagesBelow} непрочитанных сообщений`;
                 console.log(`📬 ПОКАЗАН КОНВЕРТ TELEGRAM-СТАНДАРТ: ${messagesBelow} непрочитанных сообщений ниже`);
+
+                // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ
+                const debugButtonState = document.getElementById('debug-button-state');
+                if (debugButtonState) {
+                    debugButtonState.textContent = `envelope(${messagesBelow})`;
+                    debugButtonState.style.color = '#00ff00';
+                }
+
                 return;
             }
         }
@@ -1857,6 +1881,13 @@
         // 🎯 ПРИОРИТЕТ 4: КНОПКА СКРЫТА (нет непрочитанных И пользователь внизу)
         floatingBtn.style.display = 'none';
         console.log('📬 КНОПКА СКРЫТА: нет непрочитанных и пользователь внизу');
+
+        // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ
+        const debugButtonState = document.getElementById('debug-button-state');
+        if (debugButtonState) {
+            debugButtonState.textContent = 'hidden';
+            debugButtonState.style.color = '#666666';
+        }
     }
 
     // 🎯 НОВАЯ ФУНКЦИЯ: Подсчет сообщений ниже текущей позиции просмотра
