@@ -48,8 +48,9 @@ class BaseChatConsumer(WebsocketConsumer):
             # Обновляем position после mark_as_read
             position.refresh_from_db()
 
-        # Отправляем ПРАВИЛЬНУЮ информацию о непрочитанных (уже после mark_as_read)
-        self.send_unread_info(position)
+        # 📬 ИСПРАВЛЕНО: НЕ ОТПРАВЛЯЕМ unread_info здесь - отправим ПОСЛЕ истории сообщений
+        # Сохраняем позицию для позднейшего использования
+        self.user_position = position
 
         # Уведомляем других о подключении
         async_to_sync(self.channel_layer.group_send)(
@@ -187,6 +188,11 @@ class BaseChatConsumer(WebsocketConsumer):
                 "type": "messages_history",
                 "messages": messages_data
             }))
+
+            # 📬 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Отправляем unread_info ПОСЛЕ истории сообщений
+            # Используем позицию из connect() если она есть, иначе текущую
+            position_to_use = getattr(self, 'user_position', user_position)
+            self.send_unread_info(position_to_use)
 
         except Exception as e:
             logger.error(f"Error sending message history: {e}")

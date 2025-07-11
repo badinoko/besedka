@@ -1443,6 +1443,7 @@
     let firstUnreadMessageId = null;
     let lastReadAt = null;
     let hasScrolledToUnread = false;
+    let hasReceivedUnreadInfo = false; // 🔧 НОВАЯ ПЕРЕМЕННАЯ: получена ли информация о непрочитанных
 
     // 📄 ПЕРЕМЕННЫЕ ДЛЯ СИСТЕМЫ ПАГИНАЦИИ
     let isLoadingMoreMessages = false;
@@ -1626,6 +1627,34 @@
         const separatorRemoved = removeUnreadSeparator();
         if (separatorRemoved) {
             console.log('📬 Существующий разделитель удален');
+        }
+
+        // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем флаг получения unread_info
+        hasReceivedUnreadInfo = true;
+
+        // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, нужно ли скроллить ПОСЛЕ получения информации о непрочитанных
+        if (historyLoaded && !hasScrolledToUnread && !isNavigatingToMessage) {
+            console.log('📬 ===== ВЫПОЛНЯЕМ СКРОЛЛИНГ ПОСЛЕ ПОЛУЧЕНИЯ UNREAD INFO =====');
+
+            // Инициализируем системы если еще не инициализированы
+            if (!document.querySelector('.chat-messages-area').hasAttribute('data-scroll-initialized')) {
+                setupScrollMarkAsRead();
+                setupFloatingBtnScrollHandling();
+                setupPaginationScrollHandling();
+                document.querySelector('.chat-messages-area').setAttribute('data-scroll-initialized', 'true');
+            }
+
+            // Выполняем правильный скроллинг
+            if (firstUnreadMessageId && unreadCount > 0) {
+                console.log('📬 Scrolling to first unread after receiving unread_info');
+                scrollToFirstUnread();
+            } else {
+                console.log('📬 No unread messages, scrolling to bottom');
+                scrollToBottom();
+            }
+
+            // Обновляем состояние кнопки
+            updateFloatingUnreadBtn();
         }
 
         console.log('📬 ===== UNREAD INFO PROCESSED =====');
@@ -2441,33 +2470,23 @@
 
         // 📬 ОЖИДАЕМ ИНФОРМАЦИЮ О НЕПРОЧИТАННЫХ ПЕРЕД СКРОЛЛИНГОМ
         if (!isNavigatingToMessage) {
-            // Увеличиваем задержку чтобы дождаться unread_info события
+            console.log('📬 ===== ИСТОРИЯ СООБЩЕНИЙ ЗАГРУЖЕНА - ЖДЕМ UNREAD INFO =====');
+            console.log('📬 hasReceivedUnreadInfo:', hasReceivedUnreadInfo);
+            console.log('📬 Current unreadCount:', unreadCount);
+            console.log('📬 Current firstUnreadMessageId:', firstUnreadMessageId);
+
+            // 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ СКРОЛЛИМ ЗДЕСЬ - СКРОЛЛИНГ БУДЕТ В handleUnreadInfo
+            console.log('📬 Waiting for unread_info event before scrolling...');
+
+            // Инициализируем системы заранее, но скроллинг отложим
             setTimeout(() => {
-                console.log('📬 Checking scroll logic after history load');
-                console.log('📬 firstUnreadMessageId:', firstUnreadMessageId);
-                console.log('📬 unreadCount:', unreadCount);
-                console.log('📬 hasScrolledToUnread:', hasScrolledToUnread);
-
-                // 🎯 ИНИЦИАЛИЗИРУЕМ TELEGRAM-ПОДОБНУЮ ПЛАВАЮЩУЮ КНОПКУ И ЛОГИКУ СКРОЛЛА
-                setupScrollMarkAsRead();
-                setupFloatingBtnScrollHandling();
-
-                // 📄 ИНИЦИАЛИЗИРУЕМ СИСТЕМУ ПАГИНАЦИИ
-                setupPaginationScrollHandling();
-
-                // Если есть непрочитанные сообщения, скроллим к первому непрочитанному
-                if (firstUnreadMessageId && !hasScrolledToUnread) {
-                    console.log('📬 Scrolling to first unread after history load');
-                    scrollToFirstUnread();
-                } else {
-                    console.log('📬 No unread messages or already scrolled, going to bottom');
-                    // Иначе скроллим к последнему сообщению
+                if (!hasReceivedUnreadInfo) {
+                    console.log('📬 ⚠️ Не получили unread_info за разумное время - скроллим к концу');
+                    // Fallback: если не получили unread_info, скроллим к концу
                     scrollToBottom();
+                    updateFloatingUnreadBtn();
                 }
-
-                // 🎯 ПЕРВЫЙ ВЫЗОВ ДЛЯ УСТАНОВКИ НАЧАЛЬНОГО СОСТОЯНИЯ КНОПКИ
-                updateFloatingUnreadBtn();
-            }, 800); // Увеличена задержка с 200ms до 800ms для ожидания unread_info
+            }, 2000); // Fallback через 2 секунды
         } else {
             console.log('🚫 Auto-scroll skipped: navigation in progress (message history)');
         }
