@@ -5,6 +5,7 @@ import uuid
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from datetime import timedelta
+import re
 
 User = get_user_model()
 
@@ -113,6 +114,38 @@ class Message(models.Model):
             return None
         return self.edited_by.display_name
 
+    def mentions_user(self, user):
+        """Проверяет, упоминается ли пользователь в сообщении"""
+        if not self.content:
+            return False
+
+        # Паттерны для поиска упоминаний
+        patterns = [
+            f'@{user.username}',
+            f'@{user.display_name}',
+            f'@{user.name}' if user.name else None,
+        ]
+
+        # Убираем None значения
+        patterns = [p for p in patterns if p]
+
+        for pattern in patterns:
+            if pattern.lower() in self.content.lower():
+                return True
+        return False
+
+    def is_personal_notification_for(self, user):
+        """Проверяет, является ли сообщение персональным уведомлением для пользователя"""
+        # Ответ на сообщение пользователя
+        if self.parent and self.parent.author == user:
+            return True
+
+        # Упоминание пользователя в сообщении
+        if self.mentions_user(user):
+            return True
+
+        return False
+
 
 class MessageReaction(models.Model):
     """
@@ -201,6 +234,20 @@ class UserChatPosition(models.Model):
         default=0,
         help_text="Кешированное количество непрочитанных сообщений для быстрого доступа"
     )
+
+    # Новые поля для системы персональных уведомлений
+    personal_notifications_count = models.PositiveIntegerField(
+        _("Количество персональных уведомлений"),
+        default=0,
+        help_text="Кешированное количество персональных уведомлений (ответы + упоминания)"
+    )
+    last_visit_at = models.DateTimeField(
+        _("Последний визит"),
+        null=True,
+        blank=True,
+        help_text="Время последнего визита в чат для определения правильной позиции"
+    )
+
     updated_at = models.DateTimeField(
         _("Обновлено"),
         auto_now=True,
@@ -215,16 +262,51 @@ class UserChatPosition(models.Model):
             models.Index(fields=['user', 'room']),
             models.Index(fields=['last_read_at']),
             models.Index(fields=['unread_count']),
+            models.Index(fields=['personal_notifications_count']),
+            models.Index(fields=['last_visit_at']),
         ]
 
     def __str__(self):
-        return f"{self.user.display_name} в {self.room.name} (непрочитанных: {self.unread_count})"
+        return f"{self.user.display_name} в {self.room.name} (непрочитанных: {self.unread_count}, персональных: {self.personal_notifications_count})"
 
     def get_unread_messages_count(self):
         """Вычисляет актуальное количество непрочитанных сообщений"""
         if not self.last_read_at:
             # 🔧 ИСПРАВЛЕНО: Для новых пользователей НЕТ непрочитанных сообщений
             # Непрочитанные появляются только ПОСЛЕ первого посещения чата
+            return 0
+
+        return self.room.messages.filter(
+            created_at__gt=self.last_read_at,
+            is_deleted=False
+        ).count()
+
+    def get_personal_notifications_count(self):
+        """Вычисляет актуальное количество персональных уведомлений"""
+        if not self.last_visit_at:
+            # Для новых пользователей НЕТ персональных уведомлений
+            return 0
+
+        # Персональные уведомления - это сообщения после последнего визита, которые:
+        # 1. Являются ответами на сообщения этого пользователя
+        # 2. Или упоминают этого пользователя
+        personal_messages = self.room.messages.filter(
+            created_at__gt=self.last_visit_at,
+            is_deleted=False
+        ).exclude(
+            author=self.user  # Исключаем собственные сообщения
+        )
+
+        count = 0
+        for message in personal_messages:
+            if message.is_personal_notification_for(self.user):
+                count += 1
+
+        return count
+
+    def get_messages_below_current_position(self):
+        """Возвращает количество сообщений ниже текущей позиции скролла"""
+        if not self.last_read_at:
             return 0
 
         return self.room.messages.filter(
@@ -246,8 +328,9 @@ class UserChatPosition(models.Model):
         else:
             self.last_read_at = timezone.now()
 
-        # Обновляем кешированный счетчик
+        # Обновляем кешированные счетчики
         self.unread_count = self.get_unread_messages_count()
+        self.personal_notifications_count = self.get_personal_notifications_count()
         self.save()
 
         # Логируем изменение для отладки
@@ -255,7 +338,12 @@ class UserChatPosition(models.Model):
         logger = logging.getLogger(__name__)
         logger.info(f"Position updated for {self.user.username} in {self.room.name}: "
                    f"last_read_at {old_last_read_at} -> {self.last_read_at}, "
-                   f"unread_count: {self.unread_count}")
+                   f"unread_count: {self.unread_count}, personal_notifications: {self.personal_notifications_count}")
+
+    def mark_visit(self):
+        """Отмечает визит пользователя в чат"""
+        self.last_visit_at = timezone.now()
+        self.save()
 
     def get_first_unread_message(self):
         """Возвращает первое непрочитанное сообщение или None"""
@@ -269,6 +357,49 @@ class UserChatPosition(models.Model):
             is_deleted=False
         ).order_by('created_at').first()
 
+    def get_first_personal_notification(self):
+        """Возвращает первое персональное уведомление или None"""
+        if not self.last_visit_at:
+            return None
+
+        # Находим первое сообщение с персональным уведомлением
+        personal_messages = self.room.messages.filter(
+            created_at__gt=self.last_visit_at,
+            is_deleted=False
+        ).exclude(
+            author=self.user
+        ).order_by('created_at')
+
+        for message in personal_messages:
+            if message.is_personal_notification_for(self.user):
+                return message
+
+        return None
+
+    def get_return_position(self):
+        """Определяет позицию для возвращения в чат"""
+        # Если есть персональные уведомления, возвращаемся к первому
+        first_personal = self.get_first_personal_notification()
+        if first_personal:
+            return {
+                'type': 'personal',
+                'message_id': str(first_personal.id)
+            }
+
+        # Если есть непрочитанные сообщения, возвращаемся к первому непрочитанному
+        first_unread = self.get_first_unread_message()
+        if first_unread:
+            return {
+                'type': 'unread',
+                'message_id': str(first_unread.id)
+            }
+
+        # Если нет ни персональных, ни непрочитанных, возвращаемся к концу
+        return {
+            'type': 'end',
+            'message_id': None
+        }
+
     @classmethod
     def get_or_create_for_user(cls, user, room):
         """Получает или создает позицию пользователя в комнате"""
@@ -277,8 +408,9 @@ class UserChatPosition(models.Model):
             room=room,
             defaults={
                 'last_read_at': None,
-                'unread_count': 0
+                'last_visit_at': None,
+                'unread_count': 0,
+                'personal_notifications_count': 0
             }
         )
-
         return position
