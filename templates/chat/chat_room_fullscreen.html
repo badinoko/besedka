@@ -1444,6 +1444,11 @@
     let lastReadAt = null;
     let hasScrolledToUnread = false;
 
+    // 📄 ПЕРЕМЕННЫЕ ДЛЯ СИСТЕМЫ ПАГИНАЦИИ
+    let isLoadingMoreMessages = false;
+    let hasMoreMessages = true;
+    let oldestLoadedMessageId = null;
+
     // Переменные для режима ответа
     let replyMode = {
         active: false,
@@ -2072,6 +2077,9 @@
             case 'unread_info':
                 handleUnreadInfo(data);
                 break;
+            case 'more_messages':
+                handleMoreMessages(data);
+                break;
             case 'error':
                 showTemporaryFeedback(`❌ ${data.message}`, 'error');
                 break;
@@ -2443,6 +2451,9 @@
                 // 🎯 ИНИЦИАЛИЗИРУЕМ TELEGRAM-ПОДОБНУЮ ПЛАВАЮЩУЮ КНОПКУ И ЛОГИКУ СКРОЛЛА
                 setupScrollMarkAsRead();
                 setupFloatingBtnScrollHandling();
+
+                // 📄 ИНИЦИАЛИЗИРУЕМ СИСТЕМУ ПАГИНАЦИИ
+                setupPaginationScrollHandling();
 
                 // Если есть непрочитанные сообщения, скроллим к первому непрочитанному
                 if (firstUnreadMessageId && !hasScrolledToUnread) {
@@ -3885,10 +3896,140 @@
             }
         }
         if (debugButtonState) debugButtonState.textContent = buttonState;
+
+        // Обновляем информацию о пагинации
+        const debugPaginationState = document.getElementById('debug-pagination-state');
+        const debugHasMore = document.getElementById('debug-has-more');
+
+        let paginationState = 'ready';
+        if (isLoadingMoreMessages) {
+            paginationState = 'loading';
+        } else if (!hasMoreMessages) {
+            paginationState = 'no_more';
+        }
+
+        if (debugPaginationState) debugPaginationState.textContent = paginationState;
+        if (debugHasMore) debugHasMore.textContent = hasMoreMessages ? 'true' : 'false';
     }
 
     // Обновляем отладочную панель при изменениях
     setInterval(updateDebugPanel, 1000);
+
+    // 📄 =============== СИСТЕМА ПАГИНАЦИИ ===============
+
+    // 📄 НАСТРОЙКА ОБРАБОТКИ СКРОЛЛА ДЛЯ АВТОЗАГРУЗКИ
+    function setupPaginationScrollHandling() {
+        const messagesArea = document.getElementById('chat-messages-area');
+
+        if (!messagesArea) {
+            console.warn('📄 Messages area not found for pagination');
+            return;
+        }
+
+        messagesArea.addEventListener('scroll', debounce(() => {
+            checkNeedToLoadMore();
+        }, 200));
+
+        console.log('📄 ✅ Pagination scroll handling initialized');
+    }
+
+    // 📄 ПРОВЕРКА НЕОБХОДИМОСТИ ЗАГРУЗКИ ДОПОЛНИТЕЛЬНЫХ СООБЩЕНИЙ
+    function checkNeedToLoadMore() {
+        if (isLoadingMoreMessages || !hasMoreMessages) {
+            return;
+        }
+
+        const messagesArea = document.getElementById('chat-messages-area');
+        const currentScrollTop = messagesArea.scrollTop;
+
+        // 🎯 TELEGRAM-ЛОГИКА: Загружаем когда пользователь прокрутил в верхние 20% от загруженного контента
+        const loadThreshold = messagesArea.scrollHeight * 0.2;
+
+        if (currentScrollTop <= loadThreshold) {
+            console.log('📄 🎯 User approached top 20% - loading more messages');
+            requestMoreMessages();
+        }
+    }
+
+    // 📄 ЗАПРОС ДОПОЛНИТЕЛЬНЫХ СООБЩЕНИЙ
+    function requestMoreMessages() {
+        if (isLoadingMoreMessages || !hasMoreMessages) {
+            console.log('📄 ⏭️ Skip loading: already loading or no more messages');
+            return;
+        }
+
+        isLoadingMoreMessages = true;
+
+        // Находим самое старое сообщение
+        const messages = document.querySelectorAll('.chat-message[data-message-id]');
+        if (messages.length === 0) {
+            console.log('📄 ❌ No messages found to determine oldest');
+            isLoadingMoreMessages = false;
+            return;
+        }
+
+        oldestLoadedMessageId = messages[0].dataset.messageId;
+
+        console.log('📄 🔄 Requesting more messages before:', oldestLoadedMessageId);
+
+        // Отправляем запрос через WebSocket
+        chatSocket.send(JSON.stringify({
+            type: 'load_more_messages',
+            before_message_id: oldestLoadedMessageId
+        }));
+    }
+
+    // 📄 ОБРАБОТКА ПОЛУЧЕННЫХ ДОПОЛНИТЕЛЬНЫХ СООБЩЕНИЙ
+    function handleMoreMessages(data) {
+        console.log('📄 📦 Received more messages:', data.messages.length, 'has_more:', data.has_more);
+
+        if (data.messages.length === 0) {
+            hasMoreMessages = false;
+            isLoadingMoreMessages = false;
+            console.log('📄 ✋ No more messages to load');
+            return;
+        }
+
+        // Запоминаем текущую позицию скролла
+        const messagesArea = document.getElementById('chat-messages-area');
+        const oldScrollHeight = messagesArea.scrollHeight;
+        const oldScrollTop = messagesArea.scrollTop;
+
+        // Вставляем новые сообщения в начало
+        insertMessagesAtTop(data.messages);
+
+        // Восстанавливаем позицию скролла
+        const newScrollHeight = messagesArea.scrollHeight;
+        const scrollDifference = newScrollHeight - oldScrollHeight;
+        messagesArea.scrollTop = oldScrollTop + scrollDifference;
+
+        // Обновляем флаги
+        hasMoreMessages = data.has_more;
+        isLoadingMoreMessages = false;
+
+        console.log('📄 ✅ Successfully loaded and positioned', data.messages.length, 'more messages');
+    }
+
+    // 📄 ВСТАВКА СООБЩЕНИЙ В НАЧАЛО СПИСКА
+    function insertMessagesAtTop(messages) {
+        const chatLog = document.querySelector('#chat-log');
+
+        // Создаем фрагмент для всех новых сообщений
+        const fragment = document.createDocumentFragment();
+
+        messages.forEach(message => {
+            const messageElement = createMessageElement(message);
+            fragment.appendChild(messageElement);
+        });
+
+        // Вставляем все сообщения одним блоком в начало
+        chatLog.insertBefore(fragment, chatLog.firstChild);
+
+        // Исправляем значки ролей в новых сообщениях
+        setTimeout(() => {
+            fixHistoricalMessagesRoleIcons();
+        }, 100);
+    }
 
 </script>
 
@@ -3902,6 +4043,8 @@
     <div>🔄 totalMessages: <span id="debug-total-messages" style="color: #ffff00;">0</span></div>
     <div>👁️ visibleMessages: <span id="debug-visible-messages" style="color: #ffff00;">0</span></div>
     <div>🎯 buttonState: <span id="debug-button-state" style="color: #ffff00;">unknown</span></div>
+    <div>📄 paginationState: <span id="debug-pagination-state" style="color: #ffff00;">unknown</span></div>
+    <div>📤 hasMoreMessages: <span id="debug-has-more" style="color: #ffff00;">true</span></div>
 </div>
 
 {% endblock %}

@@ -105,6 +105,8 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.handle_unpin_message(data)
             elif message_type == 'mark_as_read':
                 self.handle_mark_as_read(data)
+            elif message_type == 'load_more_messages':
+                self.handle_load_more_messages(data)
             else:
                 logger.warning(f"Unknown message type: {message_type}")
 
@@ -634,6 +636,57 @@ class BaseChatConsumer(WebsocketConsumer):
 
         except Exception as e:
             logger.error(f"Error sending unread info: {e}")
+
+    def handle_load_more_messages(self, data):
+        """Обработка запроса на загрузку дополнительных сообщений (пагинация)"""
+        before_message_id = data.get('before_message_id')
+
+        try:
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+
+            # Если не указан ID, начинаем с самых старых сообщений
+            if before_message_id:
+                try:
+                    before_message = Message.objects.get(id=before_message_id, room=room, is_deleted=False)
+                    # Загружаем 50 сообщений старше указанного
+                    messages = Message.objects.filter(
+                        room=room,
+                        is_deleted=False,
+                        created_at__lt=before_message.created_at
+                    ).select_related(
+                        'author', 'parent', 'parent__author'
+                    ).order_by('-created_at')[:50]
+                except Message.DoesNotExist:
+                    self.send_error("Сообщение не найдено")
+                    return
+            else:
+                # Загружаем самые старые 50 сообщений
+                messages = Message.objects.filter(
+                    room=room,
+                    is_deleted=False
+                ).select_related(
+                    'author', 'parent', 'parent__author'
+                ).order_by('created_at')[:50]
+
+            # Конвертируем в JSON (в хронологическом порядке)
+            messages_data = []
+            for msg in reversed(messages) if before_message_id else messages:
+                message_json = self.message_to_json(msg, is_history=True)
+                messages_data.append(message_json)
+
+            # Отправляем дополнительные сообщения
+            self.send(text_data=json.dumps({
+                "type": "more_messages",
+                "messages": messages_data,
+                "has_more": len(messages) == 50,  # Есть ли еще сообщения для загрузки
+                "before_message_id": before_message_id
+            }))
+
+            logger.info(f"Loaded {len(messages_data)} more messages for {self.user.username} in {self.room_name}")
+
+        except Exception as e:
+            logger.error(f"Error loading more messages: {e}")
+            self.send_error("Ошибка загрузки сообщений")
 
     def can_edit_message(self, message):
         """Проверка прав на редактирование сообщения"""
