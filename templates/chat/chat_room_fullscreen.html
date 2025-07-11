@@ -1296,18 +1296,48 @@
             <!-- Пользователи загружаются динамически -->
         </div>
 
-        <!-- 🔧 ДИАГНОСТИЧЕСКАЯ ПАНЕЛЬ В ПРАВОЙ ЧАСТИ -->
-        <div id="debug-panel" style="position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.85); color: white; padding: 8px; border-radius: 6px; font-size: 9px; z-index: 1000; font-family: monospace; border: 1px solid #444;">
-            <div style="color: #00ff00; font-weight: bold; margin-bottom: 4px; font-size: 10px; text-align: center;">📊 DEBUG</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 8px;">
-                <div>📬 unread: <span id="debug-unread-count" style="color: #ffff00;">0</span></div>
-                <div>🎯 personal: <span id="debug-personal-count" style="color: #ff6b6b;">0</span></div>
-                <div>⬇️ below: <span id="debug-messages-below" style="color: #ffff00;">0</span></div>
-                <div>📍 pos: <span id="debug-position" style="color: #ffff00;">?</span></div>
-                <div>🔄 total: <span id="debug-total-messages" style="color: #ffff00;">0</span></div>
-                <div>👁️ visible: <span id="debug-visible-messages" style="color: #ffff00;">0</span></div>
-                <div>🎯 btn: <span id="debug-button-state" style="color: #ffff00;">hidden</span></div>
-                <div>📄 page: <span id="debug-pagination-state" style="color: #ffff00;">ready</span></div>
+        <!-- 🔧 УВЕЛИЧЕННАЯ ДИАГНОСТИЧЕСКАЯ ПАНЕЛЬ -->
+        <div id="debug-panel" style="position: absolute; bottom: 10px; left: 10px; width: 220px; height: 280px; background: rgba(0,0,0,0.9); color: white; padding: 12px; border-radius: 8px; font-size: 11px; z-index: 1000; font-family: 'Courier New', monospace; border: 2px solid #444; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+
+            <div style="color: #00ff00; font-weight: bold; margin-bottom: 8px; font-size: 14px; text-align: center; border-bottom: 1px solid #444; padding-bottom: 4px;">📊 DEBUG ПАНЕЛЬ</div>
+
+            <!-- СТАТИСТИКА СООБЩЕНИЙ -->
+            <div style="margin-bottom: 8px; padding: 4px; background: rgba(0,255,0,0.1); border-radius: 4px;">
+                <div style="color: #00ff00; font-weight: bold; margin-bottom: 4px;">📬 СООБЩЕНИЯ:</div>
+                <div style="margin-left: 8px;">
+                    <div>📬 Непрочитанные: <span id="debug-unread-count" style="color: #ffff00; font-weight: bold;">0</span></div>
+                    <div>🎯 Персональные: <span id="debug-personal-count" style="color: #ff6b6b; font-weight: bold;">0</span></div>
+                    <div>⬇️ Ниже позиции: <span id="debug-messages-below" style="color: #ffff00; font-weight: bold;">0</span></div>
+                    <div>🔄 Всего загружено: <span id="debug-total-messages" style="color: #ffff00; font-weight: bold;">0</span></div>
+                </div>
+            </div>
+
+            <!-- ПОЗИЦИЯ И СКРОЛЛ -->
+            <div style="margin-bottom: 8px; padding: 4px; background: rgba(0,0,255,0.1); border-radius: 4px;">
+                <div style="color: #00aaff; font-weight: bold; margin-bottom: 4px;">📍 ПОЗИЦИЯ:</div>
+                <div style="margin-left: 8px;">
+                    <div>👁️ Видимые: <span id="debug-visible-messages" style="color: #ffff00; font-weight: bold;">0</span></div>
+                    <div>📍 Скролл: <span id="debug-position" style="color: #ffff00; font-weight: bold;">?</span></div>
+                    <div>🏠 В конце: <span id="debug-at-bottom" style="color: #ffff00; font-weight: bold;">?</span></div>
+                </div>
+            </div>
+
+            <!-- СОСТОЯНИЕ КНОПОК -->
+            <div style="margin-bottom: 8px; padding: 4px; background: rgba(255,0,0,0.1); border-radius: 4px;">
+                <div style="color: #ff6666; font-weight: bold; margin-bottom: 4px;">🎯 КНОПКИ:</div>
+                <div style="margin-left: 8px;">
+                    <div>📨 Состояние: <span id="debug-button-state" style="color: #ffff00; font-weight: bold;">hidden</span></div>
+                    <div>🔄 Последнее: <span id="debug-last-read" style="color: #ffff00; font-weight: bold;">none</span></div>
+                </div>
+            </div>
+
+            <!-- СИСТЕМА -->
+            <div style="padding: 4px; background: rgba(255,255,0,0.1); border-radius: 4px;">
+                <div style="color: #ffff00; font-weight: bold; margin-bottom: 4px;">⚙️ СИСТЕМА:</div>
+                <div style="margin-left: 8px;">
+                    <div>📄 Пагинация: <span id="debug-pagination-state" style="color: #ffff00; font-weight: bold;">ready</span></div>
+                    <div>🔗 WebSocket: <span id="debug-websocket-state" style="color: #ffff00; font-weight: bold;">?</span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1699,9 +1729,10 @@
                 scrollToFirstUnread();
                 hasScrolledToUnread = true;
             } else {
-                console.log('📬 ПРИОРИТЕТ 3: НЕТ НЕПРОЧИТАННЫХ - остаемся в текущей позиции');
-                // 🎯 ИСПРАВЛЕНО: НЕ скроллим к концу если нет непрочитанных
-                // Пользователь останется в той позиции, где загрузилась история
+                console.log('📬 ПРИОРИТЕТ 3: НЕТ НЕПРОЧИТАННЫХ - прокручиваем к концу чата');
+                // 🎯 ИСПРАВЛЕНО: Если нет непрочитанных - должны вернуться к концу чата
+                // Это правильное поведение Telegram - пользователь возвращается туда, где был активен
+                scrollToBottom();
                 hasScrolledToUnread = true;
             }
 
@@ -1849,7 +1880,7 @@
             return;
         }
 
-        // 🎯 ПРИОРИТЕТ 3: TELEGRAM-СТАНДАРТ - КОНВЕРТ С СООБЩЕНИЯМИ НИЖЕ КАК "НЕПРОЧИТАННЫЕ"
+        // 🎯 ПРИОРИТЕТ 3: СТРЕЛКА ВНИЗ (нет непрочитанных, но есть сообщения ниже)
         const scrollThreshold = 50;
         const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - scrollThreshold);
 
@@ -1857,21 +1888,20 @@
             const messagesBelow = countMessagesBelow();
 
             if (messagesBelow > 0) {
-                // 🏆 ИСПРАВЛЕНИЕ: ПОКАЗЫВАЕМ КОНВЕРТ ВМЕСТО СТРЕЛКИ
-                // Согласно Telegram-стандарту, если пользователь в начале чата и есть сообщения ниже,
-                // то эти сообщения должны рассматриваться как "непрочитанные"
+                // 🏆 ПРАВИЛЬНО: СТРЕЛКА ВНИЗ СО СЧЕТЧИКОМ (КАК В TELEGRAM)
+                // Если нет непрочитанных, но пользователь не в конце - показываем стрелку
                 floatingBtn.style.display = 'flex';
                 countBadge.textContent = messagesBelow > 999 ? '999+' : messagesBelow;
                 countBadge.style.display = 'inline';
-                btnIcon.className = 'fas fa-envelope nav-icon'; // КОНВЕРТ вместо стрелки
-                floatingBtn.title = `${messagesBelow} непрочитанных сообщений`;
-                console.log(`📬 ПОКАЗАН КОНВЕРТ TELEGRAM-СТАНДАРТ: ${messagesBelow} непрочитанных сообщений ниже`);
+                btnIcon.className = 'fas fa-arrow-down nav-icon'; // СТРЕЛКА вниз (правильно!)
+                floatingBtn.title = `${messagesBelow} сообщений ниже - перейти к концу`;
+                console.log(`📬 ПОКАЗАНА СТРЕЛКА ВНИЗ: ${messagesBelow} сообщений ниже`);
 
                 // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ
                 const debugButtonState = document.getElementById('debug-button-state');
                 if (debugButtonState) {
-                    debugButtonState.textContent = `envelope(${messagesBelow})`;
-                    debugButtonState.style.color = '#00ff00';
+                    debugButtonState.textContent = `arrow-down(${messagesBelow})`;
+                    debugButtonState.style.color = '#00aaff';
                 }
 
                 return;
@@ -1896,6 +1926,8 @@
         const messages = messagesArea.querySelectorAll('.chat-message');
 
         const scrollBottom = messagesArea.scrollTop + messagesArea.clientHeight;
+        const totalMessages = messages.length;
+        const visibleMessages = getVisibleMessages(0.1).length; // Хотя бы 10% видимости
         let count = 0;
 
         messages.forEach(message => {
@@ -1906,7 +1938,30 @@
             }
         });
 
-        console.log(`📬 Подсчитано сообщений ниже текущей позиции: ${count}`);
+        // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ С ПОЛНОЙ ИНФОРМАЦИЕЙ
+        const debugTotalMessages = document.getElementById('debug-total-messages');
+        const debugVisibleMessages = document.getElementById('debug-visible-messages');
+        const debugMessagesBelow = document.getElementById('debug-messages-below');
+        const debugPosition = document.getElementById('debug-position');
+        const debugAtBottom = document.getElementById('debug-at-bottom');
+
+        if (debugTotalMessages) debugTotalMessages.textContent = totalMessages;
+        if (debugVisibleMessages) debugVisibleMessages.textContent = visibleMessages;
+        if (debugMessagesBelow) debugMessagesBelow.textContent = count;
+
+        if (debugPosition) {
+            const scrollPercent = Math.round((messagesArea.scrollTop / (messagesArea.scrollHeight - messagesArea.clientHeight)) * 100) || 0;
+            debugPosition.textContent = `${scrollPercent}%`;
+        }
+
+        if (debugAtBottom) {
+            const scrollThreshold = 50;
+            const isAtBottom = messagesArea.scrollTop >= (messagesArea.scrollHeight - messagesArea.clientHeight - scrollThreshold);
+            debugAtBottom.textContent = isAtBottom ? 'YES' : 'NO';
+            debugAtBottom.style.color = isAtBottom ? '#00ff00' : '#ff6666';
+        }
+
+        console.log(`📬 Подсчитано сообщений ниже текущей позиции: ${count}, всего: ${totalMessages}, видимых: ${visibleMessages}`);
         return count;
     }
 
@@ -1998,6 +2053,13 @@
 
         console.log('📬 Marking messages as read:', markData);
         chatSocket.send(JSON.stringify(markData));
+
+        // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ - последнее прочитанное
+        const debugLastRead = document.getElementById('debug-last-read');
+        if (debugLastRead && messageId) {
+            debugLastRead.textContent = `#${messageId}`;
+            debugLastRead.style.color = '#00ff00';
+        }
 
         // 🔧 ИСПРАВЛЕНИЕ: Запрашиваем обновленную информацию о непрочитанных
         // Backend автоматически отправит unread_info после обработки mark_as_read
@@ -2134,6 +2196,13 @@
     chatSocket.onopen = function(e) {
         console.log('✅ WebSocket connected');
         updateConnectionStatus('connected');
+
+        // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ - WebSocket статус
+        const debugWebSocketState = document.getElementById('debug-websocket-state');
+        if (debugWebSocketState) {
+            debugWebSocketState.textContent = 'CONNECTED';
+            debugWebSocketState.style.color = '#00ff00';
+        }
 
         // Очищаем сообщения только при первом подключении
         if (!historyLoaded) {
@@ -2649,6 +2718,13 @@
     chatSocket.onclose = function(e) {
         console.error('❌ Chat socket closed unexpectedly');
         updateConnectionStatus('disconnected');
+
+        // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ - WebSocket статус
+        const debugWebSocketState = document.getElementById('debug-websocket-state');
+        if (debugWebSocketState) {
+            debugWebSocketState.textContent = 'DISCONNECTED';
+            debugWebSocketState.style.color = '#ff6666';
+        }
 
         const errorElement = document.createElement('div');
         errorElement.classList.add('text-danger', 'text-center', 'my-3');
