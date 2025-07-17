@@ -2023,33 +2023,37 @@
         updateArrowDownButton();
     }
 
-    // 📬 АЛИАС ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ (исправляет ошибки вызова)
-    function updateFloatingUnreadBtn() {
-        updateFloatingButtons();
-    }
-
-    // 🎯 TELEGRAM-СТАНДАРТ: Подсчет сообщений ниже видимой области
+    // 🎯 КРИТИЧЕСКИ ИСПРАВЛЕННАЯ ФУНКЦИЯ: Подсчет сообщений ниже текущей позиции просмотра
     function countMessagesBelow() {
         const messagesArea = document.getElementById('chat-messages-area');
         const messages = messagesArea.querySelectorAll('.chat-message');
 
         if (messages.length === 0) return 0;
 
-        // Получаем границы видимой области
-        const containerRect = messagesArea.getBoundingClientRect();
-        const viewportBottom = containerRect.bottom;
+        // 🔧 НОВАЯ ЛОГИКА: Ищем последнее видимое сообщение через скролл-позицию
+        const scrollTop = messagesArea.scrollTop;
+        const scrollHeight = messagesArea.scrollHeight;
+        const clientHeight = messagesArea.clientHeight;
+        const scrollBottom = scrollTop + clientHeight;
 
         let count = 0;
+        let lastVisibleMessageIndex = -1;
 
-        // Считаем сообщения, которые полностью находятся НИЖЕ видимой области
+        // Найти последнее видимое сообщение
         for (let i = 0; i < messages.length; i++) {
             const message = messages[i];
-            const messageRect = message.getBoundingClientRect();
+            const messageTop = message.offsetTop;
+            const messageBottom = messageTop + message.offsetHeight;
 
-            // Если верх сообщения находится ниже низа видимой области
-            if (messageRect.top > viewportBottom) {
-                count++;
+            // Если сообщение хотя бы частично видимо
+            if (messageTop < scrollBottom && messageBottom > scrollTop) {
+                lastVisibleMessageIndex = i;
             }
+        }
+
+        // Считаем сообщения после последнего видимого
+        if (lastVisibleMessageIndex >= 0) {
+            count = messages.length - lastVisibleMessageIndex - 1;
         }
 
         // 🔧 ОБНОВЛЯЕМ DEBUG ПАНЕЛЬ С ПОЛНОЙ ИНФОРМАЦИЕЙ
@@ -2319,7 +2323,7 @@
         // Разблокируем и обновляем кнопку через секунду
         setTimeout(() => {
             isNavigatingToMessage = false;
-            updateFloatingButtons();
+            updateFloatingUnreadBtn();
         }, 1000);
 
         console.log('📬 ✅ Прокрутка к последнему сообщению (scrollToBottom)');

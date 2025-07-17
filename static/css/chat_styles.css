@@ -3201,3 +3201,97 @@
     background: rgba(0, 0, 0, 0.2) !important;
 }
 
+/* ===== 🔴 КРАСНАЯ КНОПКА @ ДЛЯ ПЕРСОНАЛЬНЫХ УВЕДОМЛЕНИЙ ===== */
+.floating-personal-btn {
+    position: fixed;
+    bottom: 150px; /* Выше зеленой стрелки */
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ff4757, #ee5a6f);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow:
+        0 8px 25px rgba(255, 71, 87, 0.4),
+        0 4px 12px rgba(255, 71, 87, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.floating-personal-btn:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 12px 35px rgba(255, 71, 87, 0.5),
+        0 6px 18px rgba(255, 71, 87, 0.4),
+        0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.floating-personal-btn .personal-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #fff;
+    color: #ff4757;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== 🟢 ЗЕЛЕНАЯ СТРЕЛКА ВНИЗ (ОРИГИНАЛЬНАЯ КНОПКА) ===== */
+.floating-unread-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    box-shadow:
+        0 8px 25px rgba(40, 167, 69, 0.4),
+        0 4px 12px rgba(40, 167, 69, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.floating-unread-btn:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 12px 35px rgba(40, 167, 69, 0.5),
+        0 6px 18px rgba(40, 167, 69, 0.4),
+        0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.floating-unread-btn .nav-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4757;
+    color: #fff;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
