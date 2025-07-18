@@ -8,1244 +8,8 @@
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    /* 🟣 РЕВОЛЮЦИОННЫЕ ФИОЛЕТОВЫЕ ГРАНИЦЫ ДЛЯ ОКАНТОВКИ */
-    :root {
-        --border-color: #6f42c1; /* Красивый фиолетовый цвет */
-        --border-width: 3px; /* Унифицированная толщина */
-
-        /* ===== СИСТЕМА ТЕМ ДЛЯ ЧАТА ===== */
-        --bg-primary: #ffffff;
-        --bg-secondary: #f8f9fa;
-        --text-primary: #333333;
-        --text-secondary: #666666; /* ИСПРАВЛЕНО: более контрастный серый вместо очень темного */
-        --border-color-theme: #dee2e6;
-
-        /* Цвета для сообщений чата */
-        --chat-own-bg: #3B82F6;
-        --chat-own-text: #ffffff;
-        --chat-other-bg: #F3F4F6;
-        --chat-other-text: #111827;
-        --chat-forwarded-bg: rgba(217, 151, 6, 0.1); /* ИСПРАВЛЕНО: светло-оранжевый фон вместо синего */
-        --chat-quote-border: #007bff;
-        --chat-forward-border: #D97706; /* Оранжевая граница согласно дорожной карте */
-
-        /* Цвета для поля ввода */
-        --chat-input-bg: #ffffff;
-        --chat-input-text: #333333;
-        --chat-input-border: #dee2e6;
-    }
-
-    [data-theme="dark"] {
-        /* Темная тема */
-        --bg-primary: #1a1a1a;
-        --bg-secondary: #2d2d2d;
-        --text-primary: #e5e5e5;
-        --text-secondary: #cccccc; /* ИСПРАВЛЕНО: более контрастный светлый серый */
-        --border-color: #495057;
-        --border-color-theme: #495057;
-
-        /* Цвета для сообщений чата в темной теме */
-        --chat-own-bg: #2563EB;
-        --chat-own-text: #ffffff;
-        --chat-other-bg: #1F2937;
-        --chat-other-text: #f9fafb;
-        --chat-forwarded-bg: rgba(217, 151, 6, 0.15); /* ИСПРАВЛЕНО: более темный оранжевый фон для темной темы */
-        --chat-quote-border: #66a3ff;
-        --chat-forward-border: #D97706; /* Оранжевая граница согласно дорожной карте */
-
-        /* Цвета для поля ввода в темной теме */
-        --chat-input-bg: #2d2d2d;
-        --chat-input-text: #e5e5e5;
-        --chat-input-border: #495057;
-    }
-
-    /* 🟣 ПОЛНОЭКРАННЫЙ ЧАТ С ПОЛНОЙ ФИОЛЕТОВОЙ ОКАНТОВКОЙ И ПОДДЕРЖКОЙ ТЕМ */
-    .chat-fullscreen-container {
-        position: fixed; /* 🎯 ИСПРАВЛЕНО: Возвращено для восстановления верстки */
-        top: 60px; /* Под навигацией */
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        display: flex;
-        flex-direction: column;
-        /* 🟣 ПОЛНАЯ ОКАНТОВКА ВКЛЮЧАЯ ВЕРХНЮЮ ПОД НАВИГАЦИЕЙ */
-        border-top: var(--border-width) solid var(--border-color);
-        border-left: var(--border-width) solid var(--border-color);
-        border-right: var(--border-width) solid var(--border-color);
-        border-bottom: var(--border-width) solid var(--border-color);
-        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    /* 🟣 КОМПАКТНАЯ ОБЛАСТЬ СООБЩЕНИЙ БЕЗ ЛИШНИХ ОТСТУПОВ И С ПОДДЕРЖКОЙ ТЕМ */
-    .chat-messages-area {
-        position: relative; /* ДОБАВЛЕНО для правильного позиционирования плавающей кнопки */
-        flex: 1;
-        overflow-y: auto;
-        padding: 0.75rem; /* УМЕНЬШЕНО с 1.5rem до 0.75rem */
-        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        border: none; /* Убираем все границы - граница будет только у .users-sidebar */
-        box-shadow: none; /* Убираем тени */
-        margin-top: var(--border-width); /* ОТСТУП ОТ ВЕРХНЕЙ ГРАНИЦЫ */
-        margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
-        margin-right: calc(240px + var(--border-width)); /* УМЕНЬШЕННАЯ ПАНЕЛЬ + ЕЕ ОТСТУП */
-        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    /* Стили сообщений */
-    .chat-message {
-        position: relative;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: flex-start;
-    }
-
-    /* === НОВЫЕ СТИЛИ СООБЩЕНИЙ СОГЛАСНО ТЗ === */
-    .message-content {
-        position: relative;
-        max-width: 75%; /* Увеличена с 70% до 75% согласно ТЗ */
-        min-width: 240px; /* Уменьшена с 300px до 240px согласно ТЗ */
-        padding: 12px 16px 3rem 16px; /* Изменены отступы согласно ТЗ: 12-16px */
-        border-radius: 12px; /* Изменено с 1rem на 12px согласно ТЗ */
-        word-wrap: break-word;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .message-content.own {
-        background: var(--chat-own-bg); /* Используем CSS переменную */
-        color: var(--chat-own-text); /* Используем CSS переменную */
-        margin-left: auto; /* Выравнивание справа */
-        border: none; /* Убираем границу */
-    }
-
-    .message-content.other {
-        background: var(--chat-other-bg); /* Используем CSS переменную */
-        color: var(--chat-other-text); /* Используем CSS переменную */
-        margin-right: auto; /* Выравнивание слева */
-        border: none; /* Убираем границу */
-    }
-
-    /* Стили для автора сообщения - УБРАНА ОВАЛЬНАЯ ПОДЛОЖКА */
-    .message-content.own .message-author,
-    .message-content.other .message-author {
-        background: none !important; /* УБИРАЕМ ПОДЛОЖКУ */
-        border: none !important; /* УБИРАЕМ ГРАНИЦУ */
-        border-radius: 0 !important; /* УБИРАЕМ СКРУГЛЕНИЕ */
-        padding: 0 !important; /* УБИРАЕМ ОТСТУПЫ */
-        backdrop-filter: none !important; /* УБИРАЕМ BLUR */
-        box-shadow: none !important; /* УБИРАЕМ ТЕНИ */
-    }
-
-    /* === ТИПОГРАФИКА СОГЛАСНО ТЗ === */
-    .message-author {
-        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Согласно ТЗ */
-        font-weight: 600;
-        font-size: 14px; /* Согласно ТЗ */
-        margin-bottom: 8px; /* Компактнее согласно ТЗ */
-        letter-spacing: 0.2px;
-
-        /* УБРАНА ОВАЛЬНАЯ ПОДЛОЖКА - ТОЛЬКО ТЕКСТ */
-        display: inline-block;
-        padding: 0; /* УБРАНА ПОДЛОЖКА */
-    }
-
-    .message-text {
-        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Согласно ТЗ */
-        margin: 6px 0 8px 0; /* Компактнее согласно ТЗ */
-        font-size: 16px; /* Согласно ТЗ: 14-16px */
-        font-weight: 400;
-        line-height: 1.4;
-    }
-
-    /* === АНИМАЦИЯ ПОЯВЛЕНИЯ СООБЩЕНИЙ СОГЛАСНО ТЗ === */
-    .chat-message {
-        animation: messageAppear 0.3s ease-out;
-    }
-
-    @keyframes messageAppear {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Hover эффекты для карточек согласно ТЗ */
-    .message-content:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: translateY(-1px);
-    }
-
-    /* === ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ - ВСЕГДА ЧИТАЕМОЕ === */
-    .message-timestamp {
-        position: absolute;
-        bottom: 8px;
-        right: 12px;
-        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        /* ДНЕВНАЯ ТЕМА - ВСЕГДА ЧЕРНЫЙ */
-        color: #333333 !important;
-        opacity: 0.9;
-    }
-
-    /* НОЧНАЯ ТЕМА - ВСЕГДА БЕЛЫЙ ДЛЯ ВСЕХ ВРЕМЕННЫХ МЕТОК */
-    [data-theme="dark"] .message-timestamp {
-        color: #ffffff !important;
-        opacity: 0.9;
-    }
-
-    /* === КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ === */
-    .message-reactions {
-        position: absolute;
-        bottom: 0.5rem;
-        left: 0.75rem;
-        display: flex;
-        flex-direction: row;
-        gap: 1rem; /* Увеличенный отступ между мини-блоками */
-        align-items: center;
-    }
-
-    /* Мини-блоки кнопка + счетчик */
-    .reaction-group {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem; /* Маленький отступ между кнопкой и счетчиком */
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 1rem;
-        padding: 0.25rem 0.4rem 0.25rem 0.5rem; /* Левый отступ больше для кнопки, правый адаптивный */
-        backdrop-filter: blur(5px);
-        min-width: fit-content; /* Автоматическое расширение под контент */
-        white-space: nowrap; /* Предотвращаем перенос строки */
-    }
-
-    /* === НОВЫЕ СТИЛИ КНОПОК РЕАКЦИЙ СОГЛАСНО ТЗ === */
-    .reaction-btn {
-        width: 30px; /* Согласно ТЗ: 28-32px */
-        height: 30px;
-        border-radius: 50%;
-        border: none;
-        background: rgba(255, 255, 255, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Зеленая кнопка лайка */
-    .reaction-btn.like-btn {
-        background: #10B981; /* Зеленый согласно ТЗ */
-        color: white !important;
-    }
-
-    .reaction-btn.like-btn:hover {
-        background: #059669; /* Темнее при hover */
-        transform: scale(1.1);
-        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
-    }
-
-    .reaction-btn.like-btn.reacted {
-        background: #059669;
-        opacity: 0.8;
-        cursor: not-allowed;
-    }
-
-    /* Красная кнопка дизлайка */
-    .reaction-btn.dislike-btn {
-        background: #EF4444; /* Красный согласно ТЗ */
-        color: white !important;
-    }
-
-    .reaction-btn.dislike-btn:hover {
-        background: #DC2626; /* Темнее при hover */
-        transform: scale(1.1);
-        box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
-    }
-
-    .reaction-btn.dislike-btn.reacted {
-        background: #DC2626;
-        opacity: 0.8;
-        cursor: not-allowed;
-    }
-
-    .reaction-count {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: inherit; /* Наследует цвет от родителя */
-        margin: 0; /* Убираем margin, gap уже задан в .reaction-group */
-        min-width: 1ch; /* Минимальная ширина для одной цифры */
-        text-align: center; /* Центрируем текст */
-        display: inline-block; /* Для правильного позиционирования */
-        line-height: 1; /* Убираем лишние отступы */
-    }
-
-    /* === НОВЫЕ СТИЛИ ЦИТАТ СОГЛАСНО ТЗ === */
-    .reply-quote {
-        background: rgba(0, 123, 255, 0.03) !important; /* ДЕЛИКАТНАЯ ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
-        border: none !important;
-        border-left: 4px solid var(--chat-quote-border) !important; /* Левая полоса согласно ТЗ */
-        border-radius: 12px !important; /* Согласно ТЗ */
-        padding: 12px !important; /* Согласно ТЗ */
-        margin-bottom: 12px !important;
-        font-size: 12px !important; /* Мелкий шрифт согласно ТЗ (90% от основного 14px) */
-        cursor: pointer;
-        transition: all 0.2s ease;
-        max-height: 60px; /* Ограничение по высоте - три строки */
-        overflow: hidden;
-        position: relative;
-    }
-
-    .reply-quote:hover {
-        background: rgba(0, 123, 255, 0.08) !important; /* УСИЛЕННАЯ ГОЛУБАЯ ПОДЛОЖКА ПРИ HOVER */
-        border-left-color: var(--chat-quote-border) !important;
-    }
-
-    .reply-quote-author {
-        font-weight: 700;
-        color: var(--chat-quote-border) !important; /* Цвет полосы */
-        margin-bottom: 4px !important;
-        font-size: 11px !important;
-        line-height: 1.2;
-    }
-
-    .reply-quote-text {
-        color: var(--text-secondary) !important; /* Вторичный цвет текста */
-        line-height: 1.3;
-        font-weight: 400;
-        font-style: italic;
-        display: -webkit-box;
-        -webkit-line-clamp: 3; /* Ограничение до 3 строк */
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        background: none !important; /* УБИРАЕМ ЧЕРНУЮ ПОДЛОЖКУ */
-        padding: 0 !important;
-        border-radius: 0 !important;
-    }
-
-    /* === ЦИТАТЫ В СОБСТВЕННЫХ СООБЩЕНИЯХ (НЕ ПЕРЕСЛАННЫХ) - АДАПТИВНЫЕ ПОД СИНИЙ ФОН === */
-    .message-content.own:not(.forwarded-own) .reply-quote-author {
-        color: rgba(255, 255, 255, 0.95) !important; /* Белый для хорошей видимости на синем */
-        font-weight: 700;
-    }
-
-    .message-content.own:not(.forwarded-own) .reply-quote-text {
-        color: rgba(255, 255, 255, 0.8) !important; /* Белый полупрозрачный для текста цитаты */
-    }
-
-    /* === ЦИТАТЫ В ПЕРЕСЛАННЫХ СООБЩЕНИЯХ - ДНЕВНАЯ ТЕМА === */
-    .message-content.forwarded-own .reply-quote-text,
-    .message-content.forwarded-other .reply-quote-text {
-        color: #333333 !important; /* Черный для читаемости в дневной теме */
-        font-weight: 500;
-    }
-
-    .message-content.forwarded-own .reply-quote-author,
-    .message-content.forwarded-other .reply-quote-author {
-        color: #D97706 !important; /* Оранжевый цвет как у границы пересланных */
-        font-weight: 700;
-    }
-
-    /* 🌙 === ИСПРАВЛЕНИЯ ДЛЯ ТЕМНОЙ ТЕМЫ === */
-
-    /* Исправляем цитаты в темной теме */
-    [data-theme="dark"] .reply-quote {
-        background: rgba(102, 163, 255, 0.05) !important; /* ДЕЛИКАТНАЯ СИНЯЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ В ТЕМНОЙ ТЕМЕ */
-        border-left-color: #66a3ff !important; /* Яркая синяя граница для контраста */
-    }
-
-    [data-theme="dark"] .reply-quote:hover {
-        background: rgba(102, 163, 255, 0.12) !important; /* УСИЛЕННАЯ СИНЯЯ ПОДЛОЖКА ПРИ HOVER В ТЕМНОЙ ТЕМЕ */
-        border-left-color: #4dabf7 !important; /* Еще ярче синий при hover */
-    }
-
-    /* Исправляем цвет автора цитаты в темной теме */
-    [data-theme="dark"] .reply-quote-author {
-        color: #66a3ff !important; /* Яркий синий для хорошей видимости */
-    }
-
-    /* Исправляем цвет текста цитаты в темной теме */
-    [data-theme="dark"] .reply-quote-text {
-        color: #e5e5e5 !important; /* Светлый серый для отличной читаемости */
-    }
-
-    /* Исправляем заголовки пересланных сообщений в темной теме */
-    [data-theme="dark"] .forwarded-header {
-        color: #cccccc !important; /* Светлый серый для хорошей видимости */
-    }
-
-    /* Исправляем цитаты в пересланных сообщениях в темной теме */
-    [data-theme="dark"] .message-content.forwarded-own .reply-quote,
-    [data-theme="dark"] .message-content.forwarded-other .reply-quote {
-        background: rgba(217, 119, 6, 0.08) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА В ТЕМНОЙ ТЕМЕ */
-        border-left-color: #D97706 !important; /* Оранжевая граница как у пересланных */
-    }
-
-    [data-theme="dark"] .message-content.forwarded-own .reply-quote:hover,
-    [data-theme="dark"] .message-content.forwarded-other .reply-quote:hover {
-        background: rgba(217, 119, 6, 0.15) !important; /* УСИЛЕННАЯ ОРАНЖЕВАЯ ПОДЛОЖКА ПРИ HOVER */
-        border-left-color: #ffa94d !important; /* Ярче оранжевый при hover */
-    }
-
-    /* Исправляем автора в пересланных цитатах в темной теме */
-    [data-theme="dark"] .message-content.forwarded-own .reply-quote-author,
-    [data-theme="dark"] .message-content.forwarded-other .reply-quote-author {
-        color: #D97706 !important; /* Оранжевый цвет как граница */
-    }
-
-    /* Исправляем текст цитат в пересланных сообщениях в темной теме */
-    [data-theme="dark"] .message-content.forwarded-own .reply-quote-text,
-    [data-theme="dark"] .message-content.forwarded-other .reply-quote-text {
-        color: #ffffff !important; /* Белый для читаемости в темной теме */
-        font-weight: 500;
-    }
-
-    /* === БАЗОВЫЕ СТИЛИ ДЛЯ ИНДИКАТОРА РЕДАКТИРОВАНИЯ === */
-    .edit-indicator {
-        color: #333333 !important; /* Черный цвет в обеих темах */
-        font-weight: 600;
-        font-size: 0.75rem;
-        font-style: italic;
-        margin-top: 0.25rem;
-        /* Убираем любые подложки */
-        background: none !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-            /* Темная тема - белый цвет для хорошей видимости на темном фоне */
-        [data-theme="dark"] .edit-indicator {
-            color: #ffffff !important;
-            font-weight: 600;
-            /* Убираем любые подложки */
-            background: none !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-    /* === КНОПКА ОТВЕТИТЬ === */
-    .message-actions {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        display: none;
-        z-index: 10;
-    }
-
-    .chat-message:hover .message-actions {
-        display: flex;
-    }
-
-    .action-btn {
-        background: rgba(255, 255, 255, 0.95);
-        border: 2px solid #007bff;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 0.8rem;
-        color: #007bff;
-        transition: all 0.2s ease;
-        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
-    }
-
-    .action-btn:hover {
-        background: #007bff;
-        color: white;
-        transform: scale(1.15);
-    }
-
-    /* === НАВИГАЦИЯ И DROPDOWN === */
-    .current-channel-nav {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #fff !important;
-        text-decoration: none;
-    }
-
-    .current-channel-nav:hover {
-        color: #e9ecef !important;
-        text-decoration: none;
-    }
-
-    .dropdown-menu {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-
-    .dropdown-item {
-        color: #333;
-        padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .dropdown-item:hover {
-        background: #f8f9fa;
-        color: #333;
-        transform: translateX(5px);
-    }
-
-    /* 🟣 КОМПАКТНАЯ ПРАВАЯ ПАНЕЛЬ С ФИОЛЕТОВОЙ ГРАНИЦЕЙ И ПОДДЕРЖКОЙ ТЕМ */
-    .users-sidebar {
-        position: fixed;
-        top: calc(60px + var(--border-width)); /* ПОСЛЕ НАВИГАЦИИ И ВЕРХНЕЙ ГРАНИЦЫ */
-        right: var(--border-width); /* ОТСТУП ОТ ПРАВОГО КРАЯ НА ТОЛЩИНУ ГРАНИЦЫ */
-        width: 240px; /* УМЕНЬШЕННАЯ ШИРИНА с 250px до 240px */
-        height: calc(100vh - 60px - 2 * var(--border-width)); /* УЧИТЫВАЕМ ВЕРХНЮЮ И НИЖНЮЮ ГРАНИЦЫ */
-        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        border: none; /* Убираем все границы */
-        border-left: var(--border-width) solid var(--border-color); /* ФИОЛЕТОВАЯ ГРАНИЦА ДЛЯ РАЗДЕЛЕНИЯ */
-        display: flex;
-        flex-direction: column;
-        box-shadow: none; /* Убираем тени */
-        z-index: 20; /* Выше чем поле ввода */
-        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    /* Позиционирование для отладочной панели внутри users-sidebar */
-    .users-sidebar > #debug-panel {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-    }
-
-    /* 🏆 РЕВОЛЮЦИОННЫЕ ОБЪЕМНЫЕ СЧЕТЧИКИ ПОЛЬЗОВАТЕЛЕЙ */
-    .users-header {
-        padding: 0.8rem 0.6rem; /* УДОБНЫЕ ОТСТУПЫ */
-        border-bottom: var(--border-width) solid var(--border-color);
-        background: var(--bg-primary); /* НЕЙТРАЛЬНЫЙ ФОН ПОД ТЕМУ */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 0.5rem; /* НЕБОЛЬШОЙ ЗАЗОР МЕЖДУ СЧЕТЧИКАМИ */
-        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-        /* 📊 КОМПАКТНЫЕ ПРЯМОУГОЛЬНЫЕ СЧЕТЧИКИ */
-    .user-counter {
-        flex: 1; /* РАВНОМЕРНОЕ ЗАПОЛНЕНИЕ ПРОСТРАНСТВА */
-        min-width: 0; /* ПОЗВОЛЯЕТ FLEX СЖИМАТЬСЯ */
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 50%, #004494 100%); /* СИНИЙ ГРАДИЕНТ */
-        color: white;
-        padding: 0.45rem 0.6rem; /* УМЕНЬШЕНЫ ОТСТУПЫ */
-        border-radius: 6px; /* ЧУТЬ МЕНЬШЕ СКРУГЛЕНИЯ */
-        font-size: 0.8rem; /* УМЕНЬШЕН ШРИФТ */
-        font-weight: 700;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-
-        /* 🎨 БОЛЕЕ ДЕЛИКАТНЫЕ ТЕНИ */
-        box-shadow:
-            0 6px 20px rgba(0, 123, 255, 0.25),
-            0 3px 8px rgba(0, 123, 255, 0.2),
-            0 1px 4px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.08);
-
-        border: 1px solid rgba(255, 255, 255, 0.2); /* ТОНЬШЕ ГРАНИЦА */
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease;
-        cursor: default;
-    }
-
-    /* 🌊 КОМПАКТНЫЙ ПЕРЕЛИВАЮЩИЙСЯ ЭФФЕКТ ДЛЯ ЛЕЙБЛА */
-    .user-counter-label {
-        display: block;
-        font-size: 0.65rem; /* УМЕНЬШЕН */
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.4px; /* УМЕНЬШЕН */
-        margin-bottom: 0.1rem; /* УМЕНЬШЕН */
-        opacity: 0.9;
-
-        /* МЯГКИЙ ПЕРЕЛИВАЮЩИЙСЯ ГРАДИЕНТ */
-        background: linear-gradient(90deg,
-            rgba(255, 255, 255, 0.8) 0%,
-            rgba(255, 255, 255, 1) 50%,
-            rgba(255, 255, 255, 0.8) 100%);
-        background-size: 200% 100%;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: shimmerText 3s ease-in-out infinite;
-    }
-
-    /* 🔢 КОМПАКТНЫЕ ЧИСЛА СЧЕТЧИКОВ */
-    .user-counter-number {
-        font-size: 1.2rem; /* УМЕНЬШЕН С 1.4rem */
-        font-weight: 800;
-        line-height: 1;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); /* БОЛЕЕ ДЕЛИКАТНАЯ ТЕНЬ */
-        transition: transform 0.2s ease; /* ПЛАВНАЯ АНИМАЦИЯ ПРИ ИЗМЕНЕНИИ ЧИСЕЛ */
-    }
-
-    /* 🌊 АНИМАЦИЯ ПЕРЕЛИВАНИЯ ТЕКСТА */
-    @keyframes shimmerText {
-        0%, 100% { background-position: 200% 0; }
-        50% { background-position: -200% 0; }
-    }
-
-    /* 🎯 СПЕЦИАЛЬНЫЕ ЦВЕТА ДЛЯ РАЗНЫХ СЧЕТЧИКОВ */
-    .user-counter.total-counter {
-        background: linear-gradient(135deg, #74c0fc 0%, #339af0 50%, #1c7ed6 100%); /* ПРИЯТНЫЙ ГОЛУБОЙ */
-        box-shadow:
-            0 6px 20px rgba(51, 154, 240, 0.25),
-            0 3px 8px rgba(51, 154, 240, 0.2),
-            0 1px 4px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.08);
-    }
-
-    .user-counter.online-counter {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #17a88d 100%); /* ЖИВОЙ ЗЕЛЕНЫЙ OnAir */
-        box-shadow:
-            0 8px 25px rgba(40, 167, 69, 0.4),
-            0 4px 12px rgba(40, 167, 69, 0.3),
-            0 2px 6px rgba(0, 0, 0, 0.15),
-            inset 0 2px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-        /* ПУЛЬСАЦИЯ КАК У OnAir ЭФФЕКТА */
-        animation: onlineCounterPulse 2s ease-in-out infinite;
-    }
-
-    /* 📬 УДАЛЕНО ДУБЛИРУЮЩЕЕ ОПРЕДЕЛЕНИЕ ПЛАВАЮЩЕЙ КНОПКИ - ИСПОЛЬЗУЕТСЯ ПРАВИЛЬНОЕ НИЖЕ */
-
-    /* 🟢 АНИМАЦИЯ ПУЛЬСАЦИИ ДЛЯ ОНЛАЙН СЧЕТЧИКА */
-    @keyframes onlineCounterPulse {
-        0%, 100% {
-            box-shadow:
-                0 8px 25px rgba(40, 167, 69, 0.4),
-                0 4px 12px rgba(40, 167, 69, 0.3),
-                0 2px 6px rgba(0, 0, 0, 0.15),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-        }
-        50% {
-            box-shadow:
-                0 10px 30px rgba(40, 167, 69, 0.5),
-                0 6px 18px rgba(40, 167, 69, 0.4),
-                0 3px 8px rgba(0, 0, 0, 0.2),
-                inset 0 2px 0 rgba(255, 255, 255, 0.4),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-        }
-    }
-
-    /* Анимация unreadCounterPulse удалена - используем Telegram-подобный подход */
-
-    /* 🎨 КОМПАКТНЫЙ HOVER ЭФФЕКТ (СЧЕТЧИКИ НЕ КЛИКАБЕЛЬНЫЕ) */
-    .user-counter:hover {
-        transform: translateY(-1px); /* ЛЕГКОЕ ВСПЛЫТИЕ */
-        box-shadow:
-            0 8px 24px rgba(0, 123, 255, 0.3),
-            0 4px 12px rgba(0, 123, 255, 0.25),
-            0 2px 6px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .user-counter.total-counter:hover {
-        box-shadow:
-            0 8px 24px rgba(51, 154, 240, 0.35),
-            0 4px 12px rgba(51, 154, 240, 0.25),
-            0 2px 6px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .user-counter.online-counter:hover {
-        box-shadow:
-            0 8px 26px rgba(40, 167, 69, 0.4),
-            0 4px 14px rgba(40, 167, 69, 0.3),
-            0 2px 7px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-        /* УСИЛЕННОЕ СВЕЧЕНИЕ ПРИ HOVER */
-        animation: none; /* ОСТАНАВЛИВАЕМ ПУЛЬСАЦИЮ ПРИ HOVER */
-    }
-
-    /* Hover эффект для unread-counter удален - используем Telegram-подобный подход */
-
-    /* 📱 АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ */
-    @media (max-width: 768px) {
-        .user-counter {
-            padding: 0.5rem 0.6rem;
-            font-size: 0.8rem;
-        }
-
-        .user-counter-number {
-            font-size: 1.2rem;
-        }
-
-        .user-counter-label {
-            font-size: 0.65rem;
-        }
-    }
-
-    /* КОМПАКТНЫЙ СПИСОК ПОЛЬЗОВАТЕЛЕЙ */
-    .users-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0.5rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-    }
-
-    .online-user {
-        display: flex;
-        align-items: center;
-        padding: 0.4rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-        border-bottom: 1px solid var(--border-color-theme); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        margin-bottom: 0.2rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-        background: transparent;
-    }
-
-    .online-user:hover {
-        background: rgba(111, 66, 193, 0.1);
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        background: #28a745;
-        border-radius: 50%;
-        margin-right: 0.5rem; /* УМЕНЬШЕННЫЙ ОТСТУП */
-        flex-shrink: 0; /* НЕ СЖИМАЕТСЯ */
-    }
-
-    /* 🔤 ОБРАБОТКА ДЛИННЫХ ИМЕН ПОЛЬЗОВАТЕЛЕЙ С ПОДДЕРЖКОЙ ТЕМ */
-    .user-name {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--text-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 180px; /* ОГРАНИЧИВАЕМ ШИРИНУ ДЛЯ ELLIPSIS */
-        flex: 1;
-        transition: color 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    /* Отступ для правой панели */
-    .chat-messages-area {
-        margin-right: calc(240px + var(--border-width)); /* ОБНОВЛЕННАЯ ШИРИНА ПАНЕЛИ */
-        margin-left: var(--border-width);
-        margin-top: var(--border-width);
-    }
-
-    /* ФИКСИРОВАННЫЙ КОНТЕЙНЕР ДЛЯ ЦИТАТЫ - НЕ ПРОКРУЧИВАЕТСЯ С ПОДДЕРЖКОЙ ТЕМ */
-    .reply-zone-container {
-        background: var(--bg-primary); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        border: none; /* УБИРАЕМ ГРАНИЦУ СВЕРХУ */
-        margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
-        margin-right: calc(240px + var(--border-width)); /* ОТСТУП ОТ ПРАВОЙ ПАНЕЛИ */
-        padding: 0.5rem; /* НЕБОЛЬШИЕ ОТСТУПЫ */
-        min-height: 0; /* МИНИМАЛЬНАЯ ВЫСОТА КОГДА СКРЫТА */
-        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    /* ЦИТАТА ВНУТРИ ФИКСИРОВАННОГО КОНТЕЙНЕРА */
-    .reply-zone {
-        background: rgba(219, 234, 254, 0.7); /* ГОЛУБАЯ ПОДЛОЖКА КАК У ЧУЖИХ СООБЩЕНИЙ */
-        border: 2px solid #007bff;
-        border-radius: 0.75rem;
-        padding: 0.75rem;
-        margin: 0; /* НИКАКИХ ОТСТУПОВ - ВЕСЬ РАЗМЕР КОНТЕЙНЕРА */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 3px 10px rgba(0, 123, 255, 0.2);
-    }
-
-    .reply-mode-info {
-        flex: 1;
-    }
-
-    .reply-mode-label {
-        font-size: 0.9rem;
-        color: #333;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-    }
-
-    .reply-mode-cancel {
-        background: rgba(255, 255, 255, 0.8);
-        border: 2px solid #007bff;
-        color: #007bff;
-        font-size: 1rem;
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 50%;
-        width: 2rem;
-        height: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        margin-left: 1rem;
-    }
-
-    .reply-mode-cancel:hover {
-        background: #007bff;
-        color: white;
-        transform: scale(1.1);
-    }
-
-    /* Подсветка сообщения при ответе */
-    .message-highlighted {
-        background: rgba(0, 123, 255, 0.1) !important;
-        border-radius: 0.5rem !important;
-        animation: highlight-pulse 2s ease-out;
-    }
-
-    @keyframes highlight-pulse {
-        0% { background: rgba(0, 123, 255, 0.2) !important; }
-        100% { background: rgba(0, 123, 255, 0.1) !important; }
-    }
-
-    /* 🖱️ === КОНТЕКСТНОЕ МЕНЮ ДЛЯ СООБЩЕНИЙ === */
-    .context-menu {
-        position: fixed;
-        background: white;
-        border: 3px solid #6f42c1; /* ФИОЛЕТОВАЯ ГРАНИЦА */
-        border-radius: 0.75rem;
-        box-shadow:
-            0 10px 30px rgba(111, 66, 193, 0.3),
-            0 5px 15px rgba(0, 0, 0, 0.2);
-        z-index: 9999;
-        min-width: 180px;
-        max-width: 280px;
-        backdrop-filter: blur(10px);
-        animation: contextMenuSlideIn 0.2s ease-out;
-    }
-
-    @keyframes contextMenuSlideIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .context-menu-item {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border-radius: 0.5rem;
-        margin: 0.25rem;
-        gap: 0.75rem;
-    }
-
-    .context-menu-item:hover {
-        background: rgba(111, 66, 193, 0.1);
-        transform: translateX(3px);
-    }
-
-    .context-menu-item i {
-        font-size: 1rem;
-        color: #6f42c1;
-        width: 16px;
-        text-align: center;
-    }
-
-    .context-menu-item.delete-item:hover {
-        background: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-    }
-
-    .context-menu-item.delete-item:hover i {
-        color: #dc3545;
-    }
-
-    .context-menu-separator {
-        height: 1px;
-        background: #e9ecef;
-        margin: 0.25rem 0.5rem;
-    }
-
-    /* СКРЫТИЕ НЕДОСТУПНЫХ ЭЛЕМЕНТОВ МЕНЮ */
-    .context-menu-item.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-
-    /* 🟣 КОМПАКТНОЕ ПОЛЕ ВВОДА С ФИОЛЕТОВОЙ ГРАНИЦЕЙ СВЕРХУ И ПОДДЕРЖКОЙ ТЕМ */
-    .chat-input-area {
-        padding: 0.5rem; /* УМЕНЬШЕНО с 1.5rem до 0.5rem */
-        background: var(--chat-input-bg); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        border-top: var(--border-width) solid var(--border-color); /* ВОЗВРАЩАЕМ ФИОЛЕТОВУЮ ГРАНИЦУ МЕЖДУ ЦИТАТОЙ И ПОЛЕМ */
-        margin: 0; /* Убираем все отступы */
-        margin-right: calc(240px + var(--border-width)); /* УМЕНЬШЕННАЯ ПАНЕЛЬ + ЕЕ ОТСТУП */
-        margin-left: var(--border-width); /* ОТСТУП ОТ ЛЕВОЙ ГРАНИЦЫ */
-        margin-bottom: var(--border-width); /* ОТСТУП ОТ НИЖНЕЙ ГРАНИЦЫ */
-        position: relative;
-        height: 100px; /* УМЕНЬШЕННАЯ ВЫСОТА ДЛЯ КОМПАКТНОСТИ */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        transition: background 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    .input-group {
-        border-radius: 1rem;
-        overflow: hidden;
-        border: 2px solid #007bff; /* УСИЛЕННАЯ СИНЯЯ КАЕМОЧКА */
-        background: var(--chat-input-bg); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); /* УСИЛЕННАЯ СИНЯЯ ТЕНЬ */
-    }
-
-    .input-group:focus-within {
-        border-color: #0056b3; /* БОЛЕЕ ТЕМНАЯ СИНЯЯ ГРАНИЦА ПРИ ФОКУСЕ */
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.35); /* БОЛЕЕ ВЫРАЖЕННАЯ ТЕНЬ */
-        transform: translateY(-1px); /* Уменьшенное всплытие */
-    }
-
-    .form-control {
-        border: none;
-        padding: 0.75rem 1rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-        font-size: 1rem;
-        resize: none; /* УБИРАЕМ РУЧНОЕ ИЗМЕНЕНИЕ РАЗМЕРА */
-        height: 60px; /* УМЕНЬШЕННАЯ ВЫСОТА */
-        overflow-y: auto; /* СКРОЛЛИНГ ВНУТРИ ПОЛЯ */
-        line-height: 1.4; /* Удобная высота строки */
-        background: var(--chat-input-bg) !important; /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        color: var(--chat-input-text) !important; /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        border: 1px solid var(--chat-input-border) !important; /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
-        transition: all 0.3s ease; /* ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ */
-    }
-
-    .form-control:focus {
-        box-shadow: none;
-        border: 1px solid #007bff !important; /* АКТИВНАЯ ГРАНИЦА */
-        background: var(--chat-input-bg) !important; /* ФОН ОСТАЕТСЯ ИЗ ТЕМЫ */
-        color: var(--chat-input-text) !important; /* ТЕКСТ ОСТАЕТСЯ ИЗ ТЕМЫ */
-    }
-
-    .form-control::placeholder {
-        color: var(--text-secondary) !important; /* PLACEHOLDER ИЗ ТЕМЫ */
-        opacity: 0.8;
-    }
-
-    .btn-send {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        color: white;
-        border: 2px solid #0056b3;
-        padding: 0.75rem 1.5rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.25);
-    }
-
-    .btn-send:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.35);
-        color: white;
-        border-color: #004085;
-    }
-
-    /* 📬 СТИЛИ ДЛЯ РАЗДЕЛИТЕЛЯ НЕПРОЧИТАННЫХ СООБЩЕНИЙ */
-    .unread-separator {
-        display: flex;
-        align-items: center;
-        margin: 1rem 0;
-        padding: 0 1rem;
-        font-size: 0.875rem;
-        color: #007bff;
-        font-weight: 600;
-    }
-
-    .unread-separator-line {
-        flex: 1;
-        height: 2px;
-        background: linear-gradient(to right, transparent, #007bff, transparent);
-        margin: 0 1rem;
-    }
-
-    .unread-separator-text {
-        padding: 0.5rem 1rem;
-        background: rgba(0, 123, 255, 0.1);
-        border: 2px solid #007bff;
-        border-radius: 1rem;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    /* 📬 СТИЛИ ДЛЯ ПЛАВАЮЩЕЙ КНОПКИ TELEGRAM-СТИЛЬ - ИСПРАВЛЕННОЕ ПОЗИЦИОНИРОВАНИЕ */
-    .floating-unread-btn {
-        position: fixed; /* 🎯 ИСПРАВЛЕНО: fixed для позиционирования относительно окна */
-        bottom: 120px; /* 🎯 ИСПРАВЛЕНО: отступ от нижнего края с учетом поля ввода */
-        right: calc(240px + 50px); /* 🎯 ИСПРАВЛЕНО: отступ от правого края с учетом сайдбара */
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        border: 2px solid rgba(255, 255, 255, 0.6);
-        color: white;
-        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
-        z-index: 1000;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px; /* Отступ между иконкой и счетчиком */
-        font-size: 20px; /* Размер иконки */
-    }
-
-    .floating-unread-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 30px rgba(40, 167, 69, 0.6);
-    }
-
-    /* 📬 ИКОНКА НАВИГАЦИИ В КНОПКЕ */
-    .floating-unread-btn .nav-icon {
-        font-size: 20px;
-        color: white;
-    }
-
-    /* 📬 СЧЕТЧИК НЕПРОЧИТАННЫХ В КНОПКЕ (TELEGRAM-СТИЛЬ) */
-    .floating-unread-btn .nav-counter {
-        background: #ff4757;
-        color: white;
-        border-radius: 10px;
-        padding: 2px 6px;
-        font-size: 12px;
-        font-weight: bold;
-        min-width: 16px;
-        text-align: center;
-        line-height: 1;
-    }
-
-    /* 🎯 УДАЛЕНЫ СТИЛИ ДЛЯ ВТОРОЙ КНОПКИ - ИСПОЛЬЗУЕМ ЕДИНУЮ КНОПКУ */
-
-    /* 📬 РАЗДЕЛИТЕЛЬ НЕПРОЧИТАННЫХ СООБЩЕНИЙ */
-    .unread-separator {
-        display: flex;
-        align-items: center;
-        margin: 1rem 0;
-        padding: 0 1rem;
-    }
-
-    .unread-separator-line {
-        flex: 1;
-        height: 1px;
-        background: #007bff;
-        opacity: 0.3;
-    }
-
-    .unread-separator-text {
-        padding: 0 1rem;
-        color: #007bff;
-        font-size: 0.875rem;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    /* 📬 АНИМАЦИЯ ПОДСВЕТКИ СООБЩЕНИЯ ПРИ НАВИГАЦИИ */
-    .message-highlight {
-        animation: highlightPulse 2s ease-out;
-    }
-
-    @keyframes highlightPulse {
-        0% {
-            box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-        }
-        20% {
-            box-shadow: 0 0 0 10px rgba(0, 123, 255, 0.2);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-        }
-    }
-
-    /* 🎯 ПОДСВЕТКА ПЕРСОНАЛЬНЫХ УВЕДОМЛЕНИЙ (КРАСНАЯ) */
-    .message-highlight-personal {
-        animation: highlightPulsePersonal 2s ease-out;
-    }
-
-    @keyframes highlightPulsePersonal {
-        0% {
-            box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
-        }
-        20% {
-            box-shadow: 0 0 0 10px rgba(255, 71, 87, 0.3);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
-        }
-    }
-
-    /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА БЕЗ BOOTSTRAP */
-    .custom-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .custom-modal-backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1;
-    }
-
-    .custom-modal-content {
-        position: relative;
-        background: white;
-        border-radius: 1rem;
-        max-width: 500px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        z-index: 2;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .custom-modal-header {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #dee2e6;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
-        color: white;
-        border-radius: 1rem 1rem 0 0;
-    }
-
-    .custom-modal-header h5 {
-        margin: 0;
-        font-size: 1.25rem;
-    }
-
-    .custom-modal-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background 0.2s;
-    }
-
-    .custom-modal-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .custom-modal-body {
-        padding: 1.5rem;
-    }
-
-    .custom-modal-footer {
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #dee2e6;
-        display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-    }
-
-        /* === НОВЫЕ СТИЛИ ПЕРЕСЛАННЫХ СООБЩЕНИЙ СОГЛАСНО ТЗ === */
-    .message-content.own.forwarded-own,
-    .message-content.other.forwarded-other {
-        background: var(--chat-forwarded-bg) !important; /* Используем CSS переменную */
-        color: var(--text-primary) !important;
-        border-left: 4px solid var(--chat-forward-border) !important; /* Оранжевая полоса слева согласно ТЗ */
-        border-radius: 12px !important; /* Сохраняем скругления */
-        box-shadow: 0 2px 8px rgba(215, 119, 6, 0.15) !important; /* Оранжевая тень */
-        position: relative;
-    }
-
-    /* Дополнительная оранжевая полоса для визуального выделения */
-    .message-content.own.forwarded-own::before,
-    .message-content.other.forwarded-other::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: var(--chat-forward-border);
-        border-radius: 12px 0 0 12px;
-    }
-
-    /* Заголовок пересланного сообщения */
-    .forwarded-header {
-        background: transparent;
-        padding: 0;
-        margin: 0 0 8px 0; /* Уменьшенный отступ */
-        font-size: 12px; /* Согласно ТЗ */
-        font-weight: 600;
-        color: var(--chat-forward-border) !important; /* Оранжевый цвет */
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        line-height: 1;
-    }
-
-    .forwarded-header i {
-        color: var(--chat-forward-border) !important;
-        font-size: 12px;
-    }
-
-    /* Стили автора в пересланных сообщениях - УБРАНЫ ПОДЛОЖКИ */
-    .message-content.forwarded-own .message-author,
-    .message-content.forwarded-other .message-author {
-        background: none !important; /* УБРАНА ОРАНЖЕВАЯ ПОДЛОЖКА */
-        border: none !important; /* УБРАНА ГРАНИЦА */
-        color: var(--text-primary) !important;
-        padding: 0 !important; /* УБРАНЫ ОТСТУПЫ ПОДЛОЖКИ */
-    }
-
-    /* Цитаты в пересланных сообщениях - ДЕЛИКАТНАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
-    .message-content.own.forwarded-own .reply-quote {
-        background: rgba(217, 119, 6, 0.03) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА */
-        border-left-color: #D97706 !important; /* ОРАНЖЕВАЯ ГРАНИЦА КАК У ПЕРЕСЛАННЫХ */
-    }
-
-    .message-content.other.forwarded-other .reply-quote {
-        background: rgba(217, 119, 6, 0.03) !important; /* ДЕЛИКАТНАЯ ОРАНЖЕВАЯ ПОДЛОЖКА */
-        border-left-color: #D97706 !important; /* ОРАНЖЕВАЯ ГРАНИЦА КАК У ПЕРЕСЛАННЫХ */
-    }
-
-
-
-</style>
+{# Удаляем все встроенные стили, чтобы использовать единый файл #}
+<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}?v={% now "U" %}">
 {% endblock %}
 
 {% block main_container %}
@@ -1475,13 +239,13 @@
         <span class="personal-counter" id="personal-count">0</span>
     </div>
 
-    <!-- 🟢 ЗЕЛЕНАЯ СТРЕЛКА ВНИЗ (ОРИГИНАЛЬНАЯ РАБОЧАЯ КНОПКА) -->
+    <!-- 📬 ЕДИНАЯ ПЛАВАЮЩАЯ КНОПКА НАВИГАЦИИ (TELEGRAM-СТАНДАРТ) -->
     <div class="floating-unread-btn" id="floating-unread-btn" style="display: none;"
-         onclick="handleArrowDownClick()"
+         onclick="handleFloatingButtonClick(event)"
          oncontextmenu="event.preventDefault(); markAllAsRead(); return false;"
-         title="Стрелка вниз (правый клик - отметить все как прочитанные)">
-        <i class="fas fa-arrow-down nav-icon"></i>
-        <span class="nav-counter" id="floating-unread-count">0</span>
+         title="Навигация по чату (правый клик - отметить все как прочитанные)">
+        <i class="fas fa-arrow-down nav-icon" id="floating-btn-icon"></i>
+        <span class="nav-counter" id="floating-unread-count" style="display: none;">0</span>
     </div>
 
 </div>
@@ -1774,7 +538,7 @@
         console.log('📬 ===== UNREAD INFO PROCESSED =====');
     }
 
-    // 📬 ФУНКЦИЯ ОБНОВЛЕНИЯ BADGE И ОТДЕЛЬНЫХ КНОПОК
+    // 📬 ФУНКЦИЯ ОБНОВЛЕНИЯ BADGE И КНОПКИ (ЕДИНАЯ ТОЧКА)
     function updateUnreadBadge() {
         // Обновляем title страницы
         if (personalNotificationsCount > 0) {
@@ -1784,52 +548,34 @@
         } else {
             document.title = `${roomName} - Беседка`;
         }
-
-        // 📬 ОБНОВЛЯЕМ ОБЕ ОТДЕЛЬНЫЕ КНОПКИ
-        updateFloatingButtons();
+        updateFloatingUnreadBtn();
     }
 
-    // 📬 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ НЕПРОЧИТАННОМУ СООБЩЕНИЮ (ИСПРАВЛЕННАЯ)
+    // 🎯 НОВАЯ ФУНКЦИЯ ДЛЯ УНИВЕРСАЛЬНОГО СКРОЛЛА К СООБЩЕНИЮ
+    function scrollToMessage(messageId) {
+        if (!messageId) return;
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            isNavigatingToMessage = true;
+            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Подсветка
+            messageElement.classList.add('message-highlight');
+            setTimeout(() => {
+                messageElement.classList.remove('message-highlight');
+                isNavigatingToMessage = false;
+                updateFloatingUnreadBtn();
+            }, 2000);
+        }
+    }
+
+    // 📬 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ НЕПРОЧИТАННОМУ СООБЩЕНИЮ
     function scrollToFirstUnread() {
         if (!firstUnreadMessageId) {
             console.log('📬 No firstUnreadMessageId - staying in current position');
             return;
         }
-
-        const firstUnreadElement = document.querySelector(`[data-message-id="${firstUnreadMessageId}"]`);
-        if (firstUnreadElement) {
-            console.log('📬 🎯 ТОЧНАЯ НАВИГАЦИЯ к первому непрочитанному сообщению:', firstUnreadMessageId);
-
-            // Блокируем автоскроллинг во время навигации
-            isNavigatingToMessage = true;
-
-            // 🎯 ИСПРАВЛЕНО: Используем scrollIntoView для точного позиционирования в верхней трети (как в Telegram)
-            firstUnreadElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center', // Размещаем в центре экрана для лучшего UX
-                inline: 'nearest'
-            });
-
-            // Подсветка целевого сообщения
-            firstUnreadElement.classList.add('message-highlight');
-            setTimeout(() => {
-                firstUnreadElement.classList.remove('message-highlight');
-            }, 2000);
-
-            // Разблокируем через секунду
-            setTimeout(() => {
-                isNavigatingToMessage = false;
-                // Обновляем кнопки после завершения навигации
-                updateFloatingButtons();
-            }, 1000);
-
-            console.log('📬 ✅ Навигация к первому непрочитанному завершена (scrollIntoView)');
-
-        } else {
-            console.log('📬 First unread message not found - staying in current position');
-            // 🎯 ИСПРАВЛЕНО: НЕ скроллим к концу если сообщение не найдено
-            // Пользователь останется в текущей позиции
-        }
+        scrollToMessage(firstUnreadMessageId);
     }
 
     // 🎯 ФУНКЦИЯ СКРОЛЛИНГА К ПЕРВОМУ ПЕРСОНАЛЬНОМУ УВЕДОМЛЕНИЮ (ИСПРАВЛЕННАЯ)
@@ -2104,13 +850,13 @@
         messagesArea.addEventListener('scroll', () => {
             // Не обновляем кнопку во время навигации к сообщению
             if (!isNavigatingToMessage) {
-                updateFloatingButtons(); // 📬 ОБНОВЛЕНИЕ ОТДЕЛЬНЫХ КНОПОК КНОПКИ
+                updateFloatingUnreadBtn(); // 📬 ОБНОВЛЕНИЕ ОТДЕЛЬНЫХ КНОПОК КНОПКИ
             }
         });
 
         // 🔧 ДОПОЛНИТЕЛЬНО: Обновляем кнопку при изменении размера окна
         window.addEventListener('resize', debounce(() => {
-            updateFloatingButtons();
+            updateFloatingUnreadBtn();
         }, 250));
 
         console.log('📬 Floating button scroll handling initialized (instant updates)');
@@ -4585,6 +3331,140 @@
                 console.log('✅ Auto-scroll re-enabled after deleted message navigation');
             }, 1000);
         }
+    }
+
+    // 📬 ОБРАБОТЧИК КЛИКА ПО ЕДИНОЙ КНОПКЕ
+    function handleFloatingButtonClick(event) {
+        const floatingBtn = event.currentTarget;
+        const state = floatingBtn.dataset.state;
+
+        console.log(`Floating button clicked in state: ${state}`);
+
+        switch (state) {
+            case 'personal':
+                scrollToMessage(firstPersonalNotificationId);
+                break;
+            case 'unread':
+            case 'down':
+            default:
+                scrollToBottom();
+                break;
+        }
+    }
+
+    // 📬 ОТМЕТИТЬ ВСЕ КАК ПРОЧИТАННЫЕ (ПРАВЫЙ КЛИК)
+    function markAllAsRead() {
+        if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
+            console.log('📬 Cannot mark all as read: WebSocket not connected');
+            return;
+        }
+        chatSocket.send(JSON.stringify({ type: 'mark_as_read' }));
+        showTemporaryFeedback('✅ Все сообщения отмечены как прочитанные', 'success');
+    }
+
+    // 📬 ЕДИНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ПЛАВАЮЩЕЙ КНОПКИ (TELEGRAM-СТАНДАРТ)
+    function updateFloatingUnreadBtn() {
+        const floatingBtn = document.getElementById('floating-unread-btn');
+        const icon = document.getElementById('floating-btn-icon');
+        const counter = document.getElementById('floating-unread-count');
+        if (!floatingBtn || !icon || !counter) return;
+
+        const messagesArea = document.getElementById('chat-messages-area');
+        const isAtBottomVal = (messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight) < 50;
+        const messagesBelow = isAtBottomVal ? 0 : countMessagesBelow();
+
+        let shouldShow = false;
+        let buttonState = 'hidden';
+
+        if (personalNotificationsCount > 0) {
+            shouldShow = true;
+            buttonState = 'personal';
+            icon.className = 'fas fa-at nav-icon';
+            floatingBtn.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+            counter.textContent = personalNotificationsCount;
+            counter.style.display = 'inline-block';
+        } else if (unreadCount > 0 && !isAtBottomVal) {
+            shouldShow = true;
+            buttonState = 'unread';
+            icon.className = 'fas fa-arrow-down nav-icon';
+            floatingBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            counter.textContent = unreadCount;
+            counter.style.display = 'inline-block';
+        } else if (messagesBelow > 0) {
+            shouldShow = true;
+            buttonState = 'down';
+            icon.className = 'fas fa-arrow-down nav-icon';
+            floatingBtn.style.background = 'linear-gradient(135deg, #007bff, #0056b3)';
+            counter.textContent = messagesBelow;
+            counter.style.display = 'inline-block';
+        }
+
+        floatingBtn.style.display = shouldShow ? 'flex' : 'none';
+        floatingBtn.dataset.state = buttonState;
+        updateDebugPanelState(buttonState, messagesBelow);
+    }
+
+    function updateDebugPanelState(state, messagesBelow) {
+        const debugButtonState = document.getElementById('debug-button-state');
+        if (debugButtonState) debugButtonState.textContent = state;
+        const debugMessagesBelow = document.getElementById('debug-messages-below');
+        if(debugMessagesBelow) debugMessagesBelow.textContent = messagesBelow;
+    }
+
+    function countMessagesBelow() {
+        const messagesArea = document.getElementById('chat-messages-area');
+        const messages = messagesArea.querySelectorAll('.chat-message');
+        if (messages.length === 0) return 0;
+        const containerRect = messagesArea.getBoundingClientRect();
+        let count = 0;
+        for (let i = 0; i < messages.length; i++) {
+            if (messages[i].getBoundingClientRect().top > containerRect.bottom) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    function setupFloatingBtnScrollHandling() {
+        const messagesArea = document.getElementById('chat-messages-area');
+        if (!messagesArea) return;
+        messagesArea.addEventListener('scroll', () => {
+            if (!isNavigatingToMessage) {
+                updateFloatingUnreadBtn();
+            }
+        });
+        window.addEventListener('resize', debounce(updateFloatingUnreadBtn, 250));
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function addUnreadSeparator(beforeElement) {
+        // Проверяем, нет ли уже разделителя
+        const existingSeparator = document.querySelector('.unread-separator');
+        if (existingSeparator) {
+            existingSeparator.remove();
+        }
+
+        const separator = document.createElement('div');
+        separator.className = 'unread-separator';
+        separator.innerHTML = `
+            <div class="unread-separator-line"></div>
+            <div class="unread-separator-text">📬 Непрочитанные сообщения</div>
+            <div class="unread-separator-line"></div>
+        `;
+
+        beforeElement.parentNode.insertBefore(separator, beforeElement);
+        console.log('📬 Separator added before message:', beforeElement.dataset.messageId);
     }
 
 </script>

@@ -9,7 +9,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-from .models import Room, Message
+from .models import Room, Message, UserChatPosition
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -20,23 +20,56 @@ class BaseChatConsumer(WebsocketConsumer):
 
     def connect(self):
         """Подключение к WebSocket"""
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"chat_{self.room_name}"
-        self.user = self.scope["user"]
-
-        if not self.user.is_authenticated:
+        # room_name должен быть установлен дочерним классом перед вызовом super().connect()
+        if not hasattr(self, 'room_name'):
             self.close()
             return
 
-        # Присоединяемся к группе комнаты
+        self.room_group_name = f"chat_{self.room_name}"
+        self.user = self.scope["user"]
+
+        if self.user.is_anonymous:
+            self.close()
+            return
+
+        # Добавляем пользователя в группу чата
         async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
+            self.room_group_name,
+            self.channel_name
         )
 
         self.accept()
-        logger.info(f"User {self.user.username} connected to room {self.room_name}")
 
-        # Уведомляем группу о присоединении пользователя
+        # 🔧 ИСПРАВЛЕНО: Правильная последовательность инициализации позиции
+        room, _ = Room.objects.get_or_create(name=self.room_name)
+        position = UserChatPosition.get_or_create_for_user(self.user, room)
+
+        # 🎯 ИСПРАВЛЕННАЯ ЛОГИКА: Определяем первый визит по last_read_at (единая логика!)
+        is_first_visit = position.last_read_at is None
+
+        # ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: При первом посещении устанавливаем ОБА поля
+        if is_first_visit:
+            # Первый визит - устанавливаем время визита И время прочтения на ТЕКУЩИЙ момент
+            # Это означает, что все СУЩЕСТВУЮЩИЕ сообщения считаются прочитанными
+            # Непрочитанными будут только НОВЫЕ сообщения после этого момента
+            current_time = timezone.now()
+            position.last_visit_at = current_time
+            position.last_read_at = current_time
+            position.save()
+            logger.info(f"First visit: initialized position for {self.user.username} in {self.room_name} at {current_time}")
+        else:
+            # НЕ обновляем время визита при входе - это уничтожает персональные уведомления!
+            # last_visit_at должен обновляться только при ВЫХОДЕ из чата
+            logger.info(f"Return visit for {self.user.username} in {self.room_name} - keeping last_visit_at as is")
+
+        # Обновляем position после изменений
+        position.refresh_from_db()
+
+        # 📬 ИСПРАВЛЕНО: НЕ ОТПРАВЛЯЕМ unread_info здесь - отправим ПОСЛЕ истории сообщений
+        # Сохраняем позицию для позднейшего использования
+        self.user_position = position
+
+        # Уведомляем других о подключении
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {
                 "type": "user_joined",
@@ -44,9 +77,20 @@ class BaseChatConsumer(WebsocketConsumer):
             }
         )
 
+        logger.info(f"User {self.user.username} connected to chat {self.room_name}")
+
     def disconnect(self, close_code):
         """Отключение от WebSocket"""
         if hasattr(self, 'room_group_name'):
+            # Обновляем last_visit_at при ВЫХОДЕ из чата
+            try:
+                room = Room.objects.get(name=self.room_name)
+                position = UserChatPosition.get_or_create_for_user(self.user, room)
+                position.mark_visit()  # Теперь обновляем при выходе, а не при входе
+                logger.info(f"Updated last_visit_at on disconnect for {self.user.username} in {self.room_name}")
+            except Exception as e:
+                logger.error(f"Error updating last_visit_at on disconnect: {e}")
+
             # Уведомляем группу об отключении пользователя
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, {
@@ -86,6 +130,14 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.handle_pin_message(data)
             elif message_type == 'unpin_message':
                 self.handle_unpin_message(data)
+            elif message_type == 'mark_as_read':
+                self.handle_mark_as_read(data)
+            elif message_type == 'load_more_messages':
+                self.handle_load_more_messages(data)
+            elif message_type == 'save_position':
+                self.handle_save_position(data)
+            elif message_type == 'load_message_context':
+                self.handle_load_message_context(data)
             else:
                 logger.warning(f"Unknown message type: {message_type}")
 
@@ -121,6 +173,17 @@ class BaseChatConsumer(WebsocketConsumer):
             parent=parent_message
         )
 
+        # 🎯 НОВАЯ ЛОГИКА: При первом сообщении устанавливаем last_read_at
+        position = UserChatPosition.get_or_create_for_user(self.user, room)
+        if position.last_read_at is None:
+            # Первое сообщение пользователя - теперь он "читает" чат
+            position.last_read_at = timezone.now()
+            position.save()
+            logger.info(f"First message sent: set last_read_at for {self.user.username} in {self.room_name}")
+
+        # 🚫 УДАЛЕНА НЕПРАВИЛЬНАЯ АВТООТМЕТКА ПРИ ОТПРАВКЕ СООБЩЕНИЯ
+        # Отправка сообщения НЕ означает прочтение всей истории чата!
+
         # Отправляем сообщение в группу
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {
@@ -130,25 +193,72 @@ class BaseChatConsumer(WebsocketConsumer):
         )
 
     def send_message_history(self, page=1):
-        """Отправка истории сообщений с поддержкой ответов"""
+        """Отправка истории сообщений с поддержкой непрочитанных сообщений"""
         try:
             room, created = Room.objects.get_or_create(name=self.room_name)
 
-            # Получаем последние 50 сообщений с related данными (ИСКЛЮЧАЕМ УДАЛЕННЫЕ!)
-            messages = Message.objects.filter(room=room, is_deleted=False).select_related(
-                'author', 'parent', 'parent__author'
-            ).order_by('-created_at')[:50]
+            # Получаем позицию пользователя для определения непрочитанных
+            user_position = UserChatPosition.get_or_create_for_user(self.user, room)
 
-            # Обращаем порядок и конвертируем в JSON
-            messages_data = [
-                self.message_to_json(msg, is_history=True)
-                for msg in reversed(messages)
-            ]
+            # 🔧 УМНАЯ ЗАГРУЗКА: Загружаем относительно позиции пользователя
+            if user_position.last_visible_message_id:
+                # Пользователь был в конкретном месте - загружаем от этого места
+                try:
+                    anchor_message = Message.objects.get(id=user_position.last_visible_message_id, room=room, is_deleted=False)
+                    # Загружаем 50 сообщений до позиции и 50 после
+                    messages_before = Message.objects.filter(
+                        room=room, is_deleted=False, created_at__lt=anchor_message.created_at
+                    ).select_related('author', 'parent', 'parent__author').order_by('-created_at')[:50]
 
+                    messages_after = Message.objects.filter(
+                        room=room, is_deleted=False, created_at__gte=anchor_message.created_at
+                    ).select_related('author', 'parent', 'parent__author').order_by('created_at')[:50]
+
+                    # Объединяем сообщения в правильном порядке
+                    messages = list(reversed(messages_before)) + list(messages_after)
+                    logger.info(f"Smart loading: {len(messages_before)} before + {len(messages_after)} after anchor {user_position.last_visible_message_id}")
+                except Message.DoesNotExist:
+                    # Якорное сообщение удалено - загружаем стандартно
+                    messages = Message.objects.filter(room=room, is_deleted=False).select_related(
+                        'author', 'parent', 'parent__author'
+                    ).order_by('-created_at')[:100]
+                    messages = list(reversed(messages))
+            else:
+                # Новый пользователь или нет сохраненной позиции - загружаем последние 100
+                messages = Message.objects.filter(room=room, is_deleted=False).select_related(
+                    'author', 'parent', 'parent__author'
+                ).order_by('-created_at')[:100]
+                messages = list(reversed(messages))
+
+            # Конвертируем в JSON
+            messages_data = []
+            for msg in messages:
+                message_json = self.message_to_json(msg, is_history=True)
+
+                # 🔧 ИСПРАВЛЕНО: Правильная логика определения прочитанности
+                if user_position.last_read_at:
+                    # Пользователь уже посещал чат - сравниваем с last_read_at
+                    message_json['is_read'] = msg.created_at <= user_position.last_read_at
+                else:
+                    # Новый пользователь - все исторические сообщения считаются прочитанными
+                    # (это исправляется в connect(), но на всякий случай)
+                    message_json['is_read'] = True
+
+                # 🎯 НОВОЕ: Отмечаем персональные уведомления
+                message_json['is_personal_notification'] = msg.is_personal_notification_for(self.user)
+
+                messages_data.append(message_json)
+
+            # Отправляем историю сообщений
             self.send(text_data=json.dumps({
                 "type": "messages_history",
                 "messages": messages_data
             }))
+
+            # 📬 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Отправляем unread_info ПОСЛЕ истории сообщений
+            # Используем позицию из connect() если она есть, иначе текущую
+            position_to_use = getattr(self, 'user_position', user_position)
+            self.send_unread_info(position_to_use)
 
         except Exception as e:
             logger.error(f"Error sending message history: {e}")
@@ -246,24 +356,20 @@ class BaseChatConsumer(WebsocketConsumer):
             likes_count = message.likes_count
             dislikes_count = message.dislikes_count
 
-            # Отправляем обновление всем участникам чата
+            # Отправляем обновленную реакцию всем в группе
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, {
                     "type": "reaction_updated",
                     "message_id": str(message_id),
-                    "likes_count": likes_count,
-                    "dislikes_count": dislikes_count,
+                    "reaction_type": reaction_type,
                     "user": self.user_to_json(self.user),
-                    "reaction_type": reaction_type
+                    "likes_count": likes_count,
+                    "dislikes_count": dislikes_count
                 }
             )
 
-            logger.info(f"NEW REACTION: {self.user.username} {reaction_type}d message {message_id} by {message.author.username}")
-
-        except Message.DoesNotExist:
-            self.send_error("Сообщение не найдено или уже удалено")
         except Exception as e:
-            logger.error(f"Error processing reaction {reaction_type} on message {message_id}: {e}")
+            logger.error(f"Error handling reaction: {e}")
             self.send_error("Ошибка при обработке реакции")
 
     def handle_edit_message(self, data):
@@ -309,9 +415,9 @@ class BaseChatConsumer(WebsocketConsumer):
                        f"Original: '{original_content[:50]}...' -> New: '{new_content[:50]}...'")
 
         except Message.DoesNotExist:
-            self.send_error("Сообщение не найдено или уже удалено")
+            self.send_error("Сообщение не найдено")
         except Exception as e:
-            logger.error(f"Error editing message {message_id}: {e}")
+            logger.error(f"Error editing message: {e}")
             self.send_error("Ошибка при редактировании сообщения")
 
     def handle_delete_message(self, data):
@@ -319,7 +425,7 @@ class BaseChatConsumer(WebsocketConsumer):
         message_id = data.get('message_id')
 
         if not message_id:
-            self.send_error("ID сообщения не указан")
+            self.send_error("Недостаточно данных для удаления")
             return
 
         try:
@@ -327,17 +433,14 @@ class BaseChatConsumer(WebsocketConsumer):
             room, _ = Room.objects.get_or_create(name=self.room_name)
             message = Message.objects.get(id=message_id, room=room, is_deleted=False)
 
-            # 🎯 ПРОВЕРКА ПРАВ ДОСТУПА (согласно требованиям)
-            can_delete = self.can_delete_message(message)
+            # 🎯 ПРОВЕРКА ПРАВ ДОСТУПА (аналогично редактированию)
+            can_delete = self.can_edit_message(message)
             if not can_delete:
                 self.send_error("У вас нет прав на удаление этого сообщения")
                 return
 
-            # Мягкое удаление сообщения
+            # Помечаем сообщение как удаленное (мягкое удаление)
             message.is_deleted = True
-            message.content = "[Сообщение удалено]"
-            message.edited_by = self.user
-            message.edited_at = timezone.now()
             message.save()
 
             # Отправляем уведомление об удалении всем в группе
@@ -345,26 +448,26 @@ class BaseChatConsumer(WebsocketConsumer):
                 self.room_group_name, {
                     "type": "message_deleted",
                     "message_id": str(message_id),
-                    "deleted_by": self.user_to_json(self.user)
+                    "deleter": self.user_to_json(self.user)
                 }
             )
 
             logger.info(f"Message {message_id} deleted by {self.user.username}")
 
         except Message.DoesNotExist:
-            self.send_error("Сообщение не найдено или уже удалено")
+            self.send_error("Сообщение не найдено")
         except Exception as e:
-            logger.error(f"Error deleting message {message_id}: {e}")
+            logger.error(f"Error deleting message: {e}")
             self.send_error("Ошибка при удалении сообщения")
 
     def handle_forward_message(self, data):
-        """Обработка пересылки сообщения с поддержкой пользовательского текста"""
+        """Обработка пересылки сообщения в другой чат"""
         message_id = data.get('message_id')
-        target_room = data.get('target_room', self.room_name)
+        target_room = data.get('target_room')
         custom_message = data.get('custom_message', '').strip()
 
-        if not message_id:
-            self.send_error("ID сообщения не указан")
+        if not message_id or not target_room:
+            self.send_error("Недостаточно данных для пересылки")
             return
 
         try:
@@ -436,17 +539,17 @@ class BaseChatConsumer(WebsocketConsumer):
                 logger.info(f"Message {message_id} forwarded by {self.user.username} to {target_room}")
 
         except Message.DoesNotExist:
-            self.send_error("Сообщение не найдено или уже удалено")
+            self.send_error("Сообщение не найдено")
         except Exception as e:
-            logger.error(f"Error forwarding message {message_id}: {e}")
+            logger.error(f"Error forwarding message: {e}")
             self.send_error("Ошибка при пересылке сообщения")
 
     def handle_pin_message(self, data):
-        """Обработка закрепления сообщения с проверкой прав доступа"""
+        """Обработка закрепления сообщения"""
         message_id = data.get('message_id')
 
         if not message_id:
-            self.send_error("ID сообщения не указан")
+            self.send_error("Недостаточно данных для закрепления")
             return
 
         try:
@@ -454,9 +557,8 @@ class BaseChatConsumer(WebsocketConsumer):
             room, _ = Room.objects.get_or_create(name=self.room_name)
             message = Message.objects.get(id=message_id, room=room, is_deleted=False)
 
-            # 🎯 ПРОВЕРКА ПРАВ ДОСТУПА НА ЗАКРЕПЛЕНИЕ
-            can_pin = self.can_pin_message(message)
-            if not can_pin:
+            # 🎯 ПРОВЕРКА ПРАВ ДОСТУПА (только модераторы и владельцы могут закреплять)
+            if self.user.role not in ['owner', 'moderator', 'admin']:
                 self.send_error("У вас нет прав на закрепление сообщений")
                 return
 
@@ -470,7 +572,7 @@ class BaseChatConsumer(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, {
                     "type": "message_pinned",
-                    "message_id": str(message_id),
+                    "message": self.message_to_json(message),
                     "pinner": self.user_to_json(self.user)
                 }
             )
@@ -478,17 +580,17 @@ class BaseChatConsumer(WebsocketConsumer):
             logger.info(f"Message {message_id} pinned by {self.user.username}")
 
         except Message.DoesNotExist:
-            self.send_error("Сообщение не найдено или уже удалено")
+            self.send_error("Сообщение не найдено")
         except Exception as e:
-            logger.error(f"Error pinning message {message_id}: {e}")
+            logger.error(f"Error pinning message: {e}")
             self.send_error("Ошибка при закреплении сообщения")
 
     def handle_unpin_message(self, data):
-        """Обработка открепления сообщения с проверкой прав доступа"""
+        """Обработка открепления сообщения"""
         message_id = data.get('message_id')
 
         if not message_id:
-            self.send_error("ID сообщения не указан")
+            self.send_error("Недостаточно данных для открепления")
             return
 
         try:
@@ -496,9 +598,8 @@ class BaseChatConsumer(WebsocketConsumer):
             room, _ = Room.objects.get_or_create(name=self.room_name)
             message = Message.objects.get(id=message_id, room=room, is_deleted=False)
 
-            # 🎯 ПРОВЕРКА ПРАВ ДОСТУПА НА ОТКРЕПЛЕНИЕ
-            can_pin = self.can_pin_message(message)
-            if not can_pin:
+            # 🎯 ПРОВЕРКА ПРАВ ДОСТУПА (только модераторы и владельцы могут откреплять)
+            if self.user.role not in ['owner', 'moderator', 'admin']:
                 self.send_error("У вас нет прав на открепление сообщений")
                 return
 
@@ -508,11 +609,11 @@ class BaseChatConsumer(WebsocketConsumer):
             message.pinned_at = None
             message.save()
 
-            # Отправляем уведомление об откреплении всем в группе
+            # Отправляем уведомление об открепленшании всем в группе
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, {
                     "type": "message_unpinned",
-                    "message_id": str(message_id),
+                    "message": self.message_to_json(message),
                     "unpinner": self.user_to_json(self.user)
                 }
             )
@@ -520,10 +621,256 @@ class BaseChatConsumer(WebsocketConsumer):
             logger.info(f"Message {message_id} unpinned by {self.user.username}")
 
         except Message.DoesNotExist:
-            self.send_error("Сообщение не найдено или уже удалено")
+            self.send_error("Сообщение не найдено")
         except Exception as e:
-            logger.error(f"Error unpinning message {message_id}: {e}")
-            self.send_error("Ошибка при откреплении сообщения")
+            logger.error(f"Error unpinning message: {e}")
+            self.send_error("Ошибка при открепленшании сообщения")
+
+    def handle_save_position(self, data):
+        """Сохранение позиции пользователя в чате для восстановления между сессиями"""
+        last_visible_message_id = data.get('last_visible_message_id')
+        scroll_position_percent = data.get('scroll_position_percent', 0.0)
+
+        try:
+            # Получаем комнату и позицию пользователя
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+            position = UserChatPosition.get_or_create_for_user(self.user, room)
+
+            # Сохраняем позицию
+            if last_visible_message_id:
+                position.last_visible_message_id = last_visible_message_id
+            position.scroll_position_percent = scroll_position_percent
+            position.save()
+
+            logger.info(f"Position saved for {self.user.username} in {self.room_name}: "
+                       f"message_id={last_visible_message_id}, scroll={scroll_position_percent:.2f}")
+
+        except Exception as e:
+            logger.error(f"Error saving position: {e}")
+            self.send_error("Ошибка при сохранении позиции")
+
+    def handle_mark_as_read(self, data):
+        """Обработка отметки сообщений как прочитанных"""
+        message_id = data.get('message_id')
+        up_to_time = data.get('up_to_time')
+
+        try:
+            # Получаем комнату и позицию пользователя
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+            position = UserChatPosition.get_or_create_for_user(self.user, room)
+
+            if message_id:
+                # Отмечаем до конкретного сообщения
+                try:
+                    message = Message.objects.get(id=message_id, room=room, is_deleted=False)
+                    position.mark_as_read(up_to_message=message)
+                    logger.info(f"User {self.user.username} marked messages as read up to {message_id}")
+                except Message.DoesNotExist:
+                    self.send_error("Сообщение не найдено")
+                    return
+            elif up_to_time:
+                # Отмечаем до конкретного времени
+                position.mark_as_read(up_to_time=timezone.datetime.fromisoformat(up_to_time))
+                logger.info(f"User {self.user.username} marked messages as read up to {up_to_time}")
+            else:
+                # Отмечаем все сообщения как прочитанные
+                position.mark_as_read()
+                logger.info(f"User {self.user.username} marked all messages as read in {self.room_name}")
+
+            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем кешированные счетчики перед отправкой
+            position.unread_count = position.get_unread_messages_count()
+            position.personal_notifications_count = position.get_personal_notifications_count()
+            position.save()
+
+            # Отправляем обновленную информацию о непрочитанных
+            self.send_unread_info(position)
+
+        except Exception as e:
+            logger.error(f"Error marking messages as read: {e}")
+            self.send_error("Ошибка при отметке сообщений как прочитанных")
+
+    def get_user_position(self):
+        """Получает или создает позицию пользователя в текущей комнате"""
+        try:
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+            return UserChatPosition.get_or_create_for_user(self.user, room)
+        except Exception as e:
+            logger.error(f"Error getting user position: {e}")
+            return None
+
+    def send_unread_info(self, position):
+        """Отправляет информацию о непрочитанных сообщениях пользователю"""
+        try:
+            # 🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда отправляем АКТУАЛЬНЫЕ счетчики, не кешированные!
+            actual_unread_count = position.get_unread_messages_count()
+            actual_personal_count = position.get_personal_notifications_count()
+
+            first_unread = position.get_first_unread_message()
+            first_personal = position.get_first_personal_notification()
+
+            # 🎯 ИСПРАВЛЕННАЯ ЛОГИКА: Всегда используем стандартную логику возврата
+            return_position = position.get_return_position()
+
+            # 🔧 УБРАНА СПЕЦИАЛЬНАЯ ОБРАБОТКА: Теперь last_read_at всегда установлен в connect()
+            # Поэтому используем только стандартную логику return_position из модели
+
+            self.send(text_data=json.dumps({
+                "type": "unread_info",
+                "unread_count": actual_unread_count,  # ⚡ ОБЩИЙ СЧЕТЧИК НЕПРОЧИТАННЫХ
+                "personal_notifications_count": actual_personal_count,  # ⚡ ПЕРСОНАЛЬНЫЕ УВЕДОМЛЕНИЯ
+                "first_unread_message_id": str(first_unread.id) if first_unread else None,
+                "first_personal_notification_id": str(first_personal.id) if first_personal else None,
+                "return_position": return_position,  # 🎯 ПОЗИЦИЯ ДЛЯ ВОЗВРАЩЕНИЯ
+                "last_read_at": position.last_read_at.isoformat() if position.last_read_at else None,
+                "last_visit_at": position.last_visit_at.isoformat() if position.last_visit_at else None,
+                "is_first_visit": False,  # 🔧 ИСПРАВЛЕНО: Теперь last_read_at всегда установлен
+                # 🎯 НОВЫЕ ПОЛЯ ДЛЯ ВОССТАНОВЛЕНИЯ ПОЗИЦИИ МЕЖДУ СЕССИЯМИ
+                "saved_position": {
+                    "last_visible_message_id": str(position.last_visible_message_id) if position.last_visible_message_id else None,
+                    "scroll_position_percent": position.scroll_position_percent
+                },
+                # 🐛 DEBUG: Добавляем отладочную информацию
+                "debug_cached_unread": position.unread_count,
+                "debug_actual_unread": actual_unread_count,
+                "debug_cached_personal": position.personal_notifications_count,
+                "debug_actual_personal": actual_personal_count
+            }))
+
+            # 🔧 ОБНОВЛЯЕМ КЕШИРОВАННЫЕ СЧЕТЧИКИ ДЛЯ СИНХРОНИЗАЦИИ
+            if position.unread_count != actual_unread_count or position.personal_notifications_count != actual_personal_count:
+                position.unread_count = actual_unread_count
+                position.personal_notifications_count = actual_personal_count
+                position.save()
+                logger.info(f"Updated cached counters for {self.user.username} in {self.room_name}: "
+                           f"unread: {actual_unread_count}, personal: {actual_personal_count}")
+
+        except Exception as e:
+            logger.error(f"Error sending unread info: {e}")
+
+    def handle_load_more_messages(self, data):
+        """Обработка загрузки дополнительных сообщений"""
+        before_message_id = data.get('before_message_id')
+        limit = data.get('limit', 50)  # По умолчанию 50 сообщений
+
+        try:
+            # Получаем комнату
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+
+            # Строим базовый запрос
+            query = Message.objects.filter(room=room, is_deleted=False)
+
+            # Если указан ID сообщения, загружаем сообщения ДО него
+            if before_message_id:
+                try:
+                    before_message = Message.objects.get(id=before_message_id, room=room, is_deleted=False)
+                    query = query.filter(created_at__lt=before_message.created_at)
+                except Message.DoesNotExist:
+                    self.send_error("Опорное сообщение не найдено")
+                    return
+
+            # Получаем сообщения в обратном порядке и ограничиваем количество
+            messages = query.select_related(
+                'author', 'parent', 'parent__author'
+            ).order_by('-created_at')[:limit]
+
+            # Получаем позицию пользователя для определения прочитанности
+            user_position = UserChatPosition.get_or_create_for_user(self.user, room)
+
+            # Конвертируем в JSON (в обратном порядке для правильного отображения)
+            messages_data = []
+            for msg in reversed(messages):
+                message_json = self.message_to_json(msg, is_history=True)
+
+                # Определяем прочитанность
+                if user_position.last_read_at:
+                    message_json['is_read'] = msg.created_at <= user_position.last_read_at
+                else:
+                    message_json['is_read'] = True
+
+                # 🎯 НОВОЕ: Отмечаем персональные уведомления
+                message_json['is_personal_notification'] = msg.is_personal_notification_for(self.user)
+
+                messages_data.append(message_json)
+
+            # Отправляем дополнительные сообщения
+            self.send(text_data=json.dumps({
+                "type": "more_messages",
+                "messages": messages_data,
+                "has_more": len(messages) == limit,  # Есть ли еще сообщения для загрузки
+                "before_message_id": before_message_id
+            }))
+
+            logger.info(f"Loaded {len(messages_data)} more messages for {self.user.username} in {self.room_name}")
+
+        except Exception as e:
+            logger.error(f"Error loading more messages: {e}")
+            self.send_error("Ошибка загрузки сообщений")
+
+    def handle_load_message_context(self, data):
+        """Обработка загрузки контекста вокруг сообщения"""
+        message_id = data.get('message_id')
+        context_size = data.get('context_size', 10)  # По умолчанию 10 сообщений до и после
+
+        if not message_id:
+            self.send_error("Недостаточно данных для загрузки контекста")
+            return
+
+        try:
+            room, _ = Room.objects.get_or_create(name=self.room_name)
+            target_message = Message.objects.get(id=message_id, room=room, is_deleted=False)
+
+            # Получаем сообщения ДО целевого
+            messages_before = Message.objects.filter(
+                room=room, is_deleted=False, created_at__lt=target_message.created_at
+            ).select_related('author', 'parent', 'parent__author').order_by('-created_at')[:context_size]
+
+            # Получаем сообщения ПОСЛЕ целевого (включая само целевое)
+            messages_after = Message.objects.filter(
+                room=room, is_deleted=False, created_at__gte=target_message.created_at
+            ).select_related('author', 'parent', 'parent__author').order_by('created_at')[:context_size + 1]
+
+            # Объединяем в правильном порядке
+            all_messages = list(reversed(messages_before)) + list(messages_after)
+
+            # Получаем позицию пользователя для определения прочитанности
+            user_position = UserChatPosition.get_or_create_for_user(self.user, room)
+
+            # Конвертируем в JSON
+            messages_data = []
+            for msg in all_messages:
+                message_json = self.message_to_json(msg, is_history=True)
+
+                # Определяем прочитанность
+                if user_position.last_read_at:
+                    message_json['is_read'] = msg.created_at <= user_position.last_read_at
+                else:
+                    message_json['is_read'] = True
+
+                # Отмечаем персональные уведомления
+                message_json['is_personal_notification'] = msg.is_personal_notification_for(self.user)
+                messages_data.append(message_json)
+
+            self.send(text_data=json.dumps({
+                "type": "message_context",
+                "messages": messages_data,
+                "target_message_id": str(message_id),
+                "found": True
+            }))
+
+            logger.info(f"Loaded {len(messages_data)} messages context for {self.user.username} around message {message_id}")
+
+        except Message.DoesNotExist:
+            # Сообщение удалено или не существует
+            self.send(text_data=json.dumps({
+                "type": "message_context",
+                "messages": [],
+                "target_message_id": str(message_id),
+                "found": False
+            }))
+            logger.info(f"Message {message_id} not found for context loading")
+        except Exception as e:
+            logger.error(f"Error loading message context: {e}")
+            self.send_error("Ошибка при загрузке контекста сообщения")
 
     def can_edit_message(self, message):
         """Проверка прав на редактирование сообщения"""
@@ -540,31 +887,12 @@ class BaseChatConsumer(WebsocketConsumer):
         else:
             return message.author == self.user
 
-    def can_delete_message(self, message):
-        """Проверка прав на удаление сообщения"""
-        user_role = self.user.role
-        message_author_role = message.author.role
-
-        # 👑 Owner может удалять ВСЕ сообщения
-        if user_role == 'owner':
-            return True
-        # 🎭 Moderator/Admin может удалять любые КРОМЕ owner
-        elif user_role in ['moderator', 'admin']:
-            return message_author_role != 'owner'
-        # 👤 Остальные только свои сообщения
-        else:
-            return message.author == self.user
-
-    def can_pin_message(self, message):
-        """Проверка прав на закрепление сообщения"""
-        user_role = self.user.role
-
-        # 👑 Owner и 🎭 Moderator/Admin могут закреплять сообщения
-        if user_role in ['owner', 'moderator', 'admin']:
-            return True
-        # 👤 Остальные не могут закреплять
-        else:
-            return False
+    def send_error(self, message):
+        """Отправка сообщения об ошибке клиенту"""
+        self.send(text_data=json.dumps({
+            "type": "error",
+            "message": message
+        }))
 
     def extract_clean_content(self, content):
         """Извлекает основной контент из пересланного сообщения для каскадной пересылки"""
@@ -600,34 +928,8 @@ class BaseChatConsumer(WebsocketConsumer):
                 if main_content and not main_content.startswith('📤'):
                     return main_content
 
-        # Fallback - возвращаем первую непустую строку
-        for line in lines:
-            line = line.strip()
-            if line and not line.startswith('📤') and not line.startswith('Переслано'):
-                return line
-
+        # Fallback: возвращаем весь контент как есть
         return content
-
-    def extract_original_author(self, content, fallback_author):
-        """Извлекает оригинального автора из пересланного сообщения"""
-        lines = content.strip().split('\n')
-
-        if len(lines) < 2:
-            return fallback_author
-
-        # Ищем строку с автором (вторая строка в нашем формате)
-        for i, line in enumerate(lines):
-            if i > 0 and line.strip() and not line.startswith('Переслано') and not line.startswith('📤'):
-                return line.strip()
-
-        return fallback_author
-
-    def send_error(self, error_message):
-        """Отправка сообщения об ошибке клиенту"""
-        self.send(text_data=json.dumps({
-            "type": "error",
-            "message": error_message
-        }))
 
     def message_to_json(self, message, is_history=False):
         """Конвертация сообщения в JSON с поддержкой ответов"""
@@ -650,6 +952,8 @@ class BaseChatConsumer(WebsocketConsumer):
             'is_own': message.author == self.user,
             'reply_to': reply_data,
             'is_reply_to_me': bool(message.parent and message.parent.author == self.user),
+            'mentions_me': message.mentions_user(self.user),  # 🎯 НОВОЕ: Упоминания пользователя
+            'is_personal_notification': message.is_personal_notification_for(self.user),  # 🎯 НОВОЕ: Персональные уведомления
             'likes_count': message.likes_count,
             'dislikes_count': message.dislikes_count,
             'user_reaction': message.get_user_reaction(self.user),  # 'like', 'dislike' или None
@@ -718,7 +1022,7 @@ class BaseChatConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             "type": "message_deleted",
             "message_id": event["message_id"],
-            "deleted_by": event["deleted_by"]
+            "deleter": event["deleter"]
         }))
 
     def message_forwarded(self, event):
@@ -733,7 +1037,7 @@ class BaseChatConsumer(WebsocketConsumer):
         """Уведомление о закреплении сообщения"""
         self.send(text_data=json.dumps({
             "type": "message_pinned",
-            "message_id": event["message_id"],
+            "message": event["message"],
             "pinner": event["pinner"]
         }))
 
@@ -741,23 +1045,37 @@ class BaseChatConsumer(WebsocketConsumer):
         """Уведомление об откреплении сообщения"""
         self.send(text_data=json.dumps({
             "type": "message_unpinned",
-            "message_id": event["message_id"],
+            "message": event["message"],
             "unpinner": event["unpinner"]
         }))
 
     def reaction_updated(self, event):
-        """Уведомление об обновлении реакций на сообщение"""
+        """Уведомление об обновлении реакции"""
         self.send(text_data=json.dumps({
             "type": "reaction_updated",
             "message_id": event["message_id"],
-            "likes_count": event["likes_count"],
-            "dislikes_count": event["dislikes_count"],
+            "reaction_type": event["reaction_type"],
             "user": event["user"],
-            "reaction_type": event["reaction_type"]
+            "likes_count": event["likes_count"],
+            "dislikes_count": event["dislikes_count"]
         }))
 
 
-# Алиас для обратной совместимости
-class ChatConsumer(BaseChatConsumer):
-    """Алиас для обратной совместимости"""
-    pass
+class GeneralChatConsumer(BaseChatConsumer):
+    """Консьюмер для общего чата"""
+
+    def connect(self):
+        """Подключение к общему чату"""
+        self.room_name = "general"
+        # Теперь вызываем родительский connect, но сначала пропускаем строку с room_name
+        super().connect()
+
+
+class VIPChatConsumer(BaseChatConsumer):
+    """Консьюмер для VIP чата"""
+
+    def connect(self):
+        """Подключение к VIP чату"""
+        self.room_name = "vip"
+        # Теперь вызываем родительский connect, но сначала пропускаем строку с room_name
+        super().connect()
