@@ -1,27 +1,28 @@
-/* 🎯 ТОЧНЫЕ ЦВЕТА TELEGRAM ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* 🎯 ТОЧНЫЕ ЦВЕТА TELEGRAM ИЗ BESEDKA_UI_STANDARDS.md */
     :root {
         --border-color: #6f42c1; /* Красивый фиолетовый цвет */
         --border-width: 3px; /* Унифицированная толщина */
 
         /* ===== TELEGRAM OFFICIAL COLORS - СВЕТЛАЯ ТЕМА ===== */
-        --theme-bg-color: #FFFFFF; /* Основной фон чата */
-        --theme-text-color: #000000; /* Основной цвет текста */
-        --theme-message-out-bg-color: #EEFFDE; /* Фон исходящего сообщения (светло-зеленый) */
-        --theme-message-in-bg-color: #F3F4F6; /* Фон входящего сообщения (светло-серый) */
-        --theme-link-color: #0088CC; /* Цвет ссылок, упоминаний, активных элементов */
-        --theme-border-color: #E0E0E0; /* Цвет границ, разделителей */
-        --theme-secondary-text-color: #8C8C8C; /* Второстепенный текст (время, статусы) */
-        --theme-header-bg-color: #FFFFFF; /* Фон хедера */
-        --theme-input-bg-color: #F1F1F1; /* Фон поля ввода */
+        /* Извлечено из BESEDKA_UI_STANDARDS.md §3.1-3.2 */
+        --theme-bg-color: #F0F2F5; /* Фон чата (светлая тема) */
+        --theme-text-color: #000000; /* Основной текст */
+        --theme-message-out-bg-color: #E1FFC7; /* Фон исходящего сообщения */
+        --theme-message-in-bg-color: #FFFFFF; /* Фон входящего сообщения */
+        --theme-link-color: #2EA6FF; /* Акцент/ссылки */
+        --theme-border-color: #E0E0E0; /* Границы */
+        --theme-secondary-text-color: #8E8E93; /* Второстепенный текст */
+        --theme-header-bg-color: #FFFFFF; /* Фон заголовка */
+        --theme-input-bg-color: #F0F2F5; /* Фон поля ввода */
 
         /* Алиасы для обратной совместимости */
         --bg-primary: var(--theme-bg-color);
-        --bg-secondary: #f8f9fa;
+        --bg-secondary: #F0F2F5;
         --text-primary: var(--theme-text-color);
         --text-secondary: var(--theme-secondary-text-color);
         --border-color-theme: var(--theme-border-color);
         --chat-own-bg: var(--theme-message-out-bg-color);
-        --chat-own-text: #000000; /* Черный текст на светло-зеленом фоне в светлой теме */
+        --chat-own-text: #000000; /* Черный текст на светло-зеленом фоне */
         --chat-other-bg: var(--theme-message-in-bg-color);
         --chat-other-text: var(--theme-text-color);
         --chat-forwarded-bg: rgba(217, 151, 6, 0.1);
@@ -33,26 +34,27 @@
     }
 
     /* ===== TELEGRAM OFFICIAL COLORS - ТЕМНАЯ ТЕМА ===== */
+    /* Извлечено из BESEDKA_UI_STANDARDS.md §3.1-3.2 */
     [data-theme="dark"] {
-        --theme-bg-color: #18222d; /* Основной фон чата */
-        --theme-text-color: #FFFFFF; /* Основной цвет текста */
-        --theme-message-out-bg-color: #2b5278; /* Фон исходящего сообщения (глубокий синий) */
-        --theme-message-in-bg-color: #1f2b38; /* Фон входящего сообщения (темно-синий) */
-        --theme-link-color: #5294d5; /* Цвет ссылок, упоминаний, активных элементов */
-        --theme-border-color: #25303e; /* Цвет границ, разделителей */
-        --theme-secondary-text-color: #a1b0c3; /* Второстепенный текст (время, статусы) */
-        --theme-header-bg-color: #1f2b38; /* Фон хедера */
-        --theme-input-bg-color: #18222d; /* Фон поля ввода */
+        --theme-bg-color: #17212B; /* Фон чата (темная тема) */
+        --theme-text-color: #FFFFFF; /* Основной текст */
+        --theme-message-out-bg-color: #2B5278; /* Фон исходящего сообщения */
+        --theme-message-in-bg-color: #212C36; /* Фон входящего сообщения */
+        --theme-link-color: #5294E2; /* Акцент/ссылки */
+        --theme-border-color: #2D3845; /* Границы */
+        --theme-secondary-text-color: #A8A8AD; /* Второстепенный текст */
+        --theme-header-bg-color: #1E2733; /* Фон заголовка */
+        --theme-input-bg-color: #1E2733; /* Фон поля ввода */
 
         /* Алиасы для обратной совместимости */
         --bg-primary: var(--theme-bg-color);
-        --bg-secondary: #2d2d2d;
+        --bg-secondary: #1E2733;
         --text-primary: var(--theme-text-color);
         --text-secondary: var(--theme-secondary-text-color);
-        --border-color: #495057;
+        --border-color: #2D3845;
         --border-color-theme: var(--theme-border-color);
         --chat-own-bg: var(--theme-message-out-bg-color);
-        --chat-own-text: #FFFFFF; /* Белый текст на синем фоне в темной теме */
+        --chat-own-text: #FFFFFF; /* Белый текст на синем фоне */
         --chat-other-bg: var(--theme-message-in-bg-color);
         --chat-other-text: var(--theme-text-color);
         --chat-forwarded-bg: rgba(217, 151, 6, 0.15);
@@ -185,7 +187,7 @@
         transform: translateY(-1px);
     }
 
-    /* === ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ - ВСЕГДА ЧИТАЕМОЕ === */
+    /* === ВРЕМЯ В ПРАВОМ НИЖНЕМ УГЛУ - TELEGRAM ЦВЕТА === */
     .message-timestamp {
         position: absolute;
         bottom: 8px;
@@ -193,15 +195,15 @@
         font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 12px;
         font-weight: 600;
-        /* ДНЕВНАЯ ТЕМА - ВСЕГДА ЧЕРНЫЙ */
-        color: #333333 !important;
-        opacity: 0.9;
+        /* СВЕТЛАЯ ТЕМА - МЕТА-ТЕКСТ */
+        color: #8E8E93 !important;
+        opacity: 1;
     }
 
-    /* НОЧНАЯ ТЕМА - ВСЕГДА БЕЛЫЙ ДЛЯ ВСЕХ ВРЕМЕННЫХ МЕТОК */
+    /* ТЕМНАЯ ТЕМА - МЕТА-ТЕКСТ */
     [data-theme="dark"] .message-timestamp {
-        color: #ffffff !important;
-        opacity: 0.9;
+        color: #A8A8AD !important;
+        opacity: 1;
     }
 
     /* === КНОПКИ РЕАКЦИЙ В ЛЕВОМ НИЖНЕМ УГЛУ === */
@@ -291,46 +293,46 @@
         line-height: 1; /* Убираем лишние отступы */
     }
 
-    /* === НОВЫЕ СТИЛИ ЦИТАТ СОГЛАСНО ТЗ === */
+    /* === СТИЛИ ЦИТАТ TELEGRAM === */
     .reply-quote {
-        background: rgba(0, 123, 255, 0.08) !important; /* УСИЛЕННАЯ ГОЛУБАЯ ПОДЛОЖКА для лучшей видимости */
+        background: rgba(46, 166, 255, 0.03) !important; /* Telegram цитата фон светлая тема */
         border: none !important;
-        border-left: 4px solid var(--chat-quote-border) !important; /* Левая полоса согласно ТЗ */
-        border-radius: 12px !important; /* Согласно ТЗ */
-        padding: 12px !important; /* Согласно ТЗ */
+        border-left: 4px solid #2EA6FF !important; /* Telegram акцент */
+        border-radius: 12px !important;
+        padding: 12px !important;
         margin-bottom: 12px !important;
-        font-size: 12px !important; /* Мелкий шрифт согласно ТЗ (90% от основного 14px) */
+        font-size: 12px !important;
         cursor: pointer;
         transition: all 0.2s ease;
-        max-height: 60px; /* Ограничение по высоте - три строки */
+        max-height: 60px;
         overflow: hidden;
         position: relative;
     }
 
     .reply-quote:hover {
-        background: rgba(0, 123, 255, 0.08) !important; /* УСИЛЕННАЯ ГОЛУБАЯ ПОДЛОЖКА ПРИ HOVER */
-        border-left-color: var(--chat-quote-border) !important;
+        background: rgba(46, 166, 255, 0.08) !important;
+        border-left-color: #2EA6FF !important;
     }
 
     .reply-quote-author {
         font-weight: 700;
-        color: #0044AA !important; /* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: еще более темный синий */
+        color: #2EA6FF !important; /* Telegram акцент для автора */
         margin-bottom: 4px !important;
-        font-size: 12px !important; /* Увеличил размер для лучшей видимости */
+        font-size: 12px !important;
         line-height: 1.2;
     }
 
     .reply-quote-text {
-        color: var(--text-secondary) !important; /* Вторичный цвет текста */
+        color: #000000 !important; /* Основной текст в светлой теме */
         line-height: 1.3;
         font-weight: 400;
         font-style: italic;
         display: -webkit-box;
-        -webkit-line-clamp: 3; /* Ограничение до 3 строк */
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-        background: none !important; /* УБИРАЕМ ЧЕРНУЮ ПОДЛОЖКУ */
+        background: none !important;
         padding: 0 !important;
         border-radius: 0 !important;
     }
@@ -358,27 +360,27 @@
         font-weight: 700;
     }
 
-    /* 🌙 === ИСПРАВЛЕНИЯ ДЛЯ ТЕМНОЙ ТЕМЫ === */
+    /* 🌙 === ТЕМНАЯ ТЕМА TELEGRAM === */
 
-    /* Исправляем цитаты в темной теме */
+    /* Цитаты в темной теме */
     [data-theme="dark"] .reply-quote {
-        background: rgba(102, 163, 255, 0.05) !important; /* ДЕЛИКАТНАЯ СИНЯЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ В ТЕМНОЙ ТЕМЕ */
-        border-left-color: #66a3ff !important; /* Яркая синяя граница для контраста */
+        background: rgba(82, 148, 226, 0.1) !important; /* Telegram цитата фон темная тема */
+        border-left-color: #5294E2 !important; /* Telegram акцент темная тема */
     }
 
     [data-theme="dark"] .reply-quote:hover {
-        background: rgba(102, 163, 255, 0.12) !important; /* УСИЛЕННАЯ СИНЯЯ ПОДЛОЖКА ПРИ HOVER В ТЕМНОЙ ТЕМЕ */
-        border-left-color: #4dabf7 !important; /* Еще ярче синий при hover */
+        background: rgba(82, 148, 226, 0.15) !important;
+        border-left-color: #5294E2 !important;
     }
 
-    /* Исправляем цвет автора цитаты в темной теме */
+    /* Автор цитаты в темной теме */
     [data-theme="dark"] .reply-quote-author {
-        color: #66a3ff !important; /* Яркий синий для хорошей видимости */
+        color: #5294E2 !important; /* Telegram акцент темная тема */
     }
 
-    /* Исправляем цвет текста цитаты в темной теме */
+    /* Текст цитаты в темной теме */
     [data-theme="dark"] .reply-quote-text {
-        color: #e5e5e5 !important; /* Светлый серый для отличной читаемости */
+        color: #FFFFFF !important; /* Основной текст темная тема */
     }
 
     /* Исправляем заголовки пересланных сообщений в темной теме */
@@ -450,7 +452,7 @@
 
     .action-btn {
         background: rgba(255, 255, 255, 0.95);
-        border: 2px solid #007bff;
+        border: 2px solid #2EA6FF;
         border-radius: 50%;
         width: 32px;
         height: 32px;
@@ -459,13 +461,13 @@
         justify-content: center;
         cursor: pointer;
         font-size: 0.8rem;
-        color: #007bff;
+        color: #2EA6FF;
         transition: all 0.2s ease;
-        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+        box-shadow: 0 3px 8px rgba(46, 166, 255, 0.3);
     }
 
     .action-btn:hover {
-        background: #007bff;
+        background: #2EA6FF;
         color: white;
         transform: scale(1.15);
     }
@@ -764,15 +766,15 @@
 
     /* ЦИТАТА ВНУТРИ ФИКСИРОВАННОГО КОНТЕЙНЕРА */
     .reply-zone {
-        background: rgba(219, 234, 254, 0.7); /* ГОЛУБАЯ ПОДЛОЖКА КАК У ЧУЖИХ СООБЩЕНИЙ */
-        border: 2px solid #007bff;
+        background: rgba(46, 166, 255, 0.1); /* Telegram подложка ответа */
+        border: 2px solid #2EA6FF;
         border-radius: 0.75rem;
         padding: 0.75rem;
-        margin: 0; /* НИКАКИХ ОТСТУПОВ - ВЕСЬ РАЗМЕР КОНТЕЙНЕРА */
+        margin: 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 3px 10px rgba(0, 123, 255, 0.2);
+        box-shadow: 0 3px 10px rgba(46, 166, 255, 0.2);
     }
 
     .reply-mode-info {
@@ -789,8 +791,8 @@
 
     .reply-mode-cancel {
         background: rgba(255, 255, 255, 0.8);
-        border: 2px solid #007bff;
-        color: #007bff;
+        border: 2px solid #2EA6FF;
+        color: #2EA6FF;
         font-size: 1rem;
         cursor: pointer;
         padding: 0.25rem;
@@ -805,7 +807,7 @@
     }
 
     .reply-mode-cancel:hover {
-        background: #007bff;
+        background: #2EA6FF;
         color: white;
         transform: scale(1.1);
     }
@@ -914,16 +916,16 @@
     .input-group {
         border-radius: 1rem;
         overflow: hidden;
-        border: 2px solid #007bff; /* УСИЛЕННАЯ СИНЯЯ КАЕМОЧКА */
-        background: var(--chat-input-bg); /* ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ ТЕМЫ */
+        border: 2px solid #2EA6FF; /* Telegram граница поля ввода */
+        background: var(--chat-input-bg);
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); /* УСИЛЕННАЯ СИНЯЯ ТЕНЬ */
+        box-shadow: 0 4px 12px rgba(46, 166, 255, 0.25);
     }
 
     .input-group:focus-within {
-        border-color: #0056b3; /* БОЛЕЕ ТЕМНАЯ СИНЯЯ ГРАНИЦА ПРИ ФОКУСЕ */
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.35); /* БОЛЕЕ ВЫРАЖЕННАЯ ТЕНЬ */
-        transform: translateY(-1px); /* Уменьшенное всплытие */
+        border-color: #248BF2; /* Telegram темный акцент при фокусе */
+        box-shadow: 0 6px 20px rgba(46, 166, 255, 0.35);
+        transform: translateY(-1px);
     }
 
     .form-control {
@@ -942,85 +944,85 @@
 
     .form-control:focus {
         box-shadow: none;
-        border: 1px solid #007bff !important; /* АКТИВНАЯ ГРАНИЦА */
-        background: var(--chat-input-bg) !important; /* ФОН ОСТАЕТСЯ ИЗ ТЕМЫ */
-        color: var(--chat-input-text) !important; /* ТЕКСТ ОСТАЕТСЯ ИЗ ТЕМЫ */
+        border: 1px solid #2EA6FF !important; /* Telegram активная граница */
+        background: var(--chat-input-bg) !important;
+        color: var(--chat-input-text) !important;
     }
 
     .form-control::placeholder {
-        color: var(--text-secondary) !important; /* PLACEHOLDER ИЗ ТЕМЫ */
+        color: var(--text-secondary) !important;
         opacity: 0.8;
     }
 
     .btn-send {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        background: linear-gradient(135deg, #2EA6FF 0%, #248BF2 100%);
         color: white;
-        border: 2px solid #0056b3;
-        padding: 0.75rem 1.5rem; /* УМЕНЬШЕННЫЕ ОТСТУПЫ */
+        border: 2px solid #248BF2;
+        padding: 0.75rem 1.5rem;
         font-weight: 600;
         transition: all 0.3s ease;
-        box-shadow: 0 3px 8px rgba(0, 123, 255, 0.25);
+        box-shadow: 0 3px 8px rgba(46, 166, 255, 0.25);
     }
 
     .btn-send:hover {
         transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.35);
+        box-shadow: 0 4px 15px rgba(46, 166, 255, 0.35);
         color: white;
-        border-color: #004085;
+        border-color: #1E7ED8;
     }
 
-    /* 📬 СТИЛИ ДЛЯ РАЗДЕЛИТЕЛЯ НЕПРОЧИТАННЫХ СООБЩЕНИЙ */
+    /* 📬 РАЗДЕЛИТЕЛЬ НЕПРОЧИТАННЫХ TELEGRAM */
     .unread-separator {
         display: flex;
         align-items: center;
         margin: 1rem 0;
         padding: 0 1rem;
         font-size: 0.875rem;
-        color: #007bff;
+        color: #2EA6FF;
         font-weight: 600;
     }
 
     .unread-separator-line {
         flex: 1;
         height: 2px;
-        background: linear-gradient(to right, transparent, #007bff, transparent);
+        background: linear-gradient(to right, transparent, #2EA6FF, transparent);
         margin: 0 1rem;
     }
 
     .unread-separator-text {
         padding: 0.5rem 1rem;
-        background: rgba(0, 123, 255, 0.1);
-        border: 2px solid #007bff;
+        background: rgba(46, 166, 255, 0.1);
+        border: 2px solid #2EA6FF;
         border-radius: 1rem;
         font-weight: 700;
         white-space: nowrap;
     }
 
-    /* 📬 СТИЛИ ДЛЯ ПЛАВАЮЩЕЙ КНОПКИ TELEGRAM-СТИЛЬ - ИСПРАВЛЕННОЕ ПОЗИЦИОНИРОВАНИЕ */
+    /* 📬 ПЛАВАЮЩАЯ КНОПКА TELEGRAM-СТИЛЬ */
     .floating-unread-btn {
-        position: fixed; /* 🎯 ИСПРАВЛЕНО: fixed для позиционирования относительно окна */
-        bottom: 120px; /* 🎯 ИСПРАВЛЕНО: отступ от нижнего края с учетом поля ввода */
-        right: calc(240px + 50px); /* 🎯 ИСПРАВЛЕНО: отступ от правого края с учетом сайдбара */
+        position: fixed;
+        bottom: 120px;
+        right: calc(240px + 50px);
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #2EA6FF, #248BF2);
         border: 2px solid rgba(255, 255, 255, 0.6);
         color: white;
-        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
+        box-shadow: 0 4px 20px rgba(46, 166, 255, 0.4);
         z-index: 1000;
         cursor: pointer;
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 5px; /* Отступ между иконкой и счетчиком */
-        font-size: 20px; /* Размер иконки */
+        gap: 5px;
+        font-size: 20px;
     }
 
     .floating-unread-btn:hover {
         transform: scale(1.1);
-        box-shadow: 0 6px 30px rgba(40, 167, 69, 0.6);
+        box-shadow: 0 6px 30px rgba(46, 166, 255, 0.6);
     }
 
     /* 📬 ИКОНКА НАВИГАЦИИ В КНОПКЕ */
