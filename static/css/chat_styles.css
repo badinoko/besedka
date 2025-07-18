@@ -295,7 +295,7 @@
 
     /* === СТИЛИ ЦИТАТ TELEGRAM === */
     .reply-quote {
-        background: rgba(46, 166, 255, 0.03) !important; /* Telegram цитата фон светлая тема */
+        background: rgba(46, 166, 255, 0.1) !important; /* Telegram цитата фон светлая тема - ИСПРАВЛЕНО для читаемости */
         border: none !important;
         border-left: 4px solid #2EA6FF !important; /* Telegram акцент */
         border-radius: 12px !important;
@@ -310,7 +310,7 @@
     }
 
     .reply-quote:hover {
-        background: rgba(46, 166, 255, 0.08) !important;
+        background: rgba(46, 166, 255, 0.15) !important;
         border-left-color: #2EA6FF !important;
     }
 
@@ -337,13 +337,13 @@
         border-radius: 0 !important;
     }
 
-    /* === ЦИТАТЫ В СОБСТВЕННЫХ СООБЩЕНИЯХ (НЕ ПЕРЕСЛАННЫХ) - АДАПТИВНЫЕ ПОД СИНИЙ ФОН === */
-    .message-content.own:not(.forwarded-own) .reply-quote-author {
+    /* === ЦИТАТЫ В СОБСТВЕННЫХ СООБЩЕНИЯХ (НЕ ПЕРЕСЛАННЫХ) - ТЕМНАЯ ТЕМА ТОЛЬКО === */
+    [data-theme="dark"] .message-content.own:not(.forwarded-own) .reply-quote-author {
         color: rgba(255, 255, 255, 0.95) !important; /* Белый для хорошей видимости на синем */
         font-weight: 700;
     }
 
-    .message-content.own:not(.forwarded-own) .reply-quote-text {
+    [data-theme="dark"] .message-content.own:not(.forwarded-own) .reply-quote-text {
         color: rgba(255, 255, 255, 0.8) !important; /* Белый полупрозрачный для текста цитаты */
     }
 

@@ -9,7 +9,7 @@
 
 {% block extra_css %}
 {# Удаляем все встроенные стили, чтобы использовать единый файл #}
-<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}?v={% now "U" %}">
+<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}?v=FORCE_RELOAD_{% now "Y-m-d-H-i-s" %}">
 {% endblock %}
 
 {% block main_container %}

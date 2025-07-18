@@ -182,4 +182,4 @@ AI-ассистенты должны использовать JSON-данные 
   --theme_input_bg_color: var(--general-ui-background-secondary-dark); /* Фон поля ввода */
   /* Добавьте остальные переменные, как определено в BESEDKA_UI_STANDARDS.md */
 }
-```
+``` 
