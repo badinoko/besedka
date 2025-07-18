@@ -1,4 +1,4 @@
-# 📁 GOLDEN CHAT BACKUP v21 - DOCUMENTATION REORGANIZED
+image.png# 📁 GOLDEN CHAT BACKUP v21 - DOCUMENTATION REORGANIZED
 
 **Дата создания:** 18 июля 2025  
 **Статус:** ДОКУМЕНТАЦИЯ РЕОРГАНИЗОВАНА  

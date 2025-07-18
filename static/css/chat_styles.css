@@ -293,7 +293,7 @@
 
     /* === НОВЫЕ СТИЛИ ЦИТАТ СОГЛАСНО ТЗ === */
     .reply-quote {
-        background: rgba(0, 123, 255, 0.03) !important; /* ДЕЛИКАТНАЯ ГОЛУБАЯ ПОДЛОЖКА ДЛЯ ЧИТАЕМОСТИ */
+        background: rgba(0, 123, 255, 0.08) !important; /* УСИЛЕННАЯ ГОЛУБАЯ ПОДЛОЖКА для лучшей видимости */
         border: none !important;
         border-left: 4px solid var(--chat-quote-border) !important; /* Левая полоса согласно ТЗ */
         border-radius: 12px !important; /* Согласно ТЗ */
@@ -314,9 +314,9 @@
 
     .reply-quote-author {
         font-weight: 700;
-        color: #0066AA !important; /* Более темный синий для лучшего контраста */
+        color: #0044AA !important; /* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: еще более темный синий */
         margin-bottom: 4px !important;
-        font-size: 11px !important;
+        font-size: 12px !important; /* Увеличил размер для лучшей видимости */
         line-height: 1.2;
     }
 
